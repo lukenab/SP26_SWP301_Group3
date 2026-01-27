@@ -11,7 +11,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Login Page</title>
         <link href="login.css" rel="stylesheet" type="text/css"/>
-        
+
     </head>
     <body>
         <div class="login-container">
@@ -67,8 +67,12 @@
                     </button>
                 </form>
 
-                <div class="divider">
-                    <span>or sign in with</span>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Privacy Policy</a>
+                    <span class="separator">•</span>
+                    <a href="#" class="footer-link">Terms of Service</a>
+                    <span class="separator">•</span>
+                    <a href="#" class="footer-link">Support</a>
                 </div>
             </div>
         </div>
