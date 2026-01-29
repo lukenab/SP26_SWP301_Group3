@@ -24,10 +24,10 @@
                     <p>Please sign in to continue</p>
                 </div>
 
-                <form class="login-form">
+                <form class="login-form" action="login" method="post">
                     <div class="form-group">
                         <div class="input-wrapper">
-                            <input type="email" id="email" required placeholder=" " />
+                            <input type="email" id="email" name="email" required placeholder=" " />
                             <label for="email">Email</label>
                             <span class="input-border"></span>
                         </div>
@@ -36,7 +36,7 @@
 
                     <div class="form-group">
                         <div class="input-wrapper password-wrapper">
-                            <input type="password" id="password" required placeholder=" "/>
+                            <input type="password" id="password" name="password" required placeholder=" "/>
                             <label for="password">Password</label>
                             <span class="input-border"></span>
                             <button type="button" class="password-toggle" id="passwordToggle">
