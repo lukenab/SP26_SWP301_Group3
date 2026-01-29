@@ -18,7 +18,7 @@
             <div class="login-card">
                 <div class="login-header">
                     <div class="login-logo">
-                        <img src="university.png" alt="logo" />
+                        <img src="login-logo.png" alt="logo" />
                     </div>
                     <h2>Welcome back</h2>
                     <p>Please sign in to continue</p>
