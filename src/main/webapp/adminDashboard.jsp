@@ -51,7 +51,7 @@
             <header>
                 <div class="img-text">
                     <span class="logo-img">
-                        <img src="img/uni.png" alt="uni"> 
+                        <img src="logo.png" alt="logo"> 
                     </span>
 
 
