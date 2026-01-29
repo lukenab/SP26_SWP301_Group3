@@ -221,7 +221,7 @@ nav.active .logo_item {
     background-color: var(--sidebar);
     z-index: 2000; 
     transition: all 0.3s ease;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 .sidebar.close{
     width: 78px;
@@ -233,6 +233,9 @@ nav.active .logo_item {
 
 .sidebar header{
     position: relative;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    flex-shrink: 0; 
 }
 
 .sidebar img{
