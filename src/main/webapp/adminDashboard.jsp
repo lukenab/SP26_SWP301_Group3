@@ -29,7 +29,50 @@
                     <i class="bx bx-moon moon"></i>
                     <i class='bx  bx-sun sun'></i> 
                 </div>
-            </div>
+
+                <div class="profile_item">
+                    <img src="" alt="profile" class="profile_image">
+
+                    <div class="profile_text">
+                        <span class="name">Admin User</span>
+                        <span class="email">admin@example.com</span>
+                    </div>
+
+                    <div class="profile_dropdown">
+                        <div class="dropdown_header">
+                            <div class="name">Admin User</div>
+                            <div class="email">admin@example.com</div>
+                        </div>
+
+                        <ul class="dropdown_menu">
+                            <li>
+                                <a href="#">
+                                    <i class='bx bx-user'></i>
+                                    <span>Your Profile</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <i class='bx bx-cog'></i>
+                                    <span>Settings</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <i class='bx bx-credit-card'></i>
+                                    <span>Billing</span>
+                                </a>
+                            </li>
+
+                            <li class="divider"></li> <li>
+                                <a href="#" class="logout">
+                                    <i class='bx bx-log-out'></i>
+                                    <span>Sign out</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
         </nav>
 
         <div class="sidebar close">

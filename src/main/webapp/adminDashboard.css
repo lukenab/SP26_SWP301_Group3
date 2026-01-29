@@ -287,3 +287,115 @@ nav.active .logo_item {
     color: var(--text-color);
     margin-left: 10px;
 }
+
+.profile_item {
+   display: flex;       
+    align-items: center;  
+    gap: 10px;           
+    cursor: pointer;
+    margin-left: 20px;
+    position: relative;
+}
+
+.profile_image {
+   width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile_text {
+    display: flex;
+    flex-direction: column; 
+    line-height: 1.2;       
+}
+
+.profile_text .name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.profile_text .email {
+    font-size: 12px;
+    color: var(--text-color);
+    opacity: 0.8; 
+}
+
+.profile_dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;  
+    width: 220px;
+    background-color: var(--sidebar);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.05);
+    opacity: 0;
+    pointer-events: none; 
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    
+    z-index: 1001; 
+}
+
+.profile_item.active .profile_dropdown {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.dropdown_header {
+    padding: 10px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    margin-bottom: 5px;
+}
+.dropdown_header .name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+.dropdown_header .email {
+    font-size: 12px;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.dropdown_menu li {
+    list-style: none;
+}
+.dropdown_menu li a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+.dropdown_menu li a:hover {
+    background-color: var(--body-color); 
+}
+.dropdown_menu li a i {
+    font-size: 18px;
+}
+
+.divider {
+    height: 1px;
+    background-color: rgba(0,0,0,0.1);
+    margin: 5px 0;
+}
+.dropdown_menu li a.logout {
+    color: #e74c3c; 
+}
+.dropdown_menu li a.logout:hover {
+    background-color: #fdeaea;
+}
+
+body.dark .divider,
+body.dark .dropdown_header {
+    border-color: rgba(255,255,255,0.1);
+}

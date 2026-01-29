@@ -15,3 +15,18 @@ document.addEventListener("DOMContentLoaded", () => {
         nav.classList.toggle("active");
     });
 });
+
+const profileItem = document.querySelector(".profile_item");
+
+if (profileItem) {
+    profileItem.addEventListener("click", (e) => {
+        e.stopPropagation(); 
+        profileItem.classList.toggle("active");
+    });
+}
+
+document.addEventListener("click", (e) => {
+    if (!profileItem.contains(e.target)) {
+        profileItem.classList.remove("active");
+    }
+});
