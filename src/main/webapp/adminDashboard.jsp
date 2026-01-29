@@ -23,20 +23,19 @@
                         <li><a href="#">Home</a></li>
                         <li><a href="#">About</a></li>
                         <li><a href="#">Contact</a></li>
-                        <li><a href="#">Projects</a></li>
                     </ul>
                 </div>
 
                 <div class="darkLight-searchBox">
                     <div class="darkLight">
-                        <i class="bx bx-moon moon" style='color:#ffffff'></i>
-                        <i class='bxr  bx-sun sun' style='color:#ffffff'></i> 
+                        <i class="bx bx-moon moon"></i>
+                        <i class='bxr  bx-sun sun'></i> 
                     </div>
 
                     <div class="searchBox">
                         <div class="searchToggle">
-                            <i class='bxr  bx-x cancel' style='color:#ffffff'></i> 
-                            <i class='bxr  bx-search search' style='color:#ffffff'></i> 
+                            <i class='bxr  bx-x cancel'></i> 
+                            <i class='bxr  bx-search search'></i> 
                         </div>
 
                         <div class="search-field">
@@ -52,7 +51,7 @@
             <header>
                 <div class="img-text">
                     <span class="logo-img">
-                        <img src="logo.png" alt="logo"> 
+                        <img src="img/uni.png" alt="uni"> 
                     </span>
 
 
@@ -74,6 +73,8 @@
                                 <span class="text nav-text">Dashboard</span>
                             </a>
                         </li>
+
+                        <span class="divider"></span>
 
                         <li class="nav-links">
                             <a href="#">
@@ -104,12 +105,7 @@
                         </li>
                 </div>
             </div>
-
-
-
-
         </div>
-
         <script src="adminDashboard.js">
 
         </script>

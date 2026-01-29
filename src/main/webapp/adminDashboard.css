@@ -9,12 +9,12 @@
 
 :root{
     --body-color: #f1f4f6;
-    --nav-color: rgb(94, 135, 173);
-    --text-color: #fafafa;
+    --nav-color: #ffffff;
+    --text-color: #216194;
     --side-nav: #010718;
     --search-nav: #F2F2F2;
     --search-text: #eff1f4;
-    --sidebar: #f1f4f6;
+    --sidebar: #ffffff;
     --sidebar-text: #162140;
 }
 
@@ -79,7 +79,7 @@ nav{
 }
 
 .nav-links li a:hover{
-    background-color: rgb(32, 72, 110);
+    background-color: rgba(64, 114, 160, 0.717);
 }
 
 .darkLight-searchBox{
