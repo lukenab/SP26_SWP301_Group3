@@ -131,7 +131,7 @@ body {
 }
 
 .input-wrapper input:focus + label,
-.input-wrapper input:valid + label {
+.input-wrapper input:not(:placeholder-shown) + label {
   top: -10px;
   color: #2563eb;
   background: #ffffff;
@@ -169,7 +169,6 @@ body {
     height: 100%;
     stroke-width: 2;
 }
-
 
 .password-toggle{
     position: absolute;
@@ -294,7 +293,8 @@ body {
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     transition: all 0.3s ease;
-    margin-bottom: 24px;
+    margin-bottom: 54px;
+    margin-top: 20px;
 }
 
 .login-btn:hover{
@@ -302,6 +302,7 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
 }
+
 
 .footer-links {
     text-align: center;

@@ -11,7 +11,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Login Page</title>
         <link href="login.css" rel="stylesheet" type="text/css"/>
-
+        <link href="bootstrap.min.css" rel="stylesheet" type="text/css"/>
     </head>
     <body>
         <div class="login-container">
@@ -24,10 +24,10 @@
                     <p>Please sign in to continue</p>
                 </div>
 
-                <form class="login-form" action="login" method="post">
+                <form class="login-form">
                     <div class="form-group">
                         <div class="input-wrapper">
-                            <input type="email" id="email" name="email" required />
+                            <input type="email" id="email" required placeholder=" " />
                             <label for="email">Email</label>
                             <span class="input-border"></span>
                         </div>
@@ -36,7 +36,7 @@
 
                     <div class="form-group">
                         <div class="input-wrapper password-wrapper">
-                            <input type="password" id="password" name="password" required />
+                            <input type="password" id="password" required placeholder=" "/>
                             <label for="password">Password</label>
                             <span class="input-border"></span>
                             <button type="button" class="password-toggle" id="passwordToggle">
