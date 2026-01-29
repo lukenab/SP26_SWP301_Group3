@@ -84,12 +84,12 @@ public class UserDAO extends DBContext{
                 String phone = rs.getString("Phone");
                 String address = rs.getString("Address");
                 Boolean gender = rs.getBoolean("Gender");
-                Date birthdate = rs.getDate("Birthdate");
+                Date birthdate = rs.getDate("Dob");
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
                 
-                User user = new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role);
+                User user = new User(userId, fullname, email, hashedPassword, phone, address, gender, birthdate, avatar, status, role);
                 return user;
             }
         } catch (Exception e) {
@@ -103,7 +103,7 @@ public class UserDAO extends DBContext{
         List<User> list = dao.getAllUser();
         System.out.println(list);
         
-        String email = "admin@fpt.edu.vn";
+        String email = "Lienntkce.190812@gmail.com";
         String password = "123456";
         System.out.println(dao.checkLogin(email, password));
     }
