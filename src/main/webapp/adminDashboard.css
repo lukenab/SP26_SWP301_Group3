@@ -33,33 +33,45 @@ body{
     background-color: var(--body-color);
 }
 
-nav{
+nav {
     position: fixed;
     top: 0;
     left: 0;
-    height: 63px;
+    height: 70px;
     width: 100%;
     background-color: var(--nav-color);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    z-index: 1000;
+    transition: all 0.3s ease;
 }
 
-.navbar{
-    position: relative;
+.navbar {
     height: 100%;
     width: 100%;
-    background-color: var(--nav-color);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 30px;
+    justify-content: space-between; 
+    padding-right: 30px; 
 }
 
-.logo a{
-    font-size: 25px;
-    font-weight: 500;
+.logo a {
+    font-size: 24px;
+    font-weight: 600;
     color: var(--text-color);
-    margin-left: 80px;
+    text-decoration: none;
 }
 
+.logo_item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: 88px; 
+    transition: all 0.3s ease; 
+}
+
+nav.active .logo_item {
+    margin-left: 260px; 
+}
 .nav-links{
     display: flex;
     gap: 10px;
@@ -140,12 +152,12 @@ nav{
     position: relative;  
 }
 
-.search-field{
+.search-field {
     position: absolute;
     bottom: -85px;
     right: 5px;
     height: 50px;
-    width: 300px;
+    width: 250px; 
     display: flex;
     align-items: center;
     background-color: var(--nav-color);
@@ -188,6 +200,7 @@ nav{
     font-weight: 400 ;
     color: var(--search-text);
     background-color: var(--search-text);
+
 }
 
 .search-field i{
@@ -199,18 +212,17 @@ nav{
 
 /* ==== Sidebar ==== */
 
-.sidebar{
-    padding: 10px 14px;
+.sidebar {
     position: fixed;
     top: 0;
     left: 0;
     height: 100%;
     width: 250px;
     background-color: var(--sidebar);
+    z-index: 2000; 
     transition: all 0.3s ease;
-    box-shadow: 1px 0 10px rgba(0, 0, 0 , 0.1);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
 }
-
 .sidebar.close{
     width: 78px;
 }
@@ -286,3 +298,12 @@ nav{
     background-color: #52b7ee;
 }
 
+.sidebarOpen:hover {
+    color: #4070f4; 
+}
+
+.sidebarOpen {
+    font-size: 26px;
+    color: var(--text-color);
+    cursor: pointer;
+}

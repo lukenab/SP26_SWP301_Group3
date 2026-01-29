@@ -16,7 +16,9 @@
     <body>
         <nav>
             <div class="navbar">
-                <span class="logo"><a>LCMS</a></span>
+                <div class="logo_item">
+                    <i class='bx bx-menu sidebarOpen'></i>
+                </div>
 
                 <div class="menu">
                     <ul class="nav-links">
@@ -29,13 +31,13 @@
                 <div class="darkLight-searchBox">
                     <div class="darkLight">
                         <i class="bx bx-moon moon"></i>
-                        <i class='bxr  bx-sun sun'></i> 
+                        <i class='bx bx-sun sun'></i> 
                     </div>
 
                     <div class="searchBox">
                         <div class="searchToggle">
-                            <i class='bxr  bx-x cancel'></i> 
-                            <i class='bxr  bx-search search'></i> 
+                            <i class='bx bx-x cancel'></i> 
+                            <i class='bx bx-search search'></i> 
                         </div>
 
                         <div class="search-field">
@@ -60,8 +62,6 @@
 
                     </div>
                 </div>
-
-                <i class='bxr  bx-chevron-right toggle'></i> 
             </header>
 
             <div class="menu-bar">
@@ -69,7 +69,7 @@
                     <ul class="menu-links">
                         <li class="nav-links">
                             <a href="#">
-                                <i class='bxr  bx-dashboard'></i> 
+                                <i class='bx bx-dashboard'></i> 
                                 <span class="text nav-text">Dashboard</span>
                             </a>
                         </li>
@@ -78,28 +78,28 @@
 
                         <li class="nav-links">
                             <a href="#">
-                                <i class='bxr  bx-user'></i> 
+                                <i class='bx bx-user'></i> 
                                 <span class="text nav-text">User Management</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
                             <a href="#">
-                                <i class='bxr  bx-wallet-alt bx-flip-vertical'></i> 
+                                <i class='bx  bx-wallet-alt bx-flip-vertical'></i> 
                                 <span class="text nav-text">Finance</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
                             <a href="#">
-                                <i class='bxr  bx-file-report'></i> 
+                                <i class='bx bx-file-report'></i> 
                                 <span class="text nav-text">Report</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
                             <a href="#">
-                                <i class='bxr  bx-cog'></i> 
+                                <i class='bx bx-cog'></i> 
                                 <span class="text nav-text">Setting</span>
                             </a>
                         </li>
