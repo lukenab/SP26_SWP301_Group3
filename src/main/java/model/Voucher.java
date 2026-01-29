@@ -11,7 +11,7 @@ import java.util.Date;
  *
  * @author phuct
  */
-class Voucher {
+public class Voucher {
     private int voucherId;
     private String code;
     private BigDecimal discountAmount;

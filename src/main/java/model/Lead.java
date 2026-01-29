@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
  *
  * @author phuct
  */
-class Lead {
+public class Lead {
     private int leadId;
     private String fullName;
     private String email;

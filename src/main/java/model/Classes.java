@@ -10,7 +10,7 @@ import java.util.Date;
  *
  * @author phuct
  */
-class Classes {
+public class Classes {
     private int classid;
     private String className;
     private Course course;

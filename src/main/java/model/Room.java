@@ -8,7 +8,7 @@ package model;
  *
  * @author phuct
  */
-class Room {
+public class Room {
     private int roomId;
     private String roomName;
     private int capacity;
