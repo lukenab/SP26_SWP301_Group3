@@ -16,35 +16,18 @@
     <body>
         <nav>
             <div class="navbar">
+
                 <div class="logo_item">
                     <i class='bx bx-menu sidebarOpen'></i>
+                    <div class="nav_search">
+                        <i class='bx bx-search'></i>
+                        <input type="text" placeholder="Search...">
+                    </div>
                 </div>
 
-                <div class="menu">
-                    <ul class="nav-links">
-                        <li><a href="#">Home</a></li>
-                        <li><a href="#">About</a></li>
-                        <li><a href="#">Contact</a></li>
-                    </ul>
-                </div>
-
-                <div class="darkLight-searchBox">
-                    <div class="darkLight">
-                        <i class="bx bx-moon moon"></i>
-                        <i class='bx bx-sun sun'></i> 
-                    </div>
-
-                    <div class="searchBox">
-                        <div class="searchToggle">
-                            <i class='bx bx-x cancel'></i> 
-                            <i class='bx bx-search search'></i> 
-                        </div>
-
-                        <div class="search-field">
-                            <input type="text" placeholder="Search...">
-                            <i class='bxr  bx-search'></i>
-                        </div>
-                    </div>
+                <div class="darkLight">
+                    <i class="bx bx-moon moon"></i>
+                    <i class='bx  bx-sun sun'></i> 
                 </div>
             </div>
         </nav>
@@ -56,10 +39,9 @@
                         <img src="logo.png" alt="logo"> 
                     </span>
 
-
                     <div class="header-text">
-                        <span class="name text"></span>
-
+                        <span class="name">LCMS</span>
+                        <span class="profession">Language Center</span>
                     </div>
                 </div>
             </header>
@@ -69,7 +51,7 @@
                     <ul class="menu-links">
                         <li class="nav-links">
                             <a href="#">
-                                <i class='bx bx-dashboard'></i> 
+                                <i class='bx  bx-dashboard'></i> 
                                 <span class="text nav-text">Dashboard</span>
                             </a>
                         </li>
@@ -78,14 +60,14 @@
 
                         <li class="nav-links">
                             <a href="#">
-                                <i class='bx bx-user'></i> 
+                                <i class='bx  bx-user'></i> 
                                 <span class="text nav-text">User Management</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
                             <a href="#">
-                                <i class='bx  bx-wallet-alt bx-flip-vertical'></i> 
+                                <i class='bx bx-wallet-alt bx-flip-vertical'></i> 
                                 <span class="text nav-text">Finance</span>
                             </a>
                         </li>
