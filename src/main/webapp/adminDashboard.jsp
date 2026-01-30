@@ -60,7 +60,7 @@
 
                 <li class="divider"></li>
                 <li>
-                  <a href="#" class="logout"
+                  <a href="logout" class="logout"
                     ><i class="bx bx-arrow-out-right-square-half"></i
                     ><span>Log out</span></a
                   >
