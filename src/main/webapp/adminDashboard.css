@@ -27,7 +27,7 @@ body{
 body.dark{
     --body-color: #020617;
     --nav-color: #0F172A;
-    --text-color: #fafafa;
+    --text-color: #ded6d6;
     --side-nav: #010718;
     --search-nav: #1E293B;
     --search-text: rgba(45, 74, 101, 0.832);
@@ -346,6 +346,7 @@ nav.active .navbar-left{
     font-size: 13px;     
     margin-top: -2px;   
     color: var(--text-color);
+    opacity: 0.7;
     white-space: nowrap;
     display: block;
     font-weight: 400;
