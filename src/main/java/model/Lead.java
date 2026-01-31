@@ -15,6 +15,7 @@ public class Lead {
     private String fullName;
     private String email;
     private String phone;
+    private int interestedCourseID;
     private Course course;
     private String status;
     private LocalDateTime createDate;
@@ -22,11 +23,12 @@ public class Lead {
     public Lead() {
     }
 
-    public Lead(int leadId, String fullName, String email, String phone, Course course, String status, LocalDateTime createDate) {
+    public Lead(int leadId, String fullName, String email, String phone, int interestedCourseID, Course course, String status, LocalDateTime createDate) {
         this.leadId = leadId;
         this.fullName = fullName;
         this.email = email;
         this.phone = phone;
+        this.interestedCourseID = interestedCourseID;
         this.course = course;
         this.status = status;
         this.createDate = createDate;
@@ -66,6 +68,14 @@ public class Lead {
 
     public String getPhone() {
         return phone;
+    }
+
+    public int getInterestedCourseID() {
+        return interestedCourseID;
+    }
+
+    public void setInterestedCourseID(int interestedCourseID) {
+        this.interestedCourseID = interestedCourseID;
     }
 
     public void setPhone(String phone) {
