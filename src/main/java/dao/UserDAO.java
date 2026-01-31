@@ -74,7 +74,8 @@ public class UserDAO extends DBContext{
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, email);
-            String hashedPassword = hashMD5(password);
+//            String hashedPassword = hashMD5(password);
+            String hashedPassword = password;
             ps.setString(2, hashedPassword);
             ResultSet rs = ps.executeQuery();
             if(rs.next()){
@@ -84,7 +85,7 @@ public class UserDAO extends DBContext{
                 String phone = rs.getString("Phone");
                 String address = rs.getString("Address");
                 Boolean gender = rs.getBoolean("Gender");
-                Date birthdate = rs.getDate("Birthdate");
+                Date birthdate = rs.getDate("Dob");
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
@@ -104,7 +105,7 @@ public class UserDAO extends DBContext{
         System.out.println(list);
         
         String email = "admin@fpt.edu.vn";
-        String password = "123456";
+        String password = "123";
         System.out.println(dao.checkLogin(email, password));
     }
 }
