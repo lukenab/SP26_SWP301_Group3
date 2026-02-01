@@ -10,15 +10,15 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Login Page</title>
-        <link href="login.css" rel="stylesheet" type="text/css"/>
-        <link href="bootstrap.min.css" rel="stylesheet" type="text/css"/>
+        <link href="css/login.css" rel="stylesheet" type="text/css"/>
+        <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     </head>
     <body>
         <div class="login-container">
             <div class="login-card">
                 <div class="login-header">
                     <div class="login-logo">
-                        <img src="login-logo.png" alt="logo" />
+                        <img src="images/login-logo.png" alt="logo" />
                     </div>
                     <h2>Welcome back</h2>
                     <p>Please sign in to continue</p>
