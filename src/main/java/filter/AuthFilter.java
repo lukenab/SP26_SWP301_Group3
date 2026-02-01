@@ -111,7 +111,7 @@ public class AuthFilter implements Filter {
         if (uri.endsWith("landingPage.jsp")
                 || uri.endsWith("login.jsp")
                 || uri.contains("/css/")
-                || uri.contains("/img/")
+                || uri.contains("/images/")
                 || uri.contains("/js/")) {
 
             chain.doFilter(request, response); 

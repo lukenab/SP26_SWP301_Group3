@@ -5,14 +5,18 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setLocale value="vi_VN"/>
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link href="https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css" rel="stylesheet"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
         <link href="css/landingPage.css" rel="stylesheet" type="text/css"/>
-        <title>JSP Page</title>
+        <title>Landing Page</title>
     </head>
     <body>
         <nav>
@@ -57,7 +61,7 @@
 
                 <div class="carousel-inner">
                     <div class="carousel-item active">
-                        <img src="images/carousel1.jpg" class="d-block w-100" alt="Slide 1">
+                        <img src="images/carousel1.png" class="d-block w-100" alt="Slide 1">
                     </div>
                     <div class="carousel-item">
                         <img src="images/carousel2.jpg" class="d-block w-100" alt="Slide 2">
@@ -135,9 +139,159 @@
                 </div>
             </div>
         </div>
-        
+
+        <div class="container-fluid mt-5 px-4 px-lg-5" id="content-2">
+            <div class="row">
+                <div class="col-md-3" id="content-2-left">
+                    <div class="course-filter">
+                        <h5>Filters</h5>
+                        <hr>
+                        <h6>Category</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="cat1">
+                            <label class="form-check-label" for="cat1">IELTS</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="cat2">
+                            <label class="form-check-label" for="cat2">TOEIC</label>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="cat2">
+                            <label class="form-check-label" for="cat2">TOEFL</label>
+                        </div>
+
+                        <h6 class="mt-3">Price</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="price" checked>
+                            <label class="form-check-label">All</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="price">
+                            <label class="form-check-label">Free</label>
+                        </div>
+
+                        <hr>
+                        <h6>Level</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="cat1">
+                            <label class="form-check-label" for="cat1">Beginner</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="cat2">
+                            <label class="form-check-label" for="cat2">Immediate</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="cat2">
+                            <label class="form-check-label" for="cat2">Advanced</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-9 explore-course">
+                    <h3 class="mb-4 text-center fw-bold">Explore Courses</h3>
+
+                    <div class="row row-cols-md-3 g-4">
+                        <c:forEach items="${courseList}" var="c">
+                            <div class="col">
+                                <div class="card course-card">
+                                    <img src="images/${c.images}" class="card-img-top" alt="${c.courseName}">
+
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title">${c.courseName}</h5>
+                                        <p class="card-text text-muted small course-desc">${c.description}</p>
+
+                                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                                            <span class="price-tag">
+                                                <fmt:formatNumber type="currency" value="${c.tuitionFee}" />                                           
+                                            </span>
+                                            <div class="courseDetail-btn">
+                                                <a href="courseDetail?id=${c.courseId}">View Details</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer-sec">
+            <div class="container">
+                <div class="row footer-content">
+                    <div class="col-md footer-1">
+                        <ul>
+                            <li class="footer-header"><strong>Quick links</strong></li>
+
+                            <li>
+                                <a href="#about" class="footer-icon">
+                                    <i class="fa-solid fa-angle-right"></i>
+                                    About
+                                </a>
+                            </li>
+
+
+                            <li>
+                                <a href="#projects" class="footer-icon">
+                                    <i class="fa-solid fa-angle-right"></i>
+                                    Projects
+                                </a>
+                            </li>
+
+
+                            <li>
+                                <a href="#home" class="footer-icon">
+                                    <i class="fa-solid fa-angle-right"></i>
+                                    Home
+                                </a>
+                            </li>
+
+
+                        </ul>
+                    </div>
+
+                    <div class="col-md footer-2">
+                        <ul>
+                            <li class="footer-header"><strong>Contact</strong></li>
+                            <li>
+                                <i class="fa-regular fa-envelope"></i>
+                               contact@lmcs.edu.vn
+                            </li>
+                            <li>
+                                <i class="fa-solid fa-phone"></i>
+                                0812154005
+                            </li>
+                            <li>
+                                <i class="fa-regular fa-map"></i>
+                                Can Tho, Viet Nam
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="col-md footer-3">
+                        <ul>
+                            <li class="footer-header"><strong>Social Media</strong></li>
+                            <li>
+                                <a class="footer-icon" href="https://www.facebook.com/lukenab116" target="_blank"><i class="fa-brands fa-facebook social-icon"></i></a>
+                                <a class="footer-icon" href="https://www.instagram.com/luke.nab/?fbclid=IwY2xjawO196FleHRuA2FlbQIxMABicmlkETFWQ3hQNTg3cjRqNktBbURLc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHqhy8qa5ggH1oJDBH3FtcxXiMa22tNvSY6S6fKQ4iVwu5mRRATFqq27tPNFU_aem_91gByxpp21J25guID7ySoQ#" target="_blank"><i class="fa-brands fa-instagram social-icon"></i></a>
+                                <i class="fa-brands fa-twitter social-icon"></i>
+                            </li>
+                            <li></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="copyright">
+                    <p class="copyright">
+                        Copyright &copy;2026 LMCS Language Center. All rights reserved 
+                    </p>
+                </div>
+            </div>   
+        </footer>
+
         <script src="bootstrap.bundle.min.js">
-            
+
         </script>
     </body>
 </html>
