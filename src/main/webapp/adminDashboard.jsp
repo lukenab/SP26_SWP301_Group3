@@ -10,7 +10,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
-        <link href="adminDashboard.css" rel="stylesheet" type="text/css"/>
+        <link href="css/adminDashboard.css" rel="stylesheet" type="text/css"/>
         <title>Admin Page</title>
     </head>
     <body>
@@ -76,7 +76,7 @@
       <header>
         <div class="sidebar-header">
           <div class="logo-header">
-            <img src="logo.png" alt="logo" />
+            <img src="images/logo.png" alt="logo" />
           </div>
 
           <div class="logo-text">

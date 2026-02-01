@@ -100,34 +100,32 @@ public class AuthFilter implements Filter {
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet error occurs
      */
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
 
+        String uri = req.getRequestURI();
+        if (uri.endsWith("landingPage.jsp")
+                || uri.endsWith("login.jsp")
+                || uri.contains("/css/")
+                || uri.contains("/img/")
+                || uri.contains("/js/")) {
+
+            chain.doFilter(request, response); 
+            return;
+        }
+
         HttpSession session = req.getSession();
         User user = (User) session.getAttribute("user");
+
         if (user == null) {
-            res.sendRedirect("login");
+            res.sendRedirect("login.jsp");
         } else {
             chain.doFilter(request, response);
         }
-
-//        Cookie[] cookies = req.getCookies();
-//        String username = null;
-//        for (Cookie c : cookies) {
-//            if (c.getName().equals("username")) {
-//                username = c.getValue();
-//                break;
-//            }
-//        }
-//
-//        if (username == null) {
-//            res.sendRedirect("login");
-//        } else {
-//            chain.doFilter(request, response);
-//        }
     }
 
     /**
