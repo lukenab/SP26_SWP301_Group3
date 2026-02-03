@@ -1,0 +1,58 @@
+/* Tùy chỉnh cho ô thời khóa biểu */
+.timetable-cell {
+    height: 140px;
+    vertical-align: top;
+    background-color: #ffffff;
+    padding: 6px !important;
+    border: 1px solid #e3e6f0 !important;
+}
+
+/* Thẻ hiển thị môn học */
+.schedule-card {
+    background-color: #8e9aad;
+    color: white;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.75rem;
+    border-left: 5px solid #5a677d;
+    transition: transform 0.2s;
+    margin-bottom: 5px; /* Thêm khoảng cách nếu 1 ô có nhiều môn */
+}
+
+.schedule-card:hover {
+    transform: scale(1.02);
+    cursor: pointer;
+}
+
+.class-name {
+    font-weight: bold;
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+}
+
+.info-line {
+    margin-bottom: 2px;
+    opacity: 0.9;
+}
+
+/* Nút điểm danh */
+.btn-attendance {
+    background-color: #4e73df;
+    border: none;
+    font-weight: bold;
+    font-size: 0.7rem;
+}
+
+.btn-attendance:hover {
+    background-color: #2e59d9;
+}
+
+/* Tùy chỉnh header bảng */
+.table thead th {
+    border-top: none;
+    font-size: 0.85rem;
+    padding: 15px;
+    text-transform: uppercase;
+    background-color: #f8f9fc;
+    color: #5a5c69;
+}
