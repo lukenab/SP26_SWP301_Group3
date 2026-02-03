@@ -74,8 +74,8 @@ public class UserDAO extends DBContext{
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, email);
-//            String hashedPassword = hashMD5(password);
-            String hashedPassword = password;
+            String hashedPassword = hashMD5(password);
+//            String hashedPassword = password;
             ps.setString(2, hashedPassword);
             ResultSet rs = ps.executeQuery();
             if(rs.next()){
