@@ -25,7 +25,7 @@ import model.User;
  *
  * @author Admin
  */
-@WebFilter(filterName = "AuthFilter", urlPatterns = {"*.jsp"})
+@WebFilter(filterName = "AuthFilter", urlPatterns = {"/*"})
 public class AuthFilter implements Filter {
 
     private static final boolean debug = true;
@@ -108,11 +108,13 @@ public class AuthFilter implements Filter {
         HttpServletResponse res = (HttpServletResponse) response;
 
         String uri = req.getRequestURI();
-        if (uri.endsWith("landingPage.jsp")
+        if (uri.endsWith("landingPage")
+                || uri.endsWith("/")
                 || uri.endsWith("login.jsp")
                 || uri.contains("/css/")
                 || uri.contains("/images/")
-                || uri.contains("/js/")) {
+                || uri.contains("/js/")
+                || uri.contains("login")) {
 
             chain.doFilter(request, response); 
             return;

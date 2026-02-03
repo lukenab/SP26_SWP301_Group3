@@ -55,7 +55,12 @@ public class LoginController extends HttpServlet {
         if (user != null) {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
-            response.sendRedirect("adminDashboard.jsp");
+            if(user.getUserId() == 1){
+             response.sendRedirect("dashboard.jsp");
+            }
+            else if(user.getRole().getRoleId() == 4){    
+                response.sendRedirect("dashboard.jsp");
+            }
         } else {
             response.sendRedirect("login");
         }
