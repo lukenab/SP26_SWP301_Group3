@@ -43,7 +43,36 @@ public class CourseController extends HttpServlet {
             case "all":
                 List<Course> list = courseDAO.getAllCourse();
                 request.setAttribute("courseList", list);
-                request.getRequestDispatcher("landingPage.jsp").forward(request, response);
+                request.getRequestDispatcher("course_list.jsp").forward(request, response);
+                break;
+            case "active":
+                List<Course> activeList = courseDAO.getActiveCourses();
+                request.setAttribute("courseList", activeList);
+                request.getRequestDispatcher("course_list.jsp").forward(request, response);
+                break;
+            case "details":
+                String courseIdParam = request.getParameter("courseId");
+                if(courseIdParam != null && !courseIdParam.isEmpty()){
+                    try {
+                        int courseId = Integer.parseInt(courseIdParam);
+                        Course course = courseDAO.getCourseById(courseId);
+                        if(course != null){
+                            request.setAttribute("course", course);
+                            request.getRequestDispatcher("course_details.jsp").forward(request, response);
+                        } else {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        }
+                    } catch(NumberFormatException e) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                } else {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                }
+                break;
+            default:
+                List<Course> defaultList = courseDAO.getAllCourse();
+                request.setAttribute("courseList", defaultList);
+                request.getRequestDispatcher("course_list.jsp").forward(request, response);
                 break;
         }
     }
