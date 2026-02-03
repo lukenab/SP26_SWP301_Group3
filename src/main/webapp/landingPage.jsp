@@ -64,10 +64,10 @@
                         <img src="images/carousel1.png" class="d-block w-100" alt="Slide 1">
                     </div>
                     <div class="carousel-item">
-                        <img src="images/carousel2.jpg" class="d-block w-100" alt="Slide 2">
+                        <img src="images/carousel2.png" class="d-block w-100" alt="Slide 2">
                     </div>
                     <div class="carousel-item">
-                        <img src="images/carousel3.jpg" class="d-block w-100" alt="Slide 3">
+                        <img src="images/carousel3.png" class="d-block w-100" alt="Slide 3">
                     </div>
                 </div>
 
