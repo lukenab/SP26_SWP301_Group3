@@ -10,8 +10,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import model.Attendance;
 import model.Classes;
+import model.Enrollment;
 import model.Room;
+import model.Student;
+import model.User;
 import utils.DBContext;
 
 /**
@@ -59,14 +63,14 @@ public class TeacherDAO extends DBContext {
         return list;
     }
 
+   
     public static void main(String[] args) {
 
         TeacherDAO dao = new TeacherDAO();
-        int testTeacherID = 2; 
+        int testTeacherID = 2;
 
         System.out.println("--- TESTING TEACHING SCHEDULE FOR TEACHER ID: " + testTeacherID + " ---");
 
-        
         List<Schedule> list = dao.getTeachingSchedule(testTeacherID);
 
         if (list == null) {
@@ -78,7 +82,7 @@ public class TeacherDAO extends DBContext {
             System.out.println("SUCCESS: Found " + list.size() + " teaching session(s).");
             System.out.println("--------------------------------------------------");
             for (Schedule s : list) {
-         
+
                 System.out.println("Schedule ID: " + s.getScheduleId());
                 System.out.println("Date: " + s.getLearningDate());
                 System.out.println("Slot: " + s.getSlot());
