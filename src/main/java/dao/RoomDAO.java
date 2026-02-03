@@ -6,6 +6,7 @@ package dao;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 import model.Room;
 import utils.DBContext;
@@ -17,10 +18,10 @@ import utils.DBContext;
 public class RoomDAO extends DBContext {
 
     //READ
-    public List getAllRoom() {
+    public List<Room> getAllRoom() {
         try {
-            List<Room> allRoom = null;
-            String query = "SELECT * FROM Room";
+            List<Room> allRoom = new ArrayList<>();
+            String query = "select * from Room";
             PreparedStatement p = conn.prepareStatement(query);
             ResultSet rs = p.executeQuery();
             while (rs.next()) {
@@ -93,7 +94,7 @@ public class RoomDAO extends DBContext {
     //Update
     public int updateRoom(int id, String name, int capacity, String type) {
         try {
-            String query = "set RoomName = "
+            String query = "Update Room set RoomName = "
                     + "?, Capacity = ?, "
                     + "[Type] = ?\n"
                     + "where RoomID = ?";
@@ -108,5 +109,23 @@ public class RoomDAO extends DBContext {
 
         }
         return -1;
+    }
+    public static void main(String[] args) {
+        RoomDAO dao = new RoomDAO();
+//        List<Room> allRoom = dao.getAllRoom();
+////        for (Room room : allRoom) {
+////            System.out.println(room);
+////        }
+//        if(allRoom.isEmpty()){
+//            System.out.println("Empty");
+//        } else {
+//            System.out.println("OK");
+//        }
+        int changes = dao.updateRoom(25, "Hehe", 1, "hehhehe");
+        if(changes!=-1){
+            System.out.println("OK");
+        } else {
+            System.out.println("Bugggg");
+        }
     }
 }

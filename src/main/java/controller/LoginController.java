@@ -56,10 +56,10 @@ public class LoginController extends HttpServlet {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
             if(user.getUserId() == 1){
-             response.sendRedirect("dashboard.jsp");
+             response.sendRedirect("room");
             }
             else if(user.getRole().getRoleId() == 4){    
-                response.sendRedirect("dashboard.jsp");
+                response.sendRedirect("room");
             }
         } else {
             response.sendRedirect("login");
