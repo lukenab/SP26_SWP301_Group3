@@ -398,6 +398,16 @@ nav.active .navbar-left{
     color: rgb(54, 121, 193);
 }
 
+.sidebar li a.active {
+    background-color: #2563eb;   
+    color: #fff;
+}
+
+.sidebar li a.active i,
+.sidebar li a.active span {
+    color: #fff;
+}
+
 .home-section {
     position: relative;
     background: var(--body-color);
@@ -421,21 +431,12 @@ nav.active .navbar-left{
 .sidebar ul, .menu-links {
     padding-left: 0 !important;
     margin-bottom: 0 !important;
-    list-style: none !important;
 }
-
-.search-field input {
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    height: 100% !important;
-}
-
 nav {
     z-index: 1050 !important;
 }
 .sidebar {
     z-index: 1060 !important;
 }
+
 

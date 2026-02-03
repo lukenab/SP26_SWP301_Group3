@@ -19,14 +19,14 @@ public class User {
     private String address;
     private boolean gender;
     private Date dob;
-    private String avartar;
+    private String avatar;
     private boolean status;
     private Role role;
 
     public User() {
     }
 
-    public User(int userId, String fullName, String email, String password, String phone, String address, boolean gender, Date dob, String avartar, boolean status, Role role) {
+    public User(int userId, String fullName, String email, String password, String phone, String address, boolean gender, Date dob, String avatar, boolean status, Role role) {
         this.userId = userId;
         this.fullName = fullName;
         this.email = email;
@@ -35,16 +35,8 @@ public class User {
         this.address = address;
         this.gender = gender;
         this.dob = dob;
-        this.avartar = avartar;
+        this.avatar = avatar;
         this.status = status;
-        this.role = role;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
         this.role = role;
     }
 
@@ -112,12 +104,12 @@ public class User {
         this.dob = dob;
     }
 
-    public String getAvartar() {
-        return avartar;
+    public String getAvatar() {
+        return avatar;
     }
 
-    public void setAvartar(String avartar) {
-        this.avartar = avartar;
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public boolean isStatus() {
@@ -128,9 +120,19 @@ public class User {
         this.status = status;
     }
 
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
     @Override
     public String toString() {
-        return "User{" + "userId=" + userId + ", fullName=" + fullName + ", email=" + email + ", password=" + password + ", phone=" + phone + ", address=" + address + ", gender=" + gender + ", dob=" + dob + ", avartar=" + avartar + ", status=" + status + ", role=" + role + '}';
+        return "User{" + "userId=" + userId + ", fullName=" + fullName + ", email=" + email + ", password=" + password + ", phone=" + phone + ", address=" + address + ", gender=" + gender + ", dob=" + dob + ", avatar=" + avatar + ", status=" + status + ", role=" + role + '}';
     }
+
+   
     
 }
