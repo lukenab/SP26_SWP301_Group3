@@ -15,6 +15,7 @@
         <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
         <link href="css/dashboard.css" rel="stylesheet" type="text/css"/>
         <link href="css/teacherSchedule.css" rel="stylesheet" type="text/css"/>
+        <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
         <title>Admin Page</title>
     </head>
     <body>
@@ -94,14 +95,14 @@
                 <c:if test="${sessionScope.user.userId == 1}">
                     <ul class="menu-links">
                         <li class="nav-links">
-                            <a href="#">
+                            <a href="dashboard">
                                 <i class="bxr bx-dashboard"></i>
                                 <span class="text nav-text">Dashboard</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
+                            <a href="user">
                                 <i class="bxr bx-user"></i>
                                 <span class="text nav-text">User Management</span>
                             </a>
@@ -133,7 +134,7 @@
                 <c:if test="${sessionScope.user.role.roleId == 4}">
                     <ul class="menu-links">
                         <li class="nav-links">
-                            <a href="#">
+                            <a href="dashboard">
                                 <i class="bxr bx-dashboard"></i>
                                 <span class="text nav-text">Dashboard</span>
                             </a>
@@ -172,7 +173,7 @@
         </div>
     </div>
 
-    <main class="home-section">
+    <main class="home-section" style="height: 88vh">
         <c:if test="${not empty home_view}">
             <c:import url="${home_view}" />
         </c:if>
