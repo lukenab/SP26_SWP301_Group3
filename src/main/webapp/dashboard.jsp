@@ -14,7 +14,7 @@
         <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
         <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
         <link href="css/dashboard.css" rel="stylesheet" type="text/css"/>
-
+        <link href="css/teacherSchedule.css" rel="stylesheet" type="text/css"/>
         <title>Admin Page</title>
     </head>
     <body>

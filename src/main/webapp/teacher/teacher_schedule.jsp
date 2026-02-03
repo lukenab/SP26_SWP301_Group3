@@ -2,6 +2,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
+
 <div class="container-fluid px-4" style="margin-top: 10px;"> 
 
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -22,7 +23,7 @@
     <div class="card shadow-sm border-0 mb-5"> <div class="card-body p-0">
             <div class="table-responsive"> 
                 <table class="table table-bordered mb-0">
-                    <thead class="text-white text-center" style="background-color: #f8f9fc; color: #5a5c69 !important;">
+                    <thead class="text-center custom-thead">
                         <tr>
                             <th style="width: 8%;">Slot</th>
                             <c:forEach items="${weekdays}" var="day">
@@ -57,7 +58,7 @@
                                                     <div class="action-zone mt-2 border-top pt-2">
                                                         <c:choose>
                                                             <c:when test="${s.attendanceStatus}">
-                                                                <span class="badge bg-success w-100 py-1"><i class='bx bx-check'></i> Attended</span>
+                                                                <span class="badge bg-success w-100 py-2"><i class='bx bx-check'></i> Attended</span>
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <a href="attendance?action=take&scheduleId=${s.scheduleId}" 

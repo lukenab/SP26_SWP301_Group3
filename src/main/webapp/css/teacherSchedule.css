@@ -1,41 +1,92 @@
-/* Tùy chỉnh cho ô thời khóa biểu */
 .timetable-cell {
     height: 140px;
     vertical-align: top;
-    background-color: #ffffff;
-    padding: 6px !important;
+    background-color: var(--nav-color); 
+    padding: 8px !important;
+    border: 1px solid #e3e6f0 !important; 
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.custom-thead th {
+    background-color: #f8f9fc; 
+    color: #5a5c69;           
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 15px;
+    border: 1px solid #e3e6f0;
+    vertical-align: middle;
+}
+
+.table tbody td:first-child {
+    background-color: #f8f9fc; 
+    color: #5a5c69;
+    vertical-align: middle;
     border: 1px solid #e3e6f0 !important;
 }
 
-/* Thẻ hiển thị môn học */
 .schedule-card {
-    background-color: #8e9aad;
-    color: white;
-    border-radius: 8px;
+    background-color: #8e9aad; 
+    color: #ffffff;
+    border-radius: 6px;
     padding: 10px;
     font-size: 0.75rem;
-    border-left: 5px solid #5a677d;
-    transition: transform 0.2s;
-    margin-bottom: 5px; /* Thêm khoảng cách nếu 1 ô có nhiều môn */
+    border-left: 4px solid #5a677d; 
+    margin-bottom: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
 }
 
 .schedule-card:hover {
-    transform: scale(1.02);
-    cursor: pointer;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    filter: brightness(1.05);
 }
 
 .class-name {
-    font-weight: bold;
-    font-size: 0.85rem;
-    margin-bottom: 5px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: block;
 }
 
 .info-line {
-    margin-bottom: 2px;
-    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 3px;
+    opacity: 0.95;
+    font-size: 0.75rem;
 }
 
-/* Nút điểm danh */
+.info-line i {
+    font-size: 0.9rem; 
+}
+
+.action-zone {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.schedule-card .badge {
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.schedule-card .btn-sm {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    width: 100%;
+    border-radius: 4px;
+}
+
+
 .btn-attendance {
     background-color: #4e73df;
     border: none;
@@ -47,12 +98,53 @@
     background-color: #2e59d9;
 }
 
-/* Tùy chỉnh header bảng */
-.table thead th {
-    border-top: none;
-    font-size: 0.85rem;
-    padding: 15px;
-    text-transform: uppercase;
-    background-color: #f8f9fc;
-    color: #5a5c69;
+body.dark .bg-white {
+    background-color: var(--nav-color) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--divider) !important;
+}
+
+body.dark .custom-thead th,
+body.dark .table tbody td:first-child {
+    background-color: var(--search-nav) !important; 
+    color: var(--text-color) !important;
+    border-color: var(--divider) !important;
+}
+
+body.dark .timetable-cell {
+    background-color: var(--nav-color) !important;
+    border-color: var(--divider) !important;
+}
+
+body.dark .schedule-card {
+    background-color: #3b4d61;
+    border-left-color: #648dae;
+    color: #e2e8f0; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+body.dark .schedule-card:hover {
+    background-color: #435b75;
+}
+
+body.dark input[type="date"] {
+    background-color: var(--search-nav);
+    color: var(--text-color);
+    border: 1px solid var(--divider);
+}
+
+body.dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+body.dark label {
+    color: var(--text-color);
+}
+
+body.dark .table-bordered {
+    border-color: var(--divider) !important;
+}
+
+body.dark .text-primary {
+    color: #60a5fa !important; 
 }
