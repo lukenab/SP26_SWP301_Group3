@@ -10,7 +10,7 @@ import java.util.Date;
  *
  * @author phuct
  */
-class Schedule {
+public class Schedule {
     private int scheduleId;
     private Classes classes;
     private Room room;

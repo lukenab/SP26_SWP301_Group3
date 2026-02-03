@@ -39,8 +39,7 @@ public class UserDAO extends DBContext{
 
         return "";
     }
-
-    
+ 
     public List<User> getAllUser(){
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM [user]";
@@ -55,7 +54,7 @@ public class UserDAO extends DBContext{
                 String phone = rs.getString("Phone");
                 String address = rs.getString("Address");
                 Boolean gender = rs.getBoolean("Gender");
-                Date birthdate = rs.getDate("Birthdate");
+                Date birthdate = rs.getDate("Dob");
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
@@ -67,6 +66,33 @@ public class UserDAO extends DBContext{
             System.out.println("Fail to get all user: " +e.getMessage());
         }
         return list;  
+    }
+    
+        public User getUserById(int id){
+        String sql = "SELECT * FROM [user] WHERE UserID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                int userId = rs.getInt("UserID");
+                String fullname = rs.getString("FullName");
+                String email = rs.getString("Email");
+                String password = rs.getString("Password");
+                String phone = rs.getString("Phone");
+                String address = rs.getString("Address");
+                Boolean gender = rs.getBoolean("Gender");
+                Date birthdate = rs.getDate("Dob");
+                String avatar = rs.getString("Avatar");
+                Boolean status = rs.getBoolean("Status");
+                Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
+                
+                return new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get user by ID: " +e.getMessage());
+        }
+        return null;  
     }
     
     public User checkLogin(String email, String password){
@@ -90,7 +116,7 @@ public class UserDAO extends DBContext{
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
                 
-                User user = new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role);
+                User user = new User(userId, fullname, email, hashedPassword, phone, address, gender, birthdate, avatar, status, role);
                 return user;
             }
         } catch (Exception e) {

@@ -10,32 +10,26 @@ import java.math.BigDecimal;
  *
  * @author phuct
  */
-class Course {
+public class Course {
     private int courseId;
     private String courseName;
     private String description;
     private int totalSlots;
     private BigDecimal tuitionFee;
     private boolean status;
+    private String images;
 
     public Course() {
     }
 
-    public Course(int courseId, String courseName, String description, int totalSlots, BigDecimal tuitionFee, boolean status) {
+    public Course(int courseId, String courseName, String description, int totalSlots, BigDecimal tuitionFee, boolean status, String images) {
         this.courseId = courseId;
         this.courseName = courseName;
         this.description = description;
         this.totalSlots = totalSlots;
         this.tuitionFee = tuitionFee;
         this.status = status;
-    }
-
-    public boolean isStatus() {
-        return status;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
+        this.images = images;
     }
 
     public int getCourseId() {
@@ -78,9 +72,24 @@ class Course {
         this.tuitionFee = tuitionFee;
     }
 
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+    public String getImages() {
+        return images;
+    }
+
+    public void setImages(String images) {
+        this.images = images;
+    }
+
     @Override
     public String toString() {
-        return "Course{" + "courseId=" + courseId + ", courseName=" + courseName + ", description=" + description + ", totalSlots=" + totalSlots + ", tuitionFee=" + tuitionFee + ", status=" + status + '}';
-    }
-    
+        return "Course{" + "courseId=" + courseId + ", courseName=" + courseName + ", description=" + description + ", totalSlots=" + totalSlots + ", tuitionFee=" + tuitionFee + ", status=" + status + ", images=" + images + '}';
+    }    
 }

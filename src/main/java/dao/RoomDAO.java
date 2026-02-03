@@ -16,6 +16,7 @@ import utils.DBContext;
  */
 public class RoomDAO extends DBContext {
 
+    //READ
     public List getAllRoom() {
         try {
             List<Room> allRoom = null;
@@ -35,7 +36,9 @@ public class RoomDAO extends DBContext {
         }
         return null;
     }
-    public Room getRoomByID(int id){
+
+    //READ
+    public Room getRoomByID(int id) {
         try {
             String query = "select * from Room where RoomID = ?";
             PreparedStatement p = conn.prepareStatement(query);
@@ -53,22 +56,57 @@ public class RoomDAO extends DBContext {
         }
         return null;
     }
-    public int deleteRoombyID(int id){
+
+    //DELETE
+    public int deleteRoombyID(int id) {
         try {
-            String query = "select * from Room where RoomID = ?";
+            String query = "Delete from Room where \n"
+                    + "RoomID = ?";
             PreparedStatement p = conn.prepareStatement(query);
             p.setInt(1, id);
-            ResultSet rs = p.executeQuery();
-            while (rs.next()) {
-                int roomId = rs.getInt("RoomID");
-                String roomName = rs.getString("RoomName");
-                int capacity = rs.getInt("Capacity");
-                String type = rs.getString("Type");
-                return new Room(roomId, roomName, capacity, type);
-            }
+            int changes = p.executeUpdate();
+            return changes;
         } catch (Exception e) {
 
         }
-        return null;
+        return -1;
+    }
+
+    //Create
+    public int createRoom(String name, int capacity, String type) {
+        try {
+            String query = "insert into Room \n"
+                    + "(RoomName, Capacity, [Type]) Values\n"
+                    + "(?, ?, ?)";
+            PreparedStatement p = conn.prepareStatement(query);
+            p.setString(1, name);
+            p.setInt(2, capacity);
+            p.setString(3, type);
+            int changes = p.executeUpdate();
+            return changes;
+        } catch (Exception e) {
+
+        }
+        return -1;
+    }
+
+    //Update
+    public int updateRoom(int id, String name, int capacity, String type) {
+        try {
+            String query = "set RoomName = "
+                    + "?, Capacity = ?, "
+                    + "[Type] = ?\n"
+                    + "where RoomID = ?";
+            PreparedStatement p = conn.prepareStatement(query);
+            p.setString(1, name);
+            p.setInt(2, capacity);
+            p.setString(3, type);
+            p.setInt(4, id);
+            int changes = p.executeUpdate();
+            return changes;
+        } catch (Exception e) {
+
+        }
+        return -1;
     }
 }

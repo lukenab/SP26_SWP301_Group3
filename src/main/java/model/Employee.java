@@ -10,7 +10,7 @@ import java.util.Date;
  *
  * @author phuct
  */
-class Employee {
+public class Employee {
     private int employeeId;
     private Date hireDate;
     private String education;

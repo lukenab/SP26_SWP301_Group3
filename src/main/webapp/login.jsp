@@ -10,15 +10,15 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Login Page</title>
-        <link href="login.css" rel="stylesheet" type="text/css"/>
-
+        <link href="css/login.css" rel="stylesheet" type="text/css"/>
+        <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     </head>
     <body>
         <div class="login-container">
             <div class="login-card">
                 <div class="login-header">
                     <div class="login-logo">
-                        <img src="university.png" alt="logo" />
+                        <img src="images/login-logo.png" alt="logo" />
                     </div>
                     <h2>Welcome back</h2>
                     <p>Please sign in to continue</p>
@@ -27,7 +27,7 @@
                 <form class="login-form" action="login" method="post">
                     <div class="form-group">
                         <div class="input-wrapper">
-                            <input type="email" id="email" name="email" required />
+                            <input type="email" id="email" name="email" required placeholder=" " />
                             <label for="email">Email</label>
                             <span class="input-border"></span>
                         </div>
@@ -36,7 +36,7 @@
 
                     <div class="form-group">
                         <div class="input-wrapper password-wrapper">
-                            <input type="password" id="password" name="password" required />
+                            <input type="password" id="password" name="password" required placeholder=" "/>
                             <label for="password">Password</label>
                             <span class="input-border"></span>
                             <button type="button" class="password-toggle" id="passwordToggle">
