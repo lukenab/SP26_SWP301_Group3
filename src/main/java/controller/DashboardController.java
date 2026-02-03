@@ -4,22 +4,20 @@
  */
 package controller;
 
-import dao.UserDAO;
 import java.io.IOException;
+import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List;
-import model.User;
 
 /**
  *
  * @author Legion
  */
-@WebServlet(name = "UserController", urlPatterns = {"/user"})
-public class UserController extends HttpServlet {
+@WebServlet(name = "DashboardController", urlPatterns = {"/dashboard"})
+public class DashboardController extends HttpServlet {
 
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -32,19 +30,7 @@ public class UserController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        UserDAO userDAO = new UserDAO();
-        String action = request.getParameter("action");
-        if(action == null){
-            action = "all";
-        }
-        
-        switch(action){
-            case "all": 
-                List<User> list = userDAO.getAllUser();
-                request.setAttribute("userList", list);
-                request.setAttribute("home_view", "/admin/manageUser.jsp");
-                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
-        }
+        request.getRequestDispatcher("dashboard.jsp").forward(request, response);
     }
 
     /**
@@ -58,7 +44,6 @@ public class UserController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
     }
 
     /**
