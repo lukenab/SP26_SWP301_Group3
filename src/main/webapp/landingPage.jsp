@@ -44,7 +44,7 @@
                         </div>
 
                         <div class="contact-btn">
-                            <a type="button">Contact</a>
+                            <a href="#contact" type="button">Contact</a>
                         </div>
                     </div>
                 </div>
@@ -80,7 +80,7 @@
             </div>
         </div>
 
-        <div class="consultation-content container">
+        <div class="consultation-content container" id="contact">
             <div class="row align-items-center">
                 <div class="col-6 text-content">
                     <h1>Vietnam's Leading <br> English Training <br> System</h1>

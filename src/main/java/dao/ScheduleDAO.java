@@ -6,8 +6,8 @@ package dao;
 
 /**
  *
- * @author phuct
+ * @author Legion
  */
-public class AcademicDAO {
+public class ScheduleDAO {
     
 }
