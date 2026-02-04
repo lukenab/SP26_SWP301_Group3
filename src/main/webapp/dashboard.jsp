@@ -67,8 +67,8 @@
                                 <li>
                                     <a href="logout" class="logout">
                                         <i class="bx bx-arrow-out-right-square-half"></i>
-                                       <span>Log out</span></a>
-                                    
+                                        <span>Log out</span></a>
+
                                 </li>
                             </ul>
                         </div>
@@ -169,7 +169,7 @@
                         </li>
                     </ul>
                 </c:if>
-                
+
                 <c:if test="${sessionScope.user.role.roleId == 2}">
                     <ul class="menu-links">
                         <li class="nav-links">
@@ -196,14 +196,22 @@
                         <li class="nav-links">
                             <a href="#">
                                 <i class="bxr bx-group"></i>
-                                <span class="text nav-text">Students</span>
+                                <span class="text nav-text">Certificate</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
                             <a href="#">
                                 <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Setting</span>
+                                <span class="text nav-text">Review</span>
+
+                            </a>
+                        </li>
+                        <li class="nav-links">
+                            <a href="#">
+                                <i class="bxr bx-seal-check"></i>
+                                <span class="text nav-text">Feedback</span>
+
                             </a>
                         </li>
                     </ul>
