@@ -101,6 +101,7 @@ public class UserDAO extends DBContext{
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, email);
             String hashedPassword = hashMD5(password);
+//            String hashedPassword = password;
             ps.setString(2, hashedPassword);
             ResultSet rs = ps.executeQuery();
             if(rs.next()){
@@ -129,7 +130,8 @@ public class UserDAO extends DBContext{
         List<User> list = dao.getAllUser();
         System.out.println(list);
         
-        int id = 1;
-        System.out.println(dao.getUserById(id));
+        String email = "admin@fpt.edu.vn";
+        String password = "123";
+        System.out.println(dao.checkLogin(email, password));
     }
 }
