@@ -20,35 +20,85 @@ public class CourseDAO extends DBContext {
 
     public List<Course> getAllCourse() {
         List<Course> list = new ArrayList<>();
-        try {
-            String sql = "SELECT * FROM Course";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-            while(rs.next()){
-                int courseId = rs.getInt("CourseID");
-                String courseName = rs.getString("CourseName");
-                String description = rs.getString("Description");
-                int totalSlots = rs.getInt("TotalSlots");
-                BigDecimal tuitionFee = rs.getBigDecimal("TuitionFee");
-                Boolean status = rs.getBoolean("Status");
-                String images = rs.getString("image");
-                
-                Course course = new Course(courseId, courseName, description, totalSlots, tuitionFee, status, images);
+
+        String sql = "SELECT * FROM Course";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Course course = new Course(
+                        rs.getInt("CourseID"),
+                        rs.getString("CourseName"),
+                        rs.getString("Description"),
+                        rs.getInt("TotalSlots"),
+                        rs.getBigDecimal("TuitionFee"),
+                        rs.getBoolean("Status"),
+                        rs.getString("Image")
+                );
+
                 list.add(course);
             }
+
+        } catch (Exception e) {
+            System.out.println("Fail to get all course: " + e.getMessage());
         }
-            catch (Exception e) {
-                  System.out.println("Fail to get all course: " +e.getMessage());  
-        }
+
         return list;
     }
     
-    public static void main(String[] args) {
-        CourseDAO dao = new CourseDAO();
-        List<Course> list = dao.getAllCourse();
-        for (Course course : list) {
-            System.out.println(course);
+    public List<Course> getActiveCourses() {
+        List<Course> list = new ArrayList<>();
+
+        String sql = "SELECT * FROM Course WHERE Status = 1";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Course course = new Course(
+                        rs.getInt("CourseID"),
+                        rs.getString("CourseName"),
+                        rs.getString("Description"),
+                        rs.getInt("TotalSlots"),
+                        rs.getBigDecimal("TuitionFee"),
+                        rs.getBoolean("Status"),
+                        rs.getString("Image")
+                );
+
+                list.add(course);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail to get active courses: " + e.getMessage());
         }
+
+        return list;
+    }
+    
+    public Course getCourseById(int id) {
+        Course course = null;
+
+        String sql = "SELECT * FROM Course WHERE CourseID = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    course = new Course(
+                            rs.getInt("CourseID"),
+                            rs.getString("CourseName"),
+                            rs.getString("Description"),
+                            rs.getInt("TotalSlots"),
+                            rs.getBigDecimal("TuitionFee"),
+                            rs.getBoolean("Status"),
+                            rs.getString("Image")
+                    );
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get course by ID: " + e.getMessage());
+        }
+
+        return course;
     }
 }
-
