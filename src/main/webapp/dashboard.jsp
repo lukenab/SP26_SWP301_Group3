@@ -169,6 +169,45 @@
                         </li>
                     </ul>
                 </c:if>
+                
+                <c:if test="${sessionScope.user.role.roleId == 2}">
+                    <ul class="menu-links">
+                        <li class="nav-links">
+                            <a href="dashboard">
+                                <i class="bxr bx-dashboard"></i>
+                                <span class="text nav-text">Dashboard</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="schedule">
+                                <i class="bxr bx-book"></i>
+                                <span class="text nav-text">Course</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="#">
+                                <i class="bxr bx-door"></i>
+                                <span class="text nav-text">Classes</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="#">
+                                <i class="bxr bx-group"></i>
+                                <span class="text nav-text">Students</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="#">
+                                <i class="bxr bx-cog"></i>
+                                <span class="text nav-text">Setting</span>
+                            </a>
+                        </li>
+                    </ul>
+                </c:if>
             </div>
         </div>
     </div>

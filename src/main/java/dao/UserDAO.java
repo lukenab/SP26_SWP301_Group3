@@ -155,6 +155,7 @@ public class UserDAO extends DBContext {
         UserDAO dao = new UserDAO();
         List<User> list = dao.getAllUser();
         System.out.println(list);
+        System.out.println(dao.hashMD5("123456"));
 //
 //        String name = "Nguyen An Binh";
 //        String email = "binhce200008@gmail.com";
