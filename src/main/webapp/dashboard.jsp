@@ -208,6 +208,52 @@
                         </li>
                     </ul>
                 </c:if>
+                
+                  <c:if test="${sessionScope.user.role.roleId == 3}">
+                    <ul class="menu-links">
+                        <li class="nav-links">
+                            <a href="dashboard">
+                                <i class="bxr bx-dashboard"></i>
+                                <span class="text nav-text">Dashboard</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="course?action=all">
+                                <i class="bxr bx-book"></i>
+                                <span class="text nav-text">Manage Lead</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="#">
+                                <i class="bxr bx-door"></i>
+                                <span class="text nav-text">Registration</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="#">
+                                <i class="bxr bx-group"></i>
+                                <span class="text nav-text">Manage Voucher</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="#">
+                                <i class="bxr bx-cog"></i>
+                                <span class="text nav-text">Consultation</span>
+                            </a>
+                        </li>
+                        
+                        <li class="nav-links">
+                            <a href="#">
+                                <i class="bxr bx-cog"></i>
+                                <span class="text nav-text">Lead Convert</span>
+                            </a>
+                        </li>
+                    </ul>
+                </c:if>
             </div>
         </div>
     </div>
