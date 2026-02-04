@@ -43,12 +43,14 @@ public class CourseController extends HttpServlet {
             case "all":
                 List<Course> list = courseDAO.getAllCourse();
                 request.setAttribute("courseList", list);
-                request.getRequestDispatcher("course_list.jsp").forward(request, response);
+                request.setAttribute("home_view", "course_list.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "active":
                 List<Course> activeList = courseDAO.getActiveCourses();
                 request.setAttribute("courseList", activeList);
-                request.getRequestDispatcher("course_list.jsp").forward(request, response);
+                request.setAttribute("home_view", "course_list.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "details":
                 String courseIdParam = request.getParameter("courseId");

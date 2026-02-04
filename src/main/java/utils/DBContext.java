@@ -25,7 +25,7 @@ public class DBContext {
             String dbURL = "jdbc:sqlserver://localhost:1433;"
                     + "databaseName=LanguageCenterDB;"
                     + "user=sa;"
-                    + "password=Hoangphuc0911.;"
+                    + "password=110606;"
                     + "encrypt=true;trustServerCertificate=true;";
             conn = DriverManager.getConnection(dbURL);
             if (conn != null) {

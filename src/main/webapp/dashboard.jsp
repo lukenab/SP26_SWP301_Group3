@@ -180,7 +180,7 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="schedule">
+                            <a href="course?action=all">
                                 <i class="bxr bx-book"></i>
                                 <span class="text nav-text">Course</span>
                             </a>
