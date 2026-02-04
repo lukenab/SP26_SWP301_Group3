@@ -18,9 +18,10 @@ import utils.DBContext;
  *
  * @author Legion
  */
-public class UserDAO extends DBContext{
+public class UserDAO extends DBContext {
+
     RoleDAO roleDAO = new RoleDAO();
-    
+
     public String hashMD5(String str) {
         try {
             MessageDigest mes = MessageDigest.getInstance("MD5");
@@ -39,14 +40,14 @@ public class UserDAO extends DBContext{
 
         return "";
     }
- 
-    public List<User> getAllUser(){
+
+    public List<User> getAllUser() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM [user]";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
-            while(rs.next()){
+            while (rs.next()) {
                 int userId = rs.getInt("UserID");
                 String fullname = rs.getString("FullName");
                 String email = rs.getString("Email");
@@ -58,23 +59,23 @@ public class UserDAO extends DBContext{
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                
+
                 User user = new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role);
                 list.add(user);
             }
         } catch (Exception e) {
-            System.out.println("Fail to get all user: " +e.getMessage());
+            System.out.println("Fail to get all user: " + e.getMessage());
         }
-        return list;  
+        return list;
     }
-    
-        public User getUserById(int id){
+
+    public User getUserById(int id) {
         String sql = "SELECT * FROM [user] WHERE UserID = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
-            while(rs.next()){
+            while (rs.next()) {
                 int userId = rs.getInt("UserID");
                 String fullname = rs.getString("FullName");
                 String email = rs.getString("Email");
@@ -86,16 +87,16 @@ public class UserDAO extends DBContext{
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                
+
                 return new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role);
             }
         } catch (Exception e) {
-            System.out.println("Fail to get user by ID: " +e.getMessage());
+            System.out.println("Fail to get user by ID: " + e.getMessage());
         }
-        return null;  
+        return null;
     }
-    
-    public User checkLogin(String email, String password){
+
+    public User checkLogin(String email, String password) {
         String sql = "SELECT * FROM [User] WHERE Email = ? AND Password = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -103,7 +104,7 @@ public class UserDAO extends DBContext{
             String hashedPassword = hashMD5(password);
             ps.setString(2, hashedPassword);
             ResultSet rs = ps.executeQuery();
-            if(rs.next()){
+            if (rs.next()) {
                 int userId = rs.getInt("UserID");
                 String fullname = rs.getString("FullName");
 
@@ -114,22 +115,60 @@ public class UserDAO extends DBContext{
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                
+
                 User user = new User(userId, fullname, email, hashedPassword, phone, address, gender, birthdate, avatar, status, role);
                 return user;
             }
         } catch (Exception e) {
-            System.out.println("Fail to check login: " +e.getMessage());
+            System.out.println("Fail to check login: " + e.getMessage());
         }
         return null;
     }
-    
+
+//    public Boolean addNewUser(String fullName, String email, String password, String phone, String address, Boolean gender, Date Dob, String avatar, Boolean status, Role roleID) {
+//        String sql = "INSERT INTO [dbo].[User] ([FullName],[Email],[Password],[Phone],[Address],[Gender],[Dob],[Avatar],[Status],[RoleID]) "
+//                + "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+//        try {
+//            PreparedStatement ps = conn.prepareStatement(sql);
+//            ps.setString(1, fullName);
+//            ps.setString(2, email);
+//            ps.setString(3, password);
+//            ps.setString(4, phone);
+//            ps.setString(5, address);
+//            ps.setBoolean(6, gender);
+//            ps.setDate(7, Dob);
+//            ps.setString(8, avatar);
+//            ps.setBoolean(9, status);
+//            Role role = new Role();
+//            ps.setInt(10, role.getRoleId());
+//            int row = ps.executeUpdate();
+//            if (row != 0) {
+//                return true;
+//            }
+//        } catch (Exception e) {
+//            System.out.println("Fail to add new user: " + e.getMessage());
+//        }
+//        return false;
+//    }
+
     public static void main(String[] args) {
         UserDAO dao = new UserDAO();
         List<User> list = dao.getAllUser();
         System.out.println(list);
+//
+//        String name = "Nguyen An Binh";
+//        String email = "binhce200008@gmail.com";
+//        String password = dao.hashMD5("123456");
+//        String address = "Can Tho";
+//        Boolean gender = false;
+//        Date dob = Date.valueOf("11-06-2006");
+//        String avatar = null;
+//        Boolean status = true;
+//        RoleDAO roleDAO = new RoleDAO();
+//        Role role = roleDAO.getRoleByID(3);
+//        
+//        Boolean addSucess = dao.addNewUser(name, email, password, name, address, gender, dob, avatar, status, role);
+//        System.out.println(addSucess);
         
-        int id = 1;
-        System.out.println(dao.getUserById(id));
     }
 }
