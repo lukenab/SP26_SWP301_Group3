@@ -55,19 +55,9 @@ public class LoginController extends HttpServlet {
         if (user != null) {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
-            if(user.getUserId() == 1){
-             response.sendRedirect("dashboard.jsp");
-            }
-            else if(user.getRole().getRoleId() == 4){    
-                response.sendRedirect("dashboard.jsp");
-            }
-            else if(user.getRole().getRoleId() == 2){    
-                response.sendRedirect("dashboard.jsp");
-            }
-             else if(user.getRole().getRoleId() == 3){    
-                response.sendRedirect("dashboard.jsp");
-            }
+            response.sendRedirect("dashboard.jsp");
         } else {
+            request.setAttribute("errorMsg", "Invalid email or password!");
             response.sendRedirect("login");
         }
     }

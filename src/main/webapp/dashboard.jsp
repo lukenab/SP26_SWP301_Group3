@@ -219,7 +219,7 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="course?action=all">
+                            <a href="lead?action=all">
                                 <i class="bxr bx-book"></i>
                                 <span class="text nav-text">Manage Lead</span>
                             </a>
