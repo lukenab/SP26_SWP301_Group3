@@ -101,4 +101,9 @@ public class CourseDAO extends DBContext {
 
         return course;
     }
+    
+    public static void main(String[] args) {
+        CourseDAO dao = new CourseDAO();
+        System.out.println(dao.getCourseById(12));
+    }
 }
