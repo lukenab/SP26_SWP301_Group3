@@ -125,51 +125,51 @@ public class UserDAO extends DBContext {
         return null;
     }
 
-//    public Boolean addNewUser(String fullName, String email, String password, String phone, String address, Boolean gender, Date Dob, String avatar, Boolean status, Role roleID) {
-//        String sql = "INSERT INTO [dbo].[User] ([FullName],[Email],[Password],[Phone],[Address],[Gender],[Dob],[Avatar],[Status],[RoleID]) "
-//                + "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-//        try {
-//            PreparedStatement ps = conn.prepareStatement(sql);
-//            ps.setString(1, fullName);
-//            ps.setString(2, email);
-//            ps.setString(3, password);
-//            ps.setString(4, phone);
-//            ps.setString(5, address);
-//            ps.setBoolean(6, gender);
-//            ps.setDate(7, Dob);
-//            ps.setString(8, avatar);
-//            ps.setBoolean(9, status);
-//            Role role = new Role();
-//            ps.setInt(10, role.getRoleId());
-//            int row = ps.executeUpdate();
-//            if (row != 0) {
-//                return true;
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Fail to add new user: " + e.getMessage());
-//        }
-//        return false;
-//    }
+    public Boolean addNewUser(String fullName, String email, String password, String phone, String address, Boolean gender, Date Dob, String avatar, Boolean status, Role role) {
+        String sql = "INSERT INTO [dbo].[User] ([FullName],[Email],[Password],[Phone],[Address],[Gender],[Dob],[Avatar],[Status],[RoleID]) "
+                + "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, fullName);
+            ps.setString(2, email);
+            ps.setString(3, password);
+            ps.setString(4, phone);
+            ps.setString(5, address);
+            ps.setBoolean(6, gender);
+            ps.setDate(7, Dob);
+            ps.setString(8, avatar);
+            ps.setBoolean(9, status);
+            ps.setInt(10, role.getRoleId());
+            int row = ps.executeUpdate();
+            if (row != 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to add new user: " + e.getMessage());
+        }
+        return false;
+    }
 
     public static void main(String[] args) {
         UserDAO dao = new UserDAO();
         List<User> list = dao.getAllUser();
         System.out.println(list);
         System.out.println(dao.hashMD5("123456"));
-//
-//        String name = "Nguyen An Binh";
-//        String email = "binhce200008@gmail.com";
-//        String password = dao.hashMD5("123456");
-//        String address = "Can Tho";
-//        Boolean gender = false;
-//        Date dob = Date.valueOf("11-06-2006");
-//        String avatar = null;
-//        Boolean status = true;
-//        RoleDAO roleDAO = new RoleDAO();
-//        Role role = roleDAO.getRoleByID(3);
-//        
-//        Boolean addSucess = dao.addNewUser(name, email, password, name, address, gender, dob, avatar, status, role);
-//        System.out.println(addSucess);
+
+        String name = "Nguyen An Binh";
+        String email = "binhce200008@gmail.com";
+        String password = dao.hashMD5("123456");
+        String address = "Can Tho";
+        Boolean gender = false;
+        Date dob = Date.valueOf("2006-06-11");
+        String avatar = null;
+        Boolean status = true;
+        String phone = "0812154005";
+        RoleDAO roleDAO = new RoleDAO();
+        Role role = roleDAO.getRoleByID(3);
+        
+        Boolean addSucess = dao.addNewUser(name, email, password, phone, address, gender, dob, avatar, status, role);
+        System.out.println(addSucess);
         
     }
 }
