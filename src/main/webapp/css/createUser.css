@@ -64,7 +64,7 @@
 }
 
 .form-group.full-width {
-    grid-column: 1 / -1; 
+    grid-column: 1 / -1;
 }
 
 .form-group {
@@ -144,6 +144,21 @@
     background: var(--dark-blue);
     color: #ffffff;
 }
+
+.btn-lock{
+    background: var(--red);
+    color: #ffffff;
+}
+
+.btn-unlock{
+    background: #008000;
+    color: #fff;
+}
+
+.btn-unlock:hover{
+    background: #005500;
+    color: #fff;
+}
 .btn-cancel {
     background: #f0f0f0;
     color: #555;
@@ -157,7 +172,7 @@
     padding: 16px 20px;
     border-radius: 10px;
     font-size: 14px;
-    margin: 0 24px 24px 24px; 
+    margin: 0 24px 24px 24px;
 }
 .alert-box.info {
     background-color: var(--light-blue);
@@ -198,3 +213,10 @@
 .btn-secondary:hover {
     background: var(--grey);
 }
+
+.user-img img{
+    width: 150px;
+    height: 150px;
+    border: 3px solid #dc3545;
+}
+

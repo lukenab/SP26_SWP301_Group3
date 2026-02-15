@@ -37,11 +37,12 @@ public class UserController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         UserDAO userDAO = new UserDAO();
+        RoleDAO roleDAO = new RoleDAO();
         String action = request.getParameter("action");
         if (action == null) {
             action = "all";
         }
-
+        
         switch (action) {
             case "all":
                 List<User> list = userDAO.getAllUser();
@@ -50,10 +51,19 @@ public class UserController extends HttpServlet {
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "add":
+                List<Role> roleList = roleDAO.getAllRole();
+                request.setAttribute("roleList", roleList);
                 request.setAttribute("home_view", "/admin/createUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
-
+            case "inActivate":
+                int dId = Integer.parseInt(request.getParameter("id"));
+                User uDelete = userDAO.getUserById(dId);
+                request.setAttribute("uDelete", uDelete);
+                request.setAttribute("home_view", "/admin/deleteUser.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+            
         }
     }
 
@@ -74,7 +84,7 @@ public class UserController extends HttpServlet {
         if (action == null) {
             action = "all";
         }
-
+        
         switch (action) {
             case "add":
                 String fullName = request.getParameter("fullName");
@@ -92,12 +102,12 @@ public class UserController extends HttpServlet {
                     avatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
                 }
                 Boolean status = Boolean.valueOf(request.getParameter("status"));
-
+                
                 int roleId = Integer.parseInt(request.getParameter("roleId"));
                 Role role = roleDAO.getRoleByID(roleId);
-
+                
                 Boolean isAdded = userDAO.addNewUser(fullName, email, password, phone, address, gender, dob, avatar, status, role);
-
+                
                 HttpSession aSession = request.getSession();
                 if (isAdded) {
                     aSession.setAttribute("message", "Add New User Successfully!");
@@ -108,6 +118,33 @@ public class UserController extends HttpServlet {
                 }
                 response.sendRedirect("user");
                 break;
+            case "inActivate":
+                int id = Integer.parseInt(request.getParameter("id"));
+                Boolean inactivateSuccess = userDAO.inactivateUser(id);
+                HttpSession uSession = request.getSession();
+                if (inactivateSuccess) {
+                    uSession.setAttribute("message", "Inactivate User Success!");
+                    uSession.setAttribute("messageType", "success");
+                } else {
+                    uSession.setAttribute("message", "Fail To Inactivate User");
+                    uSession.setAttribute("messageType", "error");
+                }
+                response.sendRedirect("user");
+                break;
+            case "activate":
+                int aId = Integer.parseInt(request.getParameter("id"));
+                Boolean activateSuccess = userDAO.activateUser(aId);
+                HttpSession activateSession = request.getSession();
+                if (activateSuccess) {
+                    activateSession.setAttribute("message", "Activate User Success!");
+                    activateSession.setAttribute("messageType", "success");
+                } else {
+                    activateSession.setAttribute("message", "Fail To Activate User");
+                    activateSession.setAttribute("messageType", "error");
+                }
+                response.sendRedirect("user");
+                break;
+                
         }
     }
 

@@ -149,27 +149,59 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
+    
+    public boolean inactivateUser (int id){
+        String sql = "UPDATE [USER] SET Status = 0 WHERE UserID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            int row = ps.executeUpdate();
+            if(row > 0){
+            return true;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to inactivate User: " +e.getMessage());
+        }
+        return false;
+    }
+    
+    public boolean activateUser (int id){
+        String sql = "UPDATE [USER] SET Status = 1 WHERE UserID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            int row = ps.executeUpdate();
+            if(row > 0){
+            return true;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to activate User: " +e.getMessage());
+        }
+        return false;
+    }
 
     public static void main(String[] args) {
         UserDAO dao = new UserDAO();
-        List<User> list = dao.getAllUser();
-        System.out.println(list);
-        System.out.println(dao.hashMD5("123456"));
-
-        String name = "Nguyen An Binh";
-        String email = "binhce200008@gmail.com";
-        String password = dao.hashMD5("123456");
-        String address = "Can Tho";
-        Boolean gender = false;
-        Date dob = Date.valueOf("2006-06-11");
-        String avatar = null;
-        Boolean status = true;
-        String phone = "0812154005";
-        RoleDAO roleDAO = new RoleDAO();
-        Role role = roleDAO.getRoleByID(3);
-        
-        Boolean addSucess = dao.addNewUser(name, email, password, phone, address, gender, dob, avatar, status, role);
-        System.out.println(addSucess);
+//        List<User> list = dao.getAllUser();
+//        System.out.println(list);
+//        System.out.println(dao.hashMD5("123456"));
+//
+//        String name = "Nguyen An Binh";
+//        String email = "binhce200008@gmail.com";
+//        String password = dao.hashMD5("123456");
+//        String address = "Can Tho";
+//        Boolean gender = false;
+//        Date dob = Date.valueOf("2006-06-11");
+//        String avatar = null;
+//        Boolean status = true;
+//        String phone = "0812154005";
+//        RoleDAO roleDAO = new RoleDAO();
+//        Role role = roleDAO.getRoleByID(3);
+//        
+//        Boolean addSucess = dao.addNewUser(name, email, password, phone, address, gender, dob, avatar, status, role);
+//        System.out.println(addSucess);
+//        dao.inactivateUser(1);
+        dao.activateUser(1);
         
     }
 }

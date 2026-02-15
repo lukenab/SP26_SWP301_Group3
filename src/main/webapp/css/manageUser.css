@@ -289,4 +289,13 @@ body.dark .table thead th {
     text-transform: uppercase; 
 }
 
+.form-check-input:checked:disabled {
+
+    opacity: 1 !important;   
+}
+
+.form-check-input:disabled {
+    opacity: 1 !important;   
+}
+
 

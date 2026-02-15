@@ -144,7 +144,7 @@
 
                             <td>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" 
+                                    <input class="form-check-input" type="checkbox" role="switch" disabled 
                                            ${u.status ? 'checked' : ''}>
                                     <label class="form-check-label ms-2 text-secondary small">
                                         ${u.status ? 'Active' : 'Inactive'}
@@ -154,7 +154,7 @@
 
                             <td class="text-end">
                                 <a href="#" class="action-btn"><i class='bx bx-edit'></i></a>
-                                <a href="#" class="action-btn delete"><i class='bx bx-trash'></i></a>
+                                <a href="user?action=inActivate&id=${u.userId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
                             </td>
                         </tr>
                     </c:forEach>

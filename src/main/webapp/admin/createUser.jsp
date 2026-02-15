@@ -25,7 +25,6 @@
 <div class="form-container">
 
     <p class="form-title">User Information</p>
-
     <form action="user?action=add" method="POST" class="form-body">
 
         <div class="form-row">
@@ -33,11 +32,9 @@
                 <label for="roleId">Role <span class="text-danger">*</span></label>
                 <select class="form-select" name="roleId" id="roleId" required>
                     <option value="" disabled selected>Select Role</option>
-                    <option value="1">Admin</option>
-                    <option value="2">Academic Staff</option>
-                    <option value="3">Sale Staff</option>
-                    <option value="4">Teacher</option>
-                    <option value="5">Student</option>
+                    <c:forEach var="r" items="${roleList}">
+                        <option value=${r.roleId}>${r.roleName}</option>
+                    </c:forEach>
                 </select>
             </div>
 
@@ -50,7 +47,7 @@
         <div class="form-row">
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="text" id="email" name="email" required>
+                <input type="email" id="email" name="email" required>
             </div>
 
             <div class="form-group">
