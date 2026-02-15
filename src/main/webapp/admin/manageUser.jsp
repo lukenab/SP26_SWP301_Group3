@@ -1,5 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
 
@@ -40,7 +41,7 @@
                     <li><a class="dropdown-item" href="#">Student</a></li>
                 </ul>
             </div>
-            
+
             <div class="dropdown">
                 <button class="custom-select-filter d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
                     <i class='bx bx-slider-alt'></i> All Status <i class='bx bx-chevron-down ms-1'></i>
@@ -73,11 +74,48 @@
 
                             <td>
                                 <div class="user-item">
-                                    <img src="${u.avatar != null ? u.avatar : 'images/default-avatar.png'}" 
-                                         class="user-avatar" alt="Avatar">
+                                    <c:choose>
+                                        <c:when test="${u.avatar != null && not empty u.avatar}">
+                                            <img src="${u.avatar}" class="user-avatar" alt="Avatar"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+
+                                            <c:set var="nameParts" value="${fn:split(u.fullName, ' ')}" />
+                                            <c:set var="initials" value="${fn:substring(nameParts[0], 0, 1)}" />
+                                            <c:if test="${fn:length(nameParts) > 1}">
+                                                <c:set var="initials" value="${initials}${fn:substring(nameParts[fn:length(nameParts)-1], 0, 1)}" />
+                                            </c:if>
+                                            <c:set var="hash" value="${u.fullName.hashCode()}" />
+                                            <c:set var="hue" value="${(hash < 0 ? -hash : hash) % 360}" />
+
+                                            <div class="user-avatar-placeholder" style="display: none; background-color: hsl(${hue}, 65%, 45%); color: white;">
+                                                ${initials}
+                                            </div>
+                                        </c:when>
+
+                                        <c:otherwise>
+                                            <c:set var="nameParts" value="${fn:split(u.fullName, ' ')}" />
+                                            <c:set var="initials" value="" />
+
+                                            <c:if test="${fn:length(nameParts) > 0}">
+                                                <c:set var="initials" value="${fn:substring(nameParts[0], 0, 1)}" />
+                                            </c:if>
+                                            <c:if test="${fn:length(nameParts) > 1}">
+                                                <c:set var="initials" value="${initials}${fn:substring(nameParts[fn:length(nameParts)-1], 0, 1)}" />
+                                            </c:if>
+
+                                            <c:set var="hash" value="${u.fullName.hashCode()}" />
+                                            <c:set var="hue" value="${(hash < 0 ? -hash : hash) % 360}" />
+
+                                            <div class="user-avatar-placeholder" 
+                                                 style="background-color: hsl(${hue}, 65%, 45%);">
+                                                ${fn:toUpperCase(initials)}
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
+
                                     <div class="d-flex flex-column">
                                         <span class="user-name">${u.fullName}</span>
-                                        <span class="user-email">${u.email}</span>
+                                        <span class="user-email text-muted small">${u.email}</span>
                                     </div>
                                 </div>
                             </td>

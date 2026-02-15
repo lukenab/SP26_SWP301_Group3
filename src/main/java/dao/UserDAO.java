@@ -132,7 +132,7 @@ public class UserDAO extends DBContext {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, fullName);
             ps.setString(2, email);
-            ps.setString(3, password);
+            ps.setString(3, hashMD5(password));
             ps.setString(4, phone);
             ps.setString(5, address);
             ps.setBoolean(6, gender);
