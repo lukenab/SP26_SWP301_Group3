@@ -16,6 +16,7 @@
         <link href="css/dashboard.css" rel="stylesheet" type="text/css"/>
         <link href="css/teacherSchedule.css" rel="stylesheet" type="text/css"/>
         <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
+        <link href="css/form.css" rel="stylesheet" type="text/css"/>
         <title>Admin Page</title>
     </head>
     <body>
@@ -263,8 +264,7 @@
             <c:import url="${home_view}" />
         </c:if>
     </main>
-    <script src="dashboard.js">
-
-    </script>
+    <script src="dashboard.js"></script>
+    <script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
 </body>
 </html>

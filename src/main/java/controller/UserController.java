@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.RoleDAO;
 import dao.UserDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -11,7 +12,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.util.Date;
 import java.util.List;
+import model.Role;
 import model.User;
 
 /**
@@ -34,16 +38,22 @@ public class UserController extends HttpServlet {
             throws ServletException, IOException {
         UserDAO userDAO = new UserDAO();
         String action = request.getParameter("action");
-        if(action == null){
+        if (action == null) {
             action = "all";
         }
-        
-        switch(action){
-            case "all": 
+
+        switch (action) {
+            case "all":
                 List<User> list = userDAO.getAllUser();
                 request.setAttribute("userList", list);
                 request.setAttribute("home_view", "/admin/manageUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+            case "add":
+                request.setAttribute("home_view", "/admin/createUser.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
         }
     }
 
@@ -58,7 +68,47 @@ public class UserController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+        UserDAO userDAO = new UserDAO();
+        RoleDAO roleDAO = new RoleDAO();
+        String action = request.getParameter("action");
+        if (action == null) {
+            action = "all";
+        }
+
+        switch (action) {
+            case "add":
+                String fullName = request.getParameter("fullName");
+                String email = request.getParameter("email");
+                String password = request.getParameter("password");
+                String phone = request.getParameter("phone");
+                String address = request.getParameter("address");
+                if (address == null || address.trim().isEmpty()) {
+                    address = "";
+                }
+                Boolean gender = Boolean.valueOf(request.getParameter("gender"));
+                java.sql.Date dob = java.sql.Date.valueOf(request.getParameter("dob"));
+                String avatar = request.getParameter("avatar");
+                if (avatar == null || avatar.trim().isEmpty()) {
+                    avatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                }
+                Boolean status = Boolean.valueOf(request.getParameter("status"));
+
+                int roleId = Integer.parseInt(request.getParameter("roleId"));
+                Role role = roleDAO.getRoleByID(roleId);
+
+                Boolean isAdded = userDAO.addNewUser(fullName, email, password, phone, address, gender, dob, avatar, status, role);
+
+                HttpSession aSession = request.getSession();
+                if (isAdded) {
+                    aSession.setAttribute("message", "Add New User Successfully!");
+                    aSession.setAttribute("messageType", "success");
+                } else {
+                    aSession.setAttribute("message", "Fail To Add New User");
+                    aSession.setAttribute("messageType", "error");
+                }
+                response.sendRedirect("user");
+                break;
+        }
     }
 
     /**
