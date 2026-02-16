@@ -182,6 +182,8 @@ public class UserDAO extends DBContext {
 
     public static void main(String[] args) {
         UserDAO dao = new UserDAO();
+        User u = dao.getUserById(1);
+        System.out.println(u);
 //        List<User> list = dao.getAllUser();
 //        System.out.println(list);
 //        System.out.println(dao.hashMD5("123456"));

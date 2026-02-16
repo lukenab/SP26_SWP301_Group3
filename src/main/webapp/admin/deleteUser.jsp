@@ -6,7 +6,7 @@
 
     <div class="content-header">
         <div>
-            <h1 class="page-title">Lock User</h1>
+            <h1 class="page-title">Deactivate User</h1>
         </div>
         <a href="user" class="btn-secondary">
             <i class='bx bx-arrow-left'></i> Back to Users
@@ -16,7 +16,7 @@
         <ol class="breadcrumb mb-1">
             <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="user">User Management</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Lock User</li>
+            <li class="breadcrumb-item active" aria-current="page">Deactivate User</li>
         </ol>
     </div>
 </div>
@@ -33,7 +33,7 @@
                 <input type="hidden" name="id" value="${uDelete.userId}">
 
                 <div class="form-row user-img">
-                    <img src="${uDelete.avatar}" class="rounded-circle mb-3">
+                    <img src="${uDelete.avatar}" class="rounded-circle mb-3 object-fit-cover">
                 </div>
 
                 <div class="form-row">

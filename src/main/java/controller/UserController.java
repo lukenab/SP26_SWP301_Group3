@@ -5,6 +5,7 @@
 package controller;
 
 import dao.RoleDAO;
+import dao.StudentDAO;
 import dao.UserDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpSession;
 import java.util.Date;
 import java.util.List;
 import model.Role;
+import model.Student;
 import model.User;
 
 /**
@@ -38,6 +40,7 @@ public class UserController extends HttpServlet {
             throws ServletException, IOException {
         UserDAO userDAO = new UserDAO();
         RoleDAO roleDAO = new RoleDAO();
+        StudentDAO studentDAO = new StudentDAO();
         String action = request.getParameter("action");
         if (action == null) {
             action = "all";
@@ -63,6 +66,16 @@ public class UserController extends HttpServlet {
                 request.setAttribute("home_view", "/admin/deleteUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
+            case "view":
+                int id = Integer.parseInt(request.getParameter("id"));
+                User user = userDAO.getUserById(id);
+                Student student = studentDAO.getStudentById(id);
+                request.setAttribute("student", student);
+                request.setAttribute("user", user);
+                request.setAttribute("home_view", "/admin/viewUser.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+                
             
         }
     }

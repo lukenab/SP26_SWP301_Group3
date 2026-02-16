@@ -16,6 +16,7 @@
         <link href="css/dashboard.css" rel="stylesheet" type="text/css"/>
         <link href="css/teacherSchedule.css" rel="stylesheet" type="text/css"/>
         <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
+        <link href="css/viewUser.css" rel="stylesheet" type="text/css"/>
         <link href="css/form.css" rel="stylesheet" type="text/css"/>
         <title>Admin Page</title>
     </head>

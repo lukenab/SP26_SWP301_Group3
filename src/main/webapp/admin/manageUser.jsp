@@ -64,7 +64,7 @@
                         <th>Phone Number</th>
                         <th>Role</th>
                         <th>Status</th>
-                        <th class="text-end">Actions</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -152,7 +152,8 @@
                                 </div>
                             </td>
 
-                            <td class="text-end">
+                            <td>
+                                <a href="user?action=view&id=${u.userId}" class="action-btn"><i class='bx bx-eye'></i></a>
                                 <a href="#" class="action-btn"><i class='bx bx-edit'></i></a>
                                 <a href="user?action=inActivate&id=${u.userId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
                             </td>
