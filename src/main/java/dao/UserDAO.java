@@ -149,34 +149,81 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
-    
-    public boolean inactivateUser (int id){
+
+    public boolean inactivateUser(int id) {
         String sql = "UPDATE [USER] SET Status = 0 WHERE UserID = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, id);
             int row = ps.executeUpdate();
-            if(row > 0){
-            return true;
+            if (row > 0) {
+                return true;
             }
         } catch (Exception e) {
-            System.out.println("Fail to inactivate User: " +e.getMessage());
+            System.out.println("Fail to inactivate User: " + e.getMessage());
         }
         return false;
     }
-    
-    public boolean activateUser (int id){
+
+    public boolean activateUser(int id) {
         String sql = "UPDATE [USER] SET Status = 1 WHERE UserID = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, id);
             int row = ps.executeUpdate();
-            if(row > 0){
-            return true;
+            if (row > 0) {
+                return true;
             }
         } catch (Exception e) {
-            System.out.println("Fail to activate User: " +e.getMessage());
+            System.out.println("Fail to activate User: " + e.getMessage());
         }
+        return false;
+    }
+
+    public Boolean updateUserById(String fullName, String phone, String address, Boolean gender, Date dob, String avatar, int roleId, int userId, Date enrollmentDate, Date HireDate, String education, String experience) {
+        String sql = "UPDATE [dbo].[User] SET [FullName] = ?,[Phone] = ?,[Address] = ?,[Gender] = ?,[Dob] = ?,[Avatar] = ? WHERE UserID = ?";
+        String employeeSql = "UPDATE [dbo].[Employee] SET [HireDate] = ?, [Education] = ?, [Experience] = ? WHERE EmployeeID = ?";
+        String studentSql = "UPDATE [dbo].[Student] SET [EnrollmentDate] = ? WHERE [StudentID] = ?";
+        try {
+            conn.setAutoCommit(false);
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, fullName);
+            ps.setString(2, phone);
+            ps.setString(3, address);
+            ps.setBoolean(4, gender);
+            ps.setDate(5, dob);
+            ps.setString(6, avatar);
+            ps.setInt(7, userId);
+            ps.executeUpdate();
+            if (roleId == 5) {
+                PreparedStatement psStu = conn.prepareStatement(studentSql);
+                psStu.setDate(1, enrollmentDate);
+                psStu.setInt(2, userId);
+                psStu.executeUpdate();
+            } else if (roleId == 2 || roleId == 3 || roleId == 4) {
+                PreparedStatement psEmpl = conn.prepareStatement(employeeSql);
+                psEmpl.setDate(1, HireDate);
+                psEmpl.setString(2, education);
+                psEmpl.setString(3, experience);
+                psEmpl.setInt(4, userId);
+                psEmpl.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            try {
+                conn.rollback();
+            } catch (Exception ex) {
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (Exception e) {
+            }
+        }
+
         return false;
     }
 
@@ -204,6 +251,6 @@ public class UserDAO extends DBContext {
 //        System.out.println(addSucess);
 //        dao.inactivateUser(1);
         dao.activateUser(1);
-        
+
     }
 }

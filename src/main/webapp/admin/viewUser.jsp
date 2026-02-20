@@ -1,6 +1,7 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 
 <div class="page-header">
@@ -50,12 +51,16 @@
 
     <div class="profile-content-card">
         <div class="profile-tabs">
-            <a href="#" class="tab-item active"><i class='bx bxs-user'></i> Overview</a>
+            <c:if test="${user.role.roleId == 2 || user.role.roleId == 3 || user.role.roleId == 4}">
+                <a href="#" class="tab-item active"><i class='bx bxs-user'></i>Employee Information</a>
+            </c:if>
+            <c:if test="${user.role.roleId == 5}">
+                <a href="#" class="tab-item active"><i class='bx bxs-user'></i>Student Information</a>
+            </c:if>
         </div>
 
         <div class="tab-content" id="overview">
             <div class="info-section">
-                <h4 class="section-title">Personal Information</h4>
                 <div class="info-grid">
                     <div class="info-item">
                         <p>Full Name</p>
@@ -63,7 +68,7 @@
                     </div>
                     <div class="info-item">
                         <p>Date of Birth</p>
-                        <span>${user.dob}</span>
+                        <span>${not empty user.dob ? user.dob : 'N/A'}</span>
                     </div>
                     <div class="info-item">
                         <p>Gender</p>
@@ -79,7 +84,7 @@
                     </div>
                     <div class="info-item">
                         <p>Address</p>
-                        <span>${user.address}</span>
+                        <span>${user.address ? user.address : 'N/A'}</span>
                     </div>
                     <c:if test="${user.role.roleId == 5}">
                         <div class="info-item">
@@ -88,11 +93,28 @@
                         </div>
                     </c:if>
                 </div>
-
-
             </div>
 
+            <c:if test="${user.role.roleId == 2 || user.role.roleId == 4 || user.role.roleId == 3}">
+                <div class="info-section">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <p>Hire Date</p>
+                            <span><fmt:formatDate value="${employee.hireDate}" pattern="dd/MM/yyyy"/></span>
+                        </div>  
+                        <div class="info-item">
+                            <p>Education</p>
+                            <span>${employee.education ? employee.education : 'N/A'}</span>
+                        </div>
 
+                        <div class="info-item">
+                            <p>Experience</p>
+                            <span>${employee.experience ? employee.experience : 'N/A'}</span>
+                        </div>
+
+                    </div>
+                </div>
+            </c:if>
 
         </div>
     </div>

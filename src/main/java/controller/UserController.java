@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.EmployeeDAO;
 import dao.RoleDAO;
 import dao.StudentDAO;
 import dao.UserDAO;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.Date;
 import java.util.List;
+import model.Employee;
 import model.Role;
 import model.Student;
 import model.User;
@@ -40,15 +42,18 @@ public class UserController extends HttpServlet {
             throws ServletException, IOException {
         UserDAO userDAO = new UserDAO();
         RoleDAO roleDAO = new RoleDAO();
+        EmployeeDAO employeeDAO = new EmployeeDAO();
         StudentDAO studentDAO = new StudentDAO();
         String action = request.getParameter("action");
         if (action == null) {
             action = "all";
         }
-        
+
         switch (action) {
             case "all":
                 List<User> list = userDAO.getAllUser();
+                int totalUsers = list.size();
+                request.setAttribute("totalUsers", totalUsers);
                 request.setAttribute("userList", list);
                 request.setAttribute("home_view", "/admin/manageUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
@@ -70,13 +75,25 @@ public class UserController extends HttpServlet {
                 int id = Integer.parseInt(request.getParameter("id"));
                 User user = userDAO.getUserById(id);
                 Student student = studentDAO.getStudentById(id);
+                Employee employee = employeeDAO.getEmployeeById(id);
+                request.setAttribute("employee", employee);
                 request.setAttribute("student", student);
                 request.setAttribute("user", user);
                 request.setAttribute("home_view", "/admin/viewUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
-                
-            
+            case "update":
+                int uId = Integer.parseInt(request.getParameter("id"));
+                User updateUser = userDAO.getUserById(uId);
+                Student uStudent = studentDAO.getStudentById(uId);
+                Employee uEmployee = employeeDAO.getEmployeeById(uId);
+                request.setAttribute("employee", uEmployee);
+                request.setAttribute("student", uStudent);
+                request.setAttribute("user", updateUser);
+                request.setAttribute("home_view", "/admin/editUser.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
         }
     }
 
@@ -97,7 +114,7 @@ public class UserController extends HttpServlet {
         if (action == null) {
             action = "all";
         }
-        
+
         switch (action) {
             case "add":
                 String fullName = request.getParameter("fullName");
@@ -115,12 +132,12 @@ public class UserController extends HttpServlet {
                     avatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
                 }
                 Boolean status = Boolean.valueOf(request.getParameter("status"));
-                
+
                 int roleId = Integer.parseInt(request.getParameter("roleId"));
                 Role role = roleDAO.getRoleByID(roleId);
-                
+
                 Boolean isAdded = userDAO.addNewUser(fullName, email, password, phone, address, gender, dob, avatar, status, role);
-                
+
                 HttpSession aSession = request.getSession();
                 if (isAdded) {
                     aSession.setAttribute("message", "Add New User Successfully!");
@@ -157,7 +174,52 @@ public class UserController extends HttpServlet {
                 }
                 response.sendRedirect("user");
                 break;
-                
+            case "update":
+                String uFullName = request.getParameter("fullName");
+                String uPhone = request.getParameter("phone");
+                String uAddress = request.getParameter("address");
+                if (uAddress == null || uAddress.trim().isEmpty()) {
+                    uAddress = "";
+                }
+                Boolean uGender = Boolean.valueOf(request.getParameter("gender"));
+                java.sql.Date uDob = java.sql.Date.valueOf(request.getParameter("dob"));
+                String uAvatar = request.getParameter("avatar");
+                if (uAvatar == null || uAvatar.trim().isEmpty()) {
+                    uAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                }
+
+                int uUserId = Integer.parseInt(request.getParameter("userId"));
+
+                int uRoleId = Integer.parseInt(request.getParameter("roleId"));
+
+                java.sql.Date uHireDate = null;
+                String uEducation = null;
+                String uExperience = null;
+                java.sql.Date uEnrollmentDate = null;
+
+                if (uRoleId == 2 || uRoleId == 3 || uRoleId == 4) {
+                    String hireDate = request.getParameter("hireDate");
+                    if (hireDate != null && !hireDate.isEmpty()) {
+                        uHireDate = java.sql.Date.valueOf(hireDate);
+                    }
+                    uEducation = request.getParameter("education");
+                    uExperience = request.getParameter("experience");
+                } else if (uRoleId == 5) {
+                    String enrollStr = request.getParameter("enrollmentDate");
+                    if (enrollStr != null && !enrollStr.isEmpty()) {
+                        uEnrollmentDate = java.sql.Date.valueOf(enrollStr);
+                    }
+                }
+                boolean isUpdated = userDAO.updateUserById(uFullName, uPhone, uAddress, uGender, uDob, uAvatar, uRoleId, uUserId, uEnrollmentDate, uHireDate, uEducation, uExperience);
+                HttpSession session = request.getSession();
+                if (isUpdated) {
+                    session.setAttribute("message", "Update User Info Successfully!");
+                    session.setAttribute("messageType", "success");
+                } else {
+                    session.setAttribute("message", "Update Failed!");
+                    session.setAttribute("messageType", "error");
+                }
+                response.sendRedirect("user");
         }
     }
 

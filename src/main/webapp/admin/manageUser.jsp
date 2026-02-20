@@ -19,10 +19,88 @@
                 <p class="text-muted small mb-0">Manage and organize your users</p>
             </div>
             <a href="user?action=add" class="btn btn-add-new">
-                <i class='bx bx-user-plus'></i> Add New User
+                <i class='bx bx-user-plus'></i> Add User
             </a>
         </div>
     </div>
+    
+    <c:set var="activeUsers" value="0"/>
+    <c:set var="inactiveUsers" value="0"/>
+    <c:set var="admin" value="0"/>
+    <c:forEach var="u" items="${userList}">
+        <c:if test="${u.status == true}">
+            <c:set var="activeUsers" value="${activeUsers + 1}"/>
+        </c:if>
+        <c:if test="${u.status == false}">
+            <c:set var="activeUsers" value="${inactiveUsers + 1}"/>
+        </c:if>
+    </c:forEach>
+
+    <div class="stat-card-grid">
+        <div class="stat-card">
+            <div class="stat-info">              
+                <p>Total Users</p>
+                <h3>${totalUsers}</h3>
+            </div>
+            <div class="icon-wrapper blue">
+                <i class='bx bxs-group'></i>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <p>Active Users</p>
+                <h3>${activeUsers}</h3> 
+            </div>
+            <div class="icon-wrapper green">
+                <i class='bx bxs-check-shield'></i>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <p>Inactive Users</p>
+                <h3>${inactiveUsers}</h3>
+            </div>
+            <div class="icon-wrapper cyan">
+                <i class='bx bxs-info-shield'></i>
+            </div>
+        </div>  
+        <div class="stat-card">         
+            <div class="stat-info">
+                <p>Admins</p>
+                <h3>30</h3>
+            </div>
+            <div class="icon-wrapper cyan">
+                <i class='bx bxs-crown'></i>
+            </div>
+        </div>  
+    </div>
+
+    <c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-error-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+
+        <c:remove var="message" scope="session" />
+        <c:remove var="messageType" scope="session" />
+    </c:if>
 
     <div class="filter-container flex-wrap">
         <div class="custom-search-bar">
@@ -154,8 +232,16 @@
 
                             <td>
                                 <a href="user?action=view&id=${u.userId}" class="action-btn"><i class='bx bx-eye'></i></a>
-                                <a href="#" class="action-btn"><i class='bx bx-edit'></i></a>
-                                <a href="user?action=inActivate&id=${u.userId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
+                                <a href="user?action=update&id=${u.userId}" class="action-btn"><i class='bx bx-edit'></i></a>
+                                    <c:choose>
+                                        <c:when test="${u.userId == sessionScope.u.userId}">
+                                        </c:when>
+                                        <c:when test="${u.userId == 1}">
+                                        </c:when>
+                                        <c:otherwise>
+                                        <a href="user?action=inActivate&id=${u.userId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
+                                        </c:otherwise>
+                                    </c:choose>
                             </td>
                         </tr>
                     </c:forEach>
@@ -177,3 +263,4 @@
         </div>
     </div>
 </div>
+<script src="js/manageUser.js" type="text/javascript"></script>
