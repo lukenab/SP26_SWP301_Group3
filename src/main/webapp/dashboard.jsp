@@ -105,7 +105,7 @@
 
                         <li class="nav-links">
                             <a href="user">
-                                <i class="bxr bx-user"></i>
+                                <i class="bxr bx-group"></i>
                                 <span class="text nav-text">User Management</span>
                             </a>
                         </li>
@@ -128,6 +128,13 @@
                             <a href="#">
                                 <i class="bxr bx-cog"></i>
                                 <span class="text nav-text">Setting</span>
+                            </a>
+                        </li>
+                        
+                        <li class="nav-links">
+                            <a href="#">
+                                <i class="bxr bx-user"></i>
+                                <span class="text nav-text">Profile</span>
                             </a>
                         </li>
                     </ul>
