@@ -58,7 +58,7 @@
                             <ul class="profile-options-list">
                                 <li class="divider"></li>
                                 <li>
-                                    <a href="#"
+                                    <a href="dashboard?action=profile"
                                        ><i class="bx bx-user"></i><span>Your Profile</span></a
                                     >
                                 </li>
@@ -134,7 +134,7 @@
                         </li>
                         
                         <li class="nav-links">
-                            <a href="#">
+                            <a href="dashboard?action=profile">
                                 <i class="bxr bx-user"></i>
                                 <span class="text nav-text">Profile</span>
                             </a>
