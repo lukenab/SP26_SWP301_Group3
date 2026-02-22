@@ -32,7 +32,7 @@
             <c:set var="activeUsers" value="${activeUsers + 1}"/>
         </c:if>
         <c:if test="${u.status == false}">
-            <c:set var="activeUsers" value="${inactiveUsers + 1}"/>
+            <c:set var="inactiveUsers" value="${inactiveUsers + 1}"/>
         </c:if>
     </c:forEach>
 

@@ -41,7 +41,9 @@
                     </div>
 
                     <div class="profile-item">
-                        <span class="profile-img">A</span>
+                        <span class="profile-img">
+                            <img src="${sessionScope.user.avatar}">
+                        </span>
                         <div class="profile-text">
                             <span class="name">${sessionScope.user.fullName}</span>
                             <span class="email">${sessionScope.user.email}</span>
@@ -97,7 +99,7 @@
                 <c:if test="${sessionScope.user.userId == 1}">
                     <ul class="menu-links">
                         <li class="nav-links">
-                            <a href="dashboard">
+                            <a href="dashboard?action=admin">
                                 <i class="bxr bx-dashboard"></i>
                                 <span class="text nav-text">Dashboard</span>
                             </a>
