@@ -12,7 +12,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import model.Room;
 
 /**
@@ -33,31 +35,73 @@ public class RoomController extends HttpServlet {
         switch (action) {
             case "all":
                 List<Room> allRoom = rdao.getAllRoom();
+
+                // Check which rooms have classes assigned
+                Map<Integer, Boolean> roomUsageMap = new HashMap<>();
+                for (Room room : allRoom) {
+                    boolean isInUse = rdao.isRoomInUse(room.getRoomId());
+                    roomUsageMap.put(room.getRoomId(), isInUse);
+                }
+
                 request.setAttribute("allRooms", allRoom);
-                request.getRequestDispatcher("room.jsp").forward(request, response);
+                request.setAttribute("roomUsageMap", roomUsageMap);
+                request.setAttribute("home_view", "room.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "detail":
                 String idString = request.getParameter("id").trim();
                 int id = Integer.parseInt(idString);
                 Room roomDetail = rdao.getRoomByID(id);
+
+                // Get list of classes using this room
+                List<String[]> classesUsingRoom = rdao.getClassesUsingRoom(id);
+
                 request.setAttribute("roomDetail", roomDetail);
-                request.getRequestDispatcher("roomDetail.jsp").forward(request, response);
+                request.setAttribute("classesUsingRoom", classesUsingRoom);
+                request.setAttribute("home_view", "roomDetail.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "create":
-                response.sendRedirect("createRoom.jsp");
+                request.setAttribute("home_view", "createRoom.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "delete":
                 String idDelString = request.getParameter("id");
                 int idDel = Integer.parseInt(idDelString);
                 Room roomDel = rdao.getRoomByID(idDel);
                 request.setAttribute("roomDel", roomDel);
-                request.getRequestDispatcher("deleteRoom.jsp").forward(request, response);
+                request.setAttribute("home_view", "deleteRoom.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+            case "disable":
+                String idDisableString = request.getParameter("id");
+                int idDisable = Integer.parseInt(idDisableString);
+                Room roomDisable = rdao.getRoomByID(idDisable);
+
+                // Get list of classes using this room
+                List<String[]> classesUsingRoomDisable = rdao.getClassesUsingRoom(idDisable);
+
+                request.setAttribute("roomDisable", roomDisable);
+                request.setAttribute("classesUsingRoom", classesUsingRoomDisable);
+                request.setAttribute("home_view", "disableRoom.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+            case "enable":
+                String idEnableString = request.getParameter("id");
+                int idEnable = Integer.parseInt(idEnableString);
+                Room roomEnable = rdao.getRoomByID(idEnable);
+
+                request.setAttribute("roomEnable", roomEnable);
+                request.setAttribute("home_view", "enableRoom.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
             case "update":
                 String idUpdateString = request.getParameter("id");
                 int idUpdate = Integer.parseInt(idUpdateString);
                 Room roomUpdate = rdao.getRoomByID(idUpdate);
                 request.setAttribute("roomUpdate", roomUpdate);
-                request.getRequestDispatcher("updateRoom.jsp").forward(request, response);
+                request.setAttribute("home_view", "updateRoom.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
         }
 
@@ -79,23 +123,68 @@ public class RoomController extends HttpServlet {
                 String name = request.getParameter("name");
                 String capacityString = request.getParameter("capacity");
                 String type = request.getParameter("type");
+                String statusString = request.getParameter("status");
+
                 int capacity = Integer.parseInt(capacityString);
-                int changes = rdao.createRoom(name, capacity, type);
-                if (changes != -1) {
-                    System.out.println("OK");
+                int status = Integer.parseInt(statusString);
+
+                // Check if room name already exists
+                if (rdao.checkRoomNameExists(name)) {
+                    request.getSession().setAttribute("error", "Room name '" + name + "' already exists. Please use a different name.");
+                    response.sendRedirect("room?action=create");
+                } else if (name == null || name.trim().isEmpty()) {
+                    request.getSession().setAttribute("error", "Room name cannot be empty.");
+                    response.sendRedirect("room?action=create");
                 } else {
-                    System.out.println("Error");
+                    int changes = rdao.createRoom(name, capacity, type, status);
+                    if (changes != -1) {
+                        request.getSession().setAttribute("message", "Room created successfully!");
+                        response.sendRedirect("room");
+                    } else {
+                        request.getSession().setAttribute("error", "Failed to create room.");
+                        response.sendRedirect("room?action=create");
+                    }
                 }
-                response.sendRedirect("room");
                 break;
             case "delete":
                 String idDelString = request.getParameter("id");
                 int idDel = Integer.parseInt(idDelString);
+
+                // Delete room (only for rooms not in use)
                 int deleted = rdao.deleteRoombyID(idDel);
+
                 if (deleted > 0) {
-                    System.out.println("Room deleted successfully");
+                    request.getSession().setAttribute("message", "Room deleted successfully.");
                 } else {
-                    System.out.println("Failed to delete room");
+                    request.getSession().setAttribute("error", "Failed to delete room.");
+                }
+                response.sendRedirect("room");
+                break;
+            case "disable":
+                String idDisableString = request.getParameter("id");
+                int idDisable = Integer.parseInt(idDisableString);
+
+                // Disable room
+                int disabled = rdao.disableRoom(idDisable);
+
+                if (disabled > 0) {
+                    request.getSession().setAttribute("message", "Room has been disabled successfully.");
+                } else {
+                    request.getSession().setAttribute("error", "Failed to disable room.");
+                }
+                response.sendRedirect("room");
+                break;
+            case "enable":
+                String idEnableString = request.getParameter("id");
+                int idEnable = Integer.parseInt(idEnableString);
+
+                // Enable room
+                int enabled = rdao.enableRoom(idEnable);
+
+                if (enabled > 0) {
+                    request.getSession().setAttribute("message", "Room has been enabled successfully.");
+                } else {
+                    request.getSession().setAttribute("error", "Failed to enable room.");
                 }
                 response.sendRedirect("room");
                 break;
@@ -104,13 +193,17 @@ public class RoomController extends HttpServlet {
                 String nameUpdateString = request.getParameter("name");
                 String capacityUpdateString = request.getParameter("capacity");
                 String typeUpdateString = request.getParameter("type");
+                String statusUpdateString = request.getParameter("status");
+
                 int idUpdate = Integer.parseInt(idUpdateString);
                 int capacityUpdate = Integer.parseInt(capacityUpdateString);
-                int updated = rdao.updateRoom(idUpdate, nameUpdateString, capacityUpdate, typeUpdateString);
+                int statusUpdate = Integer.parseInt(statusUpdateString);
+
+                int updated = rdao.updateRoom(idUpdate, nameUpdateString, capacityUpdate, typeUpdateString, statusUpdate);
                 if (updated > 0) {
-                    System.out.println("Room updated successfully");
+                    request.getSession().setAttribute("message", "Room updated successfully!");
                 } else {
-                    System.out.println("Failed to update room");
+                    request.getSession().setAttribute("error", "Failed to update room.");
                 }
                 response.sendRedirect("room");
                 break;

@@ -3,16 +3,16 @@
 
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
 <style>
-    .delete-card {
+    .enable-card {
         background-color: white;
         padding: 30px;
         border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         max-width: 800px;
     }
-    .warning-box {
-        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        border-left: 4px solid #ef4444;
+    .info-box {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        border-left: 4px solid #10b981;
         padding: 20px;
         border-radius: 8px;
         margin-bottom: 25px;
@@ -20,18 +20,18 @@
         align-items: center;
         gap: 15px;
     }
-    .warning-icon {
+    .info-icon {
         font-size: 2.5rem;
-        color: #ef4444;
+        color: #10b981;
     }
-    .warning-content h4 {
-        color: #991b1b;
+    .info-content h4 {
+        color: #065f46;
         font-size: 1.1rem;
         font-weight: 600;
         margin: 0 0 5px 0;
     }
-    .warning-content p {
-        color: #7f1d1d;
+    .info-content p {
+        color: #047857;
         margin: 0;
         font-size: 0.9rem;
     }
@@ -61,8 +61,8 @@
         gap: 10px;
         margin-top: 30px;
     }
-    .delete-btn {
-        background-color: #ef4444;
+    .enable-btn {
+        background-color: #10b981;
         color: white;
         padding: 10px 24px;
         border: none;
@@ -75,8 +75,8 @@
         align-items: center;
         gap: 5px;
     }
-    .delete-btn:hover {
-        background-color: #dc2626;
+    .enable-btn:hover {
+        background-color: #059669;
         transform: translateY(-1px);
     }
     .cancel-btn {
@@ -111,55 +111,60 @@
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="room">Room Management</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Delete Room</li>
+                <li class="breadcrumb-item active" aria-current="page">Enable Room</li>
             </ol>
         </div>
         <div class="content-header">
             <div>
-                <h2 class="page-title">Delete Room</h2>
-                <p class="text-muted small mb-0">Permanently remove this room from the system</p>
+                <h2 class="page-title">Enable Room</h2>
+                <p class="text-muted small mb-0">Reactivate this disabled room</p>
             </div>
         </div>
     </div>
 
-    <div class="delete-card">
+    <div class="enable-card">
         <c:choose>
-            <c:when test="${not empty roomDel}">
-                <div class="warning-box">
-                    <div class="warning-icon">
-                        <i class='bx bx-error-circle'></i>
+            <c:when test="${not empty roomEnable}">
+                <div class="info-box">
+                    <div class="info-icon">
+                        <i class='bx bx-check-circle'></i>
                     </div>
-                    <div class="warning-content">
-                        <h4>Warning: Permanent Action</h4>
-                        <p>This action cannot be undone. This room will be permanently deleted from the system.</p>
+                    <div class="info-content">
+                        <h4>Room will be Enabled</h4>
+                        <p>This room will be reactivated and available for scheduling again.</p>
                     </div>
                 </div>
 
                 <div class="room-info-box">
                     <div class="room-info-grid">
                         <div class="info-label">Room ID:</div>
-                        <div class="info-value">${roomDel.roomId}</div>
+                        <div class="info-value">${roomEnable.roomId}</div>
 
                         <div class="info-label">Room Name:</div>
-                        <div class="info-value">${roomDel.roomName}</div>
+                        <div class="info-value">${roomEnable.roomName}</div>
 
                         <div class="info-label">Capacity:</div>
                         <div class="info-value">
-                            <i class='bx bx-group'></i> ${roomDel.capacity} people
+                            <i class='bx bx-group'></i> ${roomEnable.capacity} people
                         </div>
 
                         <div class="info-label">Type:</div>
-                        <div class="info-value">${roomDel.type}</div>
+                        <div class="info-value">${roomEnable.type}</div>
+
+                        <div class="info-label">Current Status:</div>
+                        <div class="info-value">
+                            <span class="badge" style="background-color: #ef4444; color: white; padding: 4px 12px; border-radius: 12px;">Disabled</span>
+                        </div>
                     </div>
                 </div>
 
                 <form action="room" method="post">
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="id" value="${roomDel.roomId}">
+                    <input type="hidden" name="action" value="enable">
+                    <input type="hidden" name="id" value="${roomEnable.roomId}">
 
                     <div class="button-group">
-                        <button type="submit" class="delete-btn">
-                            <i class='bx bx-trash'></i> Confirm Delete
+                        <button type="submit" class="enable-btn">
+                            <i class='bx bx-check'></i> Confirm Enable
                         </button>
                         <button type="button" class="cancel-btn" onclick="window.location.href='room'">
                             <i class='bx bx-x'></i> Cancel

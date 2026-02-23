@@ -13,6 +13,7 @@ public class Room {
     private String roomName;
     private int capacity;
     private String type;
+    private boolean status; // true: Active, false: Disabled
 
     public Room() {
     }
@@ -22,6 +23,23 @@ public class Room {
         this.roomName = roomName;
         this.capacity = capacity;
         this.type = type;
+        this.status = true; // Default is active
+    }
+
+    public Room(int roomId, String roomName, int capacity, String type, boolean status) {
+        this.roomId = roomId;
+        this.roomName = roomName;
+        this.capacity = capacity;
+        this.type = type;
+        this.status = status;
+    }
+
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
     }
 
     public String getType() {
@@ -58,7 +76,7 @@ public class Room {
 
     @Override
     public String toString() {
-        return "Room{" + "roomId=" + roomId + ", roomName=" + roomName + ", capacity=" + capacity + ", type=" + type + '}';
+        return "Room{" + "roomId=" + roomId + ", roomName=" + roomName + ", capacity=" + capacity + ", type=" + type + ", status=" + status + '}';
     }
     
 }
