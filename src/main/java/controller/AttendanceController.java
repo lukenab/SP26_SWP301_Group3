@@ -4,7 +4,7 @@
  */
 package controller;
 
-import dao.TeacherDAO;
+import dao.AttendanceDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -12,17 +12,14 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.util.List;
-import model.Schedule;
-import model.User;
 
 /**
  *
  * @author ADMIN
  */
-@WebServlet(name = "ScheduleController", urlPatterns = {"/schedule"})
-public class ScheduleController extends HttpServlet {
+@WebServlet(name = "AttendanceController", urlPatterns = {"/attendance"})
+public class AttendanceController extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -41,10 +38,10 @@ public class ScheduleController extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet ScheduleController</title>");
+            out.println("<title>Servlet AttendanceController</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet ScheduleController at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet AttendanceController at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -62,46 +59,28 @@ public class ScheduleController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
-
-        if (user == null || user.getRole() == null || user.getRole().getRoleId() != 4) {
-            response.sendRedirect("login.jsp");
-            return;
-        }
-
-        TeacherDAO teacherDAO = new TeacherDAO();
         String action = request.getParameter("action");
         if (action == null) {
-            action = "view";
+            action = "take";
         }
 
+        AttendanceDAO dao = new AttendanceDAO();
+
         switch (action) {
-            case "view":
-                String selectedDate = request.getParameter("date");
-                if (selectedDate == null) {
-                    selectedDate = "2026-02-03";
+            case "take":
+                try {
+                    int scheduleId = Integer.parseInt(request.getParameter("scheduleId"));
+                    // Lấy danh sách Object[] (ID, Name, UserID, Status, Note)
+                    List<Object[]> attList = dao.getAttendanceList(scheduleId);
+
+                    request.setAttribute("attList", attList);
+                    request.setAttribute("scheduleId", scheduleId);
+                    request.setAttribute("home_view", "take_attendance.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                } catch (Exception e) {
+                    response.sendRedirect("schedule?action=view");
                 }
-
-                List<Schedule> scheduleList = teacherDAO.getTeachingSchedule(user.getUserId());
-
-                String[] weekdays = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-                int[] slots = {1, 2, 3, 4, 5, 6};
-
-                String[] slotTimes = {"", "07:30 - 09:30", "09:45 - 11:45", "12:30 - 14:30", "14:45 - 16:45", "17:00 - 19:00", "19:15 - 21:15"};
-
-                request.setAttribute("selectedDate", selectedDate);
-                request.setAttribute("weekdays", weekdays);
-                request.setAttribute("slots", slots);
-                request.setAttribute("slotTimes", slotTimes);
-                request.setAttribute("scheduleList", scheduleList);
-
-                request.setAttribute("home_view", "teacher_schedule.jsp");
-                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
-
                 break;
-
         }
     }
 
@@ -116,7 +95,31 @@ public class ScheduleController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String action = request.getParameter("action");
+        AttendanceDAO dao = new AttendanceDAO();
+
+        switch (action) {
+            case "save":
+                try {
+                    // Lấy mảng ID điểm danh để duyệt
+                    String[] attIds = request.getParameterValues("attId");
+                    if (attIds != null) {
+                        for (String id : attIds) {
+                            // Lấy status và note tương ứng từng ID
+                            String status = request.getParameter("status_" + id);
+                            String note = request.getParameter("note_" + id);
+
+                            // Gọi hàm update trong DAO
+                            dao.updateAttendance(Integer.parseInt(id), status, note);
+                        }
+                    }
+                    response.sendRedirect("schedule?action=view&msg=Success");
+                } catch (Exception e) {
+                    response.sendRedirect("schedule?action=view&msg=Error");
+                }
+                break;
+        }
+
     }
 
     /**

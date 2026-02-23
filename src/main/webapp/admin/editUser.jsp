@@ -102,7 +102,10 @@
         <div class="form-row">           
             <div class="form-group">
                 <label for="gender" class="form-label">Gender</label>
-                <input type="text" name="gender" value="${user.gender ? 'Male' : 'Female'}" required>
+                <select name="gender" id="gender" required>
+                    <option value="true" ${user.gender ? 'selected' : ''}>Male</option>
+                    <option value="false" ${!user.gender ? 'selected' : ''}>Female</option>
+                </select>
             </div>
             <div class="form-group">
                 <label for="hireDate">Hire Date</label>

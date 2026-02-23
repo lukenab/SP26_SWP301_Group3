@@ -250,7 +250,6 @@ public class UserDAO extends DBContext {
 //        Boolean addSucess = dao.addNewUser(name, email, password, phone, address, gender, dob, avatar, status, role);
 //        System.out.println(addSucess);
 //        dao.inactivateUser(1);
-        dao.activateUser(1);
 
     }
 }
