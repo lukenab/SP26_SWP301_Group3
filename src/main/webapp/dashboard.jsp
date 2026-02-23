@@ -58,9 +58,8 @@
                             <ul class="profile-options-list">
                                 <li class="divider"></li>
                                 <li>
-                                    <a href="dashboard?action=profile"
-                                       ><i class="bx bx-user"></i><span>Your Profile</span></a
-                                    >
+                                    <a href="dashboard?action=profile">
+                                        <i class="bx bx-user"></i><span>Your Profile</span></a>
                                 </li>
 
                                 <li>

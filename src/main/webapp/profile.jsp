@@ -58,99 +58,164 @@
 
 <div class="form-container">
     <div id="profileTab" class="tab-content" style="display: block">
-        <form action="user?action=update" method="POST" class="form-body">
+        <div class="profile-form">
+            <div class="profile-form-section">
+                <form action="user?action=update" method="POST" class="form-body">
 
-            <input type="hidden" name="userId" value="${user.userId}">
-            <input type="hidden" name="roleId" value="${user.role.roleId}" >
-            <input type="hidden" id="uAvatar" name="avatar" value="${user.avatar}">
+                    <input type="hidden" name="userId" value="${user.userId}">
+                    <input type="hidden" name="roleId" value="${user.role.roleId}" >
+                    <input type="hidden" id="uAvatar" name="avatar" value="${user.avatar}">
 
-            <h3 class="form-title mb-4">Personal Information</h3>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="fullName">Full Name</label>
-                    <input type="text" name="fullName" id="fullName" value="${user.fullName}" required>
+                    <h3 class="form-title mb-4">Personal Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fullName">Full Name</label>
+                            <input type="text" name="fullName" id="fullName" value="${user.fullName}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <input type="number" id="phone" name="phone" value="${user.phone}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <input type="text" id="address" name="address" value="${user.address}">
+                        </div>
+                        <div class="form-group">
+                            <label for="dob">Date of Birth</label>
+                            <input type="date" id="dob" name="dob" value="${user.dob}">
+                        </div>
+                    </div>
+
+                    <div class="form-row">           
+                        <div class="form-group">
+                            <label for="gender" class="form-label">Gender</label>
+                            <input type="text" name="gender" value="${user.gender ? 'Male' : 'Female'}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hireDate">Hire Date</label>
+                            <input type="date" id="hireDate" name="hireDate" value="${employee.hireDate}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">       
+                        <div class="form-group">
+                            <label for="education">Education</label>
+                            <input type="text" name="education" id="education" value="${employee.education}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="experience">Experience</label>
+                            <input type="text" id="experience" name="experience" value="${employee.experience}">
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <a href="user" class="btn btn-cancel">Cancel</a>
+                        <button type="submit" class="btn btn-save">
+                            <i class='bx bx-save'></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="profile-shortcut-section">
+                <div class="shortcut-form">
+                    <div class="activity">
+                        <h6 class="form-title">Recent Activity</h6>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="phone">Phone</label>
-                    <input type="number" id="phone" name="phone" value="${user.phone}" required>
+                <div class="shortcut-form">
+                    <div class="quick-actions">
+                        <h5 class="form-title">Quick Actions</h5>
+                        <div class="shortcut-btn mt-4">
+                            <div class="shortcut-edit">
+                                <a href="#"><i class="bx bx-edit"></i>
+                                    <span>Edit Profile</span></a> 
+                            </div>
+
+                            <div class="shortcut-edit">
+                                <a href="#"><i class="bx bx-bell"></i>
+                                    <span>Notification</span></a> 
+                            </div>
+
+                            <div class="shortcut-edit">
+                                <a href="#"><i class="bx bx-arrow-from-bottom"></i>
+                                    <span>Upload avatar</span></a> 
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="address">Address</label>
-                    <input type="text" id="address" name="address" value="${user.address}">
-                </div>
-                <div class="form-group">
-                    <label for="dob">Date of Birth</label>
-                    <input type="date" id="dob" name="dob" value="${user.dob}">
-                </div>
-            </div>
-
-            <div class="form-row">           
-                <div class="form-group">
-                    <label for="gender" class="form-label">Gender</label>
-                    <input type="text" name="gender" value="${user.gender ? 'Male' : 'Female'}" required>
-                </div>
-                <div class="form-group">
-                    <label for="hireDate">Hire Date</label>
-                    <input type="date" id="hireDate" name="hireDate" value="${employee.hireDate}" required>
-                </div>
-            </div>
-
-            <div class="form-row">       
-                <div class="form-group">
-                    <label for="education">Education</label>
-                    <input type="text" name="education" id="education" value="${employee.education}" required>
-                </div>
-                <div class="form-group">
-                    <label for="experience">Experience</label>
-                    <input type="text" id="experience" name="experience" value="${employee.experience}">
-                </div>
-            </div>
-
-            <div class="form-buttons">
-                <a href="user" class="btn btn-cancel">Cancel</a>
-                <button type="submit" class="btn btn-save">
-                    <i class='bx bx-save'></i> Update Changes
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
 
     <div id="securityTab" class="tab-content" style="display: none">
-        <form action="user?action=changePassword" method="POST" class="form-body">
-            <h3 class="form-title mb-4">Change password</h3>
-            <input type="hidden" name="userId" value="${user.userId}">
+       <div class="password-form">
+           <div class="password-form-section">
+                <form action="user?action=changePassword" method="POST" class="form-body">
+                    <h3 class="form-title mb-4">Change password</h3>
+                    <input type="hidden" name="userId" value="${user.userId}">
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="currentPassword">Current Password</label>
-                    <input type="text" name="currentPassword" id="currentPassword" required>
+                    <div class="form-row full-width-row">
+                        <div class="form-group">
+                            <label for="currentPassword">Current Password</label>
+                            <input type="text" name="currentPassword" id="currentPassword" placeholder="Confirm current password" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row full-width-row">
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <input type="text" name="newPassword" id="newPassword" placeholder="Enter new password" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row full-width-row">
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm New Password</label>
+                            <input type="text" name="confirmPassword" id="confirmPassword" placeholder="Confirm new password" required>
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <a href="dashboard?action=profile" class="btn btn-cancel">Cancel</a>
+                        <button type="submit" class="btn btn-save">
+                            <i class='bx bx-refresh-ccw'></i> Update Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="profile-shortcut-section">
+                <div class="shortcut-form">
+                    <div class="activity">
+                        <h6 class="form-title">Recent Activity</h6>
+                    </div>
+                </div>
+                <div class="shortcut-form">
+                    <div class="quick-actions">
+                        <h5 class="form-title">Quick Actions</h5>
+                        <div class="shortcut-btn mt-4">
+                            <div class="shortcut-edit">
+                                <a href="#"><i class="bx bx-edit"></i>
+                                    <span>Edit Profile</span></a> 
+                            </div>
+
+                            <div class="shortcut-edit">
+                                <a href="#"><i class="bx bx-bell"></i>
+                                    <span>Notification</span></a> 
+                            </div>
+
+                            <div class="shortcut-edit">
+                                <a href="#"><i class="bx bx-arrow-from-bottom"></i>
+                                    <span>Upload avatar</span></a> 
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="newPassword">New Password</label>
-                    <input type="text" name="newPassword" id="newPassword" required>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="confirmPassword">Confirm New Password</label>
-                    <input type="text" name="confirmPassword" id="confirmPassword" required>
-                </div>
-            </div>
-
-            <div class="form-buttons">
-                <a href="dashboard?action=profile" class="btn btn-cancel">Cancel</a>
-                <button type="submit" class="btn btn-save">
-                    <i class='bx bx-lock-alt'></i> Update Password
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
