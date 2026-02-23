@@ -86,7 +86,7 @@
                     </div>
                     <div class="info-item">
                         <p>Address</p>
-                        <span>${user.address ? user.address : 'N/A'}</span>
+                        <span>${not empty user.address ? user.address : 'N/A'}</span>
                     </div>
                     <c:if test="${user.role.roleId == 5}">
                         <div class="info-item">
@@ -106,12 +106,12 @@
                         </div>  
                         <div class="info-item">
                             <p>Education</p>
-                            <span>${employee.education ? employee.education : 'N/A'}</span>
+                            <span>${not empty employee.education ? employee.education : 'N/A'}</span>
                         </div>
 
                         <div class="info-item">
                             <p>Experience</p>
-                            <span>${employee.experience ? employee.experience : 'N/A'}</span>
+                            <span>${not empty employee.experience ? employee.experience : 'N/A'}</span>
                         </div>
 
                     </div>
