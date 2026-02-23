@@ -46,11 +46,24 @@ public class LeadController extends HttpServlet {
 
                 request.setAttribute("leadList", leadList);
                 request.setAttribute("totalLeads", totalLeads);
-                request.setAttribute("home_view", "viewLead.jsp");
+                request.setAttribute("home_view", "Lead/viewLead.jsp");
                 request.getRequestDispatcher("dashboard").forward(request, response);
                 break;
-        }
+            case "add":
+                request.setAttribute("home_view", "Lead/AddLead.jsp");
+                request.getRequestDispatcher("dashboard").forward(request, response);
+                break;
 
+            case "update":
+                int id = Integer.parseInt(request.getParameter("id"));
+                Lead lead = leadDAO.getLeadByID(id);
+
+                request.setAttribute("lead", lead);
+                request.setAttribute("home_view", "Lead/UpdateLead.jsp");
+                request.getRequestDispatcher("dashboard").forward(request, response);
+                break;
+
+        }
     }
 
     /**
@@ -64,6 +77,47 @@ public class LeadController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String action = request.getParameter("action");
+        LeadDAO leadDAO = new LeadDAO();
 
+        if ("create".equals(action)) {
+
+            String fullName = request.getParameter("fullName");
+            String email = request.getParameter("email");
+            String phone = request.getParameter("phone");
+            int interestedCourseID = Integer.parseInt(request.getParameter("interestedCourseID"));
+            String status = request.getParameter("status");
+            String note = request.getParameter("note");
+
+            Lead lead = new Lead();
+            lead.setFullName(fullName);
+            lead.setEmail(email);
+            lead.setPhone(phone);
+            lead.setInterestedCourseID(interestedCourseID);
+            lead.setStatus(status);
+            lead.setNote(note);
+            leadDAO.insertLead(lead);
+
+            response.sendRedirect("lead?action=all");
+        } else if ("update".equals(action)) {
+
+            int id = Integer.parseInt(request.getParameter("leadID"));
+            String status = request.getParameter("status");
+            String note = request.getParameter("note");
+
+            leadDAO.updateLeadStatus(id, status, note);
+
+            response.sendRedirect("lead?action=all");
+        } else if ("delete".equals(action)) {
+
+            String idParam = request.getParameter("leadID");
+
+            if (idParam != null && !idParam.isEmpty()) {
+                int id = Integer.parseInt(idParam);
+                leadDAO.deleteLead(id);   
+            }
+
+            response.sendRedirect("lead?action=all");
+        }
     }
 }
