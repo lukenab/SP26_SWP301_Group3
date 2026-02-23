@@ -17,7 +17,7 @@ import utils.DBContext;
  */
 public class RoleDAO extends DBContext {
 
-    public List<Role> getAllList() {
+    public List<Role> getAllRole() {
         List<Role> list = new ArrayList<>();
         String sql = "SELECT * FROM Role";
         try {
@@ -55,7 +55,7 @@ public class RoleDAO extends DBContext {
 
     public static void main(String[] args) {
         RoleDAO dao = new RoleDAO();
-        List<Role> list = dao.getAllList();
+        List<Role> list = dao.getAllRole();
         System.out.println(list);
 
         int id = 1;

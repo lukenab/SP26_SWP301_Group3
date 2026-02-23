@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import model.Role;
 import model.User;
 
 /**
@@ -55,16 +56,18 @@ public class LoginController extends HttpServlet {
         if (user != null) {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
-            if(user.getUserId() == 1){
-             response.sendRedirect("dashboard.jsp");
-            }
-            else if(user.getRole().getRoleId() == 4){    
-                response.sendRedirect("dashboard.jsp");
-            }
-            else if(user.getRole().getRoleId() == 2){    
-                response.sendRedirect("dashboard.jsp");
+
+            int roleId = user.getRole().getRoleId();
+            if(roleId == 1) {
+                response.sendRedirect("dashboard?action=admin");
+            } else if (roleId == 2 || roleId == 3 || roleId == 4) {
+                response.sendRedirect("dashboard?action=all");
+            } else {
+                response.sendRedirect("dashboard");
             }
         } else {
+            HttpSession loginSession = request.getSession();
+            loginSession.setAttribute("message", "Invalid email or password!");
             response.sendRedirect("login");
         }
     }
