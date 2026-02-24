@@ -222,6 +222,9 @@
     color: #9CA3AF;
     font-size: 1.2rem;
     margin-left: 10px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
     transition: color 0.2s;
 }
 .action-btn:hover {

@@ -1,156 +1,79 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
-<style>
-    .form-container {
-        background-color: white;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        max-width: 800px;
-    }
-    .form-group {
-        margin-bottom: 20px;
-    }
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: var(--text-primary);
-        font-size: 14px;
-    }
-    .form-group input[type="text"],
-    .form-group input[type="number"],
-    .form-group textarea,
-    .form-group select {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        box-sizing: border-box;
-        font-size: 14px;
-        transition: border-color 0.2s;
-    }
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
-        outline: none;
-        border-color: var(--primary-blue);
-    }
-    .form-group textarea {
-        resize: vertical;
-        min-height: 100px;
-        font-family: inherit;
-    }
-    .required {
-        color: #dc3545;
-    }
-    .button-group {
-        display: flex;
-        gap: 10px;
-        margin-top: 30px;
-    }
-    .submit-btn {
-        background-color: var(--primary-blue);
-        color: white;
-        padding: 10px 24px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    .submit-btn:hover {
-        background-color: #1d4ed8;
-        transform: translateY(-1px);
-    }
-    .cancel-btn {
-        background-color: #6B7280;
-        color: white;
-        padding: 10px 24px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    .cancel-btn:hover {
-        background-color: #4B5563;
-    }
-    .alert {
-        padding: 12px 16px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-    }
-    .alert-danger {
-        background-color: #fee;
-        color: #c33;
-        border: 1px solid #fcc;
-    }
-</style>
+<link href="css/createUser.css" rel="stylesheet" type="text/css"/>
 
-<div class="container-fluid px-4 content-body">
-    <div class="mb-4">
-        <div aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="room">Room Management</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Create Room</li>
-            </ol>
+<div class="mb-4">
+    <div aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="room">Room Management</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Create Room</li>
+        </ol>
+    </div>
+    <div class="content-header">
+        <div>
+            <h2 class="page-title">Room Management</h2>
+            <p class="text-muted small mb-0">Create new room</p>
         </div>
-        <div class="content-header">
-            <div>
-                <h2 class="page-title">Create New Room</h2>
-                <p class="text-muted small mb-0">Add a new room to the system</p>
-            </div>
+        <a href="room" class="btn-secondary">
+            <i class='bx bx-arrow-left'></i> Back to Rooms
+        </a>
+    </div>
+</div>
+
+<div class="form-container">
+    <div class="form-tabs">
+        <div class="form-tab active">
+            <i class='bx bx-door-open'></i>
+            <span>Room Information</span>
         </div>
     </div>
 
-    <div class="form-container">
-        <c:if test="${not empty sessionScope.error}">
-            <div class="alert alert-danger">
-                <i class='bx bx-error-circle'></i> ${sessionScope.error}
-            </div>
-            <% session.removeAttribute("error"); %>
-        </c:if>
+    <p class="form-title">Basic Information</p>
 
-        <form action="room" method="post">
-            <input type="hidden" name="action" value="create">
+    <c:if test="${not empty sessionScope.error}">
+        <div class="alert-box info">
+            <i class='bx bx-error-circle'></i> ${sessionScope.error}
+        </div>
+        <% session.removeAttribute("error"); %>
+    </c:if>
 
+    <form action="room" method="post" class="form-body">
+        <input type="hidden" name="action" value="create">
+
+        <div class="form-row">
             <div class="form-group">
-                <label for="name">Room Name: <span class="required">*</span></label>
+                <label for="name">Room Name <span>*</span></label>
                 <input type="text" id="name" name="name" placeholder="Enter room name" required>
             </div>
 
             <div class="form-group">
-                <label for="capacity">Capacity: <span class="required">*</span></label>
+                <label for="capacity">Capacity <span>*</span></label>
                 <input type="number" id="capacity" name="capacity" min="1" placeholder="Enter room capacity" required>
             </div>
+        </div>
 
+        <div class="form-row">
             <div class="form-group">
-                <label for="type">Type: <span class="required">*</span></label>
+                <label for="type">Type <span>*</span></label>
                 <textarea id="type" name="type" placeholder="Enter room type or description" required></textarea>
             </div>
 
             <div class="form-group">
-                <label for="status">Status: <span class="required">*</span></label>
+                <label for="status">Status <span>*</span></label>
                 <select id="status" name="status" required>
                     <option value="1" selected>Active</option>
                     <option value="0">Disabled</option>
                 </select>
             </div>
+        </div>
 
-            <div class="button-group">
-                <button type="submit" class="submit-btn">
-                    <i class='bx bx-check'></i> Create Room
-                </button>
-                <button type="button" class="cancel-btn" onclick="window.location.href='room'">
-                    <i class='bx bx-x'></i> Cancel
-                </button>
-            </div>
-        </form>
-    </div>
+        <div class="form-buttons">
+            <button type="button" class="btn btn-cancel" onclick="window.location.href='room'">Cancel</button>
+            <button type="submit" class="btn btn-save">
+                <i class='bx bx-check'></i> Create Room
+            </button>
+        </div>
+    </form>
 </div>
