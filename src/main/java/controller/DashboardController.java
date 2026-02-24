@@ -54,15 +54,29 @@ public class DashboardController extends HttpServlet {
                 break;
             case "profile": 
                 HttpSession session = request.getSession();
-                User user = (User)session.getAttribute("user");
+                User loggedInUser = (User)session.getAttribute("user");
                 
-                if(user == null){
+                if(loggedInUser == null){
                     response.sendRedirect("login");
+                    return; 
                 }
                 
-                request.setAttribute("user", user);
+                User freshUser = userDAO.getUserById(loggedInUser.getUserId());
+                session.setAttribute("user", freshUser); 
+                request.setAttribute("user", freshUser);
+                
+                int roleId = freshUser.getRole().getRoleId();
+                if (roleId == 5) {
+                    dao.StudentDAO stuDAO = new dao.StudentDAO();
+                    request.setAttribute("student", stuDAO.getStudentById(freshUser.getUserId()));
+                } else {
+                    dao.EmployeeDAO empDAO = new dao.EmployeeDAO();
+                    request.setAttribute("employee", empDAO.getEmployeeById(freshUser.getUserId()));
+                }
+                
                 request.setAttribute("home_view", "profile.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
                 
                 
                 

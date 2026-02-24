@@ -19,6 +19,32 @@
     </div>
 </div>
 
+<c:if test="${not empty sessionScope.message}">
+    <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+        <div class="toast-icon">
+            <c:choose>
+                <c:when test="${sessionScope.messageType == 'success'}">
+                    <i class='bx bx-check-circle'></i>
+                </c:when>
+                <c:otherwise>
+                    <i class='bx bx-error-circle'></i>
+                </c:otherwise>
+            </c:choose>
+        </div>
+        <div class="toast-content">
+            <span class="toast-title">
+                ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+            </span>
+            <span class="toast-message">${sessionScope.message}</span>
+        </div>
+        <button class="toast-close" onclick="closeToast()">
+            <i class='bx bx-x'></i>
+        </button>
+    </div>
+
+    <c:remove var="message" scope="session" />
+    <c:remove var="messageType" scope="session" />
+</c:if>
 
 <div class="profile-header-card">
     <div class="profile-avatar-section">
@@ -60,7 +86,7 @@
     <div id="profileTab" class="tab-content" style="display: block">
         <div class="profile-form">
             <div class="profile-form-section">
-                <form action="user?action=update" method="POST" class="form-body">
+                <form action="user?action=updateProfile" method="POST" class="form-body">
 
                     <input type="hidden" name="userId" value="${user.userId}">
                     <input type="hidden" name="roleId" value="${user.role.roleId}" >
@@ -89,27 +115,40 @@
                         </div>
                     </div>
 
-                    <div class="form-row">           
+                    <div class="form-row">
                         <div class="form-group">
                             <label for="gender" class="form-label">Gender</label>
-                            <input type="text" name="gender" value="${user.gender ? 'Male' : 'Female'}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="hireDate">Hire Date</label>
-                            <input type="date" id="hireDate" name="hireDate" value="${employee.hireDate}" required>
+                            <select name="gender" id="gender" required>
+                                <option value="true" ${user.gender ? 'selected' : ''}>Male</option>
+                                <option value="false" ${!user.gender ? 'selected' : ''}>Female</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="form-row">       
-                        <div class="form-group">
-                            <label for="education">Education</label>
-                            <input type="text" name="education" id="education" value="${employee.education}" required>
+
+                    <c:if test="${user.role.roleId == 2 || user.role.roleId == 3 || user.role.roleId == 4 }">
+                        <div class="form-row">           
+                            <div class="form-group">
+                                <label for="gender" class="form-label">Gender</label>
+                                <input type="text" name="gender" value="${user.gender ? 'Male' : 'Female'}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="hireDate">Hire Date</label>
+                                <input type="date" id="hireDate" name="hireDate" value="${employee.hireDate}" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="experience">Experience</label>
-                            <input type="text" id="experience" name="experience" value="${employee.experience}">
+
+                        <div class="form-row">       
+                            <div class="form-group">
+                                <label for="education">Education</label>
+                                <input type="text" name="education" id="education" value="${employee.education}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="experience">Experience</label>
+                                <input type="text" id="experience" name="experience" value="${employee.experience}">
+                            </div>
                         </div>
-                    </div>
+                    </c:if>
 
                     <div class="form-buttons">
                         <a href="user" class="btn btn-cancel">Cancel</a>
@@ -151,8 +190,8 @@
     </div>
 
     <div id="securityTab" class="tab-content" style="display: none">
-       <div class="password-form">
-           <div class="password-form-section">
+        <div class="password-form">
+            <div class="password-form-section">
                 <form action="user?action=changePassword" method="POST" class="form-body">
                     <h3 class="form-title mb-4">Change password</h3>
                     <input type="hidden" name="userId" value="${user.userId}">
@@ -221,4 +260,5 @@
 
 <script src="js/editUser.js" type="text/javascript"></script>
 <script src="js/profile.js" type="text/javascript"></script>
+<script src="js/manageUser.js" type="text/javascript"></script>
 

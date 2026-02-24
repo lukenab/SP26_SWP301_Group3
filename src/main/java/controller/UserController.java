@@ -260,6 +260,66 @@ public class UserController extends HttpServlet {
 
                 response.sendRedirect("dashboard?action=profile");
                 break;
+
+            case "updateProfile":
+                String pFullName = request.getParameter("fullName");
+                String pPhone = request.getParameter("phone");
+                String pAddress = request.getParameter("address");
+                if (pAddress == null) {
+                    pAddress = "";
+                }
+
+                Boolean pGender = Boolean.valueOf(request.getParameter("gender"));
+
+                String dobStr = request.getParameter("dob");
+                java.sql.Date pDob = null;
+                if (dobStr != null && !dobStr.isEmpty()) {
+                    pDob = java.sql.Date.valueOf(dobStr);
+                }
+
+                String pAvatar = request.getParameter("avatar");
+                if (pAvatar == null || pAvatar.trim().isEmpty()) {
+                    pAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                }
+
+                int pUserId = Integer.parseInt(request.getParameter("userId"));
+                int pRoleId = Integer.parseInt(request.getParameter("roleId"));
+
+                java.sql.Date pHireDate = null;
+                String pEducation = null;
+                String pExperience = null;
+                java.sql.Date pEnrollmentDate = null;
+
+                if (pRoleId == 2 || pRoleId == 3 || pRoleId == 4) {
+                    String hDate = request.getParameter("hireDate");
+                    if (hDate != null && !hDate.isEmpty()) {
+                        pHireDate = java.sql.Date.valueOf(hDate);
+                    }
+                    pEducation = request.getParameter("education");
+                    pExperience = request.getParameter("experience");
+                } else if (pRoleId == 5) {
+                    String enrollStr = request.getParameter("enrollmentDate");
+                    if (enrollStr != null && !enrollStr.isEmpty()) {
+                        pEnrollmentDate = java.sql.Date.valueOf(enrollStr);
+                    }
+                }
+
+                boolean isProfUpdated = userDAO.updateUserById(pFullName, pPhone, pAddress, pGender, pDob, pAvatar, pRoleId, pUserId, pEnrollmentDate, pHireDate, pEducation, pExperience);
+                HttpSession pSession = request.getSession();
+
+                if (isProfUpdated) {
+                    pSession.setAttribute("message", "Profile Updated Successfully!");
+                    pSession.setAttribute("messageType", "success");
+            
+                    User updatedUser = userDAO.getUserById(pUserId);
+                    pSession.setAttribute("user", updatedUser);
+                } else {
+                    pSession.setAttribute("message", "Profile Update Failed!");
+                    pSession.setAttribute("messageType", "error");
+                }
+                
+                response.sendRedirect("dashboard?action=profile");
+                break;
         }
     }
 

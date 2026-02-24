@@ -12,84 +12,16 @@
 }
 
 .form-container {
-    border-radius: 10px;
-    margin-top: 24px;
-}
-
-.profile-form{
-    display: flex;
-    gap: 20px;
-}
-
-.profile-form-section{
-    width: 65%;
-    height: 450px;
-    padding: 24px;
-    background-color: #ffffff;
-    border-radius: 10px;
-}
-
-.profile-shortcut-section{
-    width: 35%;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.quick-actions{
-    margin-top: 7px;
-}
-
-.shortcut-form{
-    height: 240px;
-    padding: 25px;
-    border-radius: 10px;
-    background-color: #fff;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-}
-
-.shortcut-edit a{
-    text-decoration: none;
-    color: #475569;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 14px;
-    border-radius: 10px;
-    font-size: 15px;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-.shortcut-edit a i{
-    font-size: 18px;
-    color: inherit;
-    transition: all 0.3s ease
-}
-
-.shortcut-edit a:hover{
-    background-color: #F8FAFC;
-    color: #0056D2;
-}
-
-.password-form{
-    display: flex;
-    gap: 20px;
-}
-
-.password-form-section{
-    height: 450px;
-    width: 65%;
-    padding: 30px;
-    background-color: #ffffff;
+    background: #fff;
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    margin-top: 24px;
 }
 
 .form-tabs {
     display: flex;
-    border-bottom: 2px solid #E2E8F0;
-    padding: 0 24px 0 24px;
+    border-bottom: 1px solid #eee;
+    padding: 12px 24px 0 24px;
     gap: 24px;
 }
 .form-tab {
@@ -114,6 +46,10 @@
     margin-bottom: -10px;
 }
 
+.form-body {
+    padding: 24px;
+}
+
 .form-row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -121,9 +57,6 @@
     margin-bottom: 20px;
 }
 
-.form-row.full-width-row {
-    grid-template-columns: 1fr;
-}
 
 .form-row:has(.form-group:nth-child(3)) {
     grid-template-columns: repeat(3, 1fr);
@@ -255,10 +188,6 @@
     font-weight: 600;
     padding: 20px 24px 0 24px;
     margin-bottom: -10px;
-}
-
-.content-header{
-    margin-top: 10px;
 }
 
 .content-header a{
@@ -455,38 +384,3 @@
     border-style: solid;
     border-color: transparent transparent #ffffff transparent;
 }
-
-.form-tabs {
-    display: flex;
-    gap: 30px;
-    margin-bottom: 0;
-    padding-left: 24px;
-}
-
-.form-tab {
-    padding: 12px 0;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--dark-grey);
-    border-bottom: 3px solid transparent;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.form-tab:hover {
-    color: var(--blue);
-}
-
-.form-tab.active {
-    color: var(--blue);
-    border-bottom-color: var(--blue);
-}
-
-.form-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #111827;
-    margin-top: 0;
-    padding: 0;
-}
-
