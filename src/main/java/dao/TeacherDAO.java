@@ -77,7 +77,7 @@ public class TeacherDAO extends DBContext {
                 Classes c = new Classes();
                 c.setClassid(rs.getInt("ClassID"));
                 c.setClassName(rs.getString("ClassName"));
-                c.setStarDate(rs.getDate("StartDate"));
+                c.setStartDate(rs.getDate("StartDate"));
                 c.setEndDate(rs.getDate("EndDate"));
                 c.setStatus(rs.getString("Status"));
                 Course course = new Course();
