@@ -79,16 +79,19 @@ public class ScheduleController extends HttpServlet {
 
         switch (action) {
             case "view":
+
                 String selectedDate = request.getParameter("date");
-                if (selectedDate == null) {
-                    selectedDate = "2026-02-03";
+
+                if (selectedDate == null || selectedDate.trim().isEmpty()) {
+                    selectedDate = java.time.LocalDate.now().toString(); // Sẽ ra "2026-02-24"
                 }
 
-                List<Schedule> scheduleList = teacherDAO.getTeachingSchedule(user.getUserId());
+                request.setAttribute("selectedDate", selectedDate);
+
+                List<Schedule> scheduleList = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
 
                 String[] weekdays = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
                 int[] slots = {1, 2, 3, 4, 5, 6};
-
                 String[] slotTimes = {"", "07:30 - 09:30", "09:45 - 11:45", "12:30 - 14:30", "14:45 - 16:45", "17:00 - 19:00", "19:15 - 21:15"};
 
                 request.setAttribute("selectedDate", selectedDate);
@@ -97,9 +100,8 @@ public class ScheduleController extends HttpServlet {
                 request.setAttribute("slotTimes", slotTimes);
                 request.setAttribute("scheduleList", scheduleList);
 
-                request.setAttribute("home_view", "/teacher/teacher_schedule.jsp");
+                request.setAttribute("home_view", "teacher/teacher_schedule.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
-
                 break;
 
         }

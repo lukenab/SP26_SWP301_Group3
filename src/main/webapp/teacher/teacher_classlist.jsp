@@ -103,7 +103,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="text-secondary">${c.starDate}</td>
+                            <td class="text-secondary">${c.startDate}</td>
                             <td class="text-secondary">${c.endDate}</td>
                             <td>
                                 <span class="badge ${c.status == 'Active' ? 'badge-teacher' : 'badge-academicStaff'}">
