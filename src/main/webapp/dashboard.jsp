@@ -119,13 +119,6 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="room">
-                                <i class="bxr bx-door-open"></i>
-                                <span class="text nav-text">Room Management</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
                             <a href="#">
                                 <i class="bxr bx-file-report"></i>
                                 <span class="text nav-text">Report</span>
