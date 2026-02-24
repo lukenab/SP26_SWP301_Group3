@@ -15,7 +15,7 @@ public class Classes {
     private String className;
     private Course course;
     private Employee employee;
-    private Date starDate;
+    private Date startDate;
     private Date endDate;
     private String status;
 
@@ -27,7 +27,7 @@ public class Classes {
         this.className = className;
         this.course = course;
         this.employee = employee;
-        this.starDate = starDate;
+        this.startDate = starDate;
         this.endDate = endDate;
         this.status = status;
     }
@@ -64,12 +64,12 @@ public class Classes {
         this.employee = employee;
     }
 
-    public Date getStarDate() {
-        return starDate;
+    public Date getStartDate() {
+        return startDate;
     }
 
-    public void setStarDate(Date starDate) {
-        this.starDate = starDate;
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
     }
 
     public Date getEndDate() {
@@ -90,7 +90,7 @@ public class Classes {
 
     @Override
     public String toString() {
-        return "Classes{" + "classid=" + classid + ", className=" + className + ", course=" + course + ", employee=" + employee + ", starDate=" + starDate + ", endDate=" + endDate + ", status=" + status + '}';
+        return "Classes{" + "classid=" + classid + ", className=" + className + ", course=" + course + ", employee=" + employee + ", starDate=" + startDate + ", endDate=" + endDate + ", status=" + status + '}';
     }
 
   
