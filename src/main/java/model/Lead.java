@@ -19,6 +19,7 @@ public class Lead {
     private Course course;
     private String status;
     private LocalDateTime createDate;
+    private String Note;
 
     public Lead() {
     }
@@ -98,6 +99,15 @@ public class Lead {
         this.status = status;
     }
 
+    public String getNote() {
+        return Note;
+    }
+
+    public void setNote(String Note) {
+        this.Note = Note;
+    }
+
+    
     @Override
     public String toString() {
         return "Lead{" + "leadId=" + leadId + ", fullName=" + fullName + ", email=" + email + ", phone=" + phone + ", course=" + course + ", status=" + status + ", createDate=" + createDate + '}';

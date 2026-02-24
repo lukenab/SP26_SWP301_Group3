@@ -26,8 +26,6 @@ public class Employee {
         this.experience = experience;
     }
 
-   
-
     @Override
     public String toString() {
         return "Employee{" + "employeeId=" + employeeId + ", hireDate=" + hireDate + ", education=" + education + ", experience=" + experience + '}';

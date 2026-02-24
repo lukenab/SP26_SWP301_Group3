@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import model.Role;
 import model.User;
 
 /**
@@ -62,6 +63,8 @@ public class LoginController extends HttpServlet {
                 response.sendRedirect("room");
             }
         } else {
+            HttpSession loginSession = request.getSession();
+            loginSession.setAttribute("message", "Invalid email or password!");
             response.sendRedirect("login");
         }
     }

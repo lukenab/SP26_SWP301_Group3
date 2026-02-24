@@ -1,10 +1,5 @@
-<%-- 
-    Document   : login
-    Created on : Jan 27, 2026, 7:55:43 AM
-    Author     : Legion
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -23,6 +18,14 @@
                     <h2>Welcome back</h2>
                     <p>Please sign in to continue</p>
                 </div>
+
+                <c:if test="${not empty sessionScope.message}">
+                    <div class="alert-error">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <span>${sessionScope.message}</span>
+                    </div>
+                    <c:remove var="message" scope="session"/>
+                </c:if>
 
                 <form class="login-form" action="login" method="post">
                     <div class="form-group">
@@ -78,3 +81,4 @@
         </div>
     </body>
 </html>
+

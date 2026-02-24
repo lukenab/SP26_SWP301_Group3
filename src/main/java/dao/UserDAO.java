@@ -18,9 +18,10 @@ import utils.DBContext;
  *
  * @author Legion
  */
-public class UserDAO extends DBContext{
+public class UserDAO extends DBContext {
+
     RoleDAO roleDAO = new RoleDAO();
-    
+
     public String hashMD5(String str) {
         try {
             MessageDigest mes = MessageDigest.getInstance("MD5");
@@ -39,14 +40,14 @@ public class UserDAO extends DBContext{
 
         return "";
     }
- 
-    public List<User> getAllUser(){
+
+    public List<User> getAllUser() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM [user]";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
-            while(rs.next()){
+            while (rs.next()) {
                 int userId = rs.getInt("UserID");
                 String fullname = rs.getString("FullName");
                 String email = rs.getString("Email");
@@ -58,23 +59,23 @@ public class UserDAO extends DBContext{
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                
+
                 User user = new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role);
                 list.add(user);
             }
         } catch (Exception e) {
-            System.out.println("Fail to get all user: " +e.getMessage());
+            System.out.println("Fail to get all user: " + e.getMessage());
         }
-        return list;  
+        return list;
     }
-    
-        public User getUserById(int id){
+
+    public User getUserById(int id) {
         String sql = "SELECT * FROM [user] WHERE UserID = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
-            while(rs.next()){
+            while (rs.next()) {
                 int userId = rs.getInt("UserID");
                 String fullname = rs.getString("FullName");
                 String email = rs.getString("Email");
@@ -86,16 +87,16 @@ public class UserDAO extends DBContext{
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                
+
                 return new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role);
             }
         } catch (Exception e) {
-            System.out.println("Fail to get user by ID: " +e.getMessage());
+            System.out.println("Fail to get user by ID: " + e.getMessage());
         }
-        return null;  
+        return null;
     }
-    
-    public User checkLogin(String email, String password){
+
+    public User checkLogin(String email, String password) {
         String sql = "SELECT * FROM [User] WHERE Email = ? AND Password = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -104,7 +105,7 @@ public class UserDAO extends DBContext{
 //            String hashedPassword = password;
             ps.setString(2, hashedPassword);
             ResultSet rs = ps.executeQuery();
-            if(rs.next()){
+            if (rs.next()) {
                 int userId = rs.getInt("UserID");
                 String fullname = rs.getString("FullName");
 
@@ -115,16 +116,118 @@ public class UserDAO extends DBContext{
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                
+
                 User user = new User(userId, fullname, email, hashedPassword, phone, address, gender, birthdate, avatar, status, role);
                 return user;
             }
         } catch (Exception e) {
-            System.out.println("Fail to check login: " +e.getMessage());
+            System.out.println("Fail to check login: " + e.getMessage());
         }
         return null;
     }
-    
+
+    public Boolean addNewUser(String fullName, String email, String password, String phone, String address, Boolean gender, Date Dob, String avatar, Boolean status, Role role) {
+        String sql = "INSERT INTO [dbo].[User] ([FullName],[Email],[Password],[Phone],[Address],[Gender],[Dob],[Avatar],[Status],[RoleID]) "
+                + "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, fullName);
+            ps.setString(2, email);
+            ps.setString(3, hashMD5(password));
+            ps.setString(4, phone);
+            ps.setString(5, address);
+            ps.setBoolean(6, gender);
+            ps.setDate(7, Dob);
+            ps.setString(8, avatar);
+            ps.setBoolean(9, status);
+            ps.setInt(10, role.getRoleId());
+            int row = ps.executeUpdate();
+            if (row != 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to add new user: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean inactivateUser(int id) {
+        String sql = "UPDATE [USER] SET Status = 0 WHERE UserID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            int row = ps.executeUpdate();
+            if (row > 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to inactivate User: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean activateUser(int id) {
+        String sql = "UPDATE [USER] SET Status = 1 WHERE UserID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            int row = ps.executeUpdate();
+            if (row > 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to activate User: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public Boolean updateUserById(String fullName, String phone, String address, Boolean gender, Date dob, String avatar, int roleId, int userId, Date enrollmentDate, Date HireDate, String education, String experience) {
+        String sql = "UPDATE [dbo].[User] SET [FullName] = ?,[Phone] = ?,[Address] = ?,[Gender] = ?,[Dob] = ?,[Avatar] = ? WHERE UserID = ?";
+        String employeeSql = "UPDATE [dbo].[Employee] SET [HireDate] = ?, [Education] = ?, [Experience] = ? WHERE EmployeeID = ?";
+        String studentSql = "UPDATE [dbo].[Student] SET [EnrollmentDate] = ? WHERE [StudentID] = ?";
+        try {
+            conn.setAutoCommit(false);
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, fullName);
+            ps.setString(2, phone);
+            ps.setString(3, address);
+            ps.setBoolean(4, gender);
+            ps.setDate(5, dob);
+            ps.setString(6, avatar);
+            ps.setInt(7, userId);
+            ps.executeUpdate();
+            if (roleId == 5) {
+                PreparedStatement psStu = conn.prepareStatement(studentSql);
+                psStu.setDate(1, enrollmentDate);
+                psStu.setInt(2, userId);
+                psStu.executeUpdate();
+            } else if (roleId == 2 || roleId == 3 || roleId == 4) {
+                PreparedStatement psEmpl = conn.prepareStatement(employeeSql);
+                psEmpl.setDate(1, HireDate);
+                psEmpl.setString(2, education);
+                psEmpl.setString(3, experience);
+                psEmpl.setInt(4, userId);
+                psEmpl.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            try {
+                conn.rollback();
+            } catch (Exception ex) {
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (Exception e) {
+            }
+        }
+
+        return false;
+    }
+
     public static void main(String[] args) {
         UserDAO dao = new UserDAO();
         List<User> list = dao.getAllUser();

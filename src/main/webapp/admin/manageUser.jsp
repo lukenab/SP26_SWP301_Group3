@@ -1,5 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
 
@@ -18,10 +19,88 @@
                 <p class="text-muted small mb-0">Manage and organize your users</p>
             </div>
             <a href="user?action=add" class="btn btn-add-new">
-                <i class='bx bx-user-plus'></i> Add New User
+                <i class='bx bx-user-plus'></i> Add User
             </a>
         </div>
     </div>
+    
+    <c:set var="activeUsers" value="0"/>
+    <c:set var="inactiveUsers" value="0"/>
+    <c:set var="admin" value="0"/>
+    <c:forEach var="u" items="${userList}">
+        <c:if test="${u.status == true}">
+            <c:set var="activeUsers" value="${activeUsers + 1}"/>
+        </c:if>
+        <c:if test="${u.status == false}">
+            <c:set var="inactiveUsers" value="${inactiveUsers + 1}"/>
+        </c:if>
+    </c:forEach>
+
+    <div class="stat-card-grid">
+        <div class="stat-card">
+            <div class="stat-info">              
+                <p>Total Users</p>
+                <h3>${totalUsers}</h3>
+            </div>
+            <div class="icon-wrapper blue">
+                <i class='bx bxs-group'></i>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <p>Active Users</p>
+                <h3>${activeUsers}</h3> 
+            </div>
+            <div class="icon-wrapper green">
+                <i class='bx bxs-check-shield'></i>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <p>Inactive Users</p>
+                <h3>${inactiveUsers}</h3>
+            </div>
+            <div class="icon-wrapper cyan">
+                <i class='bx bxs-info-shield'></i>
+            </div>
+        </div>  
+        <div class="stat-card">         
+            <div class="stat-info">
+                <p>Admins</p>
+                <h3>30</h3>
+            </div>
+            <div class="icon-wrapper cyan">
+                <i class='bx bxs-crown'></i>
+            </div>
+        </div>  
+    </div>
+
+    <c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-error-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+
+        <c:remove var="message" scope="session" />
+        <c:remove var="messageType" scope="session" />
+    </c:if>
 
     <div class="filter-container flex-wrap">
         <div class="custom-search-bar">
@@ -40,7 +119,7 @@
                     <li><a class="dropdown-item" href="#">Student</a></li>
                 </ul>
             </div>
-            
+
             <div class="dropdown">
                 <button class="custom-select-filter d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
                     <i class='bx bx-slider-alt'></i> All Status <i class='bx bx-chevron-down ms-1'></i>
@@ -63,7 +142,7 @@
                         <th>Phone Number</th>
                         <th>Role</th>
                         <th>Status</th>
-                        <th class="text-end">Actions</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -73,11 +152,48 @@
 
                             <td>
                                 <div class="user-item">
-                                    <img src="${u.avatar != null ? u.avatar : 'images/default-avatar.png'}" 
-                                         class="user-avatar" alt="Avatar">
+                                    <c:choose>
+                                        <c:when test="${u.avatar != null && not empty u.avatar}">
+                                            <img src="${u.avatar}" class="user-avatar" alt="Avatar"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+
+                                            <c:set var="nameParts" value="${fn:split(u.fullName, ' ')}" />
+                                            <c:set var="initials" value="${fn:substring(nameParts[0], 0, 1)}" />
+                                            <c:if test="${fn:length(nameParts) > 1}">
+                                                <c:set var="initials" value="${initials}${fn:substring(nameParts[fn:length(nameParts)-1], 0, 1)}" />
+                                            </c:if>
+                                            <c:set var="hash" value="${u.fullName.hashCode()}" />
+                                            <c:set var="hue" value="${(hash < 0 ? -hash : hash) % 360}" />
+
+                                            <div class="user-avatar-placeholder" style="display: none; background-color: hsl(${hue}, 65%, 45%); color: white;">
+                                                ${initials}
+                                            </div>
+                                        </c:when>
+
+                                        <c:otherwise>
+                                            <c:set var="nameParts" value="${fn:split(u.fullName, ' ')}" />
+                                            <c:set var="initials" value="" />
+
+                                            <c:if test="${fn:length(nameParts) > 0}">
+                                                <c:set var="initials" value="${fn:substring(nameParts[0], 0, 1)}" />
+                                            </c:if>
+                                            <c:if test="${fn:length(nameParts) > 1}">
+                                                <c:set var="initials" value="${initials}${fn:substring(nameParts[fn:length(nameParts)-1], 0, 1)}" />
+                                            </c:if>
+
+                                            <c:set var="hash" value="${u.fullName.hashCode()}" />
+                                            <c:set var="hue" value="${(hash < 0 ? -hash : hash) % 360}" />
+
+                                            <div class="user-avatar-placeholder" 
+                                                 style="background-color: hsl(${hue}, 65%, 45%);">
+                                                ${fn:toUpperCase(initials)}
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
+
                                     <div class="d-flex flex-column">
                                         <span class="user-name">${u.fullName}</span>
-                                        <span class="user-email">${u.email}</span>
+                                        <span class="user-email text-muted small">${u.email}</span>
                                     </div>
                                 </div>
                             </td>
@@ -106,7 +222,7 @@
 
                             <td>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" 
+                                    <input class="form-check-input" type="checkbox" role="switch" disabled 
                                            ${u.status ? 'checked' : ''}>
                                     <label class="form-check-label ms-2 text-secondary small">
                                         ${u.status ? 'Active' : 'Inactive'}
@@ -114,9 +230,18 @@
                                 </div>
                             </td>
 
-                            <td class="text-end">
-                                <a href="#" class="action-btn"><i class='bx bx-edit'></i></a>
-                                <a href="#" class="action-btn delete"><i class='bx bx-trash'></i></a>
+                            <td>
+                                <a href="user?action=view&id=${u.userId}" class="action-btn"><i class='bx bx-eye'></i></a>
+                                <a href="user?action=update&id=${u.userId}" class="action-btn"><i class='bx bx-edit'></i></a>
+                                    <c:choose>
+                                        <c:when test="${u.userId == sessionScope.u.userId}">
+                                        </c:when>
+                                        <c:when test="${u.userId == 1}">
+                                        </c:when>
+                                        <c:otherwise>
+                                        <a href="user?action=inActivate&id=${u.userId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
+                                        </c:otherwise>
+                                    </c:choose>
                             </td>
                         </tr>
                     </c:forEach>
@@ -138,3 +263,4 @@
         </div>
     </div>
 </div>
+<script src="js/manageUser.js" type="text/javascript"></script>
