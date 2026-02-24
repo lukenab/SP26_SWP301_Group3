@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.TeacherDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -11,6 +12,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
+import model.Classes;
+import model.User;
 
 /**
  *
@@ -57,7 +61,28 @@ public class ClassController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        TeacherDAO dao = new TeacherDAO();
+        String action = request.getParameter("action");
+        if (action == null) {
+            action = "all";
+        }
+        switch (action) {
+
+            case "all":
+              
+                User user = (User) request.getSession().getAttribute("user");
+                if (user != null) {
+                    int teacherID = user.getUserId();
+                    List<Classes> list = dao.getAllClassOfTeacherID(teacherID);
+                    request.setAttribute("ClassList", list);
+                    request.setAttribute("home_view", "teacher/teacher_classlist.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                } else {
+                    response.sendRedirect("login.jsp");
+                }
+                break;
+
+        }
     }
 
     /**
