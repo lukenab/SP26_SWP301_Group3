@@ -1,100 +1,103 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
 import dao.LeadDAO;
-import java.io.IOException;
+import dao.CourseDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
 import java.util.List;
 import model.Lead;
+import model.Course;
 
-/**
- *
- * @author LienNTK
- */
 @WebServlet(name = "LeadController", urlPatterns = {"/lead"})
-
 public class LeadController extends HttpServlet {
 
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
         LeadDAO leadDAO = new LeadDAO();
+        CourseDAO courseDAO = new CourseDAO();
+
         if (action == null) {
             action = "all";
         }
+
         switch (action) {
             case "all":
                 List<Lead> leadList = leadDAO.getAllLeads();
-
-                int totalLeads = leadList.size();
-
                 request.setAttribute("leadList", leadList);
-                request.setAttribute("totalLeads", totalLeads);
+                request.setAttribute("totalLeads", leadList.size());
                 request.setAttribute("home_view", "/sale/viewLeadList.jsp");
-                request.getRequestDispatcher("dashboard").forward(request, response);
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
+
             case "add":
-                request.setAttribute("home_view", "Lead/AddLead.jsp");
-                request.getRequestDispatcher("dashboard").forward(request, response);
+                List<Course> courseList = courseDAO.getActiveCourses();
+                request.setAttribute("courseList", courseList);
+                request.setAttribute("home_view", "/Lead/AddLead.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 
             case "detail":
-                int leadId = Integer.parseInt(request.getParameter("id"));
-                Lead dLead = leadDAO.getLeadByID(leadId);
-                request.setAttribute("lead", dLead);
+                int detailId = Integer.parseInt(request.getParameter("id"));
+                Lead detailLead = leadDAO.getLeadByID(detailId);
+                if (detailLead == null || "Inactive".equalsIgnoreCase(detailLead.getStatus())) {
+                    request.getSession().setAttribute("message", "Inactive lead cannot be viewed.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("lead?action=all");
+                    return;
+                }
+                request.setAttribute("lead", detailLead);
                 request.setAttribute("home_view", "/sale/leadDetail.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 
-            case "update":
-                int id = Integer.parseInt(request.getParameter("id"));
-                Lead lead = leadDAO.getLeadByID(id);
-
+            case "edit":
+                int editId = Integer.parseInt(request.getParameter("id"));
+                Lead lead = leadDAO.getLeadByID(editId);
+                if (lead == null || "Inactive".equalsIgnoreCase(lead.getStatus())) {
+                    request.getSession().setAttribute("message", "Inactive lead cannot be edited.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("lead?action=all");
+                    return;
+                }
                 request.setAttribute("lead", lead);
-                request.setAttribute("home_view", "lead/UpdateLead.jsp");
-                request.getRequestDispatcher("dashboard").forward(request, response);
+                request.setAttribute("home_view", "/sale/editLead.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 
+            case "delete":
+                int deleteId = Integer.parseInt(request.getParameter("id"));
+                Lead dLead = leadDAO.getLeadByID(deleteId);
+                request.setAttribute("dLead", dLead);
+                request.setAttribute("home_view", "/sale/deleteLead.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
+            default:
+                response.sendRedirect("lead?action=all");
+                break;
         }
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
         LeadDAO leadDAO = new LeadDAO();
+        HttpSession session = request.getSession();
 
         if ("create".equals(action)) {
-
             String fullName = request.getParameter("fullName");
             String email = request.getParameter("email");
             String phone = request.getParameter("phone");
             int interestedCourseID = Integer.parseInt(request.getParameter("interestedCourseID"));
-            String status = request.getParameter("status");
+            String status = normalizeStatus(request.getParameter("status"));
             String note = request.getParameter("note");
 
             Lead lead = new Lead();
@@ -106,26 +109,94 @@ public class LeadController extends HttpServlet {
             lead.setNote(note);
             leadDAO.insertLead(lead);
 
+            session.setAttribute("message", "Add new lead successfully!");
+            session.setAttribute("messageType", "success");
             response.sendRedirect("lead?action=all");
-        } else if ("update".equals(action)) {
+            return;
+        }
 
-            int id = Integer.parseInt(request.getParameter("leadID"));
-            String status = request.getParameter("status");
+        if ("update".equals(action)) {
+            int id = Integer.parseInt(request.getParameter("leadId"));
+            String fullName = request.getParameter("fullName");
+            String email = request.getParameter("email");
+            String phone = request.getParameter("phone");
+            int interestedCourseID = Integer.parseInt(request.getParameter("interestedCourseID"));
+            String status = normalizeStatus(request.getParameter("status"));
             String note = request.getParameter("note");
 
-            leadDAO.updateLeadStatus(id, status, note);
-
+            boolean updated = leadDAO.updateLead(id, fullName, email, phone, interestedCourseID, status, note);
+            if (updated) {
+                session.setAttribute("message", "Update lead successfully!");
+                session.setAttribute("messageType", "success");
+            } else {
+                session.setAttribute("message", "Update lead failed.");
+                session.setAttribute("messageType", "error");
+            }
             response.sendRedirect("lead?action=all");
-        } else if ("delete".equals(action)) {
+            return;
+        }
 
+        if ("delete".equals(action)) {
             String idParam = request.getParameter("leadID");
-
+            if (idParam == null || idParam.isEmpty()) {
+                idParam = request.getParameter("leadId");
+            }
             if (idParam != null && !idParam.isEmpty()) {
                 int id = Integer.parseInt(idParam);
                 leadDAO.deleteLead(id);
+                session.setAttribute("message", "Lead has been moved to inactive.");
+                session.setAttribute("messageType", "success");
+            } else {
+                session.setAttribute("message", "Delete lead failed.");
+                session.setAttribute("messageType", "error");
             }
-
             response.sendRedirect("lead?action=all");
+            return;
+        }
+
+        if ("restore".equals(action)) {
+            String idParam = request.getParameter("leadID");
+            if (idParam == null || idParam.isEmpty()) {
+                idParam = request.getParameter("leadId");
+            }
+            if (idParam != null && !idParam.isEmpty()) {
+                int id = Integer.parseInt(idParam);
+                leadDAO.restoreLead(id);
+                session.setAttribute("message", "Lead has been restored to new.");
+                session.setAttribute("messageType", "success");
+            } else {
+                session.setAttribute("message", "Restore lead failed.");
+                session.setAttribute("messageType", "error");
+            }
+            response.sendRedirect("lead?action=all");
+            return;
+        }
+
+        response.sendRedirect("lead?action=all");
+    }
+
+    private String normalizeStatus(String status) {
+        if (status == null || status.trim().isEmpty()) {
+            return "New";
+        }
+
+        String cleaned = status.trim().toLowerCase();
+        switch (cleaned) {
+            case "new":
+                return "New";
+            case "contacted":
+                return "Contacted";
+            case "consulting":
+                return "Consulting";
+            case "converted":
+                return "Converted";
+            case "lost":
+                return "Lost";
+            case "inactive":
+                return "Inactive";
+            default:
+                return status.trim();
         }
     }
+
 }
