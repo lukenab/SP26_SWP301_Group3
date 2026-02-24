@@ -158,7 +158,7 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
+                            <a href="class">
                                 <i class="bxr bx-door"></i>
                                 <span class="text nav-text">My Classes</span>
                             </a>
