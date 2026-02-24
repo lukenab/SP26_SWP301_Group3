@@ -220,6 +220,106 @@ public class UserController extends HttpServlet {
                     session.setAttribute("messageType", "error");
                 }
                 response.sendRedirect("user");
+                break;
+            case "changePassword":
+                int cpUserId = Integer.parseInt(request.getParameter("userId"));
+                String currentPassword = request.getParameter("currentPassword");
+                String newPassword = request.getParameter("newPassword");
+                String confirmPassword = request.getParameter("confirmPassword");
+
+                HttpSession passSession = request.getSession();
+                if (!newPassword.equals(confirmPassword)) {
+                    passSession.setAttribute("message", "New password and confirm password do not match!");
+                    passSession.setAttribute("messageType", "error");
+                    response.sendRedirect("dashboard?action=profile");
+                    break;
+                }
+
+                User currentUser = userDAO.getUserById(cpUserId);
+                String hashCurrentPass = userDAO.hashMD5(currentPassword);
+
+                if (currentPassword == null || !currentUser.getPassword().equals(hashCurrentPass)) {
+                    passSession.setAttribute("message", "Incorrect current pasword");
+                    passSession.setAttribute("messageType", "error");
+                    response.sendRedirect("dashboard?action=profile");
+                    break;
+                }
+
+                String newPasswordHashed = userDAO.hashMD5(newPassword);
+                Boolean isPasswordChanged = userDAO.updatePassword(newPasswordHashed, cpUserId);
+                if (isPasswordChanged) {
+                    currentUser.setPassword(newPasswordHashed);
+                    passSession.setAttribute("user", currentUser);
+
+                    passSession.setAttribute("message", "Password changed successfully!");
+                    passSession.setAttribute("messageType", "success");
+                } else {
+                    passSession.setAttribute("message", "Failed to change password!");
+                    passSession.setAttribute("messageType", "error");
+                }
+
+                response.sendRedirect("dashboard?action=profile");
+                break;
+
+            case "updateProfile":
+                String pFullName = request.getParameter("fullName");
+                String pPhone = request.getParameter("phone");
+                String pAddress = request.getParameter("address");
+                if (pAddress == null) {
+                    pAddress = "";
+                }
+
+                Boolean pGender = Boolean.valueOf(request.getParameter("gender"));
+
+                String dobStr = request.getParameter("dob");
+                java.sql.Date pDob = null;
+                if (dobStr != null && !dobStr.isEmpty()) {
+                    pDob = java.sql.Date.valueOf(dobStr);
+                }
+
+                String pAvatar = request.getParameter("avatar");
+                if (pAvatar == null || pAvatar.trim().isEmpty()) {
+                    pAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                }
+
+                int pUserId = Integer.parseInt(request.getParameter("userId"));
+                int pRoleId = Integer.parseInt(request.getParameter("roleId"));
+
+                java.sql.Date pHireDate = null;
+                String pEducation = null;
+                String pExperience = null;
+                java.sql.Date pEnrollmentDate = null;
+
+                if (pRoleId == 2 || pRoleId == 3 || pRoleId == 4) {
+                    String hDate = request.getParameter("hireDate");
+                    if (hDate != null && !hDate.isEmpty()) {
+                        pHireDate = java.sql.Date.valueOf(hDate);
+                    }
+                    pEducation = request.getParameter("education");
+                    pExperience = request.getParameter("experience");
+                } else if (pRoleId == 5) {
+                    String enrollStr = request.getParameter("enrollmentDate");
+                    if (enrollStr != null && !enrollStr.isEmpty()) {
+                        pEnrollmentDate = java.sql.Date.valueOf(enrollStr);
+                    }
+                }
+
+                boolean isProfUpdated = userDAO.updateUserById(pFullName, pPhone, pAddress, pGender, pDob, pAvatar, pRoleId, pUserId, pEnrollmentDate, pHireDate, pEducation, pExperience);
+                HttpSession pSession = request.getSession();
+
+                if (isProfUpdated) {
+                    pSession.setAttribute("message", "Profile Updated Successfully!");
+                    pSession.setAttribute("messageType", "success");
+            
+                    User updatedUser = userDAO.getUserById(pUserId);
+                    pSession.setAttribute("user", updatedUser);
+                } else {
+                    pSession.setAttribute("message", "Profile Update Failed!");
+                    pSession.setAttribute("messageType", "error");
+                }
+                
+                response.sendRedirect("dashboard?action=profile");
+                break;
         }
     }
 

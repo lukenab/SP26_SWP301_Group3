@@ -209,7 +209,6 @@ public class UserDAO extends DBContext {
                 psEmpl.setInt(4, userId);
                 psEmpl.executeUpdate();
             }
-
             conn.commit();
             return true;
         } catch (Exception e) {
@@ -224,17 +223,29 @@ public class UserDAO extends DBContext {
             } catch (Exception e) {
             }
         }
+        return false;
+    }
 
+    public Boolean updatePassword(String password, int userId) {
+        String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?;";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, password);
+            ps.setInt(2, userId);
+
+            int row = ps.executeUpdate();
+            if (row > 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to update password: " + e.getMessage());
+        }
         return false;
     }
 
     public static void main(String[] args) {
         UserDAO dao = new UserDAO();
-        List<User> list = dao.getAllUser();
-        System.out.println(list);
-        
-        String email = "admin@fpt.edu.vn";
         String password = "123";
-        System.out.println(dao.checkLogin(email, password));
+        dao.updatePassword(password, 15);
     }
 }

@@ -95,7 +95,7 @@
             </header>
 
             <div class="menu-bar">
-                <c:if test="${sessionScope.user.userId == 1}">
+                <c:if test="${sessionScope.user.role.roleId == 1}">
                     <ul class="menu-links">
                         <li class="nav-links">
                             <a href="dashboard?action=admin">
@@ -295,7 +295,6 @@
                 </c:if>
             </div>
         </div>
-    </div>
 
     <main class="home-section" style="height: 88vh">
         <c:if test="${not empty home_view}">

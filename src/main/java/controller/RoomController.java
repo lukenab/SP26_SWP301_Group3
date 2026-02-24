@@ -6,7 +6,6 @@ package controller;
 
 import dao.RoomDAO;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -45,7 +44,7 @@ public class RoomController extends HttpServlet {
 
                 request.setAttribute("allRooms", allRoom);
                 request.setAttribute("roomUsageMap", roomUsageMap);
-                request.setAttribute("home_view", "room.jsp");
+                request.setAttribute("home_view", "/academic/manageRoom.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "detail":
@@ -58,11 +57,11 @@ public class RoomController extends HttpServlet {
 
                 request.setAttribute("roomDetail", roomDetail);
                 request.setAttribute("classesUsingRoom", classesUsingRoom);
-                request.setAttribute("home_view", "roomDetail.jsp");
+                request.setAttribute("home_view", "/academic/roomDetail.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "create":
-                request.setAttribute("home_view", "createRoom.jsp");
+                request.setAttribute("home_view", "/academic/createRoom.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "delete":
@@ -70,7 +69,7 @@ public class RoomController extends HttpServlet {
                 int idDel = Integer.parseInt(idDelString);
                 Room roomDel = rdao.getRoomByID(idDel);
                 request.setAttribute("roomDel", roomDel);
-                request.setAttribute("home_view", "deleteRoom.jsp");
+                request.setAttribute("home_view", "/academic/deleteRoom.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "disable":
@@ -83,7 +82,7 @@ public class RoomController extends HttpServlet {
 
                 request.setAttribute("roomDisable", roomDisable);
                 request.setAttribute("classesUsingRoom", classesUsingRoomDisable);
-                request.setAttribute("home_view", "disableRoom.jsp");
+                request.setAttribute("home_view", "/academic/disableRoom.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "enable":
@@ -92,7 +91,7 @@ public class RoomController extends HttpServlet {
                 Room roomEnable = rdao.getRoomByID(idEnable);
 
                 request.setAttribute("roomEnable", roomEnable);
-                request.setAttribute("home_view", "enableRoom.jsp");
+                request.setAttribute("home_view", "/academic/enableRoom.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "update":
@@ -100,7 +99,7 @@ public class RoomController extends HttpServlet {
                 int idUpdate = Integer.parseInt(idUpdateString);
                 Room roomUpdate = rdao.getRoomByID(idUpdate);
                 request.setAttribute("roomUpdate", roomUpdate);
-                request.setAttribute("home_view", "updateRoom.jsp");
+                request.setAttribute("home_view", "/academic/updateRoom.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
         }

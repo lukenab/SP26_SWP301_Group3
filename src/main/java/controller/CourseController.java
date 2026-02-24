@@ -92,7 +92,7 @@ public class CourseController extends HttpServlet {
                             request.setAttribute("course", course);
                             request.setAttribute("formAction", "update");
                             request.setAttribute("pageTitle", "Edit Course");
-                            request.setAttribute("home_view", "/academic/course_form.jsp");
+                            request.setAttribute("home_view", "/academic/editCourse.jsp");
                             request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -140,7 +140,8 @@ public class CourseController extends HttpServlet {
             default:
                 List<Course> defaultList = courseDAO.getAllCourse();
                 request.setAttribute("courseList", defaultList);
-                request.getRequestDispatcher("course_list.jsp").forward(request, response);
+                request.setAttribute("home_view", "/academic/course_list.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
         }
     }
