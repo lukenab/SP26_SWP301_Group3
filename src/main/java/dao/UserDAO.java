@@ -102,6 +102,7 @@ public class UserDAO extends DBContext {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, email);
             String hashedPassword = hashMD5(password);
+//            String hashedPassword = password;
             ps.setString(2, hashedPassword);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -229,27 +230,11 @@ public class UserDAO extends DBContext {
 
     public static void main(String[] args) {
         UserDAO dao = new UserDAO();
-        User u = dao.getUserById(1);
-        System.out.println(u);
-//        List<User> list = dao.getAllUser();
-//        System.out.println(list);
-//        System.out.println(dao.hashMD5("123456"));
-//
-//        String name = "Nguyen An Binh";
-//        String email = "binhce200008@gmail.com";
-//        String password = dao.hashMD5("123456");
-//        String address = "Can Tho";
-//        Boolean gender = false;
-//        Date dob = Date.valueOf("2006-06-11");
-//        String avatar = null;
-//        Boolean status = true;
-//        String phone = "0812154005";
-//        RoleDAO roleDAO = new RoleDAO();
-//        Role role = roleDAO.getRoleByID(3);
-//        
-//        Boolean addSucess = dao.addNewUser(name, email, password, phone, address, gender, dob, avatar, status, role);
-//        System.out.println(addSucess);
-//        dao.inactivateUser(1);
-
+        List<User> list = dao.getAllUser();
+        System.out.println(list);
+        
+        String email = "admin@fpt.edu.vn";
+        String password = "123";
+        System.out.println(dao.checkLogin(email, password));
     }
 }
