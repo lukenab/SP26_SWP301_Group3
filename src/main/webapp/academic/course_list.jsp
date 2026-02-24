@@ -19,7 +19,7 @@
                 <h2 class="page-title">Course Management</h2>
                 <p class="text-muted small mb-0">Manage and organize your courses</p>
             </div>
-            <a href="user?action=add" class="btn btn-add-new">
+            <a href="course?action=add" class="btn btn-add-new">
                 <i class='bx bx-user-plus'></i> Add Course
             </a>
         </div>
