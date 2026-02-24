@@ -30,7 +30,7 @@
         <div class="form-row">
             <div class="form-group">
                 <label for="roleId">Role <span class="text-danger">*</span></label>
-                <select class="form-select" name="roleId" id="roleId" required>
+                <select class="form-select" name="roleId" id="roleId" onchange="toggleExtraFields()" required>
                     <option value="" disabled selected>Select Role</option>
                     <c:forEach var="r" items="${roleList}">
                         <option value=${r.roleId}>${r.roleName}</option>
@@ -98,6 +98,34 @@
             </div>
         </div>
 
+        <div id="employeeFields" style="display: none;">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Hire Date</label>
+                    <input type="date" name="hireDate">
+                </div>
+                <div class="form-group">
+                    <label>Education</label>
+                    <input type="text" name="education" placeholder="E.g. IELTS 8.0, Master Degree">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Experience</label>
+                    <input type="text" name="experience" placeholder="E.g. 3 years teaching English">
+                </div>
+            </div>
+        </div>
+
+        <div id="studentFields" style="display: none;">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Enrollment Date</label>
+                    <input type="date" name="enrollmentDate">
+                </div>
+                <div class="form-group"></div> </div>
+        </div>
+
         <div class="form-buttons">
             <a href="user?action=all" class="btn btn-cancel">Cancel</a>
             <button type="submit" class="btn btn-save">
@@ -107,3 +135,4 @@
     </form>
 </div>
 
+<script src="js/createUser.js" type="text/javascript"></script>
