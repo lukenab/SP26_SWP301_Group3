@@ -75,7 +75,7 @@ public class AttendanceController extends HttpServlet {
 
                     request.setAttribute("attList", attList);
                     request.setAttribute("scheduleId", scheduleId);
-                    request.setAttribute("home_view", "take_attendance.jsp");
+                    request.setAttribute("home_view", "/teacher/take_attendance.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (Exception e) {
                     response.sendRedirect("schedule?action=view");

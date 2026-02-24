@@ -24,35 +24,38 @@
         </div>
     </div>
 
-<div class="profile-header-card">
-    <div class="profile-avatar-section">
-        <div class="form-row user-img">
-            <div class="info-img">
-                <img src="${user.avatar}" class="rounded-circle object-fit-cover">
+    <div class="profile-header-card">
+        <div class="profile-avatar-section">
+            <div class="form-row user-img">
+                <div class="info-img">
+                    <img src="${user.avatar}" class="rounded-circle object-fit-cover">
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="profile-header-info">
-        <h2 class="profile-name">${user.fullName}</h2>
-        <span class="profile-department">${user.role.roleName}</span>
-        <span class="profile-active">${user.status  ? 'Active' : 'Inactive'}</span>
-        <p>${employee.experience}</p>
-        <div class="profile-info-content">
-            <div class="profile-header-left">
-                <span class="user-email"><i class="bx bx-envelope"></i>${user.email}</span>
-                <span class="user-email"><i class="bx bx-location"></i>${user.address}</span>   
-            </div>
-            <div class="profile-header-right">
-                <span class="user-email"><i class="bx bx-phone"></i>${user.phone}</span>
-                <span class="user-email"><i class="bx bx-calendar-event"></i>Joined <fmt:formatDate value="${employee.hireDate}" pattern="dd-MM-yyyy"/></span>   
+        <div class="profile-header-info">
+            <h2 class="profile-name">${user.fullName}</h2>
+            <span class="profile-department">${user.role.roleName}</span>
+            <span class="profile-active">${user.status  ? 'Active' : 'Inactive'}</span>
+            <p>${employee.experience}</p>
+            <div class="profile-info-content">
+                <div class="profile-header-left">
+                    <span class="user-email"><i class="bx bx-envelope"></i>${user.email}</span>
+                    <span class="user-email"><i class="bx bx-location"></i>${user.address}</span>   
+                </div>
+                <div class="profile-header-right">
+                    <span class="user-email"><i class="bx bx-phone"></i>${user.phone}</span>
+                    <span class="user-email"><i class="bx bx-calendar-event"></i>Joined <fmt:formatDate value="${employee.hireDate}" pattern="dd-MM-yyyy"/></span>   
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <div class="profile-content-card">
         <div class="profile-tabs">
+            <c:if test="${user.role.roleId == 1}">
+                <a href="#" class="tab-item active"><i class='bx bxs-user'></i>Admin Information</a>
+            </c:if>
             <c:if test="${user.role.roleId == 2 || user.role.roleId == 3 || user.role.roleId == 4}">
                 <a href="#" class="tab-item active"><i class='bx bxs-user'></i>Employee Information</a>
             </c:if>
@@ -113,7 +116,6 @@
                             <p>Experience</p>
                             <span>${not empty employee.experience ? employee.experience : 'N/A'}</span>
                         </div>
-
                     </div>
                 </div>
             </c:if>

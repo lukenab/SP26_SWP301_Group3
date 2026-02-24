@@ -46,7 +46,7 @@ public class LeadController extends HttpServlet {
 
                 request.setAttribute("leadList", leadList);
                 request.setAttribute("totalLeads", totalLeads);
-                request.setAttribute("home_view", "Lead/viewLead.jsp");
+                request.setAttribute("home_view", "/sale/viewLeadList.jsp");
                 request.getRequestDispatcher("dashboard").forward(request, response);
                 break;
             case "add":
@@ -54,12 +54,20 @@ public class LeadController extends HttpServlet {
                 request.getRequestDispatcher("dashboard").forward(request, response);
                 break;
 
+            case "detail":
+                int leadId = Integer.parseInt(request.getParameter("id"));
+                Lead dLead = leadDAO.getLeadByID(leadId);
+                request.setAttribute("lead", dLead);
+                request.setAttribute("home_view", "/sale/leadDetail.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
             case "update":
                 int id = Integer.parseInt(request.getParameter("id"));
                 Lead lead = leadDAO.getLeadByID(id);
 
                 request.setAttribute("lead", lead);
-                request.setAttribute("home_view", "Lead/UpdateLead.jsp");
+                request.setAttribute("home_view", "lead/UpdateLead.jsp");
                 request.getRequestDispatcher("dashboard").forward(request, response);
                 break;
 
@@ -114,7 +122,7 @@ public class LeadController extends HttpServlet {
 
             if (idParam != null && !idParam.isEmpty()) {
                 int id = Integer.parseInt(idParam);
-                leadDAO.deleteLead(id);   
+                leadDAO.deleteLead(id);
             }
 
             response.sendRedirect("lead?action=all");

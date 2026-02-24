@@ -97,7 +97,7 @@ public class ScheduleController extends HttpServlet {
                 request.setAttribute("slotTimes", slotTimes);
                 request.setAttribute("scheduleList", scheduleList);
 
-                request.setAttribute("home_view", "teacher_schedule.jsp");
+                request.setAttribute("home_view", "/teacher/teacher_schedule.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
 
                 break;

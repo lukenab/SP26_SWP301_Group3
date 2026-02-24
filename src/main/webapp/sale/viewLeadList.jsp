@@ -3,7 +3,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<link href="css/course_list.css" rel="stylesheet" type="text/css"/>
+<link href="css/viewLeadList.css" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body">
 
@@ -11,37 +11,33 @@
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Course Management</li>
+                <li class="breadcrumb-item active" aria-current="page">Lead Management</li>
             </ol>
         </div>
         <div class="content-header">
             <div>
-                <h2 class="page-title">Course Management</h2>
-                <p class="text-muted small mb-0">Manage and organize your courses</p>
+                <h2 class="page-title">Lead Management</h2>
+                <p class="text-muted small mb-0">Manage and organize your leads</p>
             </div>
-            <a href="course?action=add" class="btn btn-add-new">
-                <i class='bx bx-user-plus'></i> Add Course
+            <a href="#" class="btn btn-add-new">
+                <i class='bx bx-user-plus'></i> Add New Lead
             </a>
         </div>
     </div>
 
-    <c:set var="activeCourse" value="0"/>
-    <c:set var="inactiveCourse" value="0"/>
+    <c:set var="newLead" value="0"/>
 
-    <c:forEach items="${courseList}" var="c" >
-        <c:if test="${c.status == true}">
-            <c:set var="activeCourse" value="${activeCourse + 1}"/>
-        </c:if>
-        <c:if test="${c.status == false}">
-            <c:set var="inactiveCourse" value="${inactiveCourse + 1}"/>
+    <c:forEach items="${leadList}" var="l" >
+        <c:if test="${l.status == 'New'}">
+            <c:set var="newLead" value="${newLead + 1}"/>
         </c:if>
     </c:forEach>
 
     <div class="stat-card-grid">
         <div class="stat-card">
             <div class="stat-info">              
-                <p>Total Courses</p>
-                <h3>${totalCourse}</h3>
+                <p>Total Leads</p>
+                <h3>${fn:length(leadList)}</h3>
             </div>
             <div class="icon-wrapper blue">
                 <i class='bx bxs-reading'></i>
@@ -49,8 +45,8 @@
         </div>
         <div class="stat-card">
             <div class="stat-info">
-                <p>Active Course</p>
-                <h3>${activeCourse}</h3> 
+                <p>New Lead</p>
+                <h3>${newLead}</h3> 
             </div>
             <div class="icon-wrapper green">
                 <i class='bx bxs-check-shield'></i>
@@ -58,8 +54,8 @@
         </div>
         <div class="stat-card">
             <div class="stat-info">
-                <p>Inactive Course</p>
-                <h3>${inactiveCourse}</h3>
+                <p>Inactive Lead</p>
+                <h3>0</h3>
             </div>
             <div class="icon-wrapper cyan">
                 <i class='bx bxs-info-shield'></i>
@@ -67,8 +63,8 @@
         </div>  
         <div class="stat-card">         
             <div class="stat-info">
-                <p>Paid</p>
-                <h3>30</h3>
+                <p>Converted Rate</p>
+                <h3>2.43%</h3>
             </div>
             <div class="icon-wrapper cyan">
                 <i class='bx bxs-dollar'></i>
@@ -112,7 +108,7 @@
         <div class="d-flex gap-3">
             <div class="dropdown">
                 <button class="custom-select-filter" type="button" data-bs-toggle="dropdown">
-                    <i class='bx bx-filter-alt'></i> All Courses <i class='bx bx-chevron-down ms-1'></i>
+                    <i class='bx bx-filter-alt'></i> All Leads <i class='bx bx-chevron-down ms-1'></i>
                 </button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item" href="#">Admin</a></li>
@@ -139,49 +135,49 @@
                 <thead>
                     <tr>
                         <th style="width: 5%">#</th>
-                        <th style="width: 35%">Course Info</th>
-                        <th style="width: 15%">Total Slots</th>
-                        <th style="width: 15%">Tuition Fee</th>
-                        <th style="width: 10%">Status</th>
+                        <th style="width: 20%">Lead Name</th>
+                        <th style="width: 20%">Email</th>
+                        <th style="width: 15%">Phone</th>
+                        <th style="width: 20%">Status</th>
                         <th style="width: 20%">Actions</th>
                     </tr>
                 </thead>
 
-                <c:forEach items="${courseList}" var="c" varStatus="loop">
+                <c:forEach items="${leadList}" var="l" varStatus="loop">
                     <tr>
                         <td>${loop.count}</td>
 
-                        <td>
-                            <div class="user-item">                            
-                                <c:if test="${c.images != null && not empty c.images}">
-                                    <img src="images/${c.images}" class="user-avatar" alt="Avatar">                        
+                        <td>${l.fullName}</td>
 
-                                    <div class="d-flex flex-column">
-                                        <span class="user-name">${c.courseName}</span>
-                                    </div>
-                                </c:if>
-                            </div>
+                        <td class="text-secondary">${l.email}</td>
+
+                        <td> ${l.phone} </td>
+
+                        <td>
+                            <c:choose>
+                                <c:when test="${l.status == 'New'}">
+                                    <span class="badge badge-admin">New</span>
+                                </c:when>
+                                <c:when test="${l.status == 'Contacted'}">
+                                    <span class="badge badge-teacher">Contacted</span>
+                                </c:when>
+                                <c:when test="${l.status == 'Consulting'}">
+                                    <span class="badge badge-student">Consulting</span>
+                                </c:when>
+                                <c:when test="${l.status == 'Converted'}">
+                                    <span class="badge badge-saleStaff">Converted</span>
+                                </c:when>
+                                <c:when test="${l.status == 'Lost'}">
+                                    <span class="badge badge-academicStaff">Lost</span>
+                                </c:when>
+                            </c:choose>
                         </td>
 
-                        <td class="text-secondary">${c.totalSlots}</td>
-
-                        <td><fmt:formatNumber type="currency" value="${c.tuitionFee}" /> </td>
-
-                    <td>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" disabled 
-                                   ${c.status ? 'checked' : ''}>
-                            <label class="form-check-label ms-2 text-secondary small">
-                                ${c.status ? 'Active' : 'Inactive'}
-                            </label>
-                        </div>
-                    </td>
-
-                    <td>
-                        <a href="course?action=details&courseId=${c.courseId}" class="action-btn"><i class='bx bx-eye'></i></a>
-                        <a href="course?action=edit&courseId=${c.courseId}" class="action-btn"><i class='bx bx-edit'></i></a>
-                        <a href="course?action=delete&courseId=${c.courseId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
-                    </td>
+                        <td>
+                            <a href="lead?action=detail&id=${l.leadId}" class="action-btn"><i class='bx bx-eye'></i></a>
+                            <a href="#" class="action-btn"><i class='bx bx-edit'></i></a>
+                            <a href="#" class="action-btn delete"><i class='bx bx-lock'></i></a>
+                        </td>
                     </tr>
                 </c:forEach>
             </table>

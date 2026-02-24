@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import model.Attendance;
 import model.Classes;
+import model.Course;
 import model.Enrollment;
 import model.Room;
 import model.Student;
@@ -59,6 +60,34 @@ public class TeacherDAO extends DBContext {
             }
         } catch (SQLException e) {
             System.out.println("getScheduleByTeacher: " + e.getMessage());
+        }
+        return list;
+    }
+    
+    public List<Classes> getAllClassOfTeacherID(int teacherID) {
+        List<Classes> list = new ArrayList<>();
+        String sql = "SELECT c.*, co.CourseName FROM Class c "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "WHERE c.TeacherID = ?";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setInt(1, teacherID);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                Classes c = new Classes();
+                c.setClassid(rs.getInt("ClassID"));
+                c.setClassName(rs.getString("ClassName"));
+                c.setStarDate(rs.getDate("StartDate"));
+                c.setEndDate(rs.getDate("EndDate"));
+                c.setStatus(rs.getString("Status"));
+                Course course = new Course();
+                course.setCourseId(rs.getInt("CourseID"));
+                course.setCourseName(rs.getString("CourseName"));
+                c.setCourse(course);
+                list.add(c);
+
+            }
+        } catch (Exception e) {
         }
         return list;
     }

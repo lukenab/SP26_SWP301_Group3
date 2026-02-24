@@ -23,7 +23,7 @@
             </a>
         </div>
     </div>
-    
+
     <c:set var="activeUsers" value="0"/>
     <c:set var="inactiveUsers" value="0"/>
     <c:set var="admin" value="0"/>
@@ -233,15 +233,7 @@
                             <td>
                                 <a href="user?action=view&id=${u.userId}" class="action-btn"><i class='bx bx-eye'></i></a>
                                 <a href="user?action=update&id=${u.userId}" class="action-btn"><i class='bx bx-edit'></i></a>
-                                    <c:choose>
-                                        <c:when test="${u.userId == sessionScope.u.userId}">
-                                        </c:when>
-                                        <c:when test="${u.userId == 1}">
-                                        </c:when>
-                                        <c:otherwise>
-                                        <a href="user?action=inActivate&id=${u.userId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
-                                        </c:otherwise>
-                                    </c:choose>
+                                <a href="user?action=inActivate&id=${u.userId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
                             </td>
                         </tr>
                     </c:forEach>

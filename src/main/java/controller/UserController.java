@@ -220,6 +220,46 @@ public class UserController extends HttpServlet {
                     session.setAttribute("messageType", "error");
                 }
                 response.sendRedirect("user");
+                break;
+            case "changePassword":
+                int cpUserId = Integer.parseInt(request.getParameter("userId"));
+                String currentPassword = request.getParameter("currentPassword");
+                String newPassword = request.getParameter("newPassword");
+                String confirmPassword = request.getParameter("confirmPassword");
+
+                HttpSession passSession = request.getSession();
+                if (!newPassword.equals(confirmPassword)) {
+                    passSession.setAttribute("message", "New password and confirm password do not match!");
+                    passSession.setAttribute("messageType", "error");
+                    response.sendRedirect("dashboard?action=profile");
+                    break;
+                }
+
+                User currentUser = userDAO.getUserById(cpUserId);
+                String hashCurrentPass = userDAO.hashMD5(currentPassword);
+
+                if (currentPassword == null || !currentUser.getPassword().equals(hashCurrentPass)) {
+                    passSession.setAttribute("message", "Incorrect current pasword");
+                    passSession.setAttribute("messageType", "error");
+                    response.sendRedirect("dashboard?action=profile");
+                    break;
+                }
+
+                String newPasswordHashed = userDAO.hashMD5(newPassword);
+                Boolean isPasswordChanged = userDAO.updatePassword(newPasswordHashed, cpUserId);
+                if (isPasswordChanged) {
+                    currentUser.setPassword(newPasswordHashed);
+                    passSession.setAttribute("user", currentUser);
+
+                    passSession.setAttribute("message", "Password changed successfully!");
+                    passSession.setAttribute("messageType", "success");
+                } else {
+                    passSession.setAttribute("message", "Failed to change password!");
+                    passSession.setAttribute("messageType", "error");
+                }
+
+                response.sendRedirect("dashboard?action=profile");
+                break;
         }
     }
 
