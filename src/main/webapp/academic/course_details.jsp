@@ -72,7 +72,7 @@
                     </div>
                     
                     <c:if test="${not empty course.images}">
-                        <img src="${course.images}" alt="${course.courseName}" class="course-detail-image">
+                        <img src="images/${course.images}" alt="${course.courseName}" class="course-detail-image">
                     </c:if>
                     
                     <div class="course-detail-info">
