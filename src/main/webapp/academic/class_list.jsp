@@ -18,8 +18,34 @@
                 <h2 class="page-title">Class List</h2>
                 <p class="text-muted small mb-0">Manage classes and assign students.</p>
             </div>
+            <a href="enrollment?action=createClassForm" class="btn btn-add-new">
+                <i class='bx bx-plus'></i> Create New Class
+            </a>
         </div>
     </div>
+
+    <c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-error-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+        </div>
+        <c:remove var="message" scope="session"/>
+        <c:remove var="messageType" scope="session"/>
+    </c:if>
 
     <div class="card user-table-card border-0 bg-white">
         <div class="table-responsive">
