@@ -204,7 +204,7 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
+                            <a href="enrollment?action=classes">
                                 <i class="bxr bx-door"></i>
                                 <span class="text nav-text">Classes</span>
                             </a>
