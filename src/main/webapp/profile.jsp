@@ -123,21 +123,16 @@
                                 <option value="false" ${!user.gender ? 'selected' : ''}>Female</option>
                             </select>
                         </div>
-                    </div>
-
-
-                    <c:if test="${user.role.roleId == 2 || user.role.roleId == 3 || user.role.roleId == 4 }">
-                        <div class="form-row">           
-                            <div class="form-group">
-                                <label for="gender" class="form-label">Gender</label>
-                                <input type="text" name="gender" value="${user.gender ? 'Male' : 'Female'}" required>
-                            </div>
+                        <c:if test="${user.role.roleId == 2 || user.role.roleId == 3 || user.role.roleId == 4 }">
                             <div class="form-group">
                                 <label for="hireDate">Hire Date</label>
                                 <input type="date" id="hireDate" name="hireDate" value="${employee.hireDate}" required>
                             </div>
-                        </div>
+                        </c:if>
+                    </div>
 
+
+                    <c:if test="${user.role.roleId == 2 || user.role.roleId == 3 || user.role.roleId == 4 }">
                         <div class="form-row">       
                             <div class="form-group">
                                 <label for="education">Education</label>
