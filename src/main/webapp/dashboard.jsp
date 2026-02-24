@@ -131,7 +131,7 @@
                                 <span class="text nav-text">Setting</span>
                             </a>
                         </li>
-                        
+
                         <li class="nav-links">
                             <a href="dashboard?action=profile">
                                 <i class="bxr bx-user"></i>
@@ -175,6 +175,13 @@
                             <a href="#">
                                 <i class="bxr bx-cog"></i>
                                 <span class="text nav-text">Setting</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="dashboard?action=profile">
+                                <i class="bxr bx-user"></i>
+                                <span class="text nav-text">Profile</span>
                             </a>
                         </li>
                     </ul>
@@ -224,10 +231,17 @@
 
                             </a>
                         </li>
+
+                        <li class="nav-links">
+                            <a href="dashboard?action=profile">
+                                <i class="bxr bx-user"></i>
+                                <span class="text nav-text">Profile</span>
+                            </a>
+                        </li>
                     </ul>
                 </c:if>
-                
-                  <c:if test="${sessionScope.user.role.roleId == 3}">
+
+                <c:if test="${sessionScope.user.role.roleId == 3}">
                     <ul class="menu-links">
                         <li class="nav-links">
                             <a href="dashboard">
@@ -263,11 +277,18 @@
                                 <span class="text nav-text">Consultation</span>
                             </a>
                         </li>
-                        
+
                         <li class="nav-links">
                             <a href="#">
                                 <i class="bxr bx-cog"></i>
                                 <span class="text nav-text">Lead Convert</span>
+                            </a>
+                        </li>
+                        
+                          <li class="nav-links">
+                            <a href="dashboard?action=profile">
+                                <i class="bxr bx-user"></i>
+                                <span class="text nav-text">Profile</span>
                             </a>
                         </li>
                     </ul>

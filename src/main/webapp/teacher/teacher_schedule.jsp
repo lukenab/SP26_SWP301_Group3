@@ -56,7 +56,7 @@
                                                             <span class="badge bg-success w-100 py-1"><i class="fas fa-check"></i> Attended</span>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <a href="${pageContext.request.contextPath}/attendance?action=take&scheduleId=${s.scheduleId}" 
+                                                            <a href="attendance?action=take&scheduleId=${s.scheduleId}" 
                                                                class="btn btn-sm btn-warning">
                                                                 Attendance
                                                             </a>
