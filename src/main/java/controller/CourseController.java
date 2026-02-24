@@ -140,7 +140,8 @@ public class CourseController extends HttpServlet {
             default:
                 List<Course> defaultList = courseDAO.getAllCourse();
                 request.setAttribute("courseList", defaultList);
-                request.getRequestDispatcher("course_list.jsp").forward(request, response);
+                request.setAttribute("home_view", "/academic/course_list.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
         }
     }
