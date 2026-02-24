@@ -204,38 +204,37 @@
                         </li>
 
                         <li class="nav-links">
+                            <a href="room">
+                                <i class="bxr bx-door-open"></i>
+                                <span class="text nav-text">Room Management</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
                             <a href="course?action=all">
                                 <i class="bxr bx-book"></i>
-                                <span class="text nav-text">Course</span>
+                                <span class="text nav-text">Course Management</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
                             <a href="#">
-                                <i class="bxr bx-door"></i>
-                                <span class="text nav-text">Classes</span>
+                                <i class="bxr bx-calendar-event"></i>
+                                <span class="text nav-text">Calendar Management</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
                             <a href="#">
-                                <i class="bxr bx-group"></i>
-                                <span class="text nav-text">Certificate</span>
+                                <i class="bxr bx-check-circle"></i>
+                                <span class="text nav-text">Verify Tuition Payment</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
                             <a href="#">
-                                <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Review</span>
-
-                            </a>
-                        </li>
-                        <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-seal-check"></i>
-                                <span class="text nav-text">Feedback</span>
-
+                                <i class="bxr bx-user-check"></i>
+                                <span class="text nav-text">Teacher Assignment</span>
                             </a>
                         </li>
 
