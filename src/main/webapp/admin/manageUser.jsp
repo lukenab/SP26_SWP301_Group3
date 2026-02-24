@@ -10,13 +10,13 @@
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">User Management</li>
+                <li class="breadcrumb-item active" aria-current="page">Room Management</li>
             </ol>
         </div>
         <div class="content-header">
             <div>
                 <h2 class="page-title">User Management</h2>
-                <p class="text-muted small mb-0">Manage and organize your users</p>
+                <p class="text-muted small mb-0">Manage and organize room</p>
             </div>
             <a href="user?action=add" class="btn btn-add-new">
                 <i class='bx bx-user-plus'></i> Add User
