@@ -32,8 +32,7 @@ public class LeadDAO extends DBContext {
         + "l.Status, l.CreateDate, c.Note "
         + "FROM Lead l "
         + "LEFT JOIN Course co ON l.InterestedCourseID = co.CourseID "
-        + "LEFT JOIN Consultation c ON l.LeadID = c.LeadID "
-        + "WHERE l.Status != 'Inactive'";
+        + "LEFT JOIN Consultation c ON l.LeadID = c.LeadID";
 
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -173,9 +172,11 @@ public class LeadDAO extends DBContext {
         }
     }
 
-    public void updateLeadStatus(int id, String status, String note) {
+    public boolean updateLead(int id, String fullName, String email, String phone,
+            int interestedCourseID, String status, String note) {
 
-        String sqlLead = "UPDATE Lead SET Status = ? WHERE LeadID = ?";
+        String sqlLead = "UPDATE Lead SET FullName = ?, Email = ?, Phone = ?, "
+                + "InterestedCourseID = ?, Status = ? WHERE LeadID = ?";
         String sqlConsultUpdate = "UPDATE Consultation SET Note = ? WHERE LeadID = ?";
         String sqlConsultInsert = "INSERT INTO Consultation (LeadID, Note) VALUES (?, ?)";
 
@@ -183,8 +184,12 @@ public class LeadDAO extends DBContext {
             conn.setAutoCommit(false);
 
             PreparedStatement ps1 = conn.prepareStatement(sqlLead);
-            ps1.setString(1, status);
-            ps1.setInt(2, id);
+            ps1.setString(1, fullName);
+            ps1.setString(2, email);
+            ps1.setString(3, phone);
+            ps1.setInt(4, interestedCourseID);
+            ps1.setString(5, status);
+            ps1.setInt(6, id);
             ps1.executeUpdate();
 
             PreparedStatement ps2 = conn.prepareStatement(sqlConsultUpdate);
@@ -201,6 +206,7 @@ public class LeadDAO extends DBContext {
             }
 
             conn.commit();
+            return true;
 
         } catch (SQLException e) {
             try {
@@ -209,18 +215,30 @@ public class LeadDAO extends DBContext {
                 ex.printStackTrace();
             }
             e.printStackTrace();
+            return false;
         }
     }
 
    public void deleteLead(int id) {
-    String sql = "UPDATE Lead SET Status = 'Inactive' WHERE LeadID = ?";
-    
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, id);
-        ps.executeUpdate();
-    } catch (SQLException e) {
-        System.out.println("Fail to soft delete lead: " + e.getMessage());
-    }
+        String sql = "UPDATE Lead SET Status = 'Inactive' WHERE LeadID = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Fail to soft delete lead: " + e.getMessage());
+        }
+   }
+
+   public void restoreLead(int id) {
+        String sql = "UPDATE Lead SET Status = 'New' WHERE LeadID = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Fail to restore lead: " + e.getMessage());
+        }
    }
     public static void main(String[] args) {
         LeadDAO dao = new LeadDAO();

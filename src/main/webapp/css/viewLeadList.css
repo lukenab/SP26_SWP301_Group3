@@ -231,6 +231,16 @@
     color: #EF4444;
 }
 
+.row-inactive {
+    opacity: 0.6;
+}
+
+.action-disabled {
+    color: #c0c4cc !important;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
 .pagination .page-link {
     color: var(--text-secondary);
     border: 1px solid var(--border-color);
