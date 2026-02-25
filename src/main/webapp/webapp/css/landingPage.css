@@ -1,0 +1,384 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+*{
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root{
+    --body-color: #F9FCFE;
+    ;
+    --nav-color: #ffffff;
+    --text-color: #091622;
+    --side-nav: #010718;
+    --search-nav: #F1F5F9;
+    --search-text: #eff1f4;
+    --sidebar: #ffffff;
+    --sidebar-text: #162140;
+    --divider: rgba(0, 0, 0, 0.1);
+}
+
+body{
+    min-height: 100vh;
+    background-color: var(--nav-color);
+}
+
+.main-content {
+    margin-top: 70px;
+}
+
+nav{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    border-bottom: 1px solid var(--divider);
+    background-color: var(--nav-color);
+    z-index: 1000;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.navbar{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+.nav-items{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 95%;
+    max-width: 1400px;
+}
+
+.nav-left{
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: var(--sidebar-text);
+}
+
+.logo-header{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-header img{
+    width: 50px;
+}
+
+.logo-text{
+    display: flex;
+    flex-direction: column;
+}
+
+.name {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--sidebar-text);
+    white-space: nowrap;
+}
+
+.profession {
+    font-size: 13px;
+    margin-top: -2px;
+    color: var(--text-color);
+    opacity: 0.7;
+    white-space: nowrap;
+    display: block;
+    font-weight: 400;
+}
+
+.search-field{
+    position: relative;
+    width: 400px;
+    height: 40px;
+    background-color: var(--search-nav);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 20px;
+}
+
+.search-field input{
+    height: 100%;
+    width: 100%;
+    background-color: transparent;
+    outline: none;
+    border: none;
+    font-size: 15px;
+    color: var(--text-color);
+}
+
+.search-field i{
+    font-size: 20px;
+    margin-left: 15px;
+    color: #707070;
+}
+
+.nav-right{
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.login-btn a{
+    background-color: transparent;
+    border: 1px solid #0056D2;
+    padding: 7px 22px;
+    border-radius: 10px;
+    color: #0056D2;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.login-btn a:hover{
+    background-color: #0056D2;
+    color: white;
+}
+
+.contact-btn a{
+    margin-top: -2px;
+    background-color: #ffc228;
+    padding: 8px 13px;
+    border-radius: 10px;
+    border: none;
+    color: black;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.nav-right .contact-btn a:hover{
+    background-color: transparent;
+    border: 1px solid #ffc228;
+    color: #ffc228;
+}
+
+.carousel-item img{
+    height: 550px;
+}
+
+.consultation-content{
+    margin-top: 50px;
+}
+
+.consultation-content h1{
+    font-size: 60px;
+    font-weight: 600;
+    margin-bottom: 30px;
+}
+
+.feature-list{
+    font-size: 17px;
+}
+
+.join-free-btn{
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 500;
+    background-color: #ffc228;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.join-free-btn:hover{
+    background-color: #ffb700;
+    color: #ffffff;
+}
+
+.join-free-btn i{
+    font-size: 18px;
+}
+
+.consultation-card{
+    width: 90%;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 20px rgba(0,0,0,0.05);
+    padding: 30px;
+    border-radius: 20px;
+}
+
+.consultation-card-header{
+    text-align: center;
+}
+
+.consultation-card-header h4{
+    font-size: 27px;
+    font-weight: 600;
+    color: rgb(27, 75, 135);
+}
+
+.consultation-card-body{
+    border-radius: 12px;
+    background-color: #16589e;
+}
+
+.register-btn{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    background-color: #ffc228;
+    width: 100%;
+    border: none;
+    padding: 8px 0;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.register-btn:hover{
+    background-color: #ffb700;
+    color: white;
+}
+
+#content-2{
+    background-color: #F9FCFE;
+}
+
+#content-2-left{
+    margin-top: 40px;
+}
+
+.course-card {
+    transition: transform 0.3s;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    height: 470px;
+}
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+.card-img-top {
+    height: 270px;
+    object-fit: cover;
+    width: 100%;
+}
+.price-tag {
+    color: #0056D2;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.carousel-item img{
+    height: 600px;
+}
+
+.explore-course h3{
+    font-size: 30px;
+    margin-top: 30px;
+}
+
+.course-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 4.5em;
+}
+
+.courseDetail-btn a{
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.courseDetail-btn{
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: none;
+    background-color: #0056D2;
+    transition: all 0.3s ease;
+}
+
+.courseDetail-btn:hover{
+    background-color: #0d499c;
+}
+
+.course-filter{
+    margin-left: 30px;
+    width: 320px;
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+}
+
+.footer-sec{
+    background-color: #1c5174;
+    padding: 5px;
+    color: white;
+    margin-top: 30px;
+}
+
+.footer-sec ul{
+    margin-top: 20px;
+}
+
+.footer-sec li{
+    list-style: none;
+}
+
+
+.footer-sec p{
+    margin-top: 10px;
+    text-align: center;
+    font-size: 15px;
+}
+
+.footer-2{
+    margin-left: 100px;
+}
+
+.footer-3{
+    text-align: center;
+}
+
+.footer-header{
+    margin-bottom: 10px;
+    font-size: 17px;
+}
+
+.copyright{
+    margin-top: 20px;
+}
+
+.footer-icon{
+    text-decoration: none;
+    color: inherit;
+    transition: 0.3s ease;
+}
+
+.footer-content{
+    padding: 0 100px;
+    line-height: 30px;
+}
+
+.social-icon{
+    font-size: 20px;
+    padding: 5px;
+}
