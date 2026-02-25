@@ -27,7 +27,7 @@ public class TeacherDAO extends DBContext {
 
     public List<Schedule> getTeachingSchedule(int teacherId, String startDate) {
         List<Schedule> list = new ArrayList<>();
-        
+
         String sql = "SELECT s.*, c.ClassName, r.RoomName "
                 + "FROM Schedule s "
                 + "JOIN Class c ON s.ClassID = c.ClassID "
@@ -48,13 +48,11 @@ public class TeacherDAO extends DBContext {
                 s.setLearningDate(rs.getDate("LearningDate"));
                 s.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
 
-          
                 model.Classes c = new model.Classes();
-                c.setClassid(rs.getInt("ClassID")); 
+                c.setClassid(rs.getInt("ClassID"));
                 c.setClassName(rs.getString("ClassName"));
                 s.setClasses(c);
 
-           
                 model.Room r = new model.Room();
                 r.setRoomId(rs.getInt("RoomID"));
                 r.setRoomName(rs.getString("RoomName"));
@@ -66,6 +64,50 @@ public class TeacherDAO extends DBContext {
             System.out.println("getTeachingSchedule error: " + e.getMessage());
             e.printStackTrace();
         }
+        return list;
+    }
+
+    public List<Schedule> getScheduleByClassId(int classId, int teacherId) {
+
+        List<Schedule> list = new ArrayList<>();
+
+        String sql = "SELECT s.*, c.ClassName, r.RoomName "
+                + "FROM Schedule s "
+                + "JOIN Class c ON s.ClassID = c.ClassID "
+                + "JOIN Room r ON s.RoomID = r.RoomID "
+                + "WHERE s.ClassID = ? "
+                + "AND s.TeacherID = ?";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+
+            st.setInt(1, classId);
+            st.setInt(2, teacherId);
+
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()) {
+
+                Schedule s = new Schedule();
+                s.setScheduleId(rs.getInt("ScheduleID"));
+                s.setLearningDate(rs.getDate("LearningDate"));
+                s.setSlot(rs.getInt("Slot"));
+                s.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
+
+                Room room = new Room();
+                room.setRoomName(rs.getString("RoomName"));
+                s.setRoom(room);
+
+                Classes c = new Classes();
+                c.setClassName(rs.getString("ClassName"));
+                s.setClasses(c);
+
+                list.add(s);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return list;
     }
 
@@ -100,10 +142,8 @@ public class TeacherDAO extends DBContext {
     public static void main(String[] args) {
         TeacherDAO dao = new TeacherDAO();
 
-        
         int testTeacherID = 3;
 
-    
         String startDate = "2026-02-23";
 
         System.out.println("--- TESTING TEACHING SCHEDULE FOR TEACHER ID: " + testTeacherID + " ---");
@@ -123,7 +163,7 @@ public class TeacherDAO extends DBContext {
                 System.out.println("Schedule ID: " + s.getScheduleId());
                 System.out.println("Date: " + s.getLearningDate());
                 System.out.println("Slot: " + s.getSlot());
-             
+
                 if (s.getClasses() != null) {
                     System.out.println("Class: " + s.getClasses().getClassName() + " (ID: " + s.getClasses().getClassid() + ")");
                 }
