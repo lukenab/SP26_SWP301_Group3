@@ -265,7 +265,7 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
+                            <a href="voucher?action=all">
                                 <i class="bxr bx-group"></i>
                                 <span class="text nav-text">Manage Voucher</span>
                             </a>
@@ -293,6 +293,7 @@
                         </li>
                     </ul>
                 </c:if>
+
             </div>
         </div>
     </div>

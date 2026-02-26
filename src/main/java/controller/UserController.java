@@ -225,7 +225,7 @@ public class UserController extends HttpServlet {
                 java.sql.Date uHDate = null;
                 String uEducation = null;
                 String uExperience = null;
-                java.sql.Date uEnrollmentDate = null;
+                java.sql.Date uEnrollmentDate   = null;
 
                 if (uRoleId == 2 || uRoleId == 3 || uRoleId == 4) {
                     String uhireDate = request.getParameter("hireDate");

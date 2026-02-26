@@ -185,6 +185,11 @@
                                     <c:otherwise>
                                         <a href="lead?action=detail&id=${l.leadId}" class="action-btn"><i class='bx bx-eye'></i></a>
                                         <a href="lead?action=edit&id=${l.leadId}" class="action-btn"><i class='bx bx-edit'></i></a>
+                                        <c:if test="${l.status != 'Converted'}">
+                                            <a href="lead?action=convertForm&id=${l.leadId}" class="action-btn" title="Convert to Student">
+                                                <i class='bx bx-user-check'></i>
+                                            </a>
+                                        </c:if>
                                         <a href="lead?action=delete&id=${l.leadId}" class="action-btn delete">
                                             <i class='bx bx-lock'></i>
                                         </a>
