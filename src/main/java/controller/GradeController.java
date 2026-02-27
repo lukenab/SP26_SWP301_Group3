@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.GradeDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -11,6 +12,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.util.List;
+import model.Grade;
+import model.User;
 
 /**
  *
@@ -57,7 +62,36 @@ public class GradeController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        if (user.getRole().getRoleId() != 5) {
+            response.sendRedirect(request.getContextPath() + "/access-denied.jsp");
+            return;
+        }
+
+        int studentId = user.getUserId();
+
+        GradeDAO dao = new GradeDAO();
+        List<Grade> gradeList = dao.getGradesByStudentId(studentId);
+
+        request.setAttribute("gradeList", gradeList);
+
+        request.setAttribute("home_view", "studentGrade.jsp");
+
+        request.getRequestDispatcher("dashboard.jsp")
+                .forward(request, response);
     }
 
     /**
