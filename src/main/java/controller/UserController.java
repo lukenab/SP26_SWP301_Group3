@@ -21,12 +21,20 @@ import model.Employee;
 import model.Role;
 import model.Student;
 import model.User;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.Part;
+import java.io.File;
 
 /**
  *
  * @author Legion
  */
 @WebServlet(name = "UserController", urlPatterns = {"/user"})
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2,
+        maxFileSize = 1024 * 1024 * 10,
+        maxRequestSize = 1024 * 1024 * 50
+)
 public class UserController extends HttpServlet {
 
     /**
@@ -54,9 +62,9 @@ public class UserController extends HttpServlet {
                 String seachQuery = request.getParameter("searchQuery");
                 String searchRoleId = request.getParameter("roleId");
                 String searchStatus = request.getParameter("status");
-                
+
                 List<User> list = userDAO.searchAndFilterUsers(seachQuery, searchRoleId, searchStatus);
-                
+
                 int totalUsers = list.size();
                 request.setAttribute("totalUsers", totalUsers);
                 request.setAttribute("userList", list);
@@ -213,9 +221,29 @@ public class UserController extends HttpServlet {
                 }
                 Boolean uGender = Boolean.valueOf(request.getParameter("gender"));
                 java.sql.Date uDob = java.sql.Date.valueOf(request.getParameter("dob"));
-                String uAvatar = request.getParameter("avatar");
-                if (uAvatar == null || uAvatar.trim().isEmpty()) {
-                    uAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                String uAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+                try {
+                    Part filePart = request.getPart("avatarFile"); 
+
+                    if (filePart != null && filePart.getSize() > 0) {
+
+                        String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads";
+                        File uploadDir = new File(uploadPath);
+                        if (!uploadDir.exists()) {
+                            uploadDir.mkdir();
+                        }
+
+                        String fileName = java.nio.file.Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+
+                        String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
+
+                        filePart.write(uploadPath + File.separator + uniqueFileName);
+
+                        uAvatar = "uploads/" + uniqueFileName;
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error uploading file: " + e.getMessage());
                 }
 
                 int uUserId = Integer.parseInt(request.getParameter("userId"));
@@ -225,7 +253,7 @@ public class UserController extends HttpServlet {
                 java.sql.Date uHDate = null;
                 String uEducation = null;
                 String uExperience = null;
-                java.sql.Date uEnrollmentDate   = null;
+                java.sql.Date uEnrollmentDate = null;
 
                 if (uRoleId == 2 || uRoleId == 3 || uRoleId == 4) {
                     String uhireDate = request.getParameter("hireDate");

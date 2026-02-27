@@ -29,7 +29,7 @@
     <div class="profile-avatar-section">
         <div class="form-row user-img">
             <div class="info-img">
-                <img src="${user.avatar}" class="rounded-circle object-fit-cover">
+                <img src="${pageContext.request.contextPath}/${user.avatar}" class="rounded-circle object-fit-cover">
             </div>
 
             <div class="info-img-icon" onclick="toggleAvatarInput()">
@@ -41,8 +41,8 @@
             <div class="form-group mb-0">
                 <label>New Avatar URL:</label>
                 <div class="avatar-input-content">
-                    <input type="text" id="avatarVisualInput" class="form-control form-control-sm" value="${user.avatar}" 
-                           placeholder="Paste image link here..." oninput="updateAvatar()">
+                    <input type="file" name="avatarFile" id="avatarVisualInput" class="form-control form-control-sm" accept="image/*" 
+                           placeholder="Paste image link here..." onchange="updateAvatar(this)" form="updateUserForm">
 
                     <button type="button" class="btn-secondary avatar-input-btn" onclick="toggleAvatarInput()">
                         <i class='bx bx-x'></i>
@@ -71,7 +71,7 @@
 </div>
 
 <div class="form-container">
-    <form action="user?action=update" method="POST" class="form-body">
+    <form id="updateUserForm" action="user?action=update" method="POST" enctype="multipart/form-data" class="form-body">
 
         <input type="hidden" name="userId" value="${user.userId}">
         <input type="hidden" name="roleId" value="${user.role.roleId}" >
