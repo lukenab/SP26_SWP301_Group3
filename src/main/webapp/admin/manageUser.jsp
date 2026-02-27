@@ -128,7 +128,7 @@
                 <option value="1" ${param.status == '1' ? 'selected' : ''}>Active</option>
                 <option value="0" ${param.status == '0' ? 'selected' : ''}>Inactive</option>
             </select>
-            
+
             <button type="submit" style="display: none;"></button>
         </div>
     </form>
@@ -235,6 +235,10 @@
                                 <a href="user?action=view&id=${u.userId}" class="action-btn"><i class='bx bx-eye'></i></a>
                                 <a href="user?action=update&id=${u.userId}" class="action-btn"><i class='bx bx-edit'></i></a>
                                 <a href="user?action=inActivate&id=${u.userId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
+                                <a type="button" class="action-btn" 
+                                        onclick="openResetModal('${u.userId}', '${u.email}', '${fn:escapeXml(u.fullName)}')">
+                                    <i class='bx bx-refresh-ccw'></i> 
+                                </a>
                             </td>
                         </tr>
                     </c:forEach>
@@ -253,6 +257,43 @@
                     <li class="page-item"><a class="page-link" href="#">Next <i class='bx bx-chevron-right'></i></a></li>
                 </ul>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resetModalLabel">
+                    <i class='bx bx-error-circle'></i> Confirm Password Reset
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form action="user?action=resetPassword" method="POST" id="resetPassForm" onsubmit="showLoadingBtn()">
+                <div class="modal-body">
+                    <p>
+                        Are you sure you want to reset the password for <strong id="resetUserName" style="color: #0f172a;"></strong>?
+                    </p>
+                    <div class="modal-body-content">
+                        <p class="mb-0">
+                            <i class='bx bx-envelope'></i> A new randomly generated password will be sent to: <br>
+                            <strong id="resetUserEmail" style="color: #2563eb;"></strong>
+                        </p>
+                    </div>
+
+                    <input type="hidden" name="userId" id="modalUserId">
+                    <input type="hidden" name="email" id="modalUserEmailInput">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 6px;">Cancel</button>
+                    <button type="submit" id="confirmResetBtn" class="btn btn-warning">
+                        Reset
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

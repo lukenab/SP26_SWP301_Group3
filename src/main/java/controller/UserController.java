@@ -224,7 +224,7 @@ public class UserController extends HttpServlet {
                 String uAvatar = request.getParameter("avatar");
 
                 try {
-                    Part filePart = request.getPart("avatarFile"); 
+                    Part filePart = request.getPart("avatarFile");
 
                     if (filePart != null && filePart.getSize() > 0) {
 
@@ -337,7 +337,7 @@ public class UserController extends HttpServlet {
                 String pAvatar = request.getParameter("avatar");
 
                 try {
-                    Part filePart = request.getPart("avatarFile"); 
+                    Part filePart = request.getPart("avatarFile");
 
                     if (filePart != null && filePart.getSize() > 0) {
 
@@ -396,6 +396,36 @@ public class UserController extends HttpServlet {
                 }
 
                 response.sendRedirect("dashboard?action=profile");
+                break;
+
+            case "resetPassword":
+                int targetUserId = Integer.parseInt(request.getParameter("userId"));
+                String targetEmail = request.getParameter("email");
+
+                User targetUser = userDAO.getUserById(targetUserId);
+                String targetFullName = (targetUser != null) ? targetUser.getFullName() : "User";
+
+                String randomPass = controller.EmailController.generateRandomPassword();
+                String hashedRandomPass = userDAO.hashMD5(randomPass);
+
+                Boolean isReset = userDAO.updatePassword(hashedRandomPass, targetUserId);
+
+                HttpSession resetSession = request.getSession();
+                if (isReset) {
+                    Boolean isEmailSent = controller.EmailController.sendEmail(targetEmail, targetFullName, randomPass);
+                    if (isEmailSent) {
+                        resetSession.setAttribute("message", "Reset password success. Email has been sent!");
+                        resetSession.setAttribute("messageType", "success");
+                    } else {
+                        resetSession.setAttribute("message", "Reset successful, but failed to send email. Temp pass: " + randomPass);
+                        resetSession.setAttribute("messageType", "error");
+                    }
+                } else {
+                    resetSession.setAttribute("message", "Fail to reset password!");
+                    resetSession.setAttribute("messageType", "error");
+                }
+
+                response.sendRedirect("user");
                 break;
         }
     }
