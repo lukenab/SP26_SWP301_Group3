@@ -288,10 +288,10 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 6px;">Cancel</button>
-                    <button type="submit" id="confirmResetBtn" class="btn btn-warning">
-                        Reset
-                    </button>
+                    <a type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</a>
+                    <a type="submit" id="confirmResetBtn" class="btn btn-save">
+                        Reset Password
+                    </a>
                 </div>
             </form>
         </div>

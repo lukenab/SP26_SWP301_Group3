@@ -454,19 +454,20 @@ body.dark .toast-message {
 }
 
 .modal-content{
+    width: 450px;
     border-radius: 12px;
     border: none;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
 .modal-header{
-    background-color: #fffbeb;
+    background-color: #CFE8FF;
     border-bottom: 1px solid #fef3c7;
     border-radius: 12px 12px 0 0;
 }
 
 #resetModalLabel{
-    color: #d97706;
+    color: #0072C6;
     font-weight: 600;
 }
 
@@ -497,10 +498,46 @@ body.dark .toast-message {
     padding-top: 0;
 }
 
-#confirmResetBtn{
-    background-color: #f59e0b;
-    color: white;
+.btn {
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
     border: none;
-    border-radius: 6px;
-    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+.btn-save {
+    background: var(--blue);
+    color: #fff;
+}
+.btn-save:hover {
+    background: var(--dark-blue);
+    color: #ffffff;
+}
+
+.btn-lock{
+    background: var(--red);
+    color: #ffffff;
+}
+
+.btn-unlock{
+    background: #008000;
+    color: #fff;
+}
+
+.btn-unlock:hover{
+    background: #005500;
+    color: #fff;
+}
+.btn-cancel {
+    background: #f0f0f0;
+    color: #555;
+    border: 1px solid #ddd;
+}
+.btn-cancel:hover {
+    background: #e5e5e5;
 }
