@@ -278,17 +278,16 @@ public class UserController extends HttpServlet {
                 String newPasswordHashed = userDAO.hashMD5(newPassword);
                 Boolean isPasswordChanged = userDAO.updatePassword(newPasswordHashed, cpUserId);
                 if (isPasswordChanged) {
-                    currentUser.setPassword(newPasswordHashed);
-                    passSession.setAttribute("user", currentUser);
+                    passSession.invalidate();
 
-                    passSession.setAttribute("message", "Password changed successfully!");
-                    passSession.setAttribute("messageType", "success");
+                    HttpSession newSession = request.getSession();
+                    newSession.setAttribute("message", "Password changed successfully!");
+                    newSession.setAttribute("messageType", "success");
+                    response.sendRedirect("login");
                 } else {
                     passSession.setAttribute("message", "Failed to change password!");
                     passSession.setAttribute("messageType", "error");
                 }
-
-                response.sendRedirect("dashboard?action=profile");
                 break;
 
             case "updateProfile":

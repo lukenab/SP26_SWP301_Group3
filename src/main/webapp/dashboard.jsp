@@ -216,6 +216,14 @@
                                 <span class="text nav-text">Certificate</span>
                             </a>
                         </li>
+                        
+                         <li class="nav-links">
+                            <a href="room">
+                                <i class="bxr bx-cog"></i>
+                                <span class="text nav-text">Room</span>
+
+                            </a>
+                        </li>
 
                         <li class="nav-links">
                             <a href="#">
