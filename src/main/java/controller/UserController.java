@@ -221,7 +221,7 @@ public class UserController extends HttpServlet {
                 }
                 Boolean uGender = Boolean.valueOf(request.getParameter("gender"));
                 java.sql.Date uDob = java.sql.Date.valueOf(request.getParameter("dob"));
-                String uAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                String uAvatar = request.getParameter("avatar");
 
                 try {
                     Part filePart = request.getPart("avatarFile"); 
@@ -335,8 +335,28 @@ public class UserController extends HttpServlet {
                 }
 
                 String pAvatar = request.getParameter("avatar");
-                if (pAvatar == null || pAvatar.trim().isEmpty()) {
-                    pAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+                try {
+                    Part filePart = request.getPart("avatarFile"); 
+
+                    if (filePart != null && filePart.getSize() > 0) {
+
+                        String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads";
+                        File uploadDir = new File(uploadPath);
+                        if (!uploadDir.exists()) {
+                            uploadDir.mkdir();
+                        }
+
+                        String fileName = java.nio.file.Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+
+                        String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
+
+                        filePart.write(uploadPath + File.separator + uniqueFileName);
+
+                        pAvatar = "uploads/" + uniqueFileName;
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error uploading file: " + e.getMessage());
                 }
 
                 int pUserId = Integer.parseInt(request.getParameter("userId"));

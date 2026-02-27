@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import model.Role;
@@ -59,8 +60,9 @@ public class UserDAO extends DBContext {
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
+                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
 
-                User user = new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role);
+                User user = new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role, createdAt);
                 list.add(user);
             }
         } catch (Exception e) {
@@ -87,8 +89,9 @@ public class UserDAO extends DBContext {
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
+                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
 
-                return new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role);
+                return new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role, createdAt);
             }
         } catch (Exception e) {
             System.out.println("Fail to get user by ID: " + e.getMessage());
@@ -116,8 +119,9 @@ public class UserDAO extends DBContext {
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
+                Timestamp createdAt = rs.getTimestamp("CreatedAt");
 
-                User user = new User(userId, fullname, email, hashedPassword, phone, address, gender, birthdate, avatar, status, role);
+                User user = new User(userId, fullname, email, hashedPassword, phone, address, gender, birthdate, avatar, status, role, createdAt);
                 return user;
             }
         } catch (Exception e) {
@@ -333,8 +337,9 @@ public class UserDAO extends DBContext {
                 String avatar = rs.getString("Avatar");
                 Boolean st = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
+                Timestamp createdAt = rs.getTimestamp("CreatedAt");
 
-                User user = new User(uId, fullname, email, password, phone, address, gender, birthdate, avatar, st, role);
+                User user = new User(uId, fullname, email, password, phone, address, gender, birthdate, avatar, st, role, createdAt);
                 list.add(user);
             }
         } catch (Exception e) {

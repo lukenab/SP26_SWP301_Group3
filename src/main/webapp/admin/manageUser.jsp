@@ -26,13 +26,16 @@
 
     <c:set var="activeUsers" value="0"/>
     <c:set var="inactiveUsers" value="0"/>
-    <c:set var="admin" value="0"/>
+    <c:set var="totalAdmins" value="0"/>
     <c:forEach var="u" items="${userList}">
         <c:if test="${u.status == true}">
             <c:set var="activeUsers" value="${activeUsers + 1}"/>
         </c:if>
         <c:if test="${u.status == false}">
             <c:set var="inactiveUsers" value="${inactiveUsers + 1}"/>
+        </c:if>
+        <c:if test="${u.role.roleId == 1}">
+            <c:set var="totalAdmins" value="${totalAdmins + 1}"/>
         </c:if>
     </c:forEach>
 
@@ -67,7 +70,7 @@
         <div class="stat-card">         
             <div class="stat-info">
                 <p>Admins</p>
-                <h3>30</h3>
+                <h3>${totalAdmins}</h3>
             </div>
             <div class="icon-wrapper cyan">
                 <i class='bx bxs-crown'></i>

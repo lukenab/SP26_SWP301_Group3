@@ -83,23 +83,27 @@
                 <input type="text" name="fullName" id="fullName" value="${user.fullName}" required>
             </div>
             <div class="form-group">
-                <label for="phone">Phone</label>
-                <input type="number" id="phone" name="phone" value="${user.phone}" required>
+                <label for="role">Role</label>
+                <input type="text" id="role" value="${user.role.roleName}" readonly>
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="number" id="phone" name="phone" value="${user.phone}" required>
+            </div>
+            <div class="form-group">
                 <label for="address">Address</label>
                 <input type="text" id="address" name="address" value="${user.address}">
             </div>
+        </div>
+
+        <div class="form-row">  
             <div class="form-group">
                 <label for="dob">Date of Birth</label>
                 <input type="date" id="dob" name="dob" value="${user.dob}">
             </div>
-        </div>
-
-        <div class="form-row">           
             <div class="form-group">
                 <label for="gender" class="form-label">Gender</label>
                 <select name="gender" id="gender" required>
@@ -107,22 +111,31 @@
                     <option value="false" ${!user.gender ? 'selected' : ''}>Female</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="hireDate">Hire Date</label>
-                <input type="date" id="hireDate" name="hireDate" value="${employee.hireDate}" required>
-            </div>
         </div>
 
-        <div class="form-row">       
-            <div class="form-group">
-                <label for="education">Education</label>
-                <input type="text" name="education" id="education" value="${employee.education}" required>
-            </div>
-            <div class="form-group">
-                <label for="experience">Experience</label>
-                <input type="text" id="experience" name="experience" value="${employee.experience}">
-            </div>
+        <div class="form-row">    
+            <c:if test="${user.role.roleId == 2 || user.role.roleId == 3 || user.role.roleId ==4}">
+                <div class="form-group">
+                    <label for="education">Education</label>
+                    <input type="text" name="education" id="education" value="${employee.education}" required>
+                </div>
+                <div class="form-group">
+                    <label for="experience">Experience</label>
+                    <input type="text" id="experience" name="experience" value="${employee.experience}">
+                </div>
+            </c:if>
         </div>
+
+        <div class="form-row">
+            <c:if test="${user.role.roleId == 2 || user.role.roleId == 3 || user.role.roleId ==4}">
+                <div class="form-group">
+                    <label for="hireDate">Hire Date</label>
+                    <input type="date" id="hireDate" name="hireDate" value="${employee.hireDate}" required>
+                </div>
+            </c:if>
+
+        </div>
+
 
         <div class="form-buttons">
             <a href="user" class="btn btn-cancel">Cancel</a>
