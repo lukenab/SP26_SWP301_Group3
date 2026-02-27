@@ -266,33 +266,12 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-door"></i>
-                                <span class="text nav-text">Registration</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="#">
+                            <a href="voucher?action=all">
                                 <i class="bxr bx-group"></i>
                                 <span class="text nav-text">Manage Voucher</span>
                             </a>
                         </li>
 
-                        <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Consultation</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Lead Convert</span>
-                            </a>
-                        </li>
-                        
                           <li class="nav-links">
                             <a href="dashboard?action=profile">
                                 <i class="bxr bx-user"></i>
@@ -301,6 +280,7 @@
                         </li>
                     </ul>
                 </c:if>
+
             </div>
         </div>
 
