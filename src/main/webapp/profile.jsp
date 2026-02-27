@@ -50,7 +50,25 @@
     <div class="profile-avatar-section">
         <div class="form-row user-img">
             <div class="info-img">
-                <img src="${user.avatar}" class="rounded-circle object-fit-cover">
+                <img src="${pageContext.request.contextPath}/${user.avatar}" class="rounded-circle object-fit-cover">
+            </div>
+
+            <div class="info-img-icon" onclick="toggleAvatarInput()">
+                <i class="bx bx-camera"></i>
+            </div>
+        </div>
+
+        <div id="avatarInputContainer">
+            <div class="form-group mb-0">
+                <label>Upload New Avatar:</label>
+                <div class="avatar-input-content">
+                    <input type="file" name="avatarFile" id="avatarVisualInput" class="form-control form-control-sm" accept="image/*" 
+                            onchange="updateAvatar(this)" form="updateUserForm">
+
+                    <button type="button" class="btn-secondary avatar-input-btn" onclick="toggleAvatarInput()">
+                        <i class='bx bx-x'></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -67,7 +85,9 @@
             </div>
             <div class="profile-header-right">
                 <span class="user-email"><i class="bx bx-phone"></i>${user.phone}</span>
-                <span class="user-email"><i class="bx bx-calendar-event"></i>Joined <fmt:formatDate value="${employee.hireDate}" pattern="dd-MM-yyyy"/></span>   
+                    <c:if test="${user.role.roleId == 2 || user.role.roleId == 3 || user.role.roleId == 4}">
+                    <span class="user-email"><i class="bx bx-calendar-event"></i>Joined <fmt:formatDate value="${employee.hireDate}" pattern="dd-MM-yyyy"/></span>   
+                </c:if>
             </div>
         </div>
     </div>
@@ -86,7 +106,7 @@
     <div id="profileTab" class="tab-content" style="display: block">
         <div class="profile-form">
             <div class="profile-form-section">
-                <form action="user?action=updateProfile" method="POST" class="form-body">
+                <form id="updateUserForm" action="user?action=updateProfile" enctype="multipart/form-data" method="POST" class="form-body">
 
                     <input type="hidden" name="userId" value="${user.userId}">
                     <input type="hidden" name="roleId" value="${user.role.roleId}" >

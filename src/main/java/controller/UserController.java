@@ -21,12 +21,20 @@ import model.Employee;
 import model.Role;
 import model.Student;
 import model.User;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.Part;
+import java.io.File;
 
 /**
  *
  * @author Legion
  */
 @WebServlet(name = "UserController", urlPatterns = {"/user"})
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2,
+        maxFileSize = 1024 * 1024 * 10,
+        maxRequestSize = 1024 * 1024 * 50
+)
 public class UserController extends HttpServlet {
 
     /**
@@ -51,7 +59,12 @@ public class UserController extends HttpServlet {
 
         switch (action) {
             case "all":
-                List<User> list = userDAO.getAllUser();
+                String seachQuery = request.getParameter("searchQuery");
+                String searchRoleId = request.getParameter("roleId");
+                String searchStatus = request.getParameter("status");
+
+                List<User> list = userDAO.searchAndFilterUsers(seachQuery, searchRoleId, searchStatus);
+
                 int totalUsers = list.size();
                 request.setAttribute("totalUsers", totalUsers);
                 request.setAttribute("userList", list);
@@ -126,17 +139,42 @@ public class UserController extends HttpServlet {
                     address = "";
                 }
                 Boolean gender = Boolean.valueOf(request.getParameter("gender"));
-                java.sql.Date dob = java.sql.Date.valueOf(request.getParameter("dob"));
+                String dobStr = request.getParameter("dob");
+                java.sql.Date dob = null;
+                if (dobStr != null && !dobStr.isEmpty()) {
+                    dob = java.sql.Date.valueOf(dobStr);
+                }
+
                 String avatar = request.getParameter("avatar");
                 if (avatar == null || avatar.trim().isEmpty()) {
                     avatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
                 }
+
                 Boolean status = Boolean.valueOf(request.getParameter("status"));
 
                 int roleId = Integer.parseInt(request.getParameter("roleId"));
                 Role role = roleDAO.getRoleByID(roleId);
 
-                Boolean isAdded = userDAO.addNewUser(fullName, email, password, phone, address, gender, dob, avatar, status, role);
+                java.sql.Date hireDate = null;
+                String education = null;
+                String experience = null;
+                java.sql.Date enrollmentDate = null;
+
+                if (roleId == 2 || roleId == 3 || roleId == 4) {
+                    String hDate = request.getParameter("hireDate");
+                    if (hDate != null && !hDate.isEmpty()) {
+                        hireDate = java.sql.Date.valueOf(hDate);
+                    }
+                    education = request.getParameter("education");
+                    experience = request.getParameter("experience");
+                } else if (roleId == 5) {
+                    String enrollStr = request.getParameter("enrollmentDate");
+                    if (enrollStr != null && !enrollStr.isEmpty()) {
+                        enrollmentDate = java.sql.Date.valueOf(enrollStr);
+                    }
+                }
+
+                Boolean isAdded = userDAO.addNewUserFull(fullName, email, password, phone, address, gender, dob, avatar, status, roleId, hireDate, education, experience, enrollmentDate);
 
                 HttpSession aSession = request.getSession();
                 if (isAdded) {
@@ -184,23 +222,43 @@ public class UserController extends HttpServlet {
                 Boolean uGender = Boolean.valueOf(request.getParameter("gender"));
                 java.sql.Date uDob = java.sql.Date.valueOf(request.getParameter("dob"));
                 String uAvatar = request.getParameter("avatar");
-                if (uAvatar == null || uAvatar.trim().isEmpty()) {
-                    uAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+                try {
+                    Part filePart = request.getPart("avatarFile"); 
+
+                    if (filePart != null && filePart.getSize() > 0) {
+
+                        String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads";
+                        File uploadDir = new File(uploadPath);
+                        if (!uploadDir.exists()) {
+                            uploadDir.mkdir();
+                        }
+
+                        String fileName = java.nio.file.Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+
+                        String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
+
+                        filePart.write(uploadPath + File.separator + uniqueFileName);
+
+                        uAvatar = "uploads/" + uniqueFileName;
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error uploading file: " + e.getMessage());
                 }
 
                 int uUserId = Integer.parseInt(request.getParameter("userId"));
 
                 int uRoleId = Integer.parseInt(request.getParameter("roleId"));
 
-                java.sql.Date uHireDate = null;
+                java.sql.Date uHDate = null;
                 String uEducation = null;
                 String uExperience = null;
                 java.sql.Date uEnrollmentDate = null;
 
                 if (uRoleId == 2 || uRoleId == 3 || uRoleId == 4) {
-                    String hireDate = request.getParameter("hireDate");
-                    if (hireDate != null && !hireDate.isEmpty()) {
-                        uHireDate = java.sql.Date.valueOf(hireDate);
+                    String uhireDate = request.getParameter("hireDate");
+                    if (uhireDate != null && !uhireDate.isEmpty()) {
+                        uHDate = java.sql.Date.valueOf(uhireDate);
                     }
                     uEducation = request.getParameter("education");
                     uExperience = request.getParameter("experience");
@@ -210,7 +268,7 @@ public class UserController extends HttpServlet {
                         uEnrollmentDate = java.sql.Date.valueOf(enrollStr);
                     }
                 }
-                boolean isUpdated = userDAO.updateUserById(uFullName, uPhone, uAddress, uGender, uDob, uAvatar, uRoleId, uUserId, uEnrollmentDate, uHireDate, uEducation, uExperience);
+                boolean isUpdated = userDAO.updateUserById(uFullName, uPhone, uAddress, uGender, uDob, uAvatar, uRoleId, uUserId, uEnrollmentDate, uHDate, uEducation, uExperience);
                 HttpSession session = request.getSession();
                 if (isUpdated) {
                     session.setAttribute("message", "Update User Info Successfully!");
@@ -248,17 +306,16 @@ public class UserController extends HttpServlet {
                 String newPasswordHashed = userDAO.hashMD5(newPassword);
                 Boolean isPasswordChanged = userDAO.updatePassword(newPasswordHashed, cpUserId);
                 if (isPasswordChanged) {
-                    currentUser.setPassword(newPasswordHashed);
-                    passSession.setAttribute("user", currentUser);
+                    passSession.invalidate();
 
-                    passSession.setAttribute("message", "Password changed successfully!");
-                    passSession.setAttribute("messageType", "success");
+                    HttpSession newSession = request.getSession();
+                    newSession.setAttribute("message", "Password changed successfully!");
+                    newSession.setAttribute("messageType", "success");
+                    response.sendRedirect("login");
                 } else {
                     passSession.setAttribute("message", "Failed to change password!");
                     passSession.setAttribute("messageType", "error");
                 }
-
-                response.sendRedirect("dashboard?action=profile");
                 break;
 
             case "updateProfile":
@@ -271,15 +328,35 @@ public class UserController extends HttpServlet {
 
                 Boolean pGender = Boolean.valueOf(request.getParameter("gender"));
 
-                String dobStr = request.getParameter("dob");
+                String DobStr = request.getParameter("dob");
                 java.sql.Date pDob = null;
-                if (dobStr != null && !dobStr.isEmpty()) {
-                    pDob = java.sql.Date.valueOf(dobStr);
+                if (DobStr != null && !DobStr.isEmpty()) {
+                    pDob = java.sql.Date.valueOf(DobStr);
                 }
 
                 String pAvatar = request.getParameter("avatar");
-                if (pAvatar == null || pAvatar.trim().isEmpty()) {
-                    pAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+                try {
+                    Part filePart = request.getPart("avatarFile"); 
+
+                    if (filePart != null && filePart.getSize() > 0) {
+
+                        String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads";
+                        File uploadDir = new File(uploadPath);
+                        if (!uploadDir.exists()) {
+                            uploadDir.mkdir();
+                        }
+
+                        String fileName = java.nio.file.Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+
+                        String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
+
+                        filePart.write(uploadPath + File.separator + uniqueFileName);
+
+                        pAvatar = "uploads/" + uniqueFileName;
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error uploading file: " + e.getMessage());
                 }
 
                 int pUserId = Integer.parseInt(request.getParameter("userId"));
@@ -310,14 +387,14 @@ public class UserController extends HttpServlet {
                 if (isProfUpdated) {
                     pSession.setAttribute("message", "Profile Updated Successfully!");
                     pSession.setAttribute("messageType", "success");
-            
+
                     User updatedUser = userDAO.getUserById(pUserId);
                     pSession.setAttribute("user", updatedUser);
                 } else {
                     pSession.setAttribute("message", "Profile Update Failed!");
                     pSession.setAttribute("messageType", "error");
                 }
-                
+
                 response.sendRedirect("dashboard?action=profile");
                 break;
         }

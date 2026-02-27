@@ -72,102 +72,69 @@ public class ScheduleController extends HttpServlet {
             return;
         }
 
-        // ======================
-        // ROLE 4 - TEACHER 
-        // ======================
-        if (user.getRole().getRoleId() == 4) {
+        TeacherDAO teacherDAO = new TeacherDAO();
+        String action = request.getParameter("action");
+        if (action == null) {
+            action = "view";
+        }
+        String[] weekdays = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        int[] slots = {1, 2, 3, 4, 5, 6};
+        String[] slotTimes = {"", "07:30 - 09:30", "09:45 - 11:45", "12:30 - 14:30", "14:45 - 16:45", "17:00 - 19:00", "19:15 - 21:15"};
 
-            TeacherDAO teacherDAO = new TeacherDAO();
-            String action = request.getParameter("action");
-            if (action == null) {
-                action = "view";
-            }
+        switch (action) {
+            case "view":
 
-            switch (action) {
-                case "view":
+                String selectedDate = request.getParameter("date");
 
-                    String selectedDate = request.getParameter("date");
+                if (selectedDate == null || selectedDate.trim().isEmpty()) {
+                    selectedDate = java.time.LocalDate.now().toString(); // Sẽ ra "2026-02-24"
+                }
 
-                    if (selectedDate == null || selectedDate.trim().isEmpty()) {
-                        selectedDate = java.time.LocalDate.now().toString();
+                request.setAttribute("selectedDate", selectedDate);
+
+                List<Schedule> scheduleList = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
+
+                request.setAttribute("selectedDate", selectedDate);
+                request.setAttribute("weekdays", weekdays);
+                request.setAttribute("slots", slots);
+                request.setAttribute("slotTimes", slotTimes);
+                request.setAttribute("scheduleList", scheduleList);
+
+                request.setAttribute("home_view", "teacher/teacher_schedule.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
+            case "viewByClass":
+                try {
+                    int classId = Integer.parseInt(request.getParameter("classId"));
+                    TeacherDAO dao = new TeacherDAO();
+                    List<Schedule> scheduleListByClass
+                            = dao.getScheduleByClassId(classId, user.getUserId());
+                    String className = null;
+                    if (!scheduleListByClass.isEmpty()) {
+                        className = scheduleListByClass
+                                .get(0)
+                                .getClasses()
+                                .getClassName();
                     }
 
-                    request.setAttribute("selectedDate", selectedDate);
-
-                    List<Schedule> scheduleList
-                            = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
-
-                    String[] weekdays = {"Monday", "Tuesday", "Wednesday",
-                        "Thursday", "Friday", "Saturday", "Sunday"};
-                    int[] slots = {1, 2, 3, 4, 5, 6};
-                    String[] slotTimes = {"",
-                        "07:30 - 09:30",
-                        "09:45 - 11:45",
-                        "12:30 - 14:30",
-                        "14:45 - 16:45",
-                        "17:00 - 19:00",
-                        "19:15 - 21:15"};
-
+                    request.setAttribute("classId", classId);
+                    request.setAttribute("className", className);
+                    request.setAttribute("scheduleList", scheduleListByClass);
                     request.setAttribute("weekdays", weekdays);
                     request.setAttribute("slots", slots);
                     request.setAttribute("slotTimes", slotTimes);
-                    request.setAttribute("scheduleList", scheduleList);
 
-                    request.setAttribute("home_view", "teacher/teacher_schedule.jsp");
-                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
-                    break;
-            }
-        } // ======================
-        // ROLE 5 - STUDENT 
-        // ======================
-        else if (user.getRole().getRoleId() == 5) {
+                    request.setAttribute("home_view", "teacher/view_class_schedule.jsp");
 
-            StudentDAO studentDAO = new StudentDAO();
+                    request.getRequestDispatcher("dashboard.jsp")
+                            .forward(request, response);
 
-            String selectedDate = request.getParameter("date");
-
-            if (selectedDate == null || selectedDate.trim().isEmpty()) {
-                selectedDate = java.time.LocalDate.now().toString();
-            }
-
-            java.time.LocalDate date = java.time.LocalDate.parse(selectedDate);
-
-            // Tìm Monday của tuần
-            java.time.LocalDate monday = date.with(java.time.DayOfWeek.MONDAY);
-            java.time.LocalDate sunday = monday.plusDays(6);
-
-            List<Schedule> scheduleList
-                    = studentDAO.getScheduleByStudentWeek(
-                            user.getUserId(),
-                            monday.toString(),
-                            sunday.toString());
-
-            String[] weekdays = {"Monday", "Tuesday", "Wednesday",
-                "Thursday", "Friday", "Saturday", "Sunday"};
-
-            int[] slots = {1, 2, 3, 4, 5, 6};
-
-            String[] slotTimes = {"",
-                "07:30 - 09:30",
-                "09:45 - 11:45",
-                "12:30 - 14:30",
-                "14:45 - 16:45",
-                "17:00 - 19:00",
-                "19:15 - 21:15"};
-
-            request.setAttribute("selectedDate", selectedDate);
-            request.setAttribute("weekdays", weekdays);
-            request.setAttribute("slots", slots);
-            request.setAttribute("slotTimes", slotTimes);
-            request.setAttribute("scheduleList", scheduleList);
-
-            request.setAttribute("home_view", "student/studentSchedule.jsp");
-            request.getRequestDispatcher("dashboard.jsp").forward(request, response);
-        } // ======================
-        // ROLE KHÁC
-        // ======================
-        else {
-            response.sendRedirect("login.jsp");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    response.sendRedirect("class");
+                }
+                break;
         }
     }
 

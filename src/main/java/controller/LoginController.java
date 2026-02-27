@@ -67,7 +67,7 @@ public class LoginController extends HttpServlet {
             }
         } else {
             HttpSession loginSession = request.getSession();
-            loginSession.setAttribute("message", "Invalid email or password!");
+            loginSession.setAttribute("loginMessage", "Invalid email or password!");
             response.sendRedirect("login");
         }
     }

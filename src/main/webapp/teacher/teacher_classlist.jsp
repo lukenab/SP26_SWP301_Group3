@@ -111,10 +111,10 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="attendance?action=viewSchedule&classId=${c.classid}" class="action-btn" title="View Schedule">
+                                <a href="schedule?action=viewByClass&classId=${c.classid}" class="action-btn" title="View Schedule">
                                     <i class='bx bx-calendar'></i>
                                 </a>
-                                <a href="#" class="action-btn" title="Student List">
+                                <a href="student?action=viewByClass&classId=${c.classid}" class="action-btn" title="Student List">
                                     <i class='bx bx-group'></i>
                                 </a>
                             </td>

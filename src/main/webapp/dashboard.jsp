@@ -39,7 +39,7 @@
 
                     <div class="profile-item">
                         <span class="profile-img">
-                            <img src="${sessionScope.user.avatar}">
+                            <img src="${pageContext.request.contextPath}/${sessionScope.user.avatar}">
                         </span>
                         <div class="profile-text">
                             <span class="name">${sessionScope.user.fullName}</span>
@@ -80,15 +80,39 @@
 
         <div class="sidebar">
             <header>
-                <div class="sidebar-header">
-                    <div class="logo-header">
-                        <img src="images/logo.png" alt="logo" />
-                    </div>
 
-                    <div class="logo-text">
-                        <span class="name">LMCS</span>
-                        <span class="profession">Language Center</span>
-                    </div>
+                <div class="sidebar-header">
+                    <c:choose>
+                        <c:when test="${sessionScope.user.role.roleId == 1}">
+                            <c:set var="logoUrl" value="dashboard?action=admin" />
+                        </c:when>
+                        <c:when test="${sessionScope.user.role.roleId == 2}">
+                            <c:set var="logoUrl" value="dashboard?action=academic" />
+                        </c:when>
+                        <c:when test="${sessionScope.user.role.roleId == 3}">
+                            <c:set var="logoUrl" value="dashboard?action=sale" />
+                        </c:when>
+                        <c:when test="${sessionScope.user.role.roleId == 4}">
+                            <c:set var="logoUrl" value="dashboard?action=teacher" />
+                        </c:when>
+                        <c:when test="${sessionScope.user.role.roleId == 5}">
+                            <c:set var="logoUrl" value="dashboard?action=student" />
+                        </c:when>
+                        <c:otherwise>
+                            <c:set var="logoUrl" value="dashboard" />
+                        </c:otherwise>
+                    </c:choose>
+
+                    <a href="${logoUrl}" class="logo-link">
+                        <div class="logo-header">
+                            <img src="images/logo.png" alt="logo" />
+                        </div>
+
+                        <div class="logo-text">
+                            <span class="name">LMCS</span>
+                            <span class="profession">Language Center</span>
+                        </div>
+                    </a>
                 </div>
             </header>
 
@@ -100,15 +124,13 @@
                         <li class="nav-links">
                             <a href="dashboard?action=admin">
                                 <i class="bxr bx-dashboard"></i>
-                                <span class="text nav-text">Dashboard</span>
-                            </a>
+                                <span class="text nav-text">Dashboard</span></a>
                         </li>
 
                         <li class="nav-links">
                             <a href="user">
                                 <i class="bxr bx-group"></i>
-                                <span class="text nav-text">User Management</span>
-                            </a>
+                                <span class="text nav-text">User Management</span></a>
                         </li>
                     </ul>
                 </c:if>
@@ -136,6 +158,61 @@
                 <c:if test="${sessionScope.user.role.roleId == 5}">
                     <ul class="menu-links">
 
+                        <li class="nav-links">
+                            <a href="course?action=all">
+                                <i class="bxr bx-book"></i>
+                                <span class="text nav-text">Course</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="enrollment?action=classes">
+                                <i class="bxr bx-door"></i>
+                                <span class="text nav-text">Classes</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="#">
+                                <i class="bxr bx-group"></i>
+                                <span class="text nav-text">Certificate</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="room">
+                                <i class="bxr bx-cog"></i>
+                                <span class="text nav-text">Room</span>
+
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="#">
+                                <i class="bxr bx-cog"></i>
+                                <span class="text nav-text">Review</span>
+
+                            </a>
+                        </li>
+                        <li class="nav-links">
+                            <a href="#">
+                                <i class="bxr bx-seal-check"></i>
+                                <span class="text nav-text">Feedback</span>
+
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="dashboard?action=profile">
+                                <i class="bxr bx-user"></i>
+                                <span class="text nav-text">Profile</span>
+                            </a>
+                        </li>
+                    </ul>
+                </c:if>
+
+                <c:if test="${sessionScope.user.role.roleId == 3}">
+                    <ul class="menu-links">
                         <li class="nav-links">
                             <a href="dashboard">
                                 <i class="bxr bx-dashboard"></i>

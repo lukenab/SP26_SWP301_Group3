@@ -15,6 +15,7 @@ import model.Course;
 import model.Room;
 import model.Schedule;
 import model.Student;
+import model.User;
 import utils.DBContext;
 
 /**
@@ -57,60 +58,32 @@ public class StudentDAO extends DBContext {
         return null;
     }
 
-    public List<Schedule> getScheduleByStudentWeek(int userId,
-            String startDate,
-            String endDate) {
+    public List<User> getStudentListByClassId(int classId) {
 
-        List<Schedule> list = new ArrayList<>();
+        List<User> list = new ArrayList<>();
 
-        String sql = "SELECT DISTINCT "
-                + "s.ScheduleID, s.LearningDate, s.Slot, "
-                + "c.ClassID, c.ClassName, "
-                + "co.CourseID, co.CourseName, "
-                + "r.RoomID, r.RoomName "
-                + "FROM [User] u "
-                + "JOIN Student st ON u.UserID = st.StudentID "
-                + "JOIN Enrollment e ON st.StudentID = e.StudentID "
-                + "JOIN Class c ON e.ClassID = c.ClassID "
-                + "JOIN Course co ON c.CourseID = co.CourseID "
-                + "JOIN Schedule s ON c.ClassID = s.ClassID "
-                + "LEFT JOIN Room r ON s.RoomID = r.RoomID "
-                + "WHERE u.UserID = ? "
-                + "AND e.Status = 'Enrolled' "
-                + "AND s.LearningDate BETWEEN ? AND ? "
-                + "ORDER BY s.LearningDate, s.Slot";
+        String sql = "SELECT u.* "
+                + "FROM Enrollment e "
+                + "JOIN [User] u ON e.StudentID = u.UserID "
+                + "WHERE e.ClassID = ? "
+                + "AND e.Status = 'Active' "
+                + "AND u.RoleID = 5";
 
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, userId);
-            ps.setString(2, startDate);
-            ps.setString(3, endDate);
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
 
-            ResultSet rs = ps.executeQuery();
+            st.setInt(1, classId);
+            ResultSet rs = st.executeQuery();
 
             while (rs.next()) {
 
-                Course course = new Course();
-                course.setCourseId(rs.getInt("CourseID"));
-                course.setCourseName(rs.getString("CourseName"));
+                User u = new User();
+                u.setUserId(rs.getInt("UserID"));
+                u.setFullName(rs.getString("FullName"));
+                u.setEmail(rs.getString("Email"));
+                u.setPhone(rs.getString("Phone"));
+                u.setAddress(rs.getString("Address"));
 
-                Classes classes = new Classes();
-                classes.setClassid(rs.getInt("ClassID"));
-                classes.setClassName(rs.getString("ClassName"));
-                classes.setCourse(course);
-
-                Room room = new Room();
-                room.setRoomId(rs.getInt("RoomID"));
-                room.setRoomName(rs.getString("RoomName"));
-
-                Schedule s = new Schedule();
-                s.setScheduleId(rs.getInt("ScheduleID"));
-                s.setLearningDate(rs.getDate("LearningDate"));
-                s.setSlot(rs.getInt("Slot"));
-                s.setClasses(classes);
-                s.setRoom(room);
-
-                list.add(s);
+                list.add(u);
             }
 
         } catch (Exception e) {

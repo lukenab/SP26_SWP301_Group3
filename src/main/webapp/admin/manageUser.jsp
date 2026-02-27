@@ -26,13 +26,16 @@
 
     <c:set var="activeUsers" value="0"/>
     <c:set var="inactiveUsers" value="0"/>
-    <c:set var="admin" value="0"/>
+    <c:set var="totalAdmins" value="0"/>
     <c:forEach var="u" items="${userList}">
         <c:if test="${u.status == true}">
             <c:set var="activeUsers" value="${activeUsers + 1}"/>
         </c:if>
         <c:if test="${u.status == false}">
             <c:set var="inactiveUsers" value="${inactiveUsers + 1}"/>
+        </c:if>
+        <c:if test="${u.role.roleId == 1}">
+            <c:set var="totalAdmins" value="${totalAdmins + 1}"/>
         </c:if>
     </c:forEach>
 
@@ -67,7 +70,7 @@
         <div class="stat-card">         
             <div class="stat-info">
                 <p>Admins</p>
-                <h3>30</h3>
+                <h3>${totalAdmins}</h3>
             </div>
             <div class="icon-wrapper cyan">
                 <i class='bx bxs-crown'></i>
@@ -102,35 +105,33 @@
         <c:remove var="messageType" scope="session" />
     </c:if>
 
-    <div class="filter-container flex-wrap">
+    <form action="user" method="GET" class="filter-container flex-wrap">
+        <input type="hidden" name="action" value="all">
+
         <div class="custom-search-bar">
             <i class='bx bx-search text-muted fs-5'></i>
-            <input type="text" placeholder="Search by name or email...">
+            <input type="text" name="searchQuery" value="${param.searchQuery}" placeholder="Search by name or email..." onchange="this.form.submit()">
         </div>
 
         <div class="d-flex gap-3">
-            <div class="dropdown">
-                <button class="custom-select-filter" type="button" data-bs-toggle="dropdown">
-                    <i class='bx bx-filter-alt'></i> All Roles <i class='bx bx-chevron-down ms-1'></i>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Admin</a></li>
-                    <li><a class="dropdown-item" href="#">Teacher</a></li>
-                    <li><a class="dropdown-item" href="#">Student</a></li>
-                </ul>
-            </div>
+            <select name="roleId" class="custom-select-filter" onchange="this.form.submit()" style="border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; background: white; outline: none; cursor: pointer;">
+                <option value="">All Roles</option>
+                <option value="1" ${param.roleId == '1' ? 'selected' : ''}>Admin</option>
+                <option value="2" ${param.roleId == '2' ? 'selected' : ''}>Academic Staff</option>
+                <option value="3" ${param.roleId == '3' ? 'selected' : ''}>Sale Staff</option>
+                <option value="4" ${param.roleId == '4' ? 'selected' : ''}>Teacher</option>
+                <option value="5" ${param.roleId == '5' ? 'selected' : ''}>Student</option>
+            </select>
 
-            <div class="dropdown">
-                <button class="custom-select-filter d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
-                    <i class='bx bx-slider-alt'></i> All Status <i class='bx bx-chevron-down ms-1'></i>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Active</a></li>
-                    <li><a class="dropdown-item" href="#">Inactive</a></li>
-                </ul>
-            </div>
+            <select name="status" class="custom-select-filter" onchange="this.form.submit()" style="border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; background: white; outline: none; cursor: pointer;">
+                <option value="">All Status</option>
+                <option value="1" ${param.status == '1' ? 'selected' : ''}>Active</option>
+                <option value="0" ${param.status == '0' ? 'selected' : ''}>Inactive</option>
+            </select>
+            
+            <button type="submit" style="display: none;"></button>
         </div>
-    </div>
+    </form>
 
     <div class="card user-table-card border-0 bg-white">
         <div class="table-responsive">
