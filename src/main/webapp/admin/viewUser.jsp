@@ -73,7 +73,7 @@
                     </div>
                     <div class="info-item">
                         <p>Date of Birth</p>
-                        <span>${not empty user.dob ? user.dob : 'N/A'}</span>
+                        <span><fmt:formatDate value="${not empty user.dob ? user.dob : 'N/A'}" pattern="dd/MM/yyyy"/></span>
                     </div>
                     <div class="info-item">
                         <p>Gender</p>
@@ -110,11 +110,6 @@
                         <div class="info-item">
                             <p>Education</p>
                             <span>${not empty employee.education ? employee.education : 'N/A'}</span>
-                        </div>
-
-                        <div class="info-item">
-                            <p>Experience</p>
-                            <span>${not empty employee.experience ? employee.experience : 'N/A'}</span>
                         </div>
                     </div>
                 </div>
