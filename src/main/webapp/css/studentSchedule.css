@@ -1,0 +1,122 @@
+/* ============================= */
+/* ===== SCHEDULE CELL ========= */
+/* ============================= */
+
+.schedule-cell {
+    height: 140px;
+    vertical-align: top;
+    background-color: #f7f9fc;
+    padding: 12px !important;
+}
+
+
+/* ============================= */
+/* ===== CARD ================== */
+/* ============================= */
+
+.student-card {
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 0.85rem;
+    transition: all 0.2s ease-in-out;
+
+    /* Màu xanh pastel giống hình */
+    background-color: #e7edf7;
+    border-left: 5px solid #4a6cf7;
+    border: 1px solid #dde6f4;
+
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.student-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.10);
+}
+
+
+/* ============================= */
+/* ===== TITLE ================= */
+/* ============================= */
+
+.class-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+    color: #2f4fd8;
+}
+
+
+/* ============================= */
+/* ===== INFO ================== */
+/* ============================= */
+
+.info-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+    color: #5b6b8c;
+}
+
+.course-name {
+    font-size: 0.78rem;
+    color: #7a8ca8;
+}
+
+
+/* ============================= */
+/* ===== TABLE HEADER ========== */
+/* ============================= */
+
+.table thead th {
+    background-color: #f4f6fb;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #2c3e50;
+}
+
+
+/* ============================= */
+/* ===== SLOT COLUMN =========== */
+/* ============================= */
+
+.table td:first-child {
+    background-color: #eef1f6;
+    font-weight: 600;
+}
+
+
+/* ============================= */
+/* ===== DARK MODE ============= */
+/* ============================= */
+
+body.dark .schedule-cell {
+    background-color: #1f2933;
+}
+
+body.dark .student-card {
+    background-color: #2b3a4d;
+    border-left: 5px solid #4f8cff;
+    border: 1px solid rgba(255,255,255,0.05);
+    color: #ffffff;
+}
+
+body.dark .class-title {
+    color: #ffffff;
+}
+
+body.dark .info-line,
+body.dark .course-name {
+    color: #d1d5db;
+}
+
+body.dark .table thead th {
+    background-color: #2b3a4d;
+    color: #ffffff;
+}
+
+body.dark .table td:first-child {
+    background-color: #243447;
+}

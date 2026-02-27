@@ -151,6 +151,13 @@
                         </li>
 
                         <li class="nav-links">
+                            <a href="schedule">
+                                <i class="bxr bx-calendar-event"></i>
+                                <span class="text nav-text">My Schedule</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
                             <a href="dashboard?action=profile">
                                 <i class="bxr bx-user"></i>
                                 <span class="text nav-text">Profile</span>

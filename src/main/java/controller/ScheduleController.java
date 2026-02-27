@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.StudentDAO;
 import dao.TeacherDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -66,44 +67,107 @@ public class ScheduleController extends HttpServlet {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
 
-        if (user == null || user.getRole() == null || user.getRole().getRoleId() != 4) {
+        if (user == null || user.getRole() == null) {
             response.sendRedirect("login.jsp");
             return;
         }
 
-        TeacherDAO teacherDAO = new TeacherDAO();
-        String action = request.getParameter("action");
-        if (action == null) {
-            action = "view";
-        }
+        // ======================
+        // ROLE 4 - TEACHER 
+        // ======================
+        if (user.getRole().getRoleId() == 4) {
 
-        switch (action) {
-            case "view":
+            TeacherDAO teacherDAO = new TeacherDAO();
+            String action = request.getParameter("action");
+            if (action == null) {
+                action = "view";
+            }
 
-                String selectedDate = request.getParameter("date");
+            switch (action) {
+                case "view":
 
-                if (selectedDate == null || selectedDate.trim().isEmpty()) {
-                    selectedDate = java.time.LocalDate.now().toString(); // Sẽ ra "2026-02-24"
-                }
+                    String selectedDate = request.getParameter("date");
 
-                request.setAttribute("selectedDate", selectedDate);
+                    if (selectedDate == null || selectedDate.trim().isEmpty()) {
+                        selectedDate = java.time.LocalDate.now().toString();
+                    }
 
-                List<Schedule> scheduleList = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
+                    request.setAttribute("selectedDate", selectedDate);
 
-                String[] weekdays = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-                int[] slots = {1, 2, 3, 4, 5, 6};
-                String[] slotTimes = {"", "07:30 - 09:30", "09:45 - 11:45", "12:30 - 14:30", "14:45 - 16:45", "17:00 - 19:00", "19:15 - 21:15"};
+                    List<Schedule> scheduleList
+                            = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
 
-                request.setAttribute("selectedDate", selectedDate);
-                request.setAttribute("weekdays", weekdays);
-                request.setAttribute("slots", slots);
-                request.setAttribute("slotTimes", slotTimes);
-                request.setAttribute("scheduleList", scheduleList);
+                    String[] weekdays = {"Monday", "Tuesday", "Wednesday",
+                        "Thursday", "Friday", "Saturday", "Sunday"};
+                    int[] slots = {1, 2, 3, 4, 5, 6};
+                    String[] slotTimes = {"",
+                        "07:30 - 09:30",
+                        "09:45 - 11:45",
+                        "12:30 - 14:30",
+                        "14:45 - 16:45",
+                        "17:00 - 19:00",
+                        "19:15 - 21:15"};
 
-                request.setAttribute("home_view", "teacher/teacher_schedule.jsp");
-                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
-                break;
+                    request.setAttribute("weekdays", weekdays);
+                    request.setAttribute("slots", slots);
+                    request.setAttribute("slotTimes", slotTimes);
+                    request.setAttribute("scheduleList", scheduleList);
 
+                    request.setAttribute("home_view", "teacher/teacher_schedule.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                    break;
+            }
+        } // ======================
+        // ROLE 5 - STUDENT 
+        // ======================
+        else if (user.getRole().getRoleId() == 5) {
+
+            StudentDAO studentDAO = new StudentDAO();
+
+            String selectedDate = request.getParameter("date");
+
+            if (selectedDate == null || selectedDate.trim().isEmpty()) {
+                selectedDate = java.time.LocalDate.now().toString();
+            }
+
+            java.time.LocalDate date = java.time.LocalDate.parse(selectedDate);
+
+            // Tìm Monday của tuần
+            java.time.LocalDate monday = date.with(java.time.DayOfWeek.MONDAY);
+            java.time.LocalDate sunday = monday.plusDays(6);
+
+            List<Schedule> scheduleList
+                    = studentDAO.getScheduleByStudentWeek(
+                            user.getUserId(),
+                            monday.toString(),
+                            sunday.toString());
+
+            String[] weekdays = {"Monday", "Tuesday", "Wednesday",
+                "Thursday", "Friday", "Saturday", "Sunday"};
+
+            int[] slots = {1, 2, 3, 4, 5, 6};
+
+            String[] slotTimes = {"",
+                "07:30 - 09:30",
+                "09:45 - 11:45",
+                "12:30 - 14:30",
+                "14:45 - 16:45",
+                "17:00 - 19:00",
+                "19:15 - 21:15"};
+
+            request.setAttribute("selectedDate", selectedDate);
+            request.setAttribute("weekdays", weekdays);
+            request.setAttribute("slots", slots);
+            request.setAttribute("slotTimes", slotTimes);
+            request.setAttribute("scheduleList", scheduleList);
+
+            request.setAttribute("home_view", "student/studentSchedule.jsp");
+            request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+        } // ======================
+        // ROLE KHÁC
+        // ======================
+        else {
+            response.sendRedirect("login.jsp");
         }
     }
 

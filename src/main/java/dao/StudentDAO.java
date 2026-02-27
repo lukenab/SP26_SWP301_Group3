@@ -6,9 +6,14 @@ package dao;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import model.Classes;
+import model.Course;
+import model.Room;
+import model.Schedule;
 import model.Student;
 import utils.DBContext;
 
@@ -51,14 +56,77 @@ public class StudentDAO extends DBContext {
         }
         return null;
     }
-    
+
+    public List<Schedule> getScheduleByStudentWeek(int userId,
+            String startDate,
+            String endDate) {
+
+        List<Schedule> list = new ArrayList<>();
+
+        String sql = "SELECT DISTINCT "
+                + "s.ScheduleID, s.LearningDate, s.Slot, "
+                + "c.ClassID, c.ClassName, "
+                + "co.CourseID, co.CourseName, "
+                + "r.RoomID, r.RoomName "
+                + "FROM [User] u "
+                + "JOIN Student st ON u.UserID = st.StudentID "
+                + "JOIN Enrollment e ON st.StudentID = e.StudentID "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "JOIN Schedule s ON c.ClassID = s.ClassID "
+                + "LEFT JOIN Room r ON s.RoomID = r.RoomID "
+                + "WHERE u.UserID = ? "
+                + "AND e.Status = 'Enrolled' "
+                + "AND s.LearningDate BETWEEN ? AND ? "
+                + "ORDER BY s.LearningDate, s.Slot";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, userId);
+            ps.setString(2, startDate);
+            ps.setString(3, endDate);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                Course course = new Course();
+                course.setCourseId(rs.getInt("CourseID"));
+                course.setCourseName(rs.getString("CourseName"));
+
+                Classes classes = new Classes();
+                classes.setClassid(rs.getInt("ClassID"));
+                classes.setClassName(rs.getString("ClassName"));
+                classes.setCourse(course);
+
+                Room room = new Room();
+                room.setRoomId(rs.getInt("RoomID"));
+                room.setRoomName(rs.getString("RoomName"));
+
+                Schedule s = new Schedule();
+                s.setScheduleId(rs.getInt("ScheduleID"));
+                s.setLearningDate(rs.getDate("LearningDate"));
+                s.setSlot(rs.getInt("Slot"));
+                s.setClasses(classes);
+                s.setRoom(room);
+
+                list.add(s);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     public static void main(String[] args) {
         StudentDAO dao = new StudentDAO();
 //        List<Student> list = dao.getAllStudent();
 //        for (Student student : list) {
 //            System.out.println(student);
 //        }
-        
+
         Student student = dao.getStudentById(14);
         System.out.println(student);
     }
