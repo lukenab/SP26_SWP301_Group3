@@ -1,9 +1,3 @@
-<%-- 
-    Document   : adminDashboard
-    Created on : Jan 29, 2026, 12:00:09 AM
-    Author     : Legion
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
@@ -18,9 +12,12 @@
         <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
         <link href="css/viewUser.css" rel="stylesheet" type="text/css"/>
         <link href="css/form.css" rel="stylesheet" type="text/css"/>
-        <title>Admin Page</title>
+        <link href="css/viewGrade.css" rel="stylesheet" type="text/css"/>
+        <title>Dashboard</title>
     </head>
+
     <body>
+
         <nav class="active">
             <div class="custom-navbar">
                 <div class="navbar-left">
@@ -59,7 +56,8 @@
                                 <li class="divider"></li>
                                 <li>
                                     <a href="dashboard?action=profile">
-                                        <i class="bx bx-user"></i><span>Your Profile</span></a>
+                                        <i class="bx bx-user"></i><span>Your Profile</span>
+                                    </a>
                                 </li>
 
                                 <li>
@@ -70,8 +68,8 @@
                                 <li>
                                     <a href="logout" class="logout">
                                         <i class="bx bx-arrow-out-right-square-half"></i>
-                                        <span>Log out</span></a>
-
+                                        <span>Log out</span>
+                                    </a>
                                 </li>
                             </ul>
                         </div>
@@ -119,6 +117,8 @@
             </header>
 
             <div class="menu-bar">
+
+                <!-- ================= ADMIN ================= -->
                 <c:if test="${sessionScope.user.role.roleId == 1}">
                     <ul class="menu-links">
                         <li class="nav-links">
@@ -132,37 +132,10 @@
                                 <i class="bxr bx-group"></i>
                                 <span class="text nav-text">User Management</span></a>
                         </li>
-
-                        <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-wallet-alt bx-flip-vertical"></i>
-                                <span class="text nav-text">Finance</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-file-report"></i>
-                                <span class="text nav-text">Report</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Setting</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="dashboard?action=profile">
-                                <i class="bxr bx-user"></i>
-                                <span class="text nav-text">Profile</span>
-                            </a>
-                        </li>
                     </ul>
                 </c:if>
 
+                <!-- ================= TEACHER ================= -->
                 <c:if test="${sessionScope.user.role.roleId == 4}">
                     <ul class="menu-links">
                         <li class="nav-links">
@@ -178,45 +151,12 @@
                                 <span class="text nav-text">My Schedule</span>
                             </a>
                         </li>
-
-                        <li class="nav-links">
-                            <a href="class">
-                                <i class="bxr bx-door"></i>
-                                <span class="text nav-text">My Classes</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-group"></i>
-                                <span class="text nav-text">Students</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Setting</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="dashboard?action=profile">
-                                <i class="bxr bx-user"></i>
-                                <span class="text nav-text">Profile</span>
-                            </a>
-                        </li>
                     </ul>
                 </c:if>
 
-                <c:if test="${sessionScope.user.role.roleId == 2}">
+                <!-- ================= STUDENT ================= -->
+                <c:if test="${sessionScope.user.role.roleId == 5}">
                     <ul class="menu-links">
-                        <li class="nav-links">
-                            <a href="dashboard">
-                                <i class="bxr bx-dashboard"></i>
-                                <span class="text nav-text">Dashboard</span>
-                            </a>
-                        </li>
 
                         <li class="nav-links">
                             <a href="course?action=all">
@@ -281,16 +221,16 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="lead?action=all">
-                                <i class="bxr bx-book"></i>
-                                <span class="text nav-text">Manage Lead</span>
+                            <a href="grade">
+                                <i class="bxr bx-medal"></i>
+                                <span class="text nav-text">View Grades</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
-                            <a href="voucher?action=all">
-                                <i class="bxr bx-group"></i>
-                                <span class="text nav-text">Manage Voucher</span>
+                            <a href="schedule">
+                                <i class="bxr bx-calendar-event"></i>
+                                <span class="text nav-text">My Schedule</span>
                             </a>
                         </li>
 
@@ -300,6 +240,7 @@
                                 <span class="text nav-text">Profile</span>
                             </a>
                         </li>
+
                     </ul>
                 </c:if>
 
@@ -311,7 +252,9 @@
                 <c:import url="${home_view}" />
             </c:if>
         </main>
+
         <script src="dashboard.js"></script>
         <script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+
     </body>
 </html>

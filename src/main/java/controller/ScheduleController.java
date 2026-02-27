@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.StudentDAO;
 import dao.TeacherDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -66,7 +67,7 @@ public class ScheduleController extends HttpServlet {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
 
-        if (user == null || user.getRole() == null || user.getRole().getRoleId() != 4) {
+        if (user == null || user.getRole() == null) {
             response.sendRedirect("login.jsp");
             return;
         }
