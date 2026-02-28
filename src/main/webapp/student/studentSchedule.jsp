@@ -6,21 +6,48 @@
 
 <div class="container-fluid px-4">
 
-    <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-        <h3 class="fw-bold text-uppercase text-primary">
-            Weekly Learning Schedule
-        </h3>
+    <!-- ============================= -->
+    <!-- ===== BREADCRUMB + HEADER ==== -->
+    <!-- ============================= -->
 
-        <form method="get" action="schedule" class="d-flex">
-            <input type="date" name="date"
-                   value="${selectedDate}"
-                   class="form-control me-2"/>
-            <button class="btn btn-primary">Search</button>
-        </form>
+    <div class="mb-4 mt-4">
+
+        <div aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item">
+                    <a href="dashboard">
+                        <i class="bx bx-home-alt"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    Weekly Schedule
+                </li>
+            </ol>
+        </div>
+
+        <div class="content-header">
+            <div>
+                <h2 class="page-title">Weekly Learning Schedule</h2>
+                <p class="text-muted small mb-0">
+                    View and manage your weekly class timetable.
+                </p>
+            </div>
+
+            <form method="get" action="student-schedule" class="d-flex">
+                <input type="date"
+                       name="date"
+                       value="${selectedDate}"
+                       class="form-control me-2"/>
+                <button class="btn btn-primary">Search</button>
+            </form>
+        </div>
     </div>
 
-    <!-- TABLE CARD -->
+
+    <!-- ============================= -->
+    <!-- ===== TABLE CARD ============ -->
+    <!-- ============================= -->
+
     <div class="card shadow border-0">
         <div class="card-body p-0">
 
@@ -54,7 +81,6 @@
                             <c:forEach var="day" items="${weekdays}">
                                 <td class="schedule-cell">
 
-                                    <!-- LOOP SCHEDULE -->
                                     <c:forEach var="s" items="${scheduleList}">
                                         <fmt:setLocale value="en_US"/>
                                         <fmt:formatDate value="${s.learningDate}"
@@ -62,9 +88,7 @@
                                                         var="dayInSql"/>
 
                                         <c:if test="${s.slot == slot && dayInSql == day}">
-
                                             <div class="student-card">
-
                                                 <div class="class-title">
                                                     ${s.classes.className}
                                                 </div>
@@ -76,9 +100,7 @@
                                                 <div class="course-name">
                                                     ${s.classes.course.courseName}
                                                 </div>
-
                                             </div>
-
                                         </c:if>
                                     </c:forEach>
 

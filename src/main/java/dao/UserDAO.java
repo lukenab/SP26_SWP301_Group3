@@ -60,7 +60,7 @@ public class UserDAO extends DBContext {
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
+                Timestamp createdAt = rs.getTimestamp("CreatedAt");
 
                 User user = new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role, createdAt);
                 list.add(user);
@@ -89,7 +89,7 @@ public class UserDAO extends DBContext {
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
+                Timestamp createdAt = rs.getTimestamp("CreatedAt");
 
                 return new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role, createdAt);
             }
@@ -99,34 +99,87 @@ public class UserDAO extends DBContext {
         return null;
     }
 
+//    public User checkLogin(String email, String password) {
+//        String sql = "SELECT * FROM [User] WHERE Email = ? AND Password = ?";
+//        try {
+//            PreparedStatement ps = conn.prepareStatement(sql);
+//            ps.setString(1, email);
+//            String hashedPassword = hashMD5(password);
+    ////            String hashedPassword = password;
+//            ps.setString(2, hashedPassword);
+//            ResultSet rs = ps.executeQuery();
+//            if (rs.next()) {
+//                int userId = rs.getInt("UserID");
+//                String fullname = rs.getString("FullName");
+//
+//                String phone = rs.getString("Phone");
+//                String address = rs.getString("Address");
+//                Boolean gender = rs.getBoolean("Gender");
+//                Date birthdate = rs.getDate("Dob");
+//                String avatar = rs.getString("Avatar");
+//                Boolean status = rs.getBoolean("Status");
+//                Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
+//                Timestamp createdAt = rs.getTimestamp("CreatedAt");
+//
+//                User user = new User(userId, fullname, email, hashedPassword, phone, address, gender, birthdate, avatar, status, role, createdAt);
+//                return user;
+//            }
+//        } catch (Exception e) {
+//            System.out.println("Fail to check login: " + e.getMessage());
+//        }
+//        return null;
+//    }
+    
     public User checkLogin(String email, String password) {
-        String sql = "SELECT * FROM [User] WHERE Email = ? AND Password = ?";
+
+        String sql = "SELECT * FROM [User] WHERE Email = ?";
+
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
+
+            // Trim để tránh lỗi khoảng trắng
+            email = email.trim();
+            password = password.trim();
+
             ps.setString(1, email);
-            String hashedPassword = hashMD5(password);
-//            String hashedPassword = password;
-            ps.setString(2, hashedPassword);
+
             ResultSet rs = ps.executeQuery();
+
             if (rs.next()) {
-                int userId = rs.getInt("UserID");
-                String fullname = rs.getString("FullName");
 
-                String phone = rs.getString("Phone");
-                String address = rs.getString("Address");
-                Boolean gender = rs.getBoolean("Gender");
-                Date birthdate = rs.getDate("Dob");
-                String avatar = rs.getString("Avatar");
-                Boolean status = rs.getBoolean("Status");
-                Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                Timestamp createdAt = rs.getTimestamp("CreatedAt");
+                String dbPassword = rs.getString("Password");
+                String hashedPassword = hashMD5(password);
 
-                User user = new User(userId, fullname, email, hashedPassword, phone, address, gender, birthdate, avatar, status, role, createdAt);
-                return user;
+                System.out.println("========== DEBUG LOGIN ==========");
+                System.out.println("Input password: [" + password + "]");
+                System.out.println("Hashed input:   [" + hashedPassword + "]");
+                System.out.println("DB password:    [" + dbPassword + "]");
+                System.out.println("Match? " + hashedPassword.equals(dbPassword));
+                System.out.println("=================================");
+
+                if (hashedPassword.equals(dbPassword)) {
+
+                    int userId = rs.getInt("UserID");
+                    String fullname = rs.getString("FullName");
+                    String phone = rs.getString("Phone");
+                    String address = rs.getString("Address");
+                    Boolean gender = rs.getBoolean("Gender");
+                    Date birthdate = rs.getDate("Dob");
+                    String avatar = rs.getString("Avatar");
+                    Boolean status = rs.getBoolean("Status");
+                    Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
+                    Timestamp createdAt = rs.getTimestamp("CreatedAt");
+
+                    return new User(userId, fullname, email, hashedPassword,
+                            phone, address, gender, birthdate,
+                            avatar, status, role, createdAt);
+                }
             }
+
         } catch (Exception e) {
             System.out.println("Fail to check login: " + e.getMessage());
         }
+
         return null;
     }
 
@@ -149,7 +202,7 @@ public class UserDAO extends DBContext {
         String sqlStu = "INSERT INTO Student (StudentID, EnrollmentDate) VALUES (?, ?)";
 
         try {
-            conn.setAutoCommit(false); 
+            conn.setAutoCommit(false);
 
             PreparedStatement psUser = conn.prepareStatement(sqlUser, PreparedStatement.RETURN_GENERATED_KEYS);
             psUser.setString(1, fullName);
@@ -185,12 +238,12 @@ public class UserDAO extends DBContext {
                 psStu.executeUpdate();
             }
 
-            conn.commit(); 
+            conn.commit();
             return true;
 
         } catch (Exception e) {
             try {
-                conn.rollback(); 
+                conn.rollback();
             } catch (Exception ex) {
             }
             e.printStackTrace();
@@ -294,7 +347,7 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
-    
+
     public List<User> searchAndFilterUsers(String searchQuery, String roleId, String status) {
         List<User> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT * FROM [user] WHERE 1=1 ");
@@ -321,7 +374,7 @@ public class UserDAO extends DBContext {
                 ps.setInt(index++, Integer.parseInt(roleId));
             }
             if (status != null && !status.trim().isEmpty()) {
-                ps.setBoolean(index++, status.equals("1")); 
+                ps.setBoolean(index++, status.equals("1"));
             }
 
             ResultSet rs = ps.executeQuery();

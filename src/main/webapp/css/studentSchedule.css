@@ -120,3 +120,40 @@ body.dark .table thead th {
 body.dark .table td:first-child {
     background-color: #243447;
 }
+
+.breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+    margin-bottom: 1rem;
+    list-style: none;
+    background-color: transparent;
+}
+
+.breadcrumb-item {
+    font-size: 15px;
+    color: #6B7280;
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item a {
+    color: #6B7280;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.breadcrumb-item a:hover {
+    color: #2563EB;
+}
+
+.breadcrumb-item.active {
+    color: #111827;
+    font-weight: 500;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+    padding: 0 8px;
+    color: #6B7280;
+}
