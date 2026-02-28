@@ -232,10 +232,24 @@
                             </td>
 
                             <td>
-                                <a href="user?action=view&id=${u.userId}" class="action-btn"><i class='bx bx-eye'></i></a>
-                                <a href="user?action=update&id=${u.userId}" class="action-btn"><i class='bx bx-edit'></i></a>
-                                <a href="user?action=inActivate&id=${u.userId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
-                                <a type="button" class="action-btn" 
+                                <a href="user?action=view&id=${u.userId}" class="action-btn" title="View User Details"><i class='bx bx-eye'></i></a>
+                                <a href="user?action=update&id=${u.userId}" class="action-btn" title="Update User"><i class='bx bx-edit'></i></a>
+                                <a href="user?action=inActivate&id=${u.userId}" class="action-btn delete" title="Deactivate User"><i class='bx bx-power'></i></a>
+                                    <c:choose>
+                                        <c:when test="${u.isLocked}">
+                                        <a form="lockPassForm" type="button" class="action-btn delete" title="Unlock User" 
+                                           onclick="openLockModal('${u.userId}', '${fn:escapeXml(u.fullName)}', false)">
+                                            <i class='bx bxs-lock'></i>
+                                        </a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a form="lockPassForm" type="button" class="action-btn" title="Lock User" 
+                                           onclick="openLockModal('${u.userId}', '${fn:escapeXml(u.fullName)}', true)">
+                                            <i class='bx bx-lock-open-alt'></i>
+                                        </a>
+                                    </c:otherwise>
+                                </c:choose>
+                                <a type="button" class="action-btn" title="Reset User Password" 
                                    onclick="openResetModal('${u.userId}', '${u.email}', '${fn:escapeXml(u.fullName)}')">
                                     <i class='bx bx-refresh-ccw'></i> 
                                 </a>
@@ -291,6 +305,43 @@
                     <a type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</a>
                     <button type="submit" id="confirmResetBtn" class="btn btn-save">
                         Reset Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+            
+<div class="modal fade" id="lockUserModal" tabindex="-1" aria-labelledby="lockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+       <div class="modal-content">
+            <div class="modal-header" id="lockModalHeader">
+                <h5 class="modal-title" id="lockModalLabel">
+                    <i id="lockModalIcon" class='bx bxs-lock'></i> <span id="lockModalTitleText">Confirm Action</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form action="user" method="Post" id="lockPassForm">
+                <input type="hidden" name="action" value="toggleLock">
+                <input type="hidden" name="id" id="lockModalUserId">
+                <input type="hidden" name="val" id="lockModalVal">
+
+                <div class="modal-body">
+                    <p class="mb-3">
+                        Are you sure you want to <strong id="lockActionText"></strong> the account of <strong id="lockUserName" style="color: #0f172a;"></strong>?
+                    </p>
+                    <div class="modal-body-content" id="lockWarningMessage">
+                        <p class="mb-0 small">
+                            <i class='bx bx-info-circle'></i> <span id="lockWarningText">This user will no longer be able to log into the system.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="confirmLockBtn" class="btn btn-save">
+                        Confirm
                     </button>
                 </div>
             </form>
