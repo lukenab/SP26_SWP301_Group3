@@ -6,10 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GradeDAO extends DBContext {
-
-    // =========================================
-    // 1️⃣ Lấy EnrollmentID theo student + class
-    // =========================================
     public Integer getEnrollmentId(int studentId, int classId) {
 
         String sql = "SELECT EnrollmentID "
@@ -32,9 +28,7 @@ public class GradeDAO extends DBContext {
         return null;
     }
 
-    // =========================================
-    // 2️⃣ Lấy CourseID theo ClassID
-    // =========================================
+  
     public Integer getCourseIdByClassId(int classId) {
 
         String sql = "SELECT CourseID FROM Class WHERE ClassID = ?";
@@ -54,9 +48,7 @@ public class GradeDAO extends DBContext {
         return null;
     }
 
-    // =========================================
-    // 3️⃣ Lấy AssessmentID theo Course + Name
-    // =========================================
+   
     public Integer getAssessmentIdByName(int courseId, String name) {
 
         String sql = "SELECT AssessmentID "
@@ -81,9 +73,7 @@ public class GradeDAO extends DBContext {
         return null;
     }
 
-    // =========================================
-    // 4️⃣ Lấy toàn bộ điểm theo Enrollment
-    // =========================================
+   
     public Map<String, Double> getAllScores(int enrollmentId) {
 
         Map<String, Double> scoreMap = new HashMap<>();
@@ -113,9 +103,7 @@ public class GradeDAO extends DBContext {
         return scoreMap;
     }
 
-    // =========================================
-    // 5️⃣ Lấy điểm 1 assessment
-    // =========================================
+ 
     public Double getScore(int enrollmentId, int assessmentId) {
 
         String sql = "SELECT Score FROM Grade "
@@ -138,9 +126,7 @@ public class GradeDAO extends DBContext {
         return null;
     }
 
-    // =========================================
-    // 6️⃣ Insert điểm
-    // =========================================
+
     public void insertScore(int enrollmentId,
             int assessmentId,
             double score) {
@@ -162,9 +148,7 @@ public class GradeDAO extends DBContext {
         }
     }
 
-    // =========================================
-    // 7️⃣ Update điểm
-    // =========================================
+   
     public void updateScore(int enrollmentId,
             int assessmentId,
             double score) {
@@ -185,9 +169,7 @@ public class GradeDAO extends DBContext {
         }
     }
 
-    // =========================================
-    // 8️⃣ Save or Update
-    // =========================================
+  
     public void saveOrUpdate(int enrollmentId,
             int assessmentId,
             double score) {
@@ -199,9 +181,7 @@ public class GradeDAO extends DBContext {
         }
     }
 
-    // =========================================
-    // 9️⃣ Delete 1 assessment
-    // =========================================
+   
     public void deleteScore(int enrollmentId, int assessmentId) {
 
         String sql = "DELETE FROM Grade "
@@ -219,9 +199,7 @@ public class GradeDAO extends DBContext {
         }
     }
 
-    // =========================================
-    // 🔟 Tính Average theo Weight
-    // =========================================
+
     public Double calculateAverage(int enrollmentId) {
 
         String sql = "SELECT SUM(g.Score * a.Weight) AS FinalScore "
@@ -291,9 +269,7 @@ public class GradeDAO extends DBContext {
         }
     }
 
-    // =========================================
-    // MAIN TEST - KHÔNG HARDCODE ID
-    // =========================================
+   
     public static void main(String[] args) {
 
         GradeDAO dao = new GradeDAO();

@@ -3,7 +3,7 @@
 
 <link href="css/manageUser.css" rel="stylesheet"/>
 
-<!-- ================= TOAST MESSAGE ================= -->
+
 <c:if test="${not empty sessionScope.message}">
     <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
         <div class="toast-content">
@@ -22,7 +22,7 @@
 
 <div class="container-fluid px-4 content-body">
 
-    <!-- ================= BREADCRUMB ================= -->
+
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
@@ -53,7 +53,7 @@
         </div>
     </div>
 
-    <!-- ================= FULL WIDTH CARD ================= -->
+
     <div class="card user-table-card border-0 bg-white">
         <div class="card-body p-5">
 
@@ -84,7 +84,7 @@
 
                 <hr/>
 
-                <!-- SKILLS GRID -->
+
                 <div class="row g-4 mt-2">
 
                     <div class="col-md-3">
@@ -139,7 +139,7 @@
 
                 <hr class="my-4"/>
 
-                <!-- AVERAGE -->
+
                 <c:if test="${average != null}">
                     <div class="alert alert-info text-center fw-bold fs-5">
                         Final Average: ${average}
@@ -164,16 +164,4 @@
     </div>
 
 </div>
-
-<!-- ================= AUTO HIDE TOAST ================= -->
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const toast = document.getElementById("toastMessage");
-        if (toast) {
-            setTimeout(() => {
-                toast.style.opacity = "0";
-                setTimeout(() => toast.remove(), 400);
-            }, 3000);
-        }
-    });
-</script>
+<script src="js/enterGrade.js" type="text/javascript"></script>

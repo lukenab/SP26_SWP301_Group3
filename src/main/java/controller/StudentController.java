@@ -13,7 +13,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import model.User;
@@ -83,8 +82,6 @@ public class StudentController extends HttpServlet {
 
                     List<User> studentList
                             = dao.getStudentListByClassId(classId);
-
-                    // Load average theo studentId
                     GradeDAO gradeDAO = new GradeDAO();
                     Map<Integer, Double> averageMap
                             = gradeDAO.getAverageByClassId(classId);
