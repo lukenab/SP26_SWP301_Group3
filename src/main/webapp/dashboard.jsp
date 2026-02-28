@@ -134,6 +134,12 @@
                         </li>
 
                         <li class="nav-links">
+                            <a href="role">
+                                <i class="bxr bx-gear"></i>
+                                <span class="text nav-text">Role & Permission</span></a>
+                        </li>
+
+                        <li class="nav-links">
                             <a href="#">
                                 <i class="bxr bx-wallet-alt bx-flip-vertical"></i>
                                 <span class="text nav-text">Finance</span>
@@ -288,12 +294,15 @@
                             </a>
                         </li>
 
-                        <li class="nav-links">
-                            <a href="voucher?action=all">
-                                <i class="bxr bx-group"></i>
-                                <span class="text nav-text">Manage Voucher</span>
-                            </a>
-                        </li>
+                        <c:if test="${sessionScope.user.role.manageFinance}">
+                            <li class="nav-links">
+                                <a href="voucher?action=all">
+                                    <i class="bxr bx-group"></i>
+                                    <span class="text nav-text">Manage Voucher</span>
+                                </a>
+                            </li>
+                        </c:if>
+
 
                         <li class="nav-links">
                             <a href="dashboard?action=profile">
