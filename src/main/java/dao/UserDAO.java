@@ -99,87 +99,34 @@ public class UserDAO extends DBContext {
         return null;
     }
 
-//    public User checkLogin(String email, String password) {
-//        String sql = "SELECT * FROM [User] WHERE Email = ? AND Password = ?";
-//        try {
-//            PreparedStatement ps = conn.prepareStatement(sql);
-//            ps.setString(1, email);
-//            String hashedPassword = hashMD5(password);
-    ////            String hashedPassword = password;
-//            ps.setString(2, hashedPassword);
-//            ResultSet rs = ps.executeQuery();
-//            if (rs.next()) {
-//                int userId = rs.getInt("UserID");
-//                String fullname = rs.getString("FullName");
-//
-//                String phone = rs.getString("Phone");
-//                String address = rs.getString("Address");
-//                Boolean gender = rs.getBoolean("Gender");
-//                Date birthdate = rs.getDate("Dob");
-//                String avatar = rs.getString("Avatar");
-//                Boolean status = rs.getBoolean("Status");
-//                Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-//                Timestamp createdAt = rs.getTimestamp("CreatedAt");
-//
-//                User user = new User(userId, fullname, email, hashedPassword, phone, address, gender, birthdate, avatar, status, role, createdAt);
-//                return user;
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Fail to check login: " + e.getMessage());
-//        }
-//        return null;
-//    }
-    
     public User checkLogin(String email, String password) {
-
-        String sql = "SELECT * FROM [User] WHERE Email = ?";
-
+        String sql = "SELECT * FROM [User] WHERE Email = ? AND Password = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
-
-            // Trim để tránh lỗi khoảng trắng
-            email = email.trim();
-            password = password.trim();
-
             ps.setString(1, email);
-
+            String hashedPassword = hashMD5(password);
+            //            String hashedPassword = password;
+            ps.setString(2, hashedPassword);
             ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
+                int userId = rs.getInt("UserID");
+                String fullname = rs.getString("FullName");
 
-                String dbPassword = rs.getString("Password");
-                String hashedPassword = hashMD5(password);
+                String phone = rs.getString("Phone");
+                String address = rs.getString("Address");
+                Boolean gender = rs.getBoolean("Gender");
+                Date birthdate = rs.getDate("Dob");
+                String avatar = rs.getString("Avatar");
+                Boolean status = rs.getBoolean("Status");
+                Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
+                Timestamp createdAt = rs.getTimestamp("CreatedAt");
 
-                System.out.println("========== DEBUG LOGIN ==========");
-                System.out.println("Input password: [" + password + "]");
-                System.out.println("Hashed input:   [" + hashedPassword + "]");
-                System.out.println("DB password:    [" + dbPassword + "]");
-                System.out.println("Match? " + hashedPassword.equals(dbPassword));
-                System.out.println("=================================");
-
-                if (hashedPassword.equals(dbPassword)) {
-
-                    int userId = rs.getInt("UserID");
-                    String fullname = rs.getString("FullName");
-                    String phone = rs.getString("Phone");
-                    String address = rs.getString("Address");
-                    Boolean gender = rs.getBoolean("Gender");
-                    Date birthdate = rs.getDate("Dob");
-                    String avatar = rs.getString("Avatar");
-                    Boolean status = rs.getBoolean("Status");
-                    Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                    Timestamp createdAt = rs.getTimestamp("CreatedAt");
-
-                    return new User(userId, fullname, email, hashedPassword,
-                            phone, address, gender, birthdate,
-                            avatar, status, role, createdAt);
-                }
+                User user = new User(userId, fullname, email, hashedPassword, phone, address, gender, birthdate, avatar, status, role, createdAt);
+                return user;
             }
-
         } catch (Exception e) {
             System.out.println("Fail to check login: " + e.getMessage());
         }
-
         return null;
     }
 
