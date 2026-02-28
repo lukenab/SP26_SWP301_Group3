@@ -2,23 +2,19 @@ package dao;
 
 import utils.DBContext;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * DAO xử lý bảng Grade
- */
 public class GradeDAO extends DBContext {
 
-    // ==============================
-    // 1. Kiểm tra đã có điểm chưa
-    // ==============================
-    public boolean hasGrade(int studentId, int classId) {
+    // =========================================
+    // 1️⃣ Lấy EnrollmentID theo student + class
+    // =========================================
+    public Integer getEnrollmentId(int studentId, int classId) {
 
-        String sql = "SELECT 1"
-                + "            FROM Grade g"
-                + "            JOIN Enrollment e"
-                + "                ON g.EnrollmentID = e.EnrollmentID"
-                + "            WHERE e.StudentID = ?"
-                + "              AND e.ClassID = ?";
+        String sql = "SELECT EnrollmentID "
+                + "FROM Enrollment "
+                + "WHERE StudentID = ? AND ClassID = ?";
 
         try (PreparedStatement st = conn.prepareStatement(sql)) {
 
@@ -26,36 +22,56 @@ public class GradeDAO extends DBContext {
             st.setInt(2, classId);
 
             ResultSet rs = st.executeQuery();
-            return rs.next();
+            if (rs.next()) {
+                return rs.getInt("EnrollmentID");
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return false;
+        return null;
     }
 
-    // ==============================
-    // 2. Lấy điểm
-    // ==============================
-    public Float getScore(int studentId, int classId) {
+    // =========================================
+    // 2️⃣ Lấy CourseID theo ClassID
+    // =========================================
+    public Integer getCourseIdByClassId(int classId) {
 
-        String sql = "SELECT g.Score"
-                + "            FROM Grade g"
-                + "            JOIN Enrollment e"
-                + "                ON g.EnrollmentID = e.EnrollmentID"
-                + "            WHERE e.StudentID = ?"
-                + "              AND e.ClassID = ?";
+        String sql = "SELECT CourseID FROM Class WHERE ClassID = ?";
 
         try (PreparedStatement st = conn.prepareStatement(sql)) {
 
-            st.setInt(1, studentId);
-            st.setInt(2, classId);
+            st.setInt(1, classId);
+            ResultSet rs = st.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("CourseID");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // =========================================
+    // 3️⃣ Lấy AssessmentID theo Course + Name
+    // =========================================
+    public Integer getAssessmentIdByName(int courseId, String name) {
+
+        String sql = "SELECT AssessmentID "
+                + "FROM Assessment "
+                + "WHERE CourseID = ? AND AssessmentName = ?";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+
+            st.setInt(1, courseId);
+            st.setString(2, name);
 
             ResultSet rs = st.executeQuery();
 
             if (rs.next()) {
-                return rs.getFloat("Score");
+                return rs.getInt("AssessmentID");
             }
 
         } catch (Exception e) {
@@ -65,24 +81,79 @@ public class GradeDAO extends DBContext {
         return null;
     }
 
-    // ==============================
-    // 3. Insert điểm mới
-    // ==============================
-    public void insertScore(int studentId,
-            int classId,
-            float score) {
+    // =========================================
+    // 4️⃣ Lấy toàn bộ điểm theo Enrollment
+    // =========================================
+    public Map<String, Double> getAllScores(int enrollmentId) {
 
-        String sql = "INSERT INTO Grade (EnrollmentID, Score)"
-                + "            SELECT EnrollmentID, ?"
-                + "            FROM Enrollment"
-                + "            WHERE StudentID = ?"
-                + "              AND ClassID = ?";
+        Map<String, Double> scoreMap = new HashMap<>();
+
+        String sql = "SELECT a.AssessmentName, g.Score "
+                + "FROM Grade g "
+                + "JOIN Assessment a "
+                + "ON g.AssessmentID = a.AssessmentID "
+                + "WHERE g.EnrollmentID = ?";
 
         try (PreparedStatement st = conn.prepareStatement(sql)) {
 
-            st.setFloat(1, score);
-            st.setInt(2, studentId);
-            st.setInt(3, classId);
+            st.setInt(1, enrollmentId);
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()) {
+                scoreMap.put(
+                        rs.getString("AssessmentName"),
+                        rs.getDouble("Score")
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return scoreMap;
+    }
+
+    // =========================================
+    // 5️⃣ Lấy điểm 1 assessment
+    // =========================================
+    public Double getScore(int enrollmentId, int assessmentId) {
+
+        String sql = "SELECT Score FROM Grade "
+                + "WHERE EnrollmentID = ? AND AssessmentID = ?";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+
+            st.setInt(1, enrollmentId);
+            st.setInt(2, assessmentId);
+
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("Score");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    // =========================================
+    // 6️⃣ Insert điểm
+    // =========================================
+    public void insertScore(int enrollmentId,
+            int assessmentId,
+            double score) {
+
+        String sql = "INSERT INTO Grade "
+                + "(EnrollmentID, AssessmentID, Score) "
+                + "VALUES (?, ?, ?)";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+
+            st.setInt(1, enrollmentId);
+            st.setInt(2, assessmentId);
+            st.setDouble(3, score);
 
             st.executeUpdate();
 
@@ -91,26 +162,21 @@ public class GradeDAO extends DBContext {
         }
     }
 
-    // ==============================
-    // 4. Update điểm
-    // ==============================
-    public void updateScore(int studentId,
-            int classId,
-            float score) {
+    // =========================================
+    // 7️⃣ Update điểm
+    // =========================================
+    public void updateScore(int enrollmentId,
+            int assessmentId,
+            double score) {
 
-        String sql = "UPDATE g"
-                + "            SET g.Score = ?"
-                + "            FROM Grade g"
-                + "            JOIN Enrollment e"
-                + "                ON g.EnrollmentID = e.EnrollmentID"
-                + "            WHERE e.StudentID = ?"
-                + "              AND e.ClassID = ?";
+        String sql = "UPDATE Grade SET Score = ? "
+                + "WHERE EnrollmentID = ? AND AssessmentID = ?";
 
         try (PreparedStatement st = conn.prepareStatement(sql)) {
 
-            st.setFloat(1, score);
-            st.setInt(2, studentId);
-            st.setInt(3, classId);
+            st.setDouble(1, score);
+            st.setInt(2, enrollmentId);
+            st.setInt(3, assessmentId);
 
             st.executeUpdate();
 
@@ -119,41 +185,161 @@ public class GradeDAO extends DBContext {
         }
     }
 
-    // ==============================
-    // 5. Save or Update (gọn)
-    // ==============================
-    public void saveOrUpdateScore(int studentId,
-            int classId,
-            float score) {
+    // =========================================
+    // 8️⃣ Save or Update
+    // =========================================
+    public void saveOrUpdate(int enrollmentId,
+            int assessmentId,
+            double score) {
 
-        if (hasGrade(studentId, classId)) {
-            updateScore(studentId, classId, score);
+        if (getScore(enrollmentId, assessmentId) != null) {
+            updateScore(enrollmentId, assessmentId, score);
         } else {
-            insertScore(studentId, classId, score);
+            insertScore(enrollmentId, assessmentId, score);
         }
     }
 
-    // ==============================
-    // 6. Delete điểm
-    // ==============================
-    public void deleteScore(int studentId, int classId) {
+    // =========================================
+    // 9️⃣ Delete 1 assessment
+    // =========================================
+    public void deleteScore(int enrollmentId, int assessmentId) {
 
-        String sql = "DELETE g"
-                + "            FROM Grade g"
-                + "            JOIN Enrollment e"
-                + "                ON g.EnrollmentID = e.EnrollmentID"
-                + "            WHERE e.StudentID = ?"
-                + "              AND e.ClassID = ?";
+        String sql = "DELETE FROM Grade "
+                + "WHERE EnrollmentID = ? AND AssessmentID = ?";
 
         try (PreparedStatement st = conn.prepareStatement(sql)) {
 
-            st.setInt(1, studentId);
-            st.setInt(2, classId);
+            st.setInt(1, enrollmentId);
+            st.setInt(2, assessmentId);
 
             st.executeUpdate();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    // =========================================
+    // 🔟 Tính Average theo Weight
+    // =========================================
+    public Double calculateAverage(int enrollmentId) {
+
+        String sql = "SELECT SUM(g.Score * a.Weight) AS FinalScore "
+                + "FROM Grade g "
+                + "JOIN Assessment a "
+                + "ON g.AssessmentID = a.AssessmentID "
+                + "WHERE g.EnrollmentID = ?";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+
+            st.setInt(1, enrollmentId);
+            ResultSet rs = st.executeQuery();
+
+            if (rs.next()) {
+                return rs.getDouble("FinalScore");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public Map<Integer, Double> getAverageByClassId(int classId) {
+
+        Map<Integer, Double> map = new HashMap<>();
+
+        String sql
+                = "SELECT e.StudentID, SUM(g.Score * a.Weight) AS FinalScore "
+                + "FROM Enrollment e "
+                + "LEFT JOIN Grade g ON e.EnrollmentID = g.EnrollmentID "
+                + "LEFT JOIN Assessment a ON g.AssessmentID = a.AssessmentID "
+                + "WHERE e.ClassID = ? "
+                + "GROUP BY e.StudentID";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+
+            st.setInt(1, classId);
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()) {
+                map.put(
+                        rs.getInt("StudentID"),
+                        rs.getDouble("FinalScore")
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return map;
+    }
+
+    public void deleteAllByEnrollment(int enrollmentId) {
+
+        String sql = "DELETE FROM Grade WHERE EnrollmentID = ?";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+
+            st.setInt(1, enrollmentId);
+            st.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // =========================================
+    // MAIN TEST - KHÔNG HARDCODE ID
+    // =========================================
+    public static void main(String[] args) {
+
+        GradeDAO dao = new GradeDAO();
+
+        int studentId = 14;
+        int classId = 2;
+
+        System.out.println("=== TEST GRADE DAO ===");
+
+        Integer enrollmentId = dao.getEnrollmentId(studentId, classId);
+        if (enrollmentId == null) {
+            System.out.println("Enrollment not found!");
+            return;
+        }
+
+        Integer courseId = dao.getCourseIdByClassId(classId);
+        if (courseId == null) {
+            System.out.println("Course not found!");
+            return;
+        }
+
+        System.out.println("EnrollmentID: " + enrollmentId);
+
+        Integer readingId = dao.getAssessmentIdByName(courseId, "Reading");
+        Integer writingId = dao.getAssessmentIdByName(courseId, "Writing");
+        Integer speakingId = dao.getAssessmentIdByName(courseId, "Speaking");
+        Integer listeningId = dao.getAssessmentIdByName(courseId, "Listening");
+
+        if (readingId == null) {
+            System.out.println("Assessment not found!");
+            return;
+        }
+
+        dao.saveOrUpdate(enrollmentId, readingId, 7);
+        dao.saveOrUpdate(enrollmentId, writingId, 8);
+        dao.saveOrUpdate(enrollmentId, speakingId, 6);
+        dao.saveOrUpdate(enrollmentId, listeningId, 9);
+
+        Map<String, Double> scores = dao.getAllScores(enrollmentId);
+
+        System.out.println("=== Scores ===");
+        for (Map.Entry<String, Double> entry : scores.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
+
+        Double avg = dao.calculateAverage(enrollmentId);
+        System.out.println("Average: " + avg);
     }
 }

@@ -93,6 +93,34 @@ public class StudentDAO extends DBContext {
         return list;
     }
 
+    public User getUserById(int userId) {
+
+        String sql = "SELECT * FROM [User] WHERE UserID = ?";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+
+            st.setInt(1, userId);
+            ResultSet rs = st.executeQuery();
+
+            if (rs.next()) {
+
+                User u = new User();
+                u.setUserId(rs.getInt("UserID"));
+                u.setFullName(rs.getString("FullName"));
+                u.setEmail(rs.getString("Email"));
+                u.setPhone(rs.getString("Phone"));
+                u.setAddress(rs.getString("Address"));
+
+                return u;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public static void main(String[] args) {
         StudentDAO dao = new StudentDAO();
 //        List<Student> list = dao.getAllStudent();
