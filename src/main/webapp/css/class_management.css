@@ -1,0 +1,174 @@
+:root {
+    --cm-bg-light: #f8fafc;
+    --cm-text-primary: #0f172a;
+    --cm-text-secondary: #64748b;
+    --cm-border: #e2e8f0;
+    --cm-blue: #2563eb;
+    --cm-green: #15803d;
+    --cm-red: #b91c1c;
+}
+
+.class-management-page .breadcrumb-item a {
+    color: var(--cm-text-secondary);
+    text-decoration: none;
+}
+
+.class-management-page .breadcrumb-item a:hover {
+    color: var(--cm-blue);
+}
+
+.class-management-page .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--cm-text-primary);
+}
+
+.class-management-page .content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.class-management-page .user-table-card {
+    border: 1px solid var(--cm-border);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.class-management-page .table thead th {
+    background-color: #f1f5f9;
+    color: var(--cm-text-secondary);
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--cm-border);
+}
+
+.class-management-page .table tbody td {
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--cm-text-primary);
+    border-bottom: 1px solid var(--cm-border);
+    vertical-align: middle;
+}
+
+.class-management-page .action-btn.primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+    background: var(--cm-blue);
+    padding: 6px 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.class-management-page .action-btn.primary:hover {
+    background: #1d4ed8;
+    color: #fff;
+}
+
+.class-management-page .student-chip {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.class-management-page .badge-status {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.class-management-page .badge-active {
+    background: #dcfce7;
+    color: var(--cm-green);
+}
+
+.class-management-page .badge-inactive {
+    background: #fee2e2;
+    color: var(--cm-red);
+}
+
+.class-management-page .btn-add-new,
+.class-management-page .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.class-management-page .btn-add-new {
+    background: var(--cm-blue);
+    color: #fff;
+}
+
+.class-management-page .btn-add-new:hover {
+    background: #1d4ed8;
+    color: #fff;
+}
+
+.class-management-page .btn-back {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.class-management-page .btn-back:hover {
+    background: #cbd5e1;
+    color: #0f172a;
+}
+
+.class-management-page .custom-toast {
+    position: fixed;
+    top: 120px;
+    right: 30px;
+    background: #fff;
+    padding: 14px 18px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 9999;
+}
+
+.class-management-page .custom-toast.toast-success {
+    border-left: 5px solid #16a34a;
+}
+
+.class-management-page .custom-toast.toast-error {
+    border-left: 5px solid #dc2626;
+}
+
+.class-management-page .toast-icon i {
+    font-size: 24px;
+}
+
+.class-management-page .toast-title {
+    display: block;
+    font-weight: 700;
+}
+
+.class-management-page .toast-message {
+    font-size: 13px;
+    color: var(--cm-text-secondary);
+}
+
+@media (max-width: 768px) {
+    .class-management-page .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

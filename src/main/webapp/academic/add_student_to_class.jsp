@@ -1,0 +1,157 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<link href="css/class_management.css" rel="stylesheet" type="text/css"/>
+
+<div class="container-fluid px-4 content-body class-management-page">
+    <div class="mb-4">
+        <div aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="enrollment?action=classes">Class Management</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add Student</li>
+            </ol>
+        </div>
+
+        <div class="content-header">
+            <div>
+                <h2 class="page-title">Add Student to Class</h2>
+                <p class="text-muted small mb-0">
+                    Class: <strong>${classInfo[1]}</strong> | Course: ${classInfo[2]} | Current Students: ${classInfo[7]}
+                </p>
+            </div>
+            <a href="enrollment?action=classes" class="btn btn-back">
+                <i class='bx bx-left-arrow-alt'></i> Back to Class List
+            </a>
+        </div>
+    </div>
+
+    <c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-error-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+        </div>
+        <c:remove var="message" scope="session"/>
+        <c:remove var="messageType" scope="session"/>
+    </c:if>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card user-table-card border-0 bg-white h-100">
+                <div class="card-header bg-white border-bottom-0 pt-3 px-3">
+                    <h5 class="mb-0">Available Students</h5>
+                </div>
+                <div class="table-responsive">
+                    <form action="enrollment" method="post">
+                        <input type="hidden" name="action" value="addStudents"/>
+                        <input type="hidden" name="classId" value="${classInfo[0]}"/>
+
+                        <table class="table mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%">
+                                        <input class="form-check-input" type="checkbox" id="selectAll"/>
+                                    </th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Enrollment Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:if test="${empty availableStudents}">
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No available students.</td>
+                                    </tr>
+                                </c:if>
+                                <c:forEach items="${availableStudents}" var="s">
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input student-checkbox"
+                                                   type="checkbox"
+                                                   name="studentIds"
+                                                   value="${s[0]}"/>
+                                        </td>
+                                        <td class="fw-semibold">${s[1]}</td>
+                                        <td>${s[2]}</td>
+                                        <td><fmt:formatDate value="${s[3]}" pattern="dd/MM/yyyy"/></td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+
+                        <div class="p-3 border-top d-flex justify-content-end">
+                            <button type="submit" class="btn btn-add-new">
+                                <i class='bx bx-user-plus'></i> Add Selected Students
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card user-table-card border-0 bg-white h-100">
+                <div class="card-header bg-white border-bottom-0 pt-3 px-3">
+                    <h5 class="mb-0">Students In Class (${studentsInClass.size()})</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:if test="${empty studentsInClass}">
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted py-4">No students in class.</td>
+                                </tr>
+                            </c:if>
+                            <c:forEach items="${studentsInClass}" var="s">
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">${s[2]}</div>
+                                        <small class="text-muted">${s[3]}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge-status ${s[5] == 'Active' ? 'badge-active' : 'badge-inactive'}">
+                                            ${s[5]}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.student-checkbox');
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            });
+        }
+    })();
+</script>

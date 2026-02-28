@@ -7,9 +7,39 @@
         <title>Login Page</title>
         <link href="css/login.css" rel="stylesheet" type="text/css"/>
         <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+        <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
     </head>
     <body>
+
+
+
         <div class="login-container">
+            <c:if test="${not empty sessionScope.message}">
+                <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+                    <div class="toast-icon">
+                        <c:choose>
+                            <c:when test="${sessionScope.messageType == 'success'}">
+                                <i class='bx bx-check-circle'></i>
+                            </c:when>
+                            <c:otherwise>
+                                <i class='bx bx-error-circle'></i>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <div class="toast-content">
+                        <span class="toast-title">
+                            ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                        </span>
+                        <span class="toast-message">${sessionScope.message}</span>
+                    </div>
+                    <button class="toast-close" onclick="closeToast()">
+                        <i class='bx bx-x'></i>
+                    </button>
+                </div>
+
+                <c:remove var="message" scope="session" />
+                <c:remove var="messageType" scope="session" />
+            </c:if>
             <div class="login-card">
                 <div class="login-header">
                     <div class="login-logo">
@@ -19,12 +49,12 @@
                     <p>Please sign in to continue</p>
                 </div>
 
-                <c:if test="${not empty sessionScope.message}">
+                <c:if test="${not empty sessionScope.loginMessage}">
                     <div class="alert-error">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                        <span>${sessionScope.message}</span>
+                        <span>${sessionScope.loginMessage}</span>
                     </div>
-                    <c:remove var="message" scope="session"/>
+                    <c:remove var="loginMessage" scope="session"/>
                 </c:if>
 
                 <form class="login-form" action="login" method="post">
@@ -79,6 +109,7 @@
                 </div>
             </div>
         </div>
+        <script src="js/manageUser.js" type="text/javascript"></script>
     </body>
 </html>
 

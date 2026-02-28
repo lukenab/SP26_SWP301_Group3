@@ -105,29 +105,40 @@
                         </div>
 
                         <div class="consultation-card-body p-4">
-                            <form>
+                            <c:if test="${not empty sessionScope.message}">
+                                <div class="alert ${sessionScope.messageType == 'success' ? 'alert-success' : 'alert-danger'} py-2" role="alert">
+                                    ${sessionScope.message}
+                                </div>
+                                <c:remove var="message" scope="session"/>
+                                <c:remove var="messageType" scope="session"/>
+                            </c:if>
+
+                            <form action="landingPage" method="POST">
+                                <input type="hidden" name="action" value="createLead">
                                 <div class="mb-3">
                                     <label class="text-white small mb-1">Full Name</label>
-                                    <input type="text" class="form-control" placeholder="Nguyen Van A" required>
+                                    <input type="text" name="fullName" class="form-control" placeholder="Nguyen Van A" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="text-white small mb-1">Phone Number</label>
-                                    <input type="tel" class="form-control" placeholder="0812.154.005" required>
+                                    <input type="tel" name="phone" class="form-control" placeholder="0812.154.005" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="text-white small mb-1">Email Address</label>
-                                    <input type="email" class="form-control" placeholder="email@example.com">
+                                    <input type="email" name="email" class="form-control" placeholder="email@example.com">
                                 </div>
                                 <div class="mb-3">
                                     <label class="text-white small mb-1">Interested Course</label>
-                                    <select class="form-select">
-                                        <option selected disabled>Select a course...</option>
-                                        <option value="#"></option>
+                                    <select class="form-select" name="interestedCourseID" required>
+                                        <option value="" selected disabled>Select a course...</option>
+                                        <c:forEach items="${courseList}" var="c">
+                                            <option value="${c.courseId}">${c.courseName}</option>
+                                        </c:forEach>
                                     </select>
                                 </div>
                                 <div class="mb-3">
                                     <label class="text-white small mb-1">Message</label>
-                                    <input type="text" class="form-control" placeholder="Tell us more about your goals..."></input>
+                                    <input type="text" name="note" class="form-control" placeholder="Tell us more about your goals...">
                                 </div>
 
                                 <button type="submit" class="register-btn">

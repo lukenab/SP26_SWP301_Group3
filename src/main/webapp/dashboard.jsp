@@ -42,7 +42,7 @@
 
                     <div class="profile-item">
                         <span class="profile-img">
-                            <img src="${sessionScope.user.avatar}">
+                            <img src="${pageContext.request.contextPath}/${sessionScope.user.avatar}">
                         </span>
                         <div class="profile-text">
                             <span class="name">${sessionScope.user.fullName}</span>
@@ -82,15 +82,39 @@
 
         <div class="sidebar">
             <header>
-                <div class="sidebar-header">
-                    <div class="logo-header">
-                        <img src="images/logo.png" alt="logo" />
-                    </div>
 
-                    <div class="logo-text">
-                        <span class="name">LMCS</span>
-                        <span class="profession">Language Center</span>
-                    </div>
+                <div class="sidebar-header">
+                    <c:choose>
+                        <c:when test="${sessionScope.user.role.roleId == 1}">
+                            <c:set var="logoUrl" value="dashboard?action=admin" />
+                        </c:when>
+                        <c:when test="${sessionScope.user.role.roleId == 2}">
+                            <c:set var="logoUrl" value="dashboard?action=academic" />
+                        </c:when>
+                        <c:when test="${sessionScope.user.role.roleId == 3}">
+                            <c:set var="logoUrl" value="dashboard?action=sale" />
+                        </c:when>
+                        <c:when test="${sessionScope.user.role.roleId == 4}">
+                            <c:set var="logoUrl" value="dashboard?action=teacher" />
+                        </c:when>
+                        <c:when test="${sessionScope.user.role.roleId == 5}">
+                            <c:set var="logoUrl" value="dashboard?action=student" />
+                        </c:when>
+                        <c:otherwise>
+                            <c:set var="logoUrl" value="dashboard" />
+                        </c:otherwise>
+                    </c:choose>
+
+                    <a href="${logoUrl}" class="logo-link">
+                        <div class="logo-header">
+                            <img src="images/logo.png" alt="logo" />
+                        </div>
+
+                        <div class="logo-text">
+                            <span class="name">LMCS</span>
+                            <span class="profession">Language Center</span>
+                        </div>
+                    </a>
                 </div>
             </header>
 
@@ -100,28 +124,19 @@
                         <li class="nav-links">
                             <a href="dashboard?action=admin">
                                 <i class="bxr bx-dashboard"></i>
-                                <span class="text nav-text">Dashboard</span>
-                            </a>
+                                <span class="text nav-text">Dashboard</span></a>
                         </li>
 
                         <li class="nav-links">
                             <a href="user">
                                 <i class="bxr bx-group"></i>
-                                <span class="text nav-text">User Management</span>
-                            </a>
+                                <span class="text nav-text">User Management</span></a>
                         </li>
 
                         <li class="nav-links">
                             <a href="#">
                                 <i class="bxr bx-wallet-alt bx-flip-vertical"></i>
                                 <span class="text nav-text">Finance</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="room">
-                                <i class="bxr bx-door-open"></i>
-                                <span class="text nav-text">Room Management</span>
                             </a>
                         </li>
 
@@ -213,9 +228,9 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="course?action=all">
-                                <i class="bxr bx-book"></i>
-                                <span class="text nav-text">Course Management</span>
+                            <a href="enrollment?action=classes">
+                                <i class="bxr bx-door"></i>
+                                <span class="text nav-text">Classes</span>
                             </a>
                         </li>
 
@@ -223,6 +238,14 @@
                             <a href="#">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">Calendar Management</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="room">
+                                <i class="bxr bx-cog"></i>
+                                <span class="text nav-text">Room</span>
+
                             </a>
                         </li>
 
@@ -266,34 +289,13 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-door"></i>
-                                <span class="text nav-text">Registration</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="#">
+                            <a href="voucher?action=all">
                                 <i class="bxr bx-group"></i>
                                 <span class="text nav-text">Manage Voucher</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Consultation</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Lead Convert</span>
-                            </a>
-                        </li>
-                        
-                          <li class="nav-links">
                             <a href="dashboard?action=profile">
                                 <i class="bxr bx-user"></i>
                                 <span class="text nav-text">Profile</span>
@@ -301,15 +303,49 @@
                         </li>
                     </ul>
                 </c:if>
+
+                <c:if test="${sessionScope.user.role.roleId == 5}">
+                    <ul class="menu-links">
+
+                        <li class="nav-links">
+                            <a href="dashboard">
+                                <i class="bxr bx-dashboard"></i>
+                                <span class="text nav-text">Dashboard</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="grade">
+                                <i class="bxr bx-medal"></i>
+                                <span class="text nav-text">View Grades</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="schedule">
+                                <i class="bxr bx-calendar-event"></i>
+                                <span class="text nav-text">My Schedule</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="dashboard?action=profile">
+                                <i class="bxr bx-user"></i>
+                                <span class="text nav-text">Profile</span>
+                            </a>
+                        </li>
+
+                    </ul>
+                </c:if>
             </div>
         </div>
 
-    <main class="home-section" style="height: 88vh">
-        <c:if test="${not empty home_view}">
-            <c:import url="${home_view}" />
-        </c:if>
-    </main>
-    <script src="dashboard.js"></script>
-    <script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
-</body>
+        <main class="home-section" style="height: 88vh">
+            <c:if test="${not empty home_view}">
+                <c:import url="${home_view}" />
+            </c:if>
+        </main>
+        <script src="dashboard.js"></script>
+        <script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+    </body>
 </html>
