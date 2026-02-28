@@ -23,3 +23,27 @@ SELECT * FROM Room;
 
 -- DONE! Restart application.
 
+-- ========================================
+-- Voucher Usage log table (for apply voucher flow)
+-- ========================================
+IF OBJECT_ID('dbo.VoucherUsage', 'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[VoucherUsage](
+        [UsageID] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        [VoucherID] [int] NOT NULL,
+        [UsedByUserID] [int] NULL,
+        [BaseAmount] [decimal](18, 2) NOT NULL,
+        [DiscountAmount] [decimal](18, 2) NOT NULL,
+        [FinalAmount] [decimal](18, 2) NOT NULL,
+        [UsedAt] [datetime] NOT NULL DEFAULT (GETDATE()),
+        [Status] [nvarchar](30) NULL
+    );
+
+    ALTER TABLE [dbo].[VoucherUsage] WITH CHECK
+    ADD CONSTRAINT [FK_VoucherUsage_Voucher]
+    FOREIGN KEY([VoucherID]) REFERENCES [dbo].[Voucher] ([VoucherID]);
+
+    ALTER TABLE [dbo].[VoucherUsage] WITH CHECK
+    ADD CONSTRAINT [FK_VoucherUsage_User]
+    FOREIGN KEY([UsedByUserID]) REFERENCES [dbo].[User] ([UserID]);
+END

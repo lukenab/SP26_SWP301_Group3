@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.GradeDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -11,6 +12,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.util.List;
+import model.Grade;
+import model.User;
 
 /**
  *
@@ -57,7 +62,59 @@ public class GradeController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String action = request.getParameter("action");
+        if (action == null) {
+            action = "enter";
+        }
+
+        GradeDAO dao = new GradeDAO();
+
+        switch (action) {
+
+            // ==========================
+            // MỞ FORM NHẬP ĐIỂM
+            // ==========================
+            case "enter":
+
+                int studentId
+                        = Integer.parseInt(request.getParameter("studentId"));
+
+                int classId
+                        = Integer.parseInt(request.getParameter("classId"));
+
+                request.setAttribute("studentId", studentId);
+                request.setAttribute("classId", classId);
+                request.setAttribute("home_view",
+                        "teacher/enter_grade.jsp");
+
+                request.getRequestDispatcher("dashboard.jsp")
+                        .forward(request, response);
+                break;
+
+            // ==========================
+            // EDIT ĐIỂM
+            // ==========================
+            case "edit":
+
+                int studentIdEdit
+                        = Integer.parseInt(request.getParameter("studentId"));
+
+                int classIdEdit
+                        = Integer.parseInt(request.getParameter("classId"));
+
+                Float score
+                        = dao.getScore(studentIdEdit, classIdEdit);
+
+                request.setAttribute("studentId", studentIdEdit);
+                request.setAttribute("classId", classIdEdit);
+                request.setAttribute("score", score);
+                request.setAttribute("home_view",
+                        "teacher/enter_grade.jsp");
+
+                request.getRequestDispatcher("dashboard.jsp")
+                        .forward(request, response);
+                break;
+        }
     }
 
     /**
@@ -71,7 +128,49 @@ public class GradeController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String action = request.getParameter("action");
+        GradeDAO dao = new GradeDAO();
+
+        switch (action) {
+
+            // ==========================
+            // SAVE / UPDATE
+            // ==========================
+            case "save":
+
+                int studentId
+                        = Integer.parseInt(request.getParameter("studentId"));
+
+                int classId
+                        = Integer.parseInt(request.getParameter("classId"));
+
+                float score
+                        = Float.parseFloat(request.getParameter("score"));
+
+                dao.saveOrUpdateScore(studentId, classId, score);
+
+                response.sendRedirect(
+                        "student?action=viewByClass&classId=" + classId);
+                break;
+
+            // ==========================
+            // DELETE ĐIỂM
+            // ==========================
+            case "delete":
+
+                int studentIdDel
+                        = Integer.parseInt(request.getParameter("studentId"));
+
+                int classIdDel
+                        = Integer.parseInt(request.getParameter("classId"));
+
+                dao.deleteScore(studentIdDel, classIdDel);
+
+                response.sendRedirect(
+                        "student?action=viewByClass&classId=" + classIdDel);
+                break;
+        }
+
     }
 
     /**

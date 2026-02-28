@@ -41,7 +41,7 @@
 }
 
 .shortcut-form{
-    height: fit-content;
+    height: 230px;
     padding: 25px;
     border-radius: 10px;
     background-color: #fff;
@@ -490,3 +490,68 @@
     padding: 0;
 }
 
+#avatarVisualInput {
+    padding: 0;
+    height: auto;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 13px;
+    cursor: pointer;
+    overflow: hidden;
+    width: 100%;
+}
+
+#avatarVisualInput::file-selector-button {
+    background-color: #e2e8f0;
+    color: #1e293b;
+    border: none;
+    border-right: 1px solid #cbd5e1;
+    padding: 10px 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 10px; 
+}
+
+#avatarVisualInput::file-selector-button:hover {
+    background-color: #cbd5e1;
+    color: #2563eb; 
+}
+
+.avatar-input-content {
+    display: flex;
+    align-items: center;
+    gap: 8px; 
+}
+
+.avatar-input-btn {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #64748b;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; 
+}
+
+.avatar-input-btn:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+#avatarInputContainer label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563eb; 
+    margin-bottom: 8px;
+    display: block;
+}

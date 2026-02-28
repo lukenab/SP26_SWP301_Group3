@@ -4,7 +4,8 @@
  */
 package model;
 
-import java.util.Date;
+import java.sql.Timestamp;
+import java.sql.Date;
 
 /**
  *
@@ -22,26 +23,14 @@ public class User {
     private String avatar;
     private boolean status;
     private Role role;
+    private Timestamp createdAt;
+    private Boolean isLocked;
+    private int failedLoginAttempts;
 
     public User() {
     }
 
-    public User(String fullName, String email, String password, String phone, String address, boolean gender, Date dob, String avatar, boolean status, Role role) {
-        this.fullName = fullName;
-        this.email = email;
-        this.password = password;
-        this.phone = phone;
-        this.address = address;
-        this.gender = gender;
-        this.dob = dob;
-        this.avatar = avatar;
-        this.status = status;
-        this.role = role;
-    }
-    
-    
-
-    public User(int userId, String fullName, String email, String password, String phone, String address, boolean gender, Date dob, String avatar, boolean status, Role role) {
+    public User(int userId, String fullName, String email, String password, String phone, String address, boolean gender, Date dob, String avatar, boolean status, Role role, Timestamp createdAt) {
         this.userId = userId;
         this.fullName = fullName;
         this.email = email;
@@ -53,6 +42,7 @@ public class User {
         this.avatar = avatar;
         this.status = status;
         this.role = role;
+        this.createdAt = createdAt;
     }
 
     public int getUserId() {
@@ -127,7 +117,7 @@ public class User {
         this.avatar = avatar;
     }
 
-    public boolean isStatus() {
+    public boolean getStatus() {
         return status;
     }
 
@@ -143,11 +133,32 @@ public class User {
         this.role = role;
     }
 
-    @Override
-    public String toString() {
-        return "User{" + "userId=" + userId + ", fullName=" + fullName + ", email=" + email + ", password=" + password + ", phone=" + phone + ", address=" + address + ", gender=" + gender + ", dob=" + dob + ", avatar=" + avatar + ", status=" + status + ", role=" + role + '}';
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
 
-   
-    
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Boolean getIsLocked() {
+        return isLocked;
+    }
+
+    public void setIsLocked(Boolean isLocked) {
+        this.isLocked = isLocked;
+    }
+
+    public int getFailedLoginAttempts() {
+        return failedLoginAttempts;
+    }
+
+    public void setFailedLoginAttempts(int failedLoginAttempts) {
+        this.failedLoginAttempts = failedLoginAttempts;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" + "userId=" + userId + ", fullName=" + fullName + ", email=" + email + ", password=" + password + ", phone=" + phone + ", address=" + address + ", gender=" + gender + ", dob=" + dob + ", avatar=" + avatar + ", status=" + status + ", role=" + role + ", createdAt=" + createdAt + ", isLocked=" + isLocked + ", failedLoginAttempts=" + failedLoginAttempts + '}';
+    }
 }

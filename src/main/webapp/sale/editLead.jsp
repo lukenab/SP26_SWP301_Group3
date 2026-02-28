@@ -9,9 +9,11 @@
         <div>
             <h1 class="page-title">Edit Lead</h1>
         </div>
-        <a href="lead?action=all" class="btn-secondary">
-            <i class='bx bx-arrow-left'></i> Back to Leads
-        </a>
+        <div class="content-header-actions">
+            <a href="lead?action=all" class="btn-secondary">
+                <i class='bx bx-arrow-left'></i> Back to Leads
+            </a>
+        </div>
     </div>
     <div aria-label="breadcrumb">
         <ol class="breadcrumb mb-1">
@@ -29,9 +31,6 @@
 
     <div class="profile-header-info">
         <h2 class="profile-name">${lead.fullName}</h2>
-        <span class="profile-department">
-            Course ID: ${lead.interestedCourseID}
-        </span>
 
         <c:choose>
             <c:when test="${lead.status == 'New'}">
@@ -85,13 +84,6 @@
                 <input type="email" id="email" name="email" value="${lead.email}" required>
             </div>
             <div class="form-group">
-                <label for="interestedCourseID">Interested Course ID</label>
-                <input type="number" id="interestedCourseID" name="interestedCourseID" value="${lead.interestedCourseID}" required>
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
                 <label for="status">Status</label>
                 <select name="status" id="status" required>
                     <option value="New" ${lead.status == 'New' ? 'selected' : ''}>New</option>
@@ -101,7 +93,10 @@
                     <option value="Lost" ${lead.status == 'Lost' ? 'selected' : ''}>Lost</option>
                 </select>
             </div>
-            <div class="form-group">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group form-group-full">
                 <label for="note">Note</label>
                 <textarea id="note" name="note" rows="3" placeholder="Add consultation note...">${lead.note}</textarea>
             </div>
