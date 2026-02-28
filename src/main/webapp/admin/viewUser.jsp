@@ -45,7 +45,9 @@
                 </div>
                 <div class="profile-header-right">
                     <span class="user-email"><i class="bx bx-phone"></i>${user.phone}</span>
-                    <span class="user-email"><i class="bx bx-calendar-event"></i>Joined <fmt:formatDate value="${employee.hireDate}" pattern="dd-MM-yyyy"/></span>   
+                        <c:if test="${user.role.roleId == 2 || user.role.roleId == 3 || user.role.roleId == 4}">
+                        <span class="user-email"><i class="bx bx-calendar-event"></i>Joined <fmt:formatDate value="${employee.hireDate}" pattern="dd-MM-yyyy"/></span>   
+                    </c:if>
                 </div>
             </div>
         </div>

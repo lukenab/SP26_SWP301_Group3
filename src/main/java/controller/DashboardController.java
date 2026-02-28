@@ -4,7 +4,6 @@
  */
 package controller;
 
-import dao.GradeDAO;
 import dao.UserDAO;
 import java.io.IOException;
 
@@ -15,7 +14,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
-import model.Grade;
 import model.User;
 
 /**
@@ -38,61 +36,53 @@ public class DashboardController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         UserDAO userDAO = new UserDAO();
-
         if (action == null) {
             action = "all";
         }
 
         switch (action) {
-
             case "all":
-                request.getRequestDispatcher("dashboard.jsp")
-                       .forward(request, response);
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
-
             case "admin":
                 List<User> list = userDAO.getAllUser();
                 int totalUsers = list.size();
                 request.setAttribute("totalUsers", totalUsers);
                 request.setAttribute("userList", list);
                 request.setAttribute("home_view", "/admin/adminDashboard.jsp");
-                request.getRequestDispatcher("dashboard.jsp")
-                       .forward(request, response);
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
-
-            case "profile":
+            case "profile": 
                 HttpSession session = request.getSession();
-                User loggedInUser = (User) session.getAttribute("user");
-
-                if (loggedInUser == null) {
+                User loggedInUser = (User)session.getAttribute("user");
+                
+                if(loggedInUser == null){
                     response.sendRedirect("login");
-                    return;
+                    return; 
                 }
-
+                
                 User freshUser = userDAO.getUserById(loggedInUser.getUserId());
-                session.setAttribute("user", freshUser);
+                session.setAttribute("user", freshUser); 
                 request.setAttribute("user", freshUser);
-
+                
                 int roleId = freshUser.getRole().getRoleId();
-
                 if (roleId == 5) {
                     dao.StudentDAO stuDAO = new dao.StudentDAO();
-                    request.setAttribute("student",
-                            stuDAO.getStudentById(freshUser.getUserId()));
+                    request.setAttribute("student", stuDAO.getStudentById(freshUser.getUserId()));
                 } else {
                     dao.EmployeeDAO empDAO = new dao.EmployeeDAO();
-                    request.setAttribute("employee",
-                            empDAO.getEmployeeById(freshUser.getUserId()));
+                    request.setAttribute("employee", empDAO.getEmployeeById(freshUser.getUserId()));
                 }
-
+                
                 request.setAttribute("home_view", "profile.jsp");
-                request.getRequestDispatcher("dashboard.jsp")
-                       .forward(request, response);
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
-           
+                
+                
+                
+                
         }
     }
-
 
     /**
      * Handles the HTTP <code>POST</code> method.

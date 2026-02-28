@@ -236,7 +236,7 @@
                                 <a href="user?action=update&id=${u.userId}" class="action-btn"><i class='bx bx-edit'></i></a>
                                 <a href="user?action=inActivate&id=${u.userId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
                                 <a type="button" class="action-btn" 
-                                        onclick="openResetModal('${u.userId}', '${u.email}', '${fn:escapeXml(u.fullName)}')">
+                                   onclick="openResetModal('${u.userId}', '${u.email}', '${fn:escapeXml(u.fullName)}')">
                                     <i class='bx bx-refresh-ccw'></i> 
                                 </a>
                             </td>
@@ -289,9 +289,9 @@
 
                 <div class="modal-footer">
                     <a type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</a>
-                    <a type="submit" id="confirmResetBtn" class="btn btn-save">
+                    <button type="submit" id="confirmResetBtn" class="btn btn-save">
                         Reset Password
-                    </a>
+                    </button>
                 </div>
             </form>
         </div>
