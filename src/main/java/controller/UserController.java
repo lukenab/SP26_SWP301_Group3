@@ -427,6 +427,21 @@ public class UserController extends HttpServlet {
 
                 response.sendRedirect("user");
                 break;
+            case "toggleLock":
+                int lockUserId = Integer.parseInt(request.getParameter("id"));
+                boolean lockVal = Boolean.parseBoolean(request.getParameter("val"));
+
+                boolean isToggled = userDAO.toggleLockUser(lockUserId, lockVal);
+                HttpSession lockSession = request.getSession();
+                if (isToggled) {
+                    lockSession.setAttribute("message", "User account has been " + (lockVal ? "Locked" : "Unlocked") + " successfully!");
+                    lockSession.setAttribute("messageType", "success");
+                } else {
+                    lockSession.setAttribute("message", "Failed to update lock status!");
+                    lockSession.setAttribute("messageType", "error");
+                }
+                response.sendRedirect("user");
+                break;
         }
     }
 

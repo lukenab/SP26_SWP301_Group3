@@ -60,9 +60,10 @@ public class UserDAO extends DBContext {
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
+                Timestamp createdAt = rs.getTimestamp("CreatedAt");
 
                 User user = new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role, createdAt);
+                user.setIsLocked(rs.getBoolean("IsLocked"));
                 list.add(user);
             }
         } catch (Exception e) {
@@ -72,7 +73,7 @@ public class UserDAO extends DBContext {
     }
 
     public User getUserById(int id) {
-        String sql = "SELECT * FROM [user] WHERE UserID = ?";
+        String sql = "SELECT * FROM [User] WHERE UserID = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, id);
@@ -89,9 +90,10 @@ public class UserDAO extends DBContext {
                 String avatar = rs.getString("Avatar");
                 Boolean status = rs.getBoolean("Status");
                 Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
-
-                return new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role, createdAt);
+                Timestamp createdAt = rs.getTimestamp("CreatedAt");
+                User user = new User(userId, fullname, email, password, phone, address, gender, birthdate, avatar, status, role, createdAt);
+                user.setIsLocked(rs.getBoolean("IsLocked"));
+                return user;
             }
         } catch (Exception e) {
             System.out.println("Fail to get user by ID: " + e.getMessage());
@@ -105,7 +107,6 @@ public class UserDAO extends DBContext {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, email);
             String hashedPassword = hashMD5(password);
-//            String hashedPassword = password;
             ps.setString(2, hashedPassword);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -122,6 +123,7 @@ public class UserDAO extends DBContext {
                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
 
                 User user = new User(userId, fullname, email, hashedPassword, phone, address, gender, birthdate, avatar, status, role, createdAt);
+                user.setIsLocked(rs.getBoolean("IsLocked"));
                 return user;
             }
         } catch (Exception e) {
@@ -149,7 +151,7 @@ public class UserDAO extends DBContext {
         String sqlStu = "INSERT INTO Student (StudentID, EnrollmentDate) VALUES (?, ?)";
 
         try {
-            conn.setAutoCommit(false); 
+            conn.setAutoCommit(false);
 
             PreparedStatement psUser = conn.prepareStatement(sqlUser, PreparedStatement.RETURN_GENERATED_KEYS);
             psUser.setString(1, fullName);
@@ -185,12 +187,12 @@ public class UserDAO extends DBContext {
                 psStu.executeUpdate();
             }
 
-            conn.commit(); 
+            conn.commit();
             return true;
 
         } catch (Exception e) {
             try {
-                conn.rollback(); 
+                conn.rollback();
             } catch (Exception ex) {
             }
             e.printStackTrace();
@@ -294,7 +296,7 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
-    
+
     public List<User> searchAndFilterUsers(String searchQuery, String roleId, String status) {
         List<User> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT * FROM [user] WHERE 1=1 ");
@@ -321,7 +323,7 @@ public class UserDAO extends DBContext {
                 ps.setInt(index++, Integer.parseInt(roleId));
             }
             if (status != null && !status.trim().isEmpty()) {
-                ps.setBoolean(index++, status.equals("1")); 
+                ps.setBoolean(index++, status.equals("1"));
             }
 
             ResultSet rs = ps.executeQuery();
@@ -340,6 +342,7 @@ public class UserDAO extends DBContext {
                 Timestamp createdAt = rs.getTimestamp("CreatedAt");
 
                 User user = new User(uId, fullname, email, password, phone, address, gender, birthdate, avatar, st, role, createdAt);
+                user.setIsLocked(rs.getBoolean("IsLocked"));
                 list.add(user);
             }
         } catch (Exception e) {
@@ -348,9 +351,74 @@ public class UserDAO extends DBContext {
         return list;
     }
 
+    public boolean toggleLockUser(int userId, boolean isLocked) {
+        String sql = "UPDATE [User] SET IsLocked = ? WHERE UserID = ?";
+        try {
+            PreparedStatement ps = conn.prepareCall(sql);
+            ps.setBoolean(1, isLocked);
+            ps.setInt(2, userId);
+            int row = ps.executeUpdate();
+            if (row > 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to lock/ unlock user: " + e.getMessage());
+        }
+        return false;
+    }
+    
+    public User getUserByEmail(String email) {
+        String sql = "SELECT * FROM [User] WHERE Email = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                User user = new User();
+                user.setUserId(rs.getInt("UserID"));
+                user.setFullName(rs.getString("FullName"));
+                user.setEmail(rs.getString("Email"));
+                user.setPassword(rs.getString("Password"));
+                user.setStatus(rs.getBoolean("Status"));
+                user.setIsLocked(rs.getBoolean("IsLocked")); 
+                user.setFailedLoginAttempts(rs.getInt("FailedLoginAttempts"));
+                return user;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get user by email: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public void incrementFailedLogin(String email) {
+        String sql = "UPDATE [User] SET FailedLoginAttempts = FailedLoginAttempts + 1 WHERE Email = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, email);
+            ps.executeUpdate();
+        } catch (Exception e) {}
+    }
+
+    public void resetFailedLogin(String email) {
+        String sql = "UPDATE [User] SET FailedLoginAttempts = 0 WHERE Email = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, email);
+            ps.executeUpdate();
+        } catch (Exception e) {}
+    }
+
+    public void lockUser(String email) {
+        String sql = "UPDATE [User] SET IsLocked = 1 WHERE Email = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, email);
+            ps.executeUpdate();
+        } catch (Exception e) {}
+    }
+
     public static void main(String[] args) {
         UserDAO dao = new UserDAO();
-        String password = "123";
-        dao.updatePassword(password, 15);
+        System.out.println(dao.getUserById(22));
     }
 }
