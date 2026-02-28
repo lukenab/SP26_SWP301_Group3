@@ -26,7 +26,11 @@ public class RoleDAO extends DBContext {
             while (rs.next()) {
                 int roleId = rs.getInt("RoleID");
                 String roleName = rs.getString("RoleName");
-                Role role = new Role(roleId, roleName);
+                Boolean manageUser = rs.getBoolean("ManageUser");
+                Boolean manageCourse = rs.getBoolean("ManageCourse");
+                Boolean Finance = rs.getBoolean("ManageFinance");
+
+                Role role = new Role(roleId, roleName, manageUser, Finance, manageCourse);
                 list.add(role);
             }
         } catch (Exception e) {
@@ -44,13 +48,35 @@ public class RoleDAO extends DBContext {
             if (rs.next()) {
                 int roleId = rs.getInt("RoleID");
                 String roleName = rs.getString("RoleName");
-                Role role = new Role(roleId, roleName);
+                Boolean manageUser = rs.getBoolean("ManageUser");
+                Boolean manageCourse = rs.getBoolean("ManageCourse");
+                Boolean Finance = rs.getBoolean("ManageFinance");
+
+                Role role = new Role(roleId, roleName, manageUser, Finance, manageCourse);
                 return role;
             }
         } catch (Exception e) {
             System.out.println("Fail to get role by ID: " + e.getMessage());
         }
         return null;
+    }
+
+    public Boolean updateRolePermissions(int roleId, boolean manageUser, boolean manageCourse, boolean manageFinance) {
+        String sql = "UPDATE [Role] SET ManageUser = ?, ManageCourse = ?, ManageFinance = ? WHERE RoleID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setBoolean(1, manageUser);
+            ps.setBoolean(2, manageCourse);
+            ps.setBoolean(3, manageFinance);
+            ps.setInt(4, roleId);
+            int row = ps.executeUpdate();
+            if (row > 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to update role: " + e.getMessage());
+        }
+        return false;
     }
 
     public static void main(String[] args) {

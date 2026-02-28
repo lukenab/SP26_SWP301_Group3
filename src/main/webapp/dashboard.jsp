@@ -134,6 +134,12 @@
                         </li>
 
                         <li class="nav-links">
+                            <a href="role">
+                                <i class="bxr bx-gear"></i>
+                                <span class="text nav-text">Role & Permission</span></a>
+                        </li>
+
+                        <li class="nav-links">
                             <a href="#">
                                 <i class="bxr bx-wallet-alt bx-flip-vertical"></i>
                                 <span class="text nav-text">Finance</span>
@@ -210,6 +216,8 @@
                 </c:if>
 
                 <c:if test="${sessionScope.user.role.roleId == 2}">
+                    
+<!--                    Merge this-->
                     <ul class="menu-links">
                         <li class="nav-links">
                             <a href="dashboard">
@@ -219,9 +227,9 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="course?action=all">
-                                <i class="bxr bx-book"></i>
-                                <span class="text nav-text">Course</span>
+                            <a href="room">
+                                <i class="bxr bx-door-open"></i>
+                                <span class="text nav-text">Room Management</span>
                             </a>
                         </li>
 
@@ -234,8 +242,8 @@
 
                         <li class="nav-links">
                             <a href="#">
-                                <i class="bxr bx-group"></i>
-                                <span class="text nav-text">Certificate</span>
+                                <i class="bxr bx-calendar-event"></i>
+                                <span class="text nav-text">Schedule Management</span>
                             </a>
                         </li>
 
@@ -249,16 +257,15 @@
 
                         <li class="nav-links">
                             <a href="#">
-                                <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Review</span>
-
+                                <i class="bxr bx-check-circle"></i>
+                                <span class="text nav-text">Verify Tuition Payment</span>
                             </a>
                         </li>
+
                         <li class="nav-links">
                             <a href="#">
-                                <i class="bxr bx-seal-check"></i>
-                                <span class="text nav-text">Feedback</span>
-
+                                <i class="bxr bx-user-check"></i>
+                                <span class="text nav-text">Teacher Assignment</span>
                             </a>
                         </li>
 
@@ -287,12 +294,15 @@
                             </a>
                         </li>
 
-                        <li class="nav-links">
-                            <a href="voucher?action=all">
-                                <i class="bxr bx-group"></i>
-                                <span class="text nav-text">Manage Voucher</span>
-                            </a>
-                        </li>
+                        <c:if test="${sessionScope.user.role.manageFinance}">
+                            <li class="nav-links">
+                                <a href="voucher?action=all">
+                                    <i class="bxr bx-group"></i>
+                                    <span class="text nav-text">Manage Voucher</span>
+                                </a>
+                            </li>
+                        </c:if>
+
 
                         <li class="nav-links">
                             <a href="dashboard?action=profile">

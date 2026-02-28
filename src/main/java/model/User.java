@@ -24,6 +24,8 @@ public class User {
     private boolean status;
     private Role role;
     private Timestamp createdAt;
+    private Boolean isLocked;
+    private int failedLoginAttempts;
 
     public User() {
     }
@@ -115,7 +117,7 @@ public class User {
         this.avatar = avatar;
     }
 
-    public boolean isStatus() {
+    public boolean getStatus() {
         return status;
     }
 
@@ -139,8 +141,24 @@ public class User {
         this.createdAt = createdAt;
     }
 
+    public Boolean getIsLocked() {
+        return isLocked;
+    }
+
+    public void setIsLocked(Boolean isLocked) {
+        this.isLocked = isLocked;
+    }
+
+    public int getFailedLoginAttempts() {
+        return failedLoginAttempts;
+    }
+
+    public void setFailedLoginAttempts(int failedLoginAttempts) {
+        this.failedLoginAttempts = failedLoginAttempts;
+    }
+
     @Override
     public String toString() {
-        return "User{" + "userId=" + userId + ", fullName=" + fullName + ", email=" + email + ", password=" + password + ", phone=" + phone + ", address=" + address + ", gender=" + gender + ", dob=" + dob + ", avatar=" + avatar + ", status=" + status + ", role=" + role + ", createdAt=" + createdAt + '}';
+        return "User{" + "userId=" + userId + ", fullName=" + fullName + ", email=" + email + ", password=" + password + ", phone=" + phone + ", address=" + address + ", gender=" + gender + ", dob=" + dob + ", avatar=" + avatar + ", status=" + status + ", role=" + role + ", createdAt=" + createdAt + ", isLocked=" + isLocked + ", failedLoginAttempts=" + failedLoginAttempts + '}';
     }
 }
