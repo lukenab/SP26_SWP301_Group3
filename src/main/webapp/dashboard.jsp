@@ -195,6 +195,8 @@
                 </c:if>
 
                 <c:if test="${sessionScope.user.role.roleId == 2}">
+                    
+<!--                    Merge this-->
                     <ul class="menu-links">
                         <li class="nav-links">
                             <a href="dashboard">
