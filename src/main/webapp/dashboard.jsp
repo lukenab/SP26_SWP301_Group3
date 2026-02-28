@@ -303,6 +303,39 @@
                     </ul>
                 </c:if>
 
+                <c:if test="${sessionScope.user.role.roleId == 5}">
+                    <ul class="menu-links">
+
+                        <li class="nav-links">
+                            <a href="dashboard">
+                                <i class="bxr bx-dashboard"></i>
+                                <span class="text nav-text">Dashboard</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="grade">
+                                <i class="bxr bx-medal"></i>
+                                <span class="text nav-text">View Grades</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="schedule">
+                                <i class="bxr bx-calendar-event"></i>
+                                <span class="text nav-text">My Schedule</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="dashboard?action=profile">
+                                <i class="bxr bx-user"></i>
+                                <span class="text nav-text">Profile</span>
+                            </a>
+                        </li>
+
+                    </ul>
+                </c:if>
             </div>
         </div>
 
