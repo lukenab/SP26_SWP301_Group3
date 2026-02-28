@@ -6,10 +6,16 @@ package dao;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import model.Classes;
+import model.Course;
+import model.Room;
+import model.Schedule;
 import model.Student;
+import model.User;
 import utils.DBContext;
 
 /**
@@ -51,14 +57,49 @@ public class StudentDAO extends DBContext {
         }
         return null;
     }
-    
+
+    public List<User> getStudentListByClassId(int classId) {
+
+        List<User> list = new ArrayList<>();
+
+        String sql = "SELECT u.* "
+                + "FROM Enrollment e "
+                + "JOIN [User] u ON e.StudentID = u.UserID "
+                + "WHERE e.ClassID = ? "
+                + "AND e.Status = 'Active' "
+                + "AND u.RoleID = 5";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+
+            st.setInt(1, classId);
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()) {
+
+                User u = new User();
+                u.setUserId(rs.getInt("UserID"));
+                u.setFullName(rs.getString("FullName"));
+                u.setEmail(rs.getString("Email"));
+                u.setPhone(rs.getString("Phone"));
+                u.setAddress(rs.getString("Address"));
+
+                list.add(u);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     public static void main(String[] args) {
         StudentDAO dao = new StudentDAO();
 //        List<Student> list = dao.getAllStudent();
 //        for (Student student : list) {
 //            System.out.println(student);
 //        }
-        
+
         Student student = dao.getStudentById(14);
         System.out.println(student);
     }

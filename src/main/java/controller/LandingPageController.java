@@ -5,6 +5,7 @@
 package controller;
 
 import dao.CourseDAO;
+import dao.LeadDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -12,8 +13,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import model.Course;
+import model.Lead;
 
 /**
  *
@@ -34,17 +37,20 @@ public class LandingPageController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-         String action = request.getParameter("action");
+        String action = request.getParameter("action");
         CourseDAO courseDAO = new CourseDAO();
-        if(action == null){
+        if (action == null) {
             action = "all";
         }
-        
-        switch(action){
+
+        switch (action) {
             case "all":
-                List<Course> list = courseDAO.getAllCourse();
+                List<Course> list = courseDAO.getActiveCourses();
                 request.setAttribute("courseList", list);
                 request.getRequestDispatcher("landingPage.jsp").forward(request, response);
+                break;
+            default:
+                response.sendRedirect("landingPage");
                 break;
         }
     }
@@ -60,7 +66,51 @@ public class LandingPageController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+        String action = request.getParameter("action");
+        HttpSession session = request.getSession();
+
+        if (!"createLead".equals(action)) {
+            response.sendRedirect("landingPage");
+            return;
+        }
+
+        String fullName = request.getParameter("fullName");
+        String phone = request.getParameter("phone");
+        String email = request.getParameter("email");
+        String note = request.getParameter("note");
+        String interestedCourseID = request.getParameter("interestedCourseID");
+
+        if (isBlank(fullName) || isBlank(phone) || isBlank(interestedCourseID)) {
+            session.setAttribute("message", "Please provide full name, phone and course.");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect("landingPage");
+            return;
+        }
+
+        try {
+            Lead lead = new Lead();
+            lead.setFullName(fullName.trim());
+            lead.setPhone(phone.trim());
+            lead.setEmail(isBlank(email) ? null : email.trim());
+            lead.setInterestedCourseID(Integer.parseInt(interestedCourseID));
+            lead.setStatus("New");
+            lead.setNote(isBlank(note) ? "Submitted from landing page." : note.trim());
+
+            LeadDAO leadDAO = new LeadDAO();
+            leadDAO.insertLead(lead);
+
+            session.setAttribute("message", "Information submitted successfully. Our consultant will contact you soon.");
+            session.setAttribute("messageType", "success");
+        } catch (NumberFormatException ex) {
+            session.setAttribute("message", "Invalid course selection.");
+            session.setAttribute("messageType", "error");
+        }
+
+        response.sendRedirect("landingPage");
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     /**

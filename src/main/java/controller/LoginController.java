@@ -6,14 +6,12 @@ package controller;
 
 import dao.UserDAO;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import model.Role;
 import model.User;
 
 /**
@@ -52,22 +50,54 @@ public class LoginController extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        User user = userDAO.checkLogin(email, password);
-        if (user != null) {
-            HttpSession session = request.getSession();
-            session.setAttribute("user", user);
+        HttpSession loginSession = request.getSession();
 
-            int roleId = user.getRole().getRoleId();
-            if(roleId == 1) {
+        User userByEmail = userDAO.getUserByEmail(email);
+        if (userByEmail == null) {
+            loginSession.setAttribute("loginMessage", "Invalid email or password!");
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (!userByEmail.getStatus()) {
+            loginSession.setAttribute("loginMessage", "Your account has been deactivated. Please contact Admin.");
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (userByEmail.getIsLocked()) {
+            loginSession.setAttribute("loginMessage", "Your account is LOCKED due to multiple attempts. Please contact admin.");
+            response.sendRedirect("login");
+            return;
+        }
+
+        User validUser = userDAO.checkLogin(email, password);
+        if (validUser != null) {
+            userDAO.resetFailedLogin(email);
+            loginSession.setAttribute("user", validUser);
+
+            int roleId = validUser.getRole().getRoleId();
+            if (roleId == 1) {
                 response.sendRedirect("dashboard?action=admin");
             } else if (roleId == 2 || roleId == 3 || roleId == 4) {
                 response.sendRedirect("dashboard?action=all");
             } else {
                 response.sendRedirect("dashboard");
             }
-        } else {
-            HttpSession loginSession = request.getSession();
-            loginSession.setAttribute("message", "Invalid email or password!");
+        }
+        
+        else{
+            userDAO.incrementFailedLogin(email);
+            int attempts = userByEmail.getFailedLoginAttempts() + 1;
+            
+            if(attempts >= 5){
+                userDAO.lockUser(email);
+                loginSession.setAttribute("loginMessage", "You have entered the wrong password 5 times. Your account is LOCKED.");
+            }
+            else{
+                int remainingAttempts = 5 - attempts;
+                loginSession.setAttribute("loginMessage", "Invalid password! You have " + remainingAttempts + " attempts left.");
+            }
             response.sendRedirect("login");
         }
     }

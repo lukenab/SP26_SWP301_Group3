@@ -7,12 +7,15 @@ function toggleAvatarInput() {
         visualInput.focus();
     }
 }
-function updateAvatar() {
-    var newUrl = document.getElementById("avatarVisualInput").value;
-
+function updateAvatar(inputElement) {
     var imgPreview = document.querySelector(".info-img img");
-    if (newUrl.trim() !== "") {
-        imgPreview.src = newUrl;
+
+    if (inputElement.files && inputElement.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            imgPreview.src = e.target.result;
+        };
+        reader.readAsDataURL(inputElement.files[0]);
     }
-    document.getElementById("uAvatar").value = newUrl;
 }

@@ -5,6 +5,7 @@
 package controller;
 
 import dao.AttendanceDAO;
+import dto.AttendanceDTO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -60,24 +61,35 @@ public class AttendanceController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
+
         if (action == null) {
             action = "take";
+        } else {
+            action = action.trim();
         }
 
         AttendanceDAO dao = new AttendanceDAO();
 
         switch (action) {
+
             case "take":
                 try {
-                    int scheduleId = Integer.parseInt(request.getParameter("scheduleId"));
-                    // Lấy danh sách Object[] (ID, Name, UserID, Status, Note)
-                    List<Object[]> attList = dao.getAttendanceList(scheduleId);
+                    int scheduleId = Integer.parseInt(request.getParameter("scheduleId").trim());
+                    int classId = Integer.parseInt(request.getParameter("classId").trim());
 
-                    request.setAttribute("attList", attList);
+                    List<AttendanceDTO> attList
+                            = dao.getStudentListForAttendance(scheduleId, classId);
+
+                    request.setAttribute("attendanceList", attList);
                     request.setAttribute("scheduleId", scheduleId);
-                    request.setAttribute("home_view", "/teacher/take_attendance.jsp");
-                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                    request.setAttribute("classId", classId);
+                    request.setAttribute("home_view", "teacher/take_attendance.jsp");
+
+                    request.getRequestDispatcher("dashboard.jsp")
+                            .forward(request, response);
+
                 } catch (Exception e) {
+                    e.printStackTrace();
                     response.sendRedirect("schedule?action=view");
                 }
                 break;
@@ -99,22 +111,29 @@ public class AttendanceController extends HttpServlet {
         AttendanceDAO dao = new AttendanceDAO();
 
         switch (action) {
+
             case "save":
                 try {
-                    // Lấy mảng ID điểm danh để duyệt
                     String[] attIds = request.getParameterValues("attId");
+              
+                    int scheduleId = Integer.parseInt(request.getParameter("scheduleId"));
+
                     if (attIds != null) {
                         for (String id : attIds) {
-                            // Lấy status và note tương ứng từng ID
+                            int attendanceId = Integer.parseInt(id);
                             String status = request.getParameter("status_" + id);
                             String note = request.getParameter("note_" + id);
-
-                            // Gọi hàm update trong DAO
-                            dao.updateAttendance(Integer.parseInt(id), status, note);
+                            dao.updateAttendance(attendanceId, status, note);
                         }
                     }
+
+                   
+                    dao.updateScheduleStatus(scheduleId);
+             
+
                     response.sendRedirect("schedule?action=view&msg=Success");
                 } catch (Exception e) {
+                    e.printStackTrace();
                     response.sendRedirect("schedule?action=view&msg=Error");
                 }
                 break;
