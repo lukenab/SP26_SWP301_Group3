@@ -4,7 +4,9 @@
  */
 package controller;
 
+import dao.ClassDAO;
 import dao.GradeDAO;
+import dao.StudentDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -14,6 +16,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Map;
+import model.Classes;
 import model.Grade;
 import model.User;
 
@@ -68,22 +72,24 @@ public class GradeController extends HttpServlet {
         }
 
         GradeDAO dao = new GradeDAO();
-
+        StudentDAO studentDAO = new StudentDAO();
+        ClassDAO classDAO = new ClassDAO();
         switch (action) {
-
-            // ==========================
-            // MỞ FORM NHẬP ĐIỂM
-            // ==========================
             case "enter":
 
-                int studentId
+                int studentIdEnter
                         = Integer.parseInt(request.getParameter("studentId"));
 
-                int classId
+                int classIdEnter
                         = Integer.parseInt(request.getParameter("classId"));
 
-                request.setAttribute("studentId", studentId);
-                request.setAttribute("classId", classId);
+                User student = studentDAO.getUserById(studentIdEnter);
+                String className = classDAO.getClassNameById(classIdEnter);
+
+                request.setAttribute("studentName", student.getFullName());
+                request.setAttribute("className", className);
+                request.setAttribute("studentId", studentIdEnter);
+                request.setAttribute("classId", classIdEnter);
                 request.setAttribute("home_view",
                         "teacher/enter_grade.jsp");
 
@@ -92,7 +98,7 @@ public class GradeController extends HttpServlet {
                 break;
 
             // ==========================
-            // EDIT ĐIỂM
+            // EDIT - LOAD ĐIỂM CŨ
             // ==========================
             case "edit":
 
@@ -102,12 +108,30 @@ public class GradeController extends HttpServlet {
                 int classIdEdit
                         = Integer.parseInt(request.getParameter("classId"));
 
-                Float score
-                        = dao.getScore(studentIdEdit, classIdEdit);
+                Integer enrollmentId
+                        = dao.getEnrollmentId(studentIdEdit, classIdEdit);
 
+                if (enrollmentId == null) {
+                    response.sendRedirect(
+                            "student?action=viewByClass&classId=" + classIdEdit);
+                    return;
+                }
+
+                User estudent = studentDAO.getUserById(studentIdEdit);
+                String eclassName = classDAO.getClassNameById(classIdEdit);
+
+                Map<String, Double> scoreMap
+                        = dao.getAllScores(enrollmentId);
+
+                Double average
+                        = dao.calculateAverage(enrollmentId);
+
+                request.setAttribute("studentName", estudent.getFullName());
+                request.setAttribute("className", eclassName);
                 request.setAttribute("studentId", studentIdEdit);
                 request.setAttribute("classId", classIdEdit);
-                request.setAttribute("score", score);
+                request.setAttribute("scoreMap", scoreMap);
+                request.setAttribute("average", average);
                 request.setAttribute("home_view",
                         "teacher/enter_grade.jsp");
 
@@ -130,12 +154,9 @@ public class GradeController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         GradeDAO dao = new GradeDAO();
-
+        HttpSession session = request.getSession();
         switch (action) {
 
-            // ==========================
-            // SAVE / UPDATE
-            // ==========================
             case "save":
 
                 int studentId
@@ -144,18 +165,54 @@ public class GradeController extends HttpServlet {
                 int classId
                         = Integer.parseInt(request.getParameter("classId"));
 
-                float score
-                        = Float.parseFloat(request.getParameter("score"));
+                Integer enrollmentId
+                        = dao.getEnrollmentId(studentId, classId);
 
-                dao.saveOrUpdateScore(studentId, classId, score);
+                if (enrollmentId == null) {
+                    session.setAttribute("message",
+                            "Enrollment not found!");
+                    session.setAttribute("messageType", "error");
+
+                    response.sendRedirect(
+                            "student?action=viewByClass&classId=" + classId);
+                    return;
+                }
+
+                Integer courseId
+                        = dao.getCourseIdByClassId(classId);
+
+                Integer readingId
+                        = dao.getAssessmentIdByName(courseId, "Reading");
+                Integer writingId
+                        = dao.getAssessmentIdByName(courseId, "Writing");
+                Integer speakingId
+                        = dao.getAssessmentIdByName(courseId, "Speaking");
+                Integer listeningId
+                        = dao.getAssessmentIdByName(courseId, "Listening");
+
+                double reading
+                        = Double.parseDouble(request.getParameter("reading"));
+                double writing
+                        = Double.parseDouble(request.getParameter("writing"));
+                double speaking
+                        = Double.parseDouble(request.getParameter("speaking"));
+                double listening
+                        = Double.parseDouble(request.getParameter("listening"));
+
+                dao.saveOrUpdate(enrollmentId, readingId, reading);
+                dao.saveOrUpdate(enrollmentId, writingId, writing);
+                dao.saveOrUpdate(enrollmentId, speakingId, speaking);
+                dao.saveOrUpdate(enrollmentId, listeningId, listening);
+
+                session.setAttribute("message",
+                        "Grade saved successfully!");
+                session.setAttribute("messageType", "success");
 
                 response.sendRedirect(
                         "student?action=viewByClass&classId=" + classId);
                 break;
 
-            // ==========================
-            // DELETE ĐIỂM
-            // ==========================
+            // ================= DELETE ALL =================
             case "delete":
 
                 int studentIdDel
@@ -164,11 +221,18 @@ public class GradeController extends HttpServlet {
                 int classIdDel
                         = Integer.parseInt(request.getParameter("classId"));
 
-                dao.deleteScore(studentIdDel, classIdDel);
+                Integer enrollmentIdDel
+                        = dao.getEnrollmentId(studentIdDel, classIdDel);
+
+                if (enrollmentIdDel != null) {
+                    dao.deleteAllByEnrollment(enrollmentIdDel);
+                }
+
+                session.setAttribute("message", "All grades deleted successfully!");
+                session.setAttribute("messageType", "success");
 
                 response.sendRedirect(
                         "student?action=viewByClass&classId=" + classIdDel);
-                break;
         }
 
     }

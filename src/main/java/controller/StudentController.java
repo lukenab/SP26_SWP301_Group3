@@ -84,19 +84,13 @@ public class StudentController extends HttpServlet {
                     List<User> studentList
                             = dao.getStudentListByClassId(classId);
 
-                    // ====== THÊM PHẦN NÀY ======
+                    // Load average theo studentId
                     GradeDAO gradeDAO = new GradeDAO();
-                    Map<Integer, Float> gradeMap = new HashMap<>();
-
-                    for (User u : studentList) {
-                        Float score = gradeDAO.getScore(
-                                u.getUserId(), classId);
-                        gradeMap.put(u.getUserId(), score);
-                    }
-                    // ============================
+                    Map<Integer, Double> averageMap
+                            = gradeDAO.getAverageByClassId(classId);
 
                     request.setAttribute("studentList", studentList);
-                    request.setAttribute("gradeMap", gradeMap);   // thêm dòng này
+                    request.setAttribute("averageMap", averageMap);
                     request.setAttribute("classId", classId);
                     request.setAttribute("home_view",
                             "teacher/student_list_of_class.jsp");
