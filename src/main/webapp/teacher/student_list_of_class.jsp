@@ -3,7 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
-
+<link href="css/student_list_of_class.css" rel="stylesheet" type="text/css"/>
 <c:if test="${not empty sessionScope.message}">
     <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
         <i class='bx ${sessionScope.messageType == 'success' ? 'bx-check-circle' : 'bx-error-circle'} me-2'></i>
@@ -113,7 +113,6 @@
                                                 <input type="hidden" name="action" value="delete"/>
                                                 <input type="hidden" name="studentId" value="${s.userId}"/>
                                                 <input type="hidden" name="classId" value="${classId}"/>
-                                                <%-- ICON DELETE (ĐÃ THAY THÀNH bx-trash) --%>
                                                 <button type="submit" class="btn-icon-minimal" 
                                                         onclick="return confirm('Delete grades for ${s.fullName}?')">
                                                     <i class='bx bx-trash'></i>
@@ -133,77 +132,4 @@
 </div>
 </div>
 
-<style>
-    /* ĐỊNH DẠNG DẤU NGĂN CÁCH BREADCRUMB (GIỐNG TRANG ENTER GRADE) */
-    .breadcrumb-item + .breadcrumb-item::before {
-        content: ">" !important;
-        font-size: 0.8rem;
-        color: #adb5bd;
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-    }
-
-    /* STYLE ICON TỐI GIẢN - KHÔNG MÀU MÈ */
-    .btn-icon-minimal {
-        color: #a0a0a0 !important;
-        font-size: 1.2rem;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        background: none !important;
-        border: none !important;
-        padding: 0 6px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-    }
-
-    .btn-icon-minimal:hover {
-        color: #6c757d !important;
-        transform: scale(1.1);
-    }
-
-    .avatar-circle {
-        width: 38px;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        border: 1px solid #dee2e6;
-        background-color: #f8f9fc;
-    }
-    .bg-soft-primary {
-        background-color: #eef2f7;
-    }
-</style>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const toast = document.getElementById("toastMessage");
-        if (toast) {
-            setTimeout(() => {
-                toast.style.opacity = "0";
-                setTimeout(() => toast.remove(), 400);
-            }, 3000);
-        }
-
-        const searchInput = document.getElementById("studentSearch");
-        if (searchInput) {
-            searchInput.addEventListener("keyup", function () {
-                const query = this.value.toLowerCase().trim();
-                const rows = document.querySelectorAll(".student-row");
-
-                rows.forEach(row => {
-                    const name = row.querySelector(".student-name").innerText.toLowerCase();
-                    const email = row.querySelector(".student-email").innerText.toLowerCase();
-                    if (name.includes(query) || email.includes(query)) {
-                        row.style.display = "";
-                    } else {
-                        row.style.display = "none";
-                    }
-                });
-            });
-        }
-    });
-</script>
+<script src="js/student_list_of_class.js" type="text/javascript"></script>

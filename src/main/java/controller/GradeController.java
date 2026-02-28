@@ -97,9 +97,7 @@ public class GradeController extends HttpServlet {
                         .forward(request, response);
                 break;
 
-            // ==========================
-            // EDIT - LOAD ĐIỂM CŨ
-            // ==========================
+          
             case "edit":
 
                 int studentIdEdit
@@ -212,7 +210,7 @@ public class GradeController extends HttpServlet {
                         "student?action=viewByClass&classId=" + classId);
                 break;
 
-            // ================= DELETE ALL =================
+          
             case "delete":
 
                 int studentIdDel
