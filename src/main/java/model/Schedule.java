@@ -14,7 +14,7 @@ public class Schedule {
     private int scheduleId;
     private Classes classes;
     private Room room;
-    private int slot;
+    private Slot slot;
     private Date learningDate;
     private Employee employee;
     private boolean attendanceStatus;
@@ -22,7 +22,7 @@ public class Schedule {
     public Schedule() {
     }
 
-    public Schedule(int scheduleId, Classes classes, Room room, int slot, Date learningDate, Employee employee, boolean attendanceStatus) {
+    public Schedule(int scheduleId, Classes classes, Room room, Slot slot, Date learningDate, Employee employee, boolean attendanceStatus) {
         this.scheduleId = scheduleId;
         this.classes = classes;
         this.room = room;
@@ -56,11 +56,11 @@ public class Schedule {
         this.room = room;
     }
 
-    public int getSlot() {
+    public Slot getSlot() {
         return slot;
     }
 
-    public void setSlot(int slot) {
+    public void setSlot(Slot slot) {
         this.slot = slot;
     }
 
@@ -93,6 +93,6 @@ public class Schedule {
         return "Schedule{" + "scheduleId=" + scheduleId + ", classes=" + classes + ", room=" + room + ", slot=" + slot + ", learningDate=" + learningDate + ", employee=" + employee + ", attendanceStatus=" + attendanceStatus + '}';
     }
 
-    
+
     
 }

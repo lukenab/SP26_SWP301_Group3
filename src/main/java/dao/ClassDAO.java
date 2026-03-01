@@ -129,4 +129,24 @@ public class ClassDAO extends DBContext {
         }
         return false;
     }
+
+    public String getClassNameById(int classId) {
+
+        String sql = "SELECT ClassName FROM Class WHERE ClassID = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, classId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("ClassName");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail to get class name: " + e.getMessage());
+        }
+
+        return null;
+    }
 }

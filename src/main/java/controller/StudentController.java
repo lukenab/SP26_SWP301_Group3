@@ -13,7 +13,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import model.User;
@@ -83,20 +82,12 @@ public class StudentController extends HttpServlet {
 
                     List<User> studentList
                             = dao.getStudentListByClassId(classId);
-
-                    // ====== THÊM PHẦN NÀY ======
                     GradeDAO gradeDAO = new GradeDAO();
-                    Map<Integer, Float> gradeMap = new HashMap<>();
-
-                    for (User u : studentList) {
-                        Float score = gradeDAO.getScore(
-                                u.getUserId(), classId);
-                        gradeMap.put(u.getUserId(), score);
-                    }
-                    // ============================
+                    Map<Integer, Double> averageMap
+                            = gradeDAO.getAverageByClassId(classId);
 
                     request.setAttribute("studentList", studentList);
-                    request.setAttribute("gradeMap", gradeMap);   // thêm dòng này
+                    request.setAttribute("averageMap", averageMap);
                     request.setAttribute("classId", classId);
                     request.setAttribute("home_view",
                             "teacher/student_list_of_class.jsp");
