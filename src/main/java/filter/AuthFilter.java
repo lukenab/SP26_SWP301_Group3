@@ -104,27 +104,32 @@ public class AuthFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain)
             throws IOException, ServletException {
+
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
 
         String uri = req.getRequestURI();
+
         if (uri.endsWith("landingPage")
                 || uri.endsWith("/")
                 || uri.endsWith("login.jsp")
                 || uri.contains("/css/")
                 || uri.contains("/images/")
                 || uri.contains("/js/")
-                || uri.contains("login")) {
+                || uri.endsWith("login")) { 
 
-            chain.doFilter(request, response); 
+            chain.doFilter(request, response);
             return;
         }
+        HttpSession session = req.getSession(false);
 
-        HttpSession session = req.getSession();
-        User user = (User) session.getAttribute("user");
+        boolean isLoggedIn = (session != null && session.getAttribute("user") != null);
 
-        if (user == null) {
-            res.sendRedirect("login.jsp");
+        if (!isLoggedIn) {
+            HttpSession errorSession = req.getSession(true);
+            errorSession.setAttribute("loginMessage", "Your session has expired or you are not logged in. Please log in again.");
+
+            res.sendRedirect(req.getContextPath() + "/login");
         } else {
             chain.doFilter(request, response);
         }

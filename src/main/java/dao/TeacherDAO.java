@@ -12,6 +12,9 @@ import java.util.List;
 import model.Classes;
 import model.Course;
 import model.Room;
+import model.Slot;
+import model.Student;
+import model.User;
 import utils.DBContext;
 
 /**
@@ -42,11 +45,16 @@ public class TeacherDAO extends DBContext {
             st.setString(5, selectedDate);
             ResultSet rs = st.executeQuery();
 
+            SlotDAO slotDAO = new SlotDAO();
+
             while (rs.next()) {
                 Schedule s = new Schedule();
                 s.setScheduleId(rs.getInt("ScheduleID"));
 
-                s.setSlot(rs.getInt("SlotID"));
+                // Get Slot object from SlotDAO
+                int slotId = rs.getInt("SlotID");
+                Slot slot = slotDAO.getSlotByID(slotId);
+                s.setSlot(slot);
 
                 s.setLearningDate(rs.getDate("LearningDate"));
                 s.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
@@ -90,13 +98,18 @@ public class TeacherDAO extends DBContext {
             st.setString(6, selectedDate);
 
             ResultSet rs = st.executeQuery();
+
+            SlotDAO slotDAO = new SlotDAO();
+
             while (rs.next()) {
                 Schedule s = new Schedule();
                 s.setScheduleId(rs.getInt("ScheduleID"));
                 s.setLearningDate(rs.getDate("LearningDate"));
 
-                // SỬA TẠI ĐÂY: Dùng SlotID thay vì Slot
-                s.setSlot(rs.getInt("SlotID"));
+                // Get Slot object from SlotDAO
+                int slotId = rs.getInt("SlotID");
+                Slot slot = slotDAO.getSlotByID(slotId);
+                s.setSlot(slot);
 
                 s.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
 

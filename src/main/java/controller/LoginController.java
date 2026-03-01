@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.SettingDAO;
 import dao.UserDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -21,36 +22,37 @@ import model.User;
 @WebServlet(name = "LoginController", urlPatterns = {"/login"})
 public class LoginController extends HttpServlet {
 
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.getRequestDispatcher("login.jsp").forward(request, response);
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         UserDAO userDAO = new UserDAO();
+        SettingDAO settingDAO = new SettingDAO(); 
+        
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
         HttpSession loginSession = request.getSession();
+
+        int maxAttempts = 5;
+        int timeoutMinutes = 30;
+        
+        String maxAttemptsStr = settingDAO.getSettingValue("MAX_LOGIN_ATTEMPTS");
+        if (maxAttemptsStr != null) {
+            try { maxAttempts = Integer.parseInt(maxAttemptsStr); } 
+            catch (NumberFormatException e) { System.out.println("Loi parse MAX_LOGIN_ATTEMPTS"); }
+        }
+        
+        String timeoutStr = settingDAO.getSettingValue("SESSION_TIMEOUT_MINUTES");
+        if (timeoutStr != null) {
+            try { timeoutMinutes = Integer.parseInt(timeoutStr); } 
+            catch (NumberFormatException e) { System.out.println("Loi parse SESSION_TIMEOUT_MINUTES"); }
+        }
 
         User userByEmail = userDAO.getUserByEmail(email);
         if (userByEmail == null) {
@@ -72,9 +74,12 @@ public class LoginController extends HttpServlet {
         }
 
         User validUser = userDAO.checkLogin(email, password);
+        
         if (validUser != null) {
             userDAO.resetFailedLogin(email);
             loginSession.setAttribute("user", validUser);
+            
+            loginSession.setMaxInactiveInterval(timeoutMinutes * 60);
 
             int roleId = validUser.getRole().getRoleId();
             if (roleId == 1) {
@@ -85,31 +90,24 @@ public class LoginController extends HttpServlet {
                 response.sendRedirect("dashboard");
             }
         }
-        
-        else{
+        else {
             userDAO.incrementFailedLogin(email);
             int attempts = userByEmail.getFailedLoginAttempts() + 1;
             
-            if(attempts >= 5){
+            if(attempts >= maxAttempts){
                 userDAO.lockUser(email);
-                loginSession.setAttribute("loginMessage", "You have entered the wrong password 5 times. Your account is LOCKED.");
+                loginSession.setAttribute("loginMessage", "You have entered the wrong password " + maxAttempts + " times. Your account is LOCKED.");
             }
             else{
-                int remainingAttempts = 5 - attempts;
+                int remainingAttempts = maxAttempts - attempts;
                 loginSession.setAttribute("loginMessage", "Invalid password! You have " + remainingAttempts + " attempts left.");
             }
             response.sendRedirect("login");
         }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
         return "Short description";
-    }// </editor-fold>
-
+    }
 }
