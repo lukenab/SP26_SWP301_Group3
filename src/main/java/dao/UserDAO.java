@@ -419,6 +419,6 @@ public class UserDAO extends DBContext {
 
     public static void main(String[] args) {
         UserDAO dao = new UserDAO();
-        System.out.println(dao.getUserById(22));
+        System.out.println(dao.getUserById(3));
     }
 }

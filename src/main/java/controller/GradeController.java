@@ -97,7 +97,6 @@ public class GradeController extends HttpServlet {
                         .forward(request, response);
                 break;
 
-          
             case "edit":
 
                 int studentIdEdit
@@ -156,61 +155,53 @@ public class GradeController extends HttpServlet {
         switch (action) {
 
             case "save":
+                int studentId = Integer.parseInt(request.getParameter("studentId"));
+                int classId = Integer.parseInt(request.getParameter("classId"));
 
-                int studentId
-                        = Integer.parseInt(request.getParameter("studentId"));
-
-                int classId
-                        = Integer.parseInt(request.getParameter("classId"));
-
-                Integer enrollmentId
-                        = dao.getEnrollmentId(studentId, classId);
+                Integer enrollmentId = dao.getEnrollmentId(studentId, classId);
 
                 if (enrollmentId == null) {
-                    session.setAttribute("message",
-                            "Enrollment not found!");
+                    session.setAttribute("message", "Enrollment not found!");
                     session.setAttribute("messageType", "error");
-
-                    response.sendRedirect(
-                            "student?action=viewByClass&classId=" + classId);
+                    response.sendRedirect("student?action=viewByClass&classId=" + classId);
                     return;
                 }
 
-                Integer courseId
-                        = dao.getCourseIdByClassId(classId);
+                Integer courseId = dao.getCourseIdByClassId(classId);
 
-                Integer readingId
-                        = dao.getAssessmentIdByName(courseId, "Reading");
-                Integer writingId
-                        = dao.getAssessmentIdByName(courseId, "Writing");
-                Integer speakingId
-                        = dao.getAssessmentIdByName(courseId, "Speaking");
-                Integer listeningId
-                        = dao.getAssessmentIdByName(courseId, "Listening");
+                Integer readingId = dao.getAssessmentIdByName(courseId, "Reading");
+                Integer writingId = dao.getAssessmentIdByName(courseId, "Writing");
+                Integer speakingId = dao.getAssessmentIdByName(courseId, "Speaking");
+                Integer listeningId = dao.getAssessmentIdByName(courseId, "Listening");
 
-                double reading
-                        = Double.parseDouble(request.getParameter("reading"));
-                double writing
-                        = Double.parseDouble(request.getParameter("writing"));
-                double speaking
-                        = Double.parseDouble(request.getParameter("speaking"));
-                double listening
-                        = Double.parseDouble(request.getParameter("listening"));
+                // Kiểm tra NULL trước khi thực hiện parse điểm để tránh lỗi nullValue()
+                if (readingId != null && writingId != null && speakingId != null && listeningId != null) {
+                    try {
+                        double reading = Double.parseDouble(request.getParameter("reading"));
+                        double writing = Double.parseDouble(request.getParameter("writing"));
+                        double speaking = Double.parseDouble(request.getParameter("speaking"));
+                        double listening = Double.parseDouble(request.getParameter("listening"));
 
-                dao.saveOrUpdate(enrollmentId, readingId, reading);
-                dao.saveOrUpdate(enrollmentId, writingId, writing);
-                dao.saveOrUpdate(enrollmentId, speakingId, speaking);
-                dao.saveOrUpdate(enrollmentId, listeningId, listening);
+                        dao.saveOrUpdate(enrollmentId, readingId, reading);
+                        dao.saveOrUpdate(enrollmentId, writingId, writing);
+                        dao.saveOrUpdate(enrollmentId, speakingId, speaking);
+                        dao.saveOrUpdate(enrollmentId, listeningId, listening);
 
-                session.setAttribute("message",
-                        "Grade saved successfully!");
-                session.setAttribute("messageType", "success");
+                        session.setAttribute("message", "Grade saved successfully!");
+                        session.setAttribute("messageType", "success");
+                    } catch (NumberFormatException e) {
+                        session.setAttribute("message", "Invalid score format!");
+                        session.setAttribute("messageType", "error");
+                    }
+                } else {
+                    // Thông báo lỗi nếu thiếu cấu hình Assessment trong DB
+                    session.setAttribute("message", "Error: Assessments (Reading, Writing...) not configured for this course!");
+                    session.setAttribute("messageType", "error");
+                }
 
-                response.sendRedirect(
-                        "student?action=viewByClass&classId=" + classId);
+                response.sendRedirect("student?action=viewByClass&classId=" + classId);
                 break;
 
-          
             case "delete":
 
                 int studentIdDel
