@@ -16,6 +16,17 @@ import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import model.Schedule;
 import model.User;
+import dao.ScheduleDAO;
+import dao.SlotDAO;
+import dao.UserDAO;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import model.Slot;
+import java.time.ZoneId;
 
 /**
  *
@@ -24,8 +35,7 @@ import model.User;
 @WebServlet(name = "ScheduleController", urlPatterns = {"/schedule"})
 public class ScheduleController extends HttpServlet {
 
- 
-    @Override 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -100,8 +110,102 @@ public class ScheduleController extends HttpServlet {
                     response.sendRedirect("class");
                 }
                 break;
+
+            case "studentView":
+
+                // ===== 1. Lấy StudentID =====
+                int studentId = user.getUserId();
+
+                // ===== 2. Xác định tuần =====
+                LocalDate weekStart;
+                String weekStartParam = request.getParameter("weekStart");
+
+                if (weekStartParam != null && !weekStartParam.isBlank()) {
+                    weekStart = LocalDate.parse(weekStartParam);
+                } else {
+                    weekStart = LocalDate.now()
+                            .with(java.time.DayOfWeek.MONDAY);
+                }
+
+                LocalDate weekEnd = weekStart.plusDays(6);
+
+                // ===== 3. Lấy dữ liệu =====
+                ScheduleDAO scheduleDAO = new ScheduleDAO();
+                SlotDAO slotDAO = new SlotDAO();
+                UserDAO userDAO = new UserDAO();
+
+                List<Slot> studentSlots = slotDAO.getAllSlots();
+
+                List<Schedule> studentScheduleList
+                        = scheduleDAO.getScheduleByStudentWeek(
+                                studentId,
+                                weekStart.toString(),
+                                weekEnd.toString()
+                        );
+
+                // ===== 4. Map chứa tên giáo viên =====
+                Map<Integer, User> employeeUsers = new HashMap<>();
+
+                for (Schedule schedule : studentScheduleList) {
+                    if (schedule.getEmployee() != null) {
+                        int empId = schedule.getEmployee().getEmployeeId();
+
+                        // tránh query lặp
+                        if (!employeeUsers.containsKey(empId)) {
+                            User empUser = userDAO.getUserByEmployeeId(empId);
+                            employeeUsers.put(empId, empUser);
+                        }
+                    }
+                }
+
+                // ===== 5. Build Map xử lý bằng LocalDate =====
+                Map<LocalDate, Map<Integer, Schedule>> tempSchedule
+                        = new LinkedHashMap<>();
+
+                for (int i = 0; i < 7; i++) {
+                    LocalDate date = weekStart.plusDays(i);
+                    tempSchedule.put(date, new HashMap<>());
+                }
+
+                for (Schedule schedule : studentScheduleList) {
+
+                    LocalDate learningDate
+                            = ((java.sql.Date) schedule.getLearningDate())
+                                    .toLocalDate();
+
+                    int slotId = schedule.getSlot().getSlotID();
+
+                    Map<Integer, Schedule> daySchedule
+                            = tempSchedule.get(learningDate);
+
+                    if (daySchedule != null) {
+                        daySchedule.put(slotId, schedule);
+                    }
+                }
+
+                // ===== 6. Convert sang java.sql.Date cho JSP =====
+                Map<java.sql.Date, Map<Integer, Schedule>> weeklySchedule
+                        = new LinkedHashMap<>();
+
+                for (Map.Entry<LocalDate, Map<Integer, Schedule>> entry : tempSchedule.entrySet()) {
+                    weeklySchedule.put(
+                            java.sql.Date.valueOf(entry.getKey()),
+                            entry.getValue()
+                    );
+                }
+
+                // ===== 7. Gửi sang JSP =====
+                request.setAttribute("weeklySchedule", weeklySchedule);
+                request.setAttribute("slots", studentSlots);
+                request.setAttribute("weekStart", weekStart);
+                request.setAttribute("employeeUsers", employeeUsers);
+
+                request.setAttribute("home_view", "student/studentSchedule.jsp");
+                request.getRequestDispatcher("dashboard.jsp")
+                        .forward(request, response);
+
+                break;
         }
     }
-
 
 }

@@ -19,7 +19,10 @@ import java.util.List;
 import java.util.Map;
 import model.Classes;
 import model.Grade;
+import model.Student;
 import model.User;
+import dao.CourseDAO;
+import model.Course;
 
 /**
  *
@@ -74,6 +77,8 @@ public class GradeController extends HttpServlet {
         GradeDAO dao = new GradeDAO();
         StudentDAO studentDAO = new StudentDAO();
         ClassDAO classDAO = new ClassDAO();
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
         switch (action) {
             case "enter":
 
@@ -97,7 +102,6 @@ public class GradeController extends HttpServlet {
                         .forward(request, response);
                 break;
 
-          
             case "edit":
 
                 int studentIdEdit
@@ -132,6 +136,81 @@ public class GradeController extends HttpServlet {
                 request.setAttribute("average", average);
                 request.setAttribute("home_view",
                         "teacher/enter_grade.jsp");
+
+                request.getRequestDispatcher("dashboard.jsp")
+                        .forward(request, response);
+                break;
+
+            case "student-courses":
+
+                if (currentUser == null) {
+                    response.sendRedirect("login.jsp");
+                    return;
+                }
+
+                if (currentUser.getRole() == null
+                        || currentUser.getRole().getRoleId() != 5) {
+
+                    session.setAttribute("message", "Bạn không có quyền truy cập!");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("dashboard.jsp");
+                    return;
+                }
+
+                int studentId = currentUser.getUserId();
+
+                Student studentInfo = studentDAO.getStudentById(studentId);
+
+                CourseDAO courseDAO = new CourseDAO();
+                List<Course> courseList = courseDAO.getCoursesByStudentId(studentId);
+
+                Map<Integer, Double> averageMap = new java.util.HashMap<>();
+
+                for (Course c : courseList) {
+
+                    Double avg = courseDAO.getAverageByStudentAndCourse(
+                            c.getCourseId(), studentId);
+
+                    averageMap.put(c.getCourseId(), avg);
+                }
+
+                request.setAttribute("courseList", courseList);
+                request.setAttribute("averageMap", averageMap);
+                request.setAttribute("studentName", currentUser.getFullName());
+                request.setAttribute("studentInfo", studentInfo);
+                request.setAttribute("home_view", "student/studentCourseCard.jsp");
+
+                request.getRequestDispatcher("dashboard.jsp")
+                        .forward(request, response);
+                break;
+
+            case "student-course-grades":
+
+                if (currentUser == null) {
+                    response.sendRedirect("login.jsp");
+                    return;
+                }
+
+                int courseId = Integer.parseInt(request.getParameter("courseId"));
+                int studentIdDetail = currentUser.getUserId();
+
+                List<Grade> gradeList = dao.getGradesByStudentId(studentIdDetail);
+
+                List<Grade> filteredList = new java.util.ArrayList<>();
+
+                for (Grade g : gradeList) {
+                    if (g.getEnrollment()
+                            .getClasses()
+                            .getCourse()
+                            .getCourseId() == courseId) {
+
+                        filteredList.add(g);
+                    }
+                }
+
+                request.setAttribute("gradeList", filteredList);
+                request.setAttribute("studentName", currentUser.getFullName());
+                request.setAttribute("home_view", "student/studentGrade.jsp");
 
                 request.getRequestDispatcher("dashboard.jsp")
                         .forward(request, response);
@@ -210,7 +289,6 @@ public class GradeController extends HttpServlet {
                         "student?action=viewByClass&classId=" + classId);
                 break;
 
-          
             case "delete":
 
                 int studentIdDel

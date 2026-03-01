@@ -2,10 +2,18 @@ package dao;
 
 import utils.DBContext;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import model.Assessment;
+import model.Classes;
+import model.Course;
+import model.Enrollment;
+import model.Grade;
 
 public class GradeDAO extends DBContext {
+
     public Integer getEnrollmentId(int studentId, int classId) {
 
         String sql = "SELECT EnrollmentID "
@@ -28,7 +36,6 @@ public class GradeDAO extends DBContext {
         return null;
     }
 
-  
     public Integer getCourseIdByClassId(int classId) {
 
         String sql = "SELECT CourseID FROM Class WHERE ClassID = ?";
@@ -48,7 +55,6 @@ public class GradeDAO extends DBContext {
         return null;
     }
 
-   
     public Integer getAssessmentIdByName(int courseId, String name) {
 
         String sql = "SELECT AssessmentID "
@@ -73,7 +79,6 @@ public class GradeDAO extends DBContext {
         return null;
     }
 
-   
     public Map<String, Double> getAllScores(int enrollmentId) {
 
         Map<String, Double> scoreMap = new HashMap<>();
@@ -103,7 +108,6 @@ public class GradeDAO extends DBContext {
         return scoreMap;
     }
 
- 
     public Double getScore(int enrollmentId, int assessmentId) {
 
         String sql = "SELECT Score FROM Grade "
@@ -126,7 +130,6 @@ public class GradeDAO extends DBContext {
         return null;
     }
 
-
     public void insertScore(int enrollmentId,
             int assessmentId,
             double score) {
@@ -148,7 +151,6 @@ public class GradeDAO extends DBContext {
         }
     }
 
-   
     public void updateScore(int enrollmentId,
             int assessmentId,
             double score) {
@@ -169,7 +171,6 @@ public class GradeDAO extends DBContext {
         }
     }
 
-  
     public void saveOrUpdate(int enrollmentId,
             int assessmentId,
             double score) {
@@ -181,7 +182,6 @@ public class GradeDAO extends DBContext {
         }
     }
 
-   
     public void deleteScore(int enrollmentId, int assessmentId) {
 
         String sql = "DELETE FROM Grade "
@@ -198,7 +198,6 @@ public class GradeDAO extends DBContext {
             e.printStackTrace();
         }
     }
-
 
     public Double calculateAverage(int enrollmentId) {
 
@@ -269,7 +268,75 @@ public class GradeDAO extends DBContext {
         }
     }
 
-   
+    public List<Grade> getGradesByStudentId(int userId) {
+        List<Grade> list = new ArrayList<>();
+
+        String sql = "SELECT "
+                + "g.GradeID, "
+                + "g.Score, "
+                + "a.AssessmentID, "
+                + "a.AssessmentName, "
+                + "a.Weight, "
+                + "e.EnrollmentID, "
+                + "c.ClassID, "
+                + "c.ClassName, "
+                + "co.CourseID, "
+                + "co.CourseName "
+                + "FROM [User] u "
+                + "INNER JOIN Student s ON u.UserID = s.StudentID "
+                + "INNER JOIN Enrollment e ON s.StudentID = e.StudentID "
+                + "INNER JOIN Class c ON e.ClassID = c.ClassID "
+                + "INNER JOIN Course co ON c.CourseID = co.CourseID "
+                + "INNER JOIN Grade g ON e.EnrollmentID = g.EnrollmentID "
+                + "INNER JOIN Assessment a ON g.AssessmentID = a.AssessmentID "
+                + "WHERE u.UserID = ? "
+                + "ORDER BY c.ClassName, a.AssessmentName";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                // ===== Course =====
+                Course course = new Course();
+                course.setCourseId(rs.getInt("CourseID"));
+                course.setCourseName(rs.getString("CourseName"));
+
+                // ===== Class =====
+                Classes clazz = new Classes();
+                clazz.setClassid(rs.getInt("ClassID"));
+                clazz.setClassName(rs.getString("ClassName"));
+                clazz.setCourse(course);
+
+                // ===== Enrollment =====
+                Enrollment enrollment = new Enrollment();
+                enrollment.setEnrollmentId(rs.getInt("EnrollmentID"));
+                enrollment.setClasses(clazz);
+
+                // ===== Assessment =====
+                Assessment assessment = new Assessment();
+                assessment.setAssessmentId(rs.getInt("AssessmentID"));
+                assessment.setAssessmentName(rs.getString("AssessmentName"));
+                assessment.setWeight(rs.getDouble("Weight"));
+
+                // ===== Grade =====
+                Grade grade = new Grade();
+                grade.setGradeId(rs.getInt("GradeID"));
+                grade.setScore(rs.getDouble("Score"));
+                grade.setAssessment(assessment);
+                grade.setEnrollment(enrollment);
+
+                list.add(grade);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error getGradesByStudentId: " + e.getMessage());
+        }
+
+        return list;
+    }
+
     public static void main(String[] args) {
 
         GradeDAO dao = new GradeDAO();

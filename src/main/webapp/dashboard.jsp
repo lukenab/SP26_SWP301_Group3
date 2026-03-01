@@ -216,8 +216,8 @@
                 </c:if>
 
                 <c:if test="${sessionScope.user.role.roleId == 2}">
-                    
-<!--                    Merge this-->
+
+                    <!--                    Merge this-->
                     <ul class="menu-links">
                         <li class="nav-links">
                             <a href="dashboard">
@@ -324,14 +324,14 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="grade">
+                            <a href="grade?action=student-courses">
                                 <i class="bxr bx-medal"></i>
                                 <span class="text nav-text">View Grades</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
-                            <a href="schedule">
+                            <a href="schedule?action=studentView">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">My Schedule</span>
                             </a>

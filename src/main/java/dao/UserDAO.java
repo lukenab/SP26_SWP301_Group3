@@ -366,7 +366,7 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
-    
+
     public User getUserByEmail(String email) {
         String sql = "SELECT * FROM [User] WHERE Email = ?";
         try {
@@ -380,7 +380,7 @@ public class UserDAO extends DBContext {
                 user.setEmail(rs.getString("Email"));
                 user.setPassword(rs.getString("Password"));
                 user.setStatus(rs.getBoolean("Status"));
-                user.setIsLocked(rs.getBoolean("IsLocked")); 
+                user.setIsLocked(rs.getBoolean("IsLocked"));
                 user.setFailedLoginAttempts(rs.getInt("FailedLoginAttempts"));
                 return user;
             }
@@ -396,7 +396,8 @@ public class UserDAO extends DBContext {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, email);
             ps.executeUpdate();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
     }
 
     public void resetFailedLogin(String email) {
@@ -405,7 +406,8 @@ public class UserDAO extends DBContext {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, email);
             ps.executeUpdate();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
     }
 
     public void lockUser(String email) {
@@ -414,7 +416,40 @@ public class UserDAO extends DBContext {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, email);
             ps.executeUpdate();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
+    }
+
+    public User getUserByEmployeeId(int employeeId) {
+        String sql = "SELECT * FROM [User] WHERE UserID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, employeeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int userId = rs.getInt("UserID");
+                String fullname = rs.getString("FullName");
+                String email = rs.getString("Email");
+                String password = rs.getString("Password");
+                String phone = rs.getString("Phone");
+                String address = rs.getString("Address");
+                Boolean gender = rs.getBoolean("Gender");
+                Date birthdate = rs.getDate("Dob");
+                String avatar = rs.getString("Avatar");
+                Boolean status = rs.getBoolean("Status");
+                Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
+                Timestamp createdAt = rs.getTimestamp("CreatedAt");
+
+                User user = new User(userId, fullname, email, password, phone, address,
+                        gender, birthdate, avatar, status, role, createdAt);
+
+                user.setIsLocked(rs.getBoolean("IsLocked"));
+                return user;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get user by employeeId: " + e.getMessage());
+        }
+        return null;
     }
 
     public static void main(String[] args) {
