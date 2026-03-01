@@ -154,6 +154,20 @@ public class CourseDAO extends DBContext {
             return false;
         }
     }
+
+    public boolean activateCourse(int courseId) {
+        String sql = "UPDATE Course SET Status = 1 WHERE CourseID = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, courseId);
+
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            System.out.println("Fail to activate course: " + e.getMessage());
+            return false;
+        }
+    }
     
     public int getTotalCourseCount() {
         String sql = "SELECT COUNT(*) FROM Course";

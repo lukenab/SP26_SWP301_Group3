@@ -11,6 +11,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.math.BigDecimal;
 import model.Course;
@@ -285,13 +286,47 @@ public class CourseController extends HttpServlet {
                 try {
                     int deleteCourseId = Integer.parseInt(deleteCourseIdStr);
                     boolean success = courseDAO.deleteCourse(deleteCourseId);
+                    HttpSession session = request.getSession();
                     if (success) {
-                        response.sendRedirect(request.getContextPath() + "/course?action=all&message=Course deleted successfully");
+                        session.setAttribute("message", "Inactivate Course Success!");
+                        session.setAttribute("messageType", "success");
                     } else {
-                        response.sendRedirect(request.getContextPath() + "/course?action=all&error=Failed to delete course");
+                        session.setAttribute("message", "Fail To Inactivate Course");
+                        session.setAttribute("messageType", "error");
                     }
+                    response.sendRedirect(request.getContextPath() + "/course?action=all");
                 } catch (NumberFormatException e) {
-                    response.sendRedirect(request.getContextPath() + "/course?action=all&error=Invalid course ID");
+                    HttpSession session = request.getSession();
+                    session.setAttribute("message", "Invalid course ID");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/course?action=all");
+                }
+                break;
+
+            case "activate":
+                String activateCourseIdStr = request.getParameter("courseId");
+                if (activateCourseIdStr == null || activateCourseIdStr.isEmpty()) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
+
+                try {
+                    int activateCourseId = Integer.parseInt(activateCourseIdStr);
+                    boolean success = courseDAO.activateCourse(activateCourseId);
+                    HttpSession session = request.getSession();
+                    if (success) {
+                        session.setAttribute("message", "Activate Course Success!");
+                        session.setAttribute("messageType", "success");
+                    } else {
+                        session.setAttribute("message", "Fail To Activate Course");
+                        session.setAttribute("messageType", "error");
+                    }
+                    response.sendRedirect(request.getContextPath() + "/course?action=all");
+                } catch (NumberFormatException e) {
+                    HttpSession session = request.getSession();
+                    session.setAttribute("message", "Invalid course ID");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/course?action=all");
                 }
                 break;
                 
