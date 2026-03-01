@@ -27,9 +27,12 @@ public class LeadDAO extends DBContext {
 
         List<Lead> list = new ArrayList<>();
 
+        syncConvertedStatusForAllLeads();
+
         String sql = "SELECT l.LeadID, l.FullName, l.Email, l.Phone, "
         + "l.InterestedCourseID, co.CourseName, "
-        + "l.Status, l.CreateDate, c.Note "
+        + "l.Status, "
+        + "l.CreateDate, c.Note "
         + "FROM Lead l "
         + "LEFT JOIN Course co ON l.InterestedCourseID = co.CourseID "
         + "LEFT JOIN Consultation c ON l.LeadID = c.LeadID";
@@ -81,6 +84,8 @@ public class LeadDAO extends DBContext {
 
     public Lead getLeadByID(int id) {
 
+        syncConvertedStatusForLead(id);
+
         String sql = "SELECT l.*, c.Note, co.CourseName "
                 + "FROM Lead l "
                 + "LEFT JOIN Consultation c ON l.LeadID = c.LeadID "
@@ -125,6 +130,53 @@ public class LeadDAO extends DBContext {
         }
 
         return lead;
+    }
+
+    public boolean isEmailExists(String email) {
+        String sql = "SELECT 1 FROM Lead WHERE Email = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            System.out.println("Fail to check existing lead email: " + e.getMessage());
+        }
+        return false;
+    }
+
+    private void syncConvertedStatusForAllLeads() {
+        String sql = "UPDATE l "
+                + "SET l.Status = 'Converted' "
+                + "FROM Lead l "
+                + "WHERE l.Status <> 'Converted' "
+                + "AND EXISTS ("
+                + "    SELECT 1 FROM [User] u "
+                + "    WHERE u.Email = l.Email AND u.RoleID = 5"
+                + ")";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Fail to sync converted status for all leads: " + e.getMessage());
+        }
+    }
+
+    private void syncConvertedStatusForLead(int leadId) {
+        String sql = "UPDATE l "
+                + "SET l.Status = 'Converted' "
+                + "FROM Lead l "
+                + "WHERE l.LeadID = ? "
+                + "AND l.Status <> 'Converted' "
+                + "AND EXISTS ("
+                + "    SELECT 1 FROM [User] u "
+                + "    WHERE u.Email = l.Email AND u.RoleID = 5"
+                + ")";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, leadId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Fail to sync converted status for lead: " + e.getMessage());
+        }
     }
 
     public void insertLead(Lead lead) {

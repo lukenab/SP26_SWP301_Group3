@@ -58,9 +58,7 @@
                 <select id="status" name="status">
                     <option value="New">New</option>
                     <option value="Contacted">Contacted</option>
-                    <option value="Consulting">Consulting</option>
                     <option value="Converted">Converted</option>
-                    <option value="Lost">Lost</option>
                 </select>
             </div>
             <div class="form-group">
