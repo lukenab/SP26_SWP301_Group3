@@ -154,7 +154,7 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
+                            <a href="setting">
                                 <i class="bxr bx-cog"></i>
                                 <span class="text nav-text">Setting</span>
                             </a>
