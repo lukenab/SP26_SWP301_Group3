@@ -93,7 +93,7 @@
                                 <span class="checkbox-custom"></span>Keep me signed in
                             </label>
                         </div>
-                        <a href="#" class="forgot-password">Reset password </a>        
+                        <a href="forgotPassword" class="forgot-password">Forgot password </a>        
                     </div>
                     <button type="submit" class="login-btn">
                         <span>Sign In</span>

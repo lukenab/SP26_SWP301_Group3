@@ -113,6 +113,8 @@ public class AuthFilter implements Filter {
         if (uri.endsWith("landingPage")
                 || uri.endsWith("/")
                 || uri.endsWith("login.jsp")
+                || uri.contains("forgotPassword.jsp")
+                || uri.contains("forgotPassword")
                 || uri.contains("/css/")
                 || uri.contains("/images/")
                 || uri.contains("/js/")
