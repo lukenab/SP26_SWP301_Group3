@@ -15,6 +15,7 @@ import model.Classes;
 import model.Course;
 import model.Enrollment;
 import model.Room;
+import model.Slot;
 import model.Student;
 import model.User;
 import utils.DBContext;
@@ -41,10 +42,17 @@ public class TeacherDAO extends DBContext {
             st.setString(3, startDate);
             ResultSet rs = st.executeQuery();
 
+            SlotDAO slotDAO = new SlotDAO();
+
             while (rs.next()) {
                 Schedule s = new Schedule();
                 s.setScheduleId(rs.getInt("ScheduleID"));
-                s.setSlot(rs.getInt("Slot"));
+
+                // Get Slot object from SlotDAO
+                int slotId = rs.getInt("SlotID");
+                Slot slot = slotDAO.getSlotByID(slotId);
+                s.setSlot(slot);
+
                 s.setLearningDate(rs.getDate("LearningDate"));
                 s.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
 
@@ -85,12 +93,19 @@ public class TeacherDAO extends DBContext {
 
             ResultSet rs = st.executeQuery();
 
+            SlotDAO slotDAO = new SlotDAO();
+
             while (rs.next()) {
 
                 Schedule s = new Schedule();
                 s.setScheduleId(rs.getInt("ScheduleID"));
                 s.setLearningDate(rs.getDate("LearningDate"));
-                s.setSlot(rs.getInt("Slot"));
+
+                // Get Slot object from SlotDAO
+                int slotId = rs.getInt("SlotID");
+                Slot slot = slotDAO.getSlotByID(slotId);
+                s.setSlot(slot);
+
                 s.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
 
                 Room room = new Room();
