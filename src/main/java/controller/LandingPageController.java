@@ -6,8 +6,8 @@ package controller;
 
 import dao.CourseDAO;
 import dao.LeadDAO;
+import dao.UserDAO;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -87,16 +87,27 @@ public class LandingPageController extends HttpServlet {
             return;
         }
 
+        String normalizedEmail = isBlank(email) ? null : email.trim();
+        LeadDAO leadDAO = new LeadDAO();
+        UserDAO userDAO = new UserDAO();
+
+        if (normalizedEmail != null
+                && (userDAO.isEmailExists(normalizedEmail) || leadDAO.isEmailExists(normalizedEmail))) {
+            session.setAttribute("message", "Email already exists. Please use another email.");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect("landingPage");
+            return;
+        }
+
         try {
             Lead lead = new Lead();
             lead.setFullName(fullName.trim());
             lead.setPhone(phone.trim());
-            lead.setEmail(isBlank(email) ? null : email.trim());
+            lead.setEmail(normalizedEmail);
             lead.setInterestedCourseID(Integer.parseInt(interestedCourseID));
             lead.setStatus("New");
             lead.setNote(isBlank(note) ? "Submitted from landing page." : note.trim());
 
-            LeadDAO leadDAO = new LeadDAO();
             leadDAO.insertLead(lead);
 
             session.setAttribute("message", "Information submitted successfully. Our consultant will contact you soon.");

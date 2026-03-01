@@ -36,17 +36,11 @@
             <c:when test="${lead.status == 'New'}">
                 <span class="profile-active status-new">New</span>
             </c:when>
-            <c:when test="${lead.status == 'Contacted'}">
-                <span class="profile-active status-contacted">Contacted</span>
-            </c:when>
-            <c:when test="${lead.status == 'Consulting'}">
-                <span class="profile-active status-consulting">Consulting</span>
-            </c:when>
             <c:when test="${lead.status == 'Converted'}">
                 <span class="profile-active status-converted">Converted</span>
             </c:when>
             <c:otherwise>
-                <span class="profile-active status-lost">${lead.status}</span>
+                <span class="profile-active status-contacted">Contacted</span>
             </c:otherwise>
         </c:choose>
 
@@ -87,10 +81,7 @@
                 <label for="status">Status</label>
                 <select name="status" id="status" required>
                     <option value="New" ${lead.status == 'New' ? 'selected' : ''}>New</option>
-                    <option value="Contacted" ${lead.status == 'Contacted' ? 'selected' : ''}>Contacted</option>
-                    <option value="Consulting" ${lead.status == 'Consulting' ? 'selected' : ''}>Consulting</option>
-                    <option value="Converted" ${lead.status == 'Converted' ? 'selected' : ''}>Converted</option>
-                    <option value="Lost" ${lead.status == 'Lost' ? 'selected' : ''}>Lost</option>
+                    <option value="Contacted" ${lead.status == 'Contacted' || (lead.status != 'New' && lead.status != 'Converted' && lead.status != 'Inactive') ? 'selected' : ''}>Contacted</option>
                 </select>
             </div>
         </div>

@@ -16,6 +16,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
         <link href="css/landingPage.css" rel="stylesheet" type="text/css"/>
+        <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
         <title>Landing Page</title>
     </head>
     <body>
@@ -106,11 +107,30 @@
 
                         <div class="consultation-card-body p-4">
                             <c:if test="${not empty sessionScope.message}">
-                                <div class="alert ${sessionScope.messageType == 'success' ? 'alert-success' : 'alert-danger'} py-2" role="alert">
-                                    ${sessionScope.message}
+                                <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+                                    <div class="toast-icon">
+                                        <c:choose>
+                                            <c:when test="${sessionScope.messageType == 'success'}">
+                                                <i class='bx bx-check-circle'></i>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <i class='bx bx-error-circle'></i>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                    <div class="toast-content">
+                                        <span class="toast-title">
+                                            ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                                        </span>
+                                        <span class="toast-message">${sessionScope.message}</span>
+                                    </div>
+                                    <button class="toast-close" onclick="closeToast()">
+                                        <i class='bx bx-x'></i>
+                                    </button>
                                 </div>
-                                <c:remove var="message" scope="session"/>
-                                <c:remove var="messageType" scope="session"/>
+
+                                <c:remove var="message" scope="session" />
+                                <c:remove var="messageType" scope="session" />
                             </c:if>
 
                             <form action="landingPage" method="POST">
@@ -268,7 +288,7 @@
                             <li class="footer-header"><strong>Contact</strong></li>
                             <li>
                                 <i class="fa-regular fa-envelope"></i>
-                               contact@lmcs.edu.vn
+                                contact@lmcs.edu.vn
                             </li>
                             <li>
                                 <i class="fa-solid fa-phone"></i>
