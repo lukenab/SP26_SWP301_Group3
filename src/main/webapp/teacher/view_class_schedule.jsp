@@ -75,7 +75,7 @@
                                         <fmt:formatDate value="${s.learningDate}" pattern="EEEE" var="dayInSql"/>
                                         <fmt:formatDate value="${s.learningDate}" pattern="yyyy-MM-dd" var="learningDateStr"/>
                                         
-                                        <c:if test="${s.slot == sl.slotID && dayInSql == dayName}">
+                                        <c:if test="${s.slot.slotID == sl.slotID && dayInSql == dayName}">
                                             <div class="schedule-card shadow-sm p-2 mb-2 text-start border rounded bg-white">
                                                 <div class="small text-muted mb-1" style="font-size: 0.75rem;">
                                                     <i class="fas fa-map-marker-alt"></i> Room: ${s.room.roomName}
