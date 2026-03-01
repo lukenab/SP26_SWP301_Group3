@@ -109,4 +109,38 @@ public class EnrollmentDAO extends DBContext {
         return 0;
     }
 
+    public int removeStudentsFromClass(int classId, int[] studentIds) {
+        if (studentIds == null || studentIds.length == 0) {
+            return 0;
+        }
+        String sql = "DELETE FROM Enrollment WHERE ClassID = ? AND StudentID = ?";
+        int removedCount = 0;
+        try {
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                for (int studentId : studentIds) {
+                    ps.setInt(1, classId);
+                    ps.setInt(2, studentId);
+                    removedCount += ps.executeUpdate();
+                }
+            }
+            conn.commit();
+            return removedCount;
+        } catch (Exception e) {
+            try {
+                conn.rollback();
+            } catch (Exception ex) {
+                System.out.println("Rollback failed: " + ex.getMessage());
+            }
+            System.out.println("Fail to remove students from class: " + e.getMessage());
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (Exception e) {
+                System.out.println("Fail to reset auto commit: " + e.getMessage());
+            }
+        }
+        return 0;
+    }
+
 }
