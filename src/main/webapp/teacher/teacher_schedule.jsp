@@ -22,19 +22,22 @@
                 <p class="text-muted small mb-0">View and manage your weekly teaching sessions</p>
             </div>
 
-            <div class="bg-white p-2 border rounded shadow-sm">
-                <form action="schedule" method="GET" class="row g-2 align-items-center mb-0">
+            <div class="bg-white p-2 border rounded shadow-sm d-flex align-items-center gap-2">
+                <a href="schedule?action=view&date=${prevWeek}" class="btn btn-outline-primary btn-sm">
+                    <i class='bx bx-chevron-left'></i> Prev
+                </a>
+
+                <form action="schedule" method="GET" class="row g-2 align-items-center mb-0 mx-1">
                     <input type="hidden" name="action" value="view">
-                    <div class="col-auto"><label class="small fw-bold">Select Week:</label></div>
                     <div class="col-auto">
-                        <input type="date" name="date" class="form-control form-control-sm" value="${selectedDate}">
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary btn-sm px-3">
-                            <i class='bx bx-filter-alt'></i> Filter
-                        </button>
+                        <input type="date" name="date" class="form-control form-control-sm" 
+                               value="${selectedDate}" onchange="this.form.submit()">
                     </div>
                 </form>
+
+                <a href="schedule?action=view&date=${nextWeek}" class="btn btn-outline-primary btn-sm">
+                    Next <i class='bx bx-chevron-right'></i>
+                </a>
             </div>
         </div>
     </div>
@@ -71,9 +74,14 @@
                 <thead class="text-white" style="background-color: #f8f9fc; color: #5a5c69 !important;">
                     <tr>
                         <th style="width: 10%;">Slot</th>
-                            <c:forEach items="${weekdays}" var="day">
-                            <th style="width: 12.8%;">${day}</th>
-                            </c:forEach>
+                            <c:forEach items="${weekdays}" var="day" varStatus="loop">
+                            <th style="width: 12.8%;">
+                                <div class="fw-bold">${day}</div>
+                                <div class="small fw-normal text-muted" style="font-size: 0.75rem;">
+                                    ${dateOfWeek[loop.index]}
+                                </div>
+                            </th>
+                        </c:forEach>
                     </tr>
                 </thead>
                 <tbody>
