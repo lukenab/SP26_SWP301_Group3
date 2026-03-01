@@ -202,7 +202,7 @@ public class CourseController extends HttpServlet {
                     } else {
                         request.setAttribute("errorMessage", "Failed to add course");
                         request.setAttribute("course", newCourse);
-                        request.getRequestDispatcher("course_form.jsp").forward(request, response);
+                        request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
                     }
                 } catch (NumberFormatException e) {
                     request.setAttribute("errorMessage", "Invalid number format for slots or fee");
@@ -259,7 +259,7 @@ public class CourseController extends HttpServlet {
                     } else {
                         request.setAttribute("errorMessage", "Failed to update course");
                         request.setAttribute("course", existingCourse);
-                        request.getRequestDispatcher("academic/course_form.jsp").forward(request, response);
+                        request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
                     }
                 } catch (NumberFormatException e) {
                     request.setAttribute("errorMessage", "Invalid number format for slots or fee");
@@ -272,7 +272,7 @@ public class CourseController extends HttpServlet {
                             request.setAttribute("course", new Course());
                         }
                     }
-                    request.getRequestDispatcher("academic/course_form.jsp").forward(request, response);
+                    request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
                 }
                 break;
                 
