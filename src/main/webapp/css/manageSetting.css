@@ -1,0 +1,38 @@
+
+.academic-card{
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+    height: 100%;
+}
+
+.card-header{
+    background-color: #ffffff;
+    border: none;
+
+}
+
+.card-header h5{
+    margin-top: 10px;
+    font-weight: 600;
+    font-size: 23px;
+    color: #1E5DCB;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-header i{
+    font-size: 25px;
+}
+
+.setting-btn{
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-cancel{
+    background-color: #ffffff;
+}
