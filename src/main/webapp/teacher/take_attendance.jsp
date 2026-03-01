@@ -138,10 +138,12 @@
                 </table>
             </div>
 
-            <div class="card-footer bg-white border-0 text-end py-3 px-4">
-                <button type="submit" class="btn btn-primary px-5 shadow-sm fw-bold">
-                    <i class='bx bx-save me-1'></i> Confirm & Save
-                </button>
+            <div class="card-footer bg-white border-0 py-3 px-4">
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary btn-sm px-4 shadow-sm fw-bold">
+                        <i class='bx bx-save me-1'></i> Confirm & Save
+                    </button>
+                </div>
             </div>
         </form>
     </div>
