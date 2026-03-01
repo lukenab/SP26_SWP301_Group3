@@ -59,8 +59,10 @@ public class ScheduleDAO extends DBContext {
 
     // Get schedule by ID
     public Schedule getScheduleById(int scheduleId) {
-        String sql = "SELECT s.ScheduleID, s.ClassID, s.RoomID, s.SlotID, s.LearningDate, s.TeacherID, s.AttendanceStatus "
+        String sql = "SELECT s.ScheduleID, s.ClassID, s.RoomID, s.SlotID, s.LearningDate, s.TeacherID, s.AttendanceStatus, "
+                + "c.ClassName "
                 + "FROM Schedule s "
+                + "INNER JOIN Class c ON s.ClassID = c.ClassID "
                 + "WHERE s.ScheduleID = ?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -84,6 +86,12 @@ public class ScheduleDAO extends DBContext {
                     SlotDAO slotDAO = new SlotDAO();
                     Slot slot = slotDAO.getSlotByID(slotId);
                     schedule.setSlot(slot);
+
+                    // Set class info
+                    model.Classes classes = new model.Classes();
+                    classes.setClassid(rs.getInt("ClassID"));
+                    classes.setClassName(rs.getString("ClassName"));
+                    schedule.setClasses(classes);
 
                     return schedule;
                 }
@@ -192,6 +200,84 @@ public class ScheduleDAO extends DBContext {
         return false;
     }
 
+    // Check if there's a schedule conflict (same class, same slot, same date)
+    public boolean hasScheduleConflict(int classId, int slotId, Date learningDate, int excludeScheduleId) {
+        String sql = "SELECT COUNT(*) as count FROM Schedule "
+                + "WHERE ClassID = ? AND SlotID = ? AND LearningDate = ? AND ScheduleID != ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            ps.setInt(2, slotId);
+            ps.setDate(3, learningDate);
+            ps.setInt(4, excludeScheduleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count") > 0; // Conflict exists if count > 0
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to check schedule conflict: " + e.getMessage());
+        }
+        return false;
+    }
+
+    // Check if teacher exceeds 5 slots per week
+    public boolean teacherExceedsWeeklyLimit(int teacherId, Date learningDate, int excludeScheduleId) {
+        // Get the start and end of the week containing learningDate
+        String sql = "SELECT COUNT(*) as count FROM Schedule "
+                + "WHERE TeacherID = ? "
+                + "AND LearningDate >= DATEADD(day, -(DATEPART(weekday, ?) - 2), CAST(? AS DATE)) "
+                + "AND LearningDate < DATEADD(day, 7 - (DATEPART(weekday, ?) - 2), CAST(? AS DATE)) "
+                + "AND ScheduleID != ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, teacherId);
+            ps.setDate(2, learningDate);
+            ps.setDate(3, learningDate);
+            ps.setDate(4, learningDate);
+            ps.setDate(5, learningDate);
+            ps.setInt(6, excludeScheduleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int currentSlots = rs.getInt("count");
+                    return currentSlots >= 5; // Returns true if teacher already has 5 or more slots
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to check teacher weekly limit: " + e.getMessage());
+        }
+        return false;
+    }
+
+    // Get teacher's slot count for a specific week
+    public int getTeacherWeeklySlotCount(int teacherId, Date learningDate, int excludeScheduleId) {
+        String sql = "SELECT COUNT(*) as count FROM Schedule "
+                + "WHERE TeacherID = ? "
+                + "AND LearningDate >= DATEADD(day, -(DATEPART(weekday, ?) - 2), CAST(? AS DATE)) "
+                + "AND LearningDate < DATEADD(day, 7 - (DATEPART(weekday, ?) - 2), CAST(? AS DATE)) "
+                + "AND ScheduleID != ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, teacherId);
+            ps.setDate(2, learningDate);
+            ps.setDate(3, learningDate);
+            ps.setDate(4, learningDate);
+            ps.setDate(5, learningDate);
+            ps.setInt(6, excludeScheduleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get teacher weekly slot count: " + e.getMessage());
+        }
+        return 0;
+    }
+
     // Get schedules by date
     public List<Schedule> getSchedulesByDate(Date learningDate) {
         List<Schedule> scheduleList = new ArrayList<>();
@@ -264,6 +350,119 @@ public class ScheduleDAO extends DBContext {
             }
         } catch (Exception e) {
             System.out.println("Fail to get schedules by class: " + e.getMessage());
+        }
+        return scheduleList;
+    }
+
+    // Get all available rooms
+    public List<Object[]> getAllRooms() {
+        List<Object[]> rooms = new ArrayList<>();
+        String sql = "SELECT RoomID, RoomName, Capacity, Type, Status FROM Room WHERE Status = 1 ORDER BY RoomName";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] room = new Object[5];
+                room[0] = rs.getInt("RoomID");
+                room[1] = rs.getString("RoomName");
+                room[2] = rs.getInt("Capacity");
+                room[3] = rs.getString("Type");
+                room[4] = rs.getBoolean("Status");
+                rooms.add(room);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get all rooms: " + e.getMessage());
+        }
+        return rooms;
+    }
+
+    // Get all teachers
+    public List<Object[]> getAllTeachers() {
+        List<Object[]> teachers = new ArrayList<>();
+        String sql = "SELECT u.UserID, u.FullName, u.Email FROM [User] u WHERE u.RoleID = 4 ORDER BY u.FullName";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] teacher = new Object[3];
+                teacher[0] = rs.getInt("UserID");
+                teacher[1] = rs.getString("FullName");
+                teacher[2] = rs.getString("Email");
+                teachers.add(teacher);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get all teachers: " + e.getMessage());
+        }
+        return teachers;
+    }
+
+    // Get schedules for management with filters (for academic staff)
+    public List<Schedule> getSchedulesForManagement(String selectedDate, Integer classId) {
+        List<Schedule> scheduleList = new ArrayList<>();
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT s.ScheduleID, s.ClassID, s.RoomID, s.SlotID, s.LearningDate, s.TeacherID, s.AttendanceStatus, ");
+        sql.append("c.ClassName, co.CourseName, u.FullName as TeacherName ");
+        sql.append("FROM Schedule s ");
+        sql.append("INNER JOIN Class c ON s.ClassID = c.ClassID ");
+        sql.append("INNER JOIN Course co ON c.CourseID = co.CourseID ");
+        sql.append("LEFT JOIN [User] u ON s.TeacherID = u.UserID ");
+        sql.append("WHERE 1=1 ");
+
+        // Add date filter for the week
+        if (selectedDate != null && !selectedDate.isEmpty()) {
+            sql.append("AND s.LearningDate >= DATEADD(day, -(DATEPART(weekday, ?) - 2), CAST(? AS DATE)) ");
+            sql.append("AND s.LearningDate < DATEADD(day, 7 - (DATEPART(weekday, ?) - 2), CAST(? AS DATE)) ");
+        }
+
+        // Add class filter
+        if (classId != null && classId > 0) {
+            sql.append("AND s.ClassID = ? ");
+        }
+
+        sql.append("ORDER BY s.LearningDate ASC, s.SlotID ASC");
+
+        try (PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+
+            if (selectedDate != null && !selectedDate.isEmpty()) {
+                ps.setString(paramIndex++, selectedDate);
+                ps.setString(paramIndex++, selectedDate);
+                ps.setString(paramIndex++, selectedDate);
+                ps.setString(paramIndex++, selectedDate);
+            }
+
+            if (classId != null && classId > 0) {
+                ps.setInt(paramIndex++, classId);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                RoomDAO roomDAO = new RoomDAO();
+                SlotDAO slotDAO = new SlotDAO();
+
+                while (rs.next()) {
+                    Schedule schedule = new Schedule();
+                    schedule.setScheduleId(rs.getInt("ScheduleID"));
+                    schedule.setLearningDate(rs.getDate("LearningDate"));
+                    schedule.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
+
+                    // Set room
+                    int roomId = rs.getInt("RoomID");
+                    Room room = roomDAO.getRoomByID(roomId);
+                    schedule.setRoom(room);
+
+                    // Set slot
+                    int slotId = rs.getInt("SlotID");
+                    Slot slot = slotDAO.getSlotByID(slotId);
+                    schedule.setSlot(slot);
+
+                    // Set class with name
+                    model.Classes classes = new model.Classes();
+                    classes.setClassid(rs.getInt("ClassID"));
+                    classes.setClassName(rs.getString("ClassName"));
+                    schedule.setClasses(classes);
+
+                    scheduleList.add(schedule);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get schedules for management: " + e.getMessage());
+            e.printStackTrace();
         }
         return scheduleList;
     }
