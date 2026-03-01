@@ -25,19 +25,30 @@
     </div>
 
     <c:if test="${not empty sessionScope.message}">
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            ${sessionScope.message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-error-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">
+                <i class='bx bx-x'></i>
+            </button>
         </div>
-        <% session.removeAttribute("message"); %>
-    </c:if>
 
-    <c:if test="${not empty sessionScope.error}">
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            ${sessionScope.error}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <% session.removeAttribute("error"); %>
+        <c:remove var="message" scope="session" />
+        <c:remove var="messageType" scope="session" />
     </c:if>
 
     <div class="card user-table-card border-0 bg-white">
@@ -138,3 +149,4 @@
         </c:if>
     </div>
 </div>
+<script src="/js/manageUser.js" type="text/javascript"></script>
