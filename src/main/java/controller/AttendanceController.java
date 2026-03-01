@@ -5,7 +5,6 @@
 package controller;
 
 import dao.AttendanceDAO;
-import dto.AttendanceDTO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -13,7 +12,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List;
+import jakarta.servlet.http.HttpSession;
+import java.util.Map;
 
 /**
  *
@@ -74,16 +74,25 @@ public class AttendanceController extends HttpServlet {
 
             case "take":
                 try {
-                    int scheduleId = Integer.parseInt(request.getParameter("scheduleId").trim());
-                    int classId = Integer.parseInt(request.getParameter("classId").trim());
+                    int scheduleId = Integer.parseInt(
+                            request.getParameter("scheduleId").trim());
 
-                    List<AttendanceDTO> attList
-                            = dao.getStudentListForAttendance(scheduleId, classId);
+                    int classId = Integer.parseInt(
+                            request.getParameter("classId").trim());
 
-                    request.setAttribute("attendanceList", attList);
+                    Map<String, Object> data
+                            = dao.getAttendanceData(scheduleId, classId);
+
+                    request.setAttribute("studentList",
+                            data.get("studentList"));
+
+                    request.setAttribute("attendanceMap",
+                            data.get("attendanceMap"));
+
                     request.setAttribute("scheduleId", scheduleId);
                     request.setAttribute("classId", classId);
-                    request.setAttribute("home_view", "teacher/take_attendance.jsp");
+                    request.setAttribute("home_view",
+                            "teacher/take_attendance.jsp");
 
                     request.getRequestDispatcher("dashboard.jsp")
                             .forward(request, response);
@@ -110,13 +119,14 @@ public class AttendanceController extends HttpServlet {
         String action = request.getParameter("action");
         AttendanceDAO dao = new AttendanceDAO();
 
-        switch (action) {
+        HttpSession session = request.getSession();
 
+        switch (action) {
             case "save":
                 try {
                     String[] attIds = request.getParameterValues("attId");
-              
                     int scheduleId = Integer.parseInt(request.getParameter("scheduleId"));
+                    int classId = Integer.parseInt(request.getParameter("classId"));
 
                     if (attIds != null) {
                         for (String id : attIds) {
@@ -127,14 +137,17 @@ public class AttendanceController extends HttpServlet {
                         }
                     }
 
-                   
                     dao.updateScheduleStatus(scheduleId);
-             
 
-                    response.sendRedirect("schedule?action=view&msg=Success");
+                    session.setAttribute("message", "Attendance records have been saved successfully!");
+                    session.setAttribute("messageType", "success");
+
+                    response.sendRedirect("schedule?action=view&classId=" + classId);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    response.sendRedirect("schedule?action=view&msg=Error");
+                    session.setAttribute("message", "An error occurred while saving attendance.");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("schedule?action=view");
                 }
                 break;
         }

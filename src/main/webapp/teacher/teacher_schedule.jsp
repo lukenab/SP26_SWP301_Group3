@@ -8,22 +8,66 @@
 
 <link href="css/teacherSchedule.css" rel="stylesheet" type="text/css"/>
 
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-        <h3 class="text-primary fw-bold text-uppercase">My Schedule</h3>
-        <div class="bg-white p-2 border rounded shadow-sm">
-            <form action="schedule" method="GET" class="row g-2 align-items-center">
-                <input type="hidden" name="action" value="view">
-                <div class="col-auto"><label class="small fw-bold">Date:</label></div>
-                <div class="col-auto">
-                    <input type="date" name="date" class="form-control form-control-sm" value="${selectedDate}">
-                </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-                </div>
-            </form>
+<div class="container-fluid px-4 content-body">
+    <div class="mb-4 mt-3">
+        <div aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active">My Schedule</li>
+            </ol>
+        </div>
+
+        <div class="content-header d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title fw-bold text-dark mb-1">My Teaching Schedule</h2>
+                <p class="text-muted small mb-0">View and manage your weekly teaching sessions</p>
+            </div>
+
+            <div class="bg-white p-2 border rounded shadow-sm">
+                <form action="schedule" method="GET" class="row g-2 align-items-center mb-0">
+                    <input type="hidden" name="action" value="view">
+                    <div class="col-auto"><label class="small fw-bold">Select Week:</label></div>
+                    <div class="col-auto">
+                        <input type="date" name="date" class="form-control form-control-sm" value="${selectedDate}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary btn-sm px-3">
+                            <i class='bx bx-filter-alt'></i> Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+
+
+    <c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-error-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+
+        <c:remove var="message" scope="session" />
+        <c:remove var="messageType" scope="session" />
+    </c:if>
+
 
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
@@ -113,5 +157,7 @@
                 </tbody>
             </table>
         </div>
-    </div>
+
+    </div> 
 </div>
+<script src="js/manageUser.js" type="text/javascript"></script>

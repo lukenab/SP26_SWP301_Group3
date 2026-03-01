@@ -1,0 +1,18 @@
+
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">" !important;
+    font-size: 0.8rem;
+    color: #adb5bd;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.schedule-card {
+    transition: all 0.2s;
+    border-left: 4px solid #4e73df !important;
+}
+.schedule-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}

@@ -1,0 +1,19 @@
+
+.custom-option input[value="Present"]:checked + label {
+    background-color: #198754 !important;
+    color: white !important;
+    border-color: #198754 !important;
+}
+
+
+.custom-option input[value="Absent"]:checked + label {
+    background-color: #dc3545 !important;
+    color: white !important;
+    border-color: #dc3545 !important;
+}
+
+
+.custom-option label {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}

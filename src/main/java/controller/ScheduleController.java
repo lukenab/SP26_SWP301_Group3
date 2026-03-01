@@ -24,15 +24,49 @@ import model.User;
 @WebServlet(name = "ScheduleController", urlPatterns = {"/schedule"})
 public class ScheduleController extends HttpServlet {
 
- 
-    @Override 
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet ScheduleController</title>");
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet ScheduleController at " + request.getContextPath() + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
 
-        if (user == null || user.getRole() == null) {
+        if (user == null || user.getRole() == null || user.getRole().getRoleId() != 4) {
             response.sendRedirect("login.jsp");
             return;
         }
@@ -48,16 +82,33 @@ public class ScheduleController extends HttpServlet {
 
         switch (action) {
             case "view":
-
                 String selectedDate = request.getParameter("date");
-
                 if (selectedDate == null || selectedDate.trim().isEmpty()) {
-                    selectedDate = java.time.LocalDate.now().toString(); // Sẽ ra "2026-02-24"
+                    selectedDate = java.time.LocalDate.now().toString();
                 }
 
-                request.setAttribute("selectedDate", selectedDate);
+                String classIdParam = request.getParameter("classId");
+                List<Schedule> scheduleList;
 
-                List<Schedule> scheduleList = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
+                if (classIdParam != null && !classIdParam.isEmpty()) {
+                    int classId = Integer.parseInt(classIdParam);
+                    scheduleList = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
+                    List<model.Classes> allClass = teacherDAO.getAllClassOfTeacherID(user.getUserId());
+                    String className = "";
+                    for (model.Classes c : allClass) {
+                        if (c.getClassid() == classId) {
+                            className = c.getClassName();
+                            break;
+                        }
+                    }
+
+                    request.setAttribute("classId", classId);
+                    request.setAttribute("className", className);
+                    request.setAttribute("home_view", "teacher/view_class_schedule.jsp");
+                } else {
+                    scheduleList = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
+                    request.setAttribute("home_view", "teacher/teacher_schedule.jsp");
+                }
 
                 request.setAttribute("selectedDate", selectedDate);
                 request.setAttribute("weekdays", weekdays);
@@ -65,35 +116,38 @@ public class ScheduleController extends HttpServlet {
                 request.setAttribute("slotTimes", slotTimes);
                 request.setAttribute("scheduleList", scheduleList);
 
-                request.setAttribute("home_view", "teacher/teacher_schedule.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
-
             case "viewByClass":
                 try {
                     int classId = Integer.parseInt(request.getParameter("classId"));
-                    TeacherDAO dao = new TeacherDAO();
-                    List<Schedule> scheduleListByClass
-                            = dao.getScheduleByClassId(classId, user.getUserId());
-                    String className = null;
-                    if (!scheduleListByClass.isEmpty()) {
-                        className = scheduleListByClass
-                                .get(0)
-                                .getClasses()
-                                .getClassName();
+                    selectedDate = request.getParameter("date");
+                    if (selectedDate == null || selectedDate.trim().isEmpty()) {
+                        selectedDate = java.time.LocalDate.now().toString();
+                    }
+            
+                    List<Schedule> scheduleListByClass = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
+
+                    List<model.Classes> allClass = teacherDAO.getAllClassOfTeacherID(user.getUserId());
+                    String className = "";
+                    for (model.Classes c : allClass) {
+                        if (c.getClassid() == classId) {
+                            className = c.getClassName();
+                            break;
+                        }
                     }
 
+                    request.setAttribute("selectedDate", selectedDate);
                     request.setAttribute("classId", classId);
                     request.setAttribute("className", className);
                     request.setAttribute("scheduleList", scheduleListByClass);
+
                     request.setAttribute("weekdays", weekdays);
                     request.setAttribute("slots", slots);
                     request.setAttribute("slotTimes", slotTimes);
 
                     request.setAttribute("home_view", "teacher/view_class_schedule.jsp");
-
-                    request.getRequestDispatcher("dashboard.jsp")
-                            .forward(request, response);
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -103,5 +157,28 @@ public class ScheduleController extends HttpServlet {
         }
     }
 
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }// </editor-fold>
 
 }

@@ -1,52 +1,16 @@
 package dao;
 
-import dto.AttendanceDTO;
 import model.Attendance;
 import utils.DBContext;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import model.User;
 
 public class AttendanceDAO extends DBContext {
-
-    public List<AttendanceDTO> getStudentListForAttendance(int scheduleId, int classId) {
-
-        List<AttendanceDTO> list = new ArrayList<>();
-
-        String sql = "SELECT e.EnrollmentID, u.UserID, u.FullName "
-                + "FROM Enrollment e "
-                + "JOIN [User] u ON e.StudentID = u.UserID "
-                + "WHERE e.ClassID = ? "
-                + "AND e.Status = 'Active' "
-                + "AND u.RoleID = 5";
-
-        try (PreparedStatement st = conn.prepareStatement(sql)) {
-
-            st.setInt(1, classId);
-            ResultSet rs = st.executeQuery();
-
-            while (rs.next()) {
-
-                int enrollmentId = rs.getInt("EnrollmentID");
-
-                Attendance attendance = getOrCreateAttendance(scheduleId, enrollmentId);
-
-                AttendanceDTO dto = new AttendanceDTO();
-                dto.setAttendance(attendance);
-                dto.setFullName(rs.getString("FullName"));
-                dto.setUserId(rs.getInt("UserID"));
-
-                list.add(dto);
-            }
-
-        } catch (Exception e) {
-            System.out.println("getStudentListForAttendance: " + e.getMessage());
-        }
-
-        return list;
-    }
-
     private Attendance getOrCreateAttendance(int scheduleId, int enrollmentId) {
         String checkSql = "SELECT * FROM Attendance WHERE ScheduleID = ? AND EnrollmentID = ?";
         try {
@@ -115,36 +79,52 @@ public class AttendanceDAO extends DBContext {
         }
     }
 
-    public static void main(String[] args) {
+    public Map<String, Object> getAttendanceData(int scheduleId, int classId) {
 
-        AttendanceDAO dao = new AttendanceDAO();
+        Map<String, Object> result = new HashMap<>();
 
-        int testScheduleId = 2;
-        int testClassId = 2;
+        List<User> studentList = new ArrayList<>();
+        Map<Integer, Attendance> attendanceMap = new HashMap<>();
 
-        System.out.println("=== TEST getStudentListForAttendance ===");
+        String sql = "SELECT e.EnrollmentID, u.UserID, u.FullName "
+                + "FROM Enrollment e "
+                + "JOIN [User] u ON e.StudentID = u.UserID "
+                + "WHERE e.ClassID = ? "
+                + "AND e.Status = 'Active' "
+                + "AND u.RoleID = 5";
 
-        List<AttendanceDTO> list
-                = dao.getStudentListForAttendance(testScheduleId, testClassId);
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
 
-        System.out.println("Total students found: " + list.size());
+            st.setInt(1, classId);
+            ResultSet rs = st.executeQuery();
 
-        for (AttendanceDTO dto : list) {
+            while (rs.next()) {
 
-            System.out.println("----------------------------");
-            System.out.println("Full Name: " + dto.getFullName());
-            System.out.println("UserID: " + dto.getUserId());
+                int enrollmentId = rs.getInt("EnrollmentID");
+                int userId = rs.getInt("UserID");
 
-            if (dto.getAttendance() != null) {
-                System.out.println("AttendanceID: "
-                        + dto.getAttendance().getAttendanceId());
-                System.out.println("Status: "
-                        + dto.getAttendance().getStatus());
-                System.out.println("Note: "
-                        + dto.getAttendance().getNote());
-            } else {
-                System.out.println("Attendance is NULL!");
+                // tạo User object
+                User user = new User();
+                user.setUserId(userId);
+                user.setFullName(rs.getString("FullName"));
+
+                studentList.add(user);
+
+                // lấy attendance
+                Attendance attendance
+                        = getOrCreateAttendance(scheduleId, enrollmentId);
+
+                attendanceMap.put(userId, attendance);
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+        result.put("studentList", studentList);
+        result.put("attendanceMap", attendanceMap);
+
+        return result;
     }
+
 }
