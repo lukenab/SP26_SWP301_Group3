@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.SlotDAO;
 import dao.TeacherDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -14,7 +15,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import model.Classes;
 import model.Schedule;
+import model.Slot;
 import model.User;
 
 /**
@@ -72,79 +75,74 @@ public class ScheduleController extends HttpServlet {
         }
 
         TeacherDAO teacherDAO = new TeacherDAO();
+        SlotDAO slotDAO = new SlotDAO();
         String action = request.getParameter("action");
         if (action == null) {
             action = "view";
         }
+
+        List<Slot> allSlots = slotDAO.getAllSlots();
         String[] weekdays = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-        int[] slots = {1, 2, 3, 4, 5, 6};
-        String[] slotTimes = {"", "07:30 - 09:30", "09:45 - 11:45", "12:30 - 14:30", "14:45 - 16:45", "17:00 - 19:00", "19:15 - 21:15"};
+
+        String selectedDate = request.getParameter("date");
+        if (selectedDate == null || selectedDate.trim().isEmpty()) {
+            selectedDate = java.time.LocalDate.now().toString();
+        }
 
         switch (action) {
             case "view":
-                String selectedDate = request.getParameter("date");
-                if (selectedDate == null || selectedDate.trim().isEmpty()) {
-                    selectedDate = java.time.LocalDate.now().toString();
-                }
-
                 String classIdParam = request.getParameter("classId");
                 List<Schedule> scheduleList;
 
                 if (classIdParam != null && !classIdParam.isEmpty()) {
+                
                     int classId = Integer.parseInt(classIdParam);
-                    scheduleList = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
-                    List<model.Classes> allClass = teacherDAO.getAllClassOfTeacherID(user.getUserId());
+                    scheduleList = teacherDAO.getScheduleByClassId(classId, user.getUserId(), selectedDate);
+
+                    List<Classes> allClass = teacherDAO.getAllClassOfTeacherID(user.getUserId());
                     String className = "";
-                    for (model.Classes c : allClass) {
+                    for (Classes c : allClass) {
                         if (c.getClassid() == classId) {
                             className = c.getClassName();
                             break;
                         }
                     }
-
                     request.setAttribute("classId", classId);
                     request.setAttribute("className", className);
                     request.setAttribute("home_view", "teacher/view_class_schedule.jsp");
                 } else {
+
                     scheduleList = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
                     request.setAttribute("home_view", "teacher/teacher_schedule.jsp");
                 }
 
                 request.setAttribute("selectedDate", selectedDate);
                 request.setAttribute("weekdays", weekdays);
-                request.setAttribute("slots", slots);
-                request.setAttribute("slotTimes", slotTimes);
+                request.setAttribute("slots", allSlots);
                 request.setAttribute("scheduleList", scheduleList);
 
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
+
             case "viewByClass":
                 try {
                     int classId = Integer.parseInt(request.getParameter("classId"));
-                    selectedDate = request.getParameter("date");
-                    if (selectedDate == null || selectedDate.trim().isEmpty()) {
-                        selectedDate = java.time.LocalDate.now().toString();
-                    }
-            
-                    List<Schedule> scheduleListByClass = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
-
-                    List<model.Classes> allClass = teacherDAO.getAllClassOfTeacherID(user.getUserId());
-                    String className = "";
-                    for (model.Classes c : allClass) {
+                    List<Schedule> scheduleByClass = teacherDAO.getScheduleByClassId(classId, user.getUserId(), selectedDate);
+                    List<Classes> classesOfTeacher = teacherDAO.getAllClassOfTeacherID(user.getUserId());
+                    String currentClassName = "";
+                    for (Classes c : classesOfTeacher) {
                         if (c.getClassid() == classId) {
-                            className = c.getClassName();
+                            currentClassName = c.getClassName();
                             break;
                         }
                     }
 
                     request.setAttribute("selectedDate", selectedDate);
                     request.setAttribute("classId", classId);
-                    request.setAttribute("className", className);
-                    request.setAttribute("scheduleList", scheduleListByClass);
-
+                    request.setAttribute("className", currentClassName);
+                    request.setAttribute("scheduleList", scheduleByClass);
                     request.setAttribute("weekdays", weekdays);
-                    request.setAttribute("slots", slots);
-                    request.setAttribute("slotTimes", slotTimes);
+                    request.setAttribute("slots", allSlots);
 
                     request.setAttribute("home_view", "teacher/view_class_schedule.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
@@ -154,6 +152,7 @@ public class ScheduleController extends HttpServlet {
                     response.sendRedirect("class");
                 }
                 break;
+
         }
     }
 

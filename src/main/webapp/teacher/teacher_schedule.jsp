@@ -2,7 +2,6 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-
 <jsp:useBean id="now" class="java.util.Date" />
 <fmt:formatDate value="${now}" pattern="yyyy-MM-dd" var="todayStr"/>
 
@@ -40,7 +39,6 @@
         </div>
     </div>
 
-
     <c:if test="${not empty sessionScope.message}">
         <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
             <div class="toast-icon">
@@ -63,20 +61,18 @@
                 <i class='bx bx-x'></i>
             </button>
         </div>
-
         <c:remove var="message" scope="session" />
         <c:remove var="messageType" scope="session" />
     </c:if>
-
 
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
             <table class="table table-bordered mb-0 text-center">
                 <thead class="text-white" style="background-color: #f8f9fc; color: #5a5c69 !important;">
                     <tr>
-                        <th style="width: 8%;">Slot</th>
+                        <th style="width: 10%;">Slot</th>
                             <c:forEach items="${weekdays}" var="day">
-                            <th style="width: 13%;">${day}</th>
+                            <th style="width: 12.8%;">${day}</th>
                             </c:forEach>
                     </tr>
                 </thead>
@@ -84,8 +80,10 @@
                     <c:forEach var="slot" items="${slots}">
                         <tr>
                             <td class="align-middle bg-light fw-bold small">
-                                Slot ${slot}<br>
-                                <span class="text-muted fw-normal" style="font-size: 0.7rem;">${slotTimes[slot]}</span>
+                                Slot ${slot.slotID}<br>
+                                <span class="text-muted fw-normal" style="font-size: 0.7rem;">
+                                    ${slot.startTime} - ${slot.endTime}
+                                </span>
                             </td>
                             <c:forEach var="day" items="${weekdays}">
                                 <td class="timetable-cell p-2">
@@ -94,7 +92,7 @@
                                         <fmt:formatDate value="${s.learningDate}" pattern="EEEE" var="dayInSql"/>
                                         <fmt:formatDate value="${s.learningDate}" pattern="yyyy-MM-dd" var="learningDateStr"/>
 
-                                        <c:if test="${s.slot == slot && dayInSql == day}">
+                                        <c:if test="${s.slot == slot.slotID && dayInSql == day}">
                                             <div class="schedule-card shadow-sm p-2 mb-2 text-start border rounded bg-white">
                                                 <div class="class-name fw-bold text-primary">${s.classes.className}</div>
                                                 <div class="small text-muted mb-1">
@@ -103,17 +101,14 @@
 
                                                 <div class="action-zone mt-2 border-top pt-2">
                                                     <c:choose>
-
                                                         <c:when test="${learningDateStr == todayStr}">
                                                             <c:choose>
-
                                                                 <c:when test="${s.attendanceStatus}">
                                                                     <a href="attendance?action=take&scheduleId=${s.scheduleId}&classId=${s.classes.classid}" 
                                                                        class="btn btn-sm btn-success w-100 py-1 text-white shadow-sm">
                                                                         <i class="fas fa-check-circle"></i> ATTENDED
                                                                     </a>
                                                                 </c:when>
-
                                                                 <c:otherwise>
                                                                     <a href="attendance?action=take&scheduleId=${s.scheduleId}&classId=${s.classes.classid}" 
                                                                        class="btn btn-sm btn-warning w-100 py-1 shadow-sm">
@@ -122,24 +117,18 @@
                                                                 </c:otherwise>
                                                             </c:choose>
                                                         </c:when>
-
-
                                                         <c:when test="${learningDateStr > todayStr}">
                                                             <span class="badge bg-info w-100 py-2 text-white">
                                                                 <i class="fas fa-clock"></i> Upcoming
                                                             </span>
                                                         </c:when>
-
-
                                                         <c:otherwise>
                                                             <c:choose>
-
                                                                 <c:when test="${s.attendanceStatus}">
                                                                     <span class="badge bg-secondary w-100 py-2">
                                                                         <i class="fas fa-lock"></i> Attended
                                                                     </span>
                                                                 </c:when>
-
                                                                 <c:otherwise>
                                                                     <span class="badge bg-danger w-100 py-2">Missed</span>
                                                                 </c:otherwise>
@@ -157,7 +146,6 @@
                 </tbody>
             </table>
         </div>
-
     </div> 
 </div>
 <script src="js/manageUser.js" type="text/javascript"></script>

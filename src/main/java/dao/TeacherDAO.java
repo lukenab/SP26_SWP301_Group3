@@ -7,16 +7,11 @@ package dao;
 import model.Schedule;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import model.Attendance;
 import model.Classes;
 import model.Course;
-import model.Enrollment;
 import model.Room;
-import model.Student;
-import model.User;
 import utils.DBContext;
 
 /**
@@ -27,6 +22,7 @@ public class TeacherDAO extends DBContext {
 
     public List<Schedule> getTeachingSchedule(int teacherId, String selectedDate) {
         List<Schedule> list = new ArrayList<>();
+        // Sửa: Cột thực tế trong DB là SlotID
         String sql = "SET DATEFIRST 1; "
                 + "SELECT s.*, c.ClassName, r.RoomName "
                 + "FROM Schedule s "
@@ -34,8 +30,8 @@ public class TeacherDAO extends DBContext {
                 + "JOIN Room r ON s.RoomID = r.RoomID "
                 + "WHERE s.TeacherID = ? "
                 + "AND s.LearningDate BETWEEN "
-                + "DATEADD(DAY, 1 - DATEPART(WEEKDAY, ?), ?) AND " 
-                + "DATEADD(DAY, 7 - DATEPART(WEEKDAY, ?), ?)";  
+                + "DATEADD(DAY, 1 - DATEPART(WEEKDAY, ?), ?) AND "
+                + "DATEADD(DAY, 7 - DATEPART(WEEKDAY, ?), ?)";
 
         try {
             PreparedStatement st = conn.prepareStatement(sql);
@@ -49,7 +45,9 @@ public class TeacherDAO extends DBContext {
             while (rs.next()) {
                 Schedule s = new Schedule();
                 s.setScheduleId(rs.getInt("ScheduleID"));
-                s.setSlot(rs.getInt("Slot"));
+
+                s.setSlot(rs.getInt("SlotID"));
+
                 s.setLearningDate(rs.getDate("LearningDate"));
                 s.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
 
@@ -96,7 +94,10 @@ public class TeacherDAO extends DBContext {
                 Schedule s = new Schedule();
                 s.setScheduleId(rs.getInt("ScheduleID"));
                 s.setLearningDate(rs.getDate("LearningDate"));
-                s.setSlot(rs.getInt("Slot"));
+
+                // SỬA TẠI ĐÂY: Dùng SlotID thay vì Slot
+                s.setSlot(rs.getInt("SlotID"));
+
                 s.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
 
                 Room room = new Room();
