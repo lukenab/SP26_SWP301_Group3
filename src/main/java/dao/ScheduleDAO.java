@@ -470,6 +470,103 @@ public class ScheduleDAO extends DBContext {
         return scheduleList;
     }
 
+    public List<Schedule> getScheduleByStudentWeek(int userId,
+            String startDate,
+            String endDate) {
+
+        List<Schedule> list = new ArrayList<>();
+
+        String sql = "SELECT "
+                + "s.ScheduleID, s.LearningDate, "
+                + "sl.SlotID, sl.StartTime, sl.EndTime, "
+                + "c.ClassID, c.ClassName, "
+                + "cr.CourseID, cr.CourseName, "
+                + "r.RoomID, r.RoomName, "
+                + "u.UserID AS TeacherID, "
+                + "emp.Education, emp.Experience, "
+                + "a.Status AS AttendanceStatus "
+                + "FROM Schedule s "
+                + "JOIN Enrollment e ON e.ClassID = s.ClassID "
+                + "AND e.StudentID = ? "
+                + "AND e.Status = 1 "
+                + "JOIN Class c ON s.ClassID = c.ClassID "
+                + "JOIN Course cr ON c.CourseID = cr.CourseID "
+                + "JOIN Room r ON s.RoomID = r.RoomID "
+                + "JOIN Slot sl ON s.SlotID = sl.SlotID "
+                + "JOIN [User] u ON s.TeacherID = u.UserID AND u.RoleID = 4 "
+                + "LEFT JOIN Employee emp ON u.UserID = emp.EmployeeID "
+                + "LEFT JOIN Attendance a ON a.ScheduleID = s.ScheduleID "
+                + "AND a.EnrollmentID = e.EnrollmentID "
+                + "WHERE s.LearningDate BETWEEN ? AND ? "
+                + "ORDER BY s.LearningDate, sl.SlotID";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, userId);
+            ps.setString(2, startDate);
+            ps.setString(3, endDate);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                // ===== Course =====
+                Course course = new Course();
+                course.setCourseId(rs.getInt("CourseID"));
+                course.setCourseName(rs.getString("CourseName"));
+
+                // ===== Class =====
+                Classes classes = new Classes();
+                classes.setClassid(rs.getInt("ClassID"));
+                classes.setClassName(rs.getString("ClassName"));
+                classes.setCourse(course);
+
+                // ===== Room =====
+                Room room = new Room();
+                room.setRoomId(rs.getInt("RoomID"));
+                room.setRoomName(rs.getString("RoomName"));
+
+                // ===== Employee (Teacher info theo model hiện tại) =====
+                Employee emp = new Employee();
+                emp.setEmployeeId(rs.getInt("TeacherID"));
+                emp.setEducation(rs.getString("Education"));
+                emp.setExperience(rs.getString("Experience"));
+
+                // ===== Slot (LocalTime đúng kiểu) =====
+                Slot slot = new Slot();
+                slot.setSlotID(rs.getInt("SlotID"));
+                slot.setStartTime(rs.getTime("StartTime").toLocalTime());
+                slot.setEndTime(rs.getTime("EndTime").toLocalTime());
+
+                // ===== Schedule =====
+                Schedule s = new Schedule();
+                s.setScheduleId(rs.getInt("ScheduleID"));
+                s.setLearningDate(rs.getDate("LearningDate"));
+                s.setSlot(slot);
+                s.setClasses(classes);
+                s.setRoom(room);
+                s.setEmployee(emp);
+
+                // ===== Attendance (boolean theo model Schedule) =====
+                String status = rs.getString("AttendanceStatus");
+
+                boolean attendance = false;
+                if (status != null && status.equalsIgnoreCase("Present")) {
+                    attendance = true;
+                }
+
+                s.setAttendanceStatus(attendance);
+
+                list.add(s);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     // Main method for testing
     public static void main(String[] args) {
         ScheduleDAO scheduleDAO = new ScheduleDAO();
