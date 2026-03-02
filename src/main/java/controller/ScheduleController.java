@@ -27,6 +27,7 @@ import dao.ScheduleDAO;
 import dao.SlotDAO;
 import dao.UserDAO;
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import model.Slot;
 import java.time.ZoneId;
+import java.util.ArrayList;
 
 /**
  *
