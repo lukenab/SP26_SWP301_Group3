@@ -157,6 +157,35 @@ public class TeacherDAO extends DBContext {
         return list;
     }
 
+    // Get all classes with course info for academic staff
+    public List<Classes> getAllClasses() {
+        List<Classes> list = new ArrayList<>();
+        String sql = "SELECT c.*, co.CourseName FROM Class c "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "WHERE c.Status = 'Active' "
+                + "ORDER BY c.ClassName ASC";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                Classes c = new Classes();
+                c.setClassid(rs.getInt("ClassID"));
+                c.setClassName(rs.getString("ClassName"));
+                c.setStartDate(rs.getDate("StartDate"));
+                c.setEndDate(rs.getDate("EndDate"));
+                c.setStatus(rs.getString("Status"));
+                Course course = new Course();
+                course.setCourseId(rs.getInt("CourseID"));
+                course.setCourseName(rs.getString("CourseName"));
+                c.setCourse(course);
+                list.add(c);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public static void main(String[] args) {
         TeacherDAO dao = new TeacherDAO();
 

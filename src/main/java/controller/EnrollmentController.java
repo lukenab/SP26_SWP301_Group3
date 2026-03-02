@@ -103,6 +103,17 @@ public class EnrollmentController extends HttpServlet {
                 return;
             }
 
+            String normalizedStatus = status.trim();
+            if (!"Active".equalsIgnoreCase(normalizedStatus) && !"Inactive".equalsIgnoreCase(normalizedStatus)) {
+                request.setAttribute("errorMessage", "Status must be Active or Inactive.");
+                request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
+                request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
+                request.setAttribute("home_view", "/academic/create_class.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                return;
+            }
+            normalizedStatus = Character.toUpperCase(normalizedStatus.charAt(0)) + normalizedStatus.substring(1).toLowerCase();
+
             try {
                 int courseId = Integer.parseInt(courseIdParam);
                 int teacherId = Integer.parseInt(teacherIdParam);
@@ -118,7 +129,7 @@ public class EnrollmentController extends HttpServlet {
                     return;
                 }
 
-                boolean created = classDAO.createClass(className.trim(), courseId, teacherId, startDate, endDate, status.trim());
+                boolean created = classDAO.createClass(className.trim(), courseId, teacherId, startDate, endDate, normalizedStatus);
                 if (created) {
                     request.getSession().setAttribute("message", "Class created successfully.");
                     request.getSession().setAttribute("messageType", "success");
@@ -133,6 +144,43 @@ public class EnrollmentController extends HttpServlet {
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
                 request.setAttribute("home_view", "/academic/create_class.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+            }
+        } else if ("updateClassStatus".equals(action)) {
+            String classIdParam = request.getParameter("classId");
+            String status = request.getParameter("status");
+
+            if (classIdParam == null || classIdParam.isEmpty()
+                    || status == null || status.trim().isEmpty()) {
+                request.getSession().setAttribute("message", "Invalid status update request.");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("enrollment?action=classes");
+                return;
+            }
+
+            String normalizedStatus = status.trim();
+            if (!"Active".equalsIgnoreCase(normalizedStatus) && !"Inactive".equalsIgnoreCase(normalizedStatus)) {
+                request.getSession().setAttribute("message", "Status must be Active or Inactive.");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("enrollment?action=classes");
+                return;
+            }
+            normalizedStatus = Character.toUpperCase(normalizedStatus.charAt(0)) + normalizedStatus.substring(1).toLowerCase();
+
+            try {
+                int classId = Integer.parseInt(classIdParam);
+                boolean updated = classDAO.updateClassStatus(classId, normalizedStatus);
+                if (updated) {
+                    request.getSession().setAttribute("message", "Class status updated successfully.");
+                    request.getSession().setAttribute("messageType", "success");
+                } else {
+                    request.getSession().setAttribute("message", "Failed to update class status.");
+                    request.getSession().setAttribute("messageType", "error");
+                }
+                response.sendRedirect("enrollment?action=classes");
+            } catch (NumberFormatException e) {
+                request.getSession().setAttribute("message", "Invalid class ID.");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("enrollment?action=classes");
             }
         } else if ("addStudents".equals(action)) {
             String classIdParam = request.getParameter("classId");
@@ -161,6 +209,41 @@ public class EnrollmentController extends HttpServlet {
                     request.getSession().setAttribute("messageType", "success");
                 } else {
                     request.getSession().setAttribute("message", "Cannot add students to class.");
+                    request.getSession().setAttribute("messageType", "error");
+                }
+                response.sendRedirect("enrollment?action=addStudentForm&classId=" + classId);
+            } catch (NumberFormatException e) {
+                request.getSession().setAttribute("message", "Invalid request data.");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("enrollment?action=classes");
+            }
+        } else if ("removeStudents".equals(action)) {
+            String classIdParam = request.getParameter("classId");
+            if (classIdParam == null || classIdParam.isEmpty()) {
+                response.sendRedirect("enrollment?action=classes");
+                return;
+            }
+            try {
+                int classId = Integer.parseInt(classIdParam);
+                String[] selectedStudentIds = request.getParameterValues("studentIds");
+                if (selectedStudentIds == null || selectedStudentIds.length == 0) {
+                    request.getSession().setAttribute("message", "Please choose at least one student to remove.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=addStudentForm&classId=" + classId);
+                    return;
+                }
+
+                int[] studentIds = new int[selectedStudentIds.length];
+                for (int i = 0; i < selectedStudentIds.length; i++) {
+                    studentIds[i] = Integer.parseInt(selectedStudentIds[i]);
+                }
+
+                int removed = enrollmentDAO.removeStudentsFromClass(classId, studentIds);
+                if (removed > 0) {
+                    request.getSession().setAttribute("message", "Removed " + removed + " student(s) from class successfully.");
+                    request.getSession().setAttribute("messageType", "success");
+                } else {
+                    request.getSession().setAttribute("message", "Cannot remove students from class.");
                     request.getSession().setAttribute("messageType", "error");
                 }
                 response.sendRedirect("enrollment?action=addStudentForm&classId=" + classId);

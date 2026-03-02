@@ -1,18 +1,64 @@
-/* ============================= */
-/* ===== SCHEDULE CELL ========= */
-/* ============================= */
+/* ===================================== */
+/* ===== TABLE STRUCTURE =============== */
+/* ===================================== */
 
-.schedule-cell {
-    height: 140px;
-    vertical-align: top;
-    background-color: #f7f9fc;
-    padding: 12px !important;
+.table {
+    margin-bottom: 0;
+    table-layout: fixed;
 }
 
+.table td,
+.table th {
+    border-color: #e9edf3;
+    vertical-align: middle !important;
+}
 
-/* ============================= */
-/* ===== CARD ================== */
-/* ============================= */
+/* ===================================== */
+/* ===== TABLE HEADER ================== */
+/* ===================================== */
+
+.table thead th {
+    background-color: #f4f6fb !important;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #2c3e50;
+    padding: 12px 6px;
+}
+
+/* ===================================== */
+/* ===== SLOT COLUMN =================== */
+/* ===================================== */
+
+.table th:first-child {
+    width: 8%;
+}
+
+.table td:first-child {
+    background-color: #eef1f6 !important;
+    font-weight: 600;
+    font-size: 0.85rem;
+    vertical-align: middle !important;
+}
+
+.table td:first-child span {
+    font-size: 0.7rem;
+    color: #6c7a92;
+}
+
+/* ===================================== */
+/* ===== SCHEDULE CELL ================= */
+/* ===================================== */
+
+.schedule-cell {
+    height: 140px;                 /* giống bảng cũ */
+    vertical-align: top !important;
+    background-color: #f7f9fc;
+    padding: 12px !important;      /* giống bảng cũ */
+}
+
+/* ===================================== */
+/* ===== CARD ========================== */
+/* ===================================== */
 
 .student-card {
     border-radius: 12px;
@@ -20,7 +66,6 @@
     font-size: 0.85rem;
     transition: all 0.2s ease-in-out;
 
-    /* Màu xanh pastel giống hình */
     background-color: #e7edf7;
     border-left: 5px solid #4a6cf7;
     border: 1px solid #dde6f4;
@@ -33,11 +78,11 @@
     box-shadow: 0 8px 18px rgba(0,0,0,0.10);
 }
 
+/* ===================================== */
+/* ===== TITLE ========================= */
+/* ===================================== */
 
-/* ============================= */
-/* ===== TITLE ================= */
-/* ============================= */
-
+.student-card .fw-bold,
 .class-title {
     font-weight: 700;
     font-size: 0.95rem;
@@ -46,51 +91,95 @@
     color: #2f4fd8;
 }
 
+/* ===================================== */
+/* ===== INFO ========================== */
+/* ===================================== */
 
-/* ============================= */
-/* ===== INFO ================== */
-/* ============================= */
-
+.student-card .small,
 .info-line {
-    display: flex;
-    align-items: center;
-    gap: 6px;
     font-size: 0.8rem;
     margin-bottom: 4px;
     color: #5b6b8c;
 }
 
+.student-card .small.text-muted,
 .course-name {
     font-size: 0.78rem;
-    color: #7a8ca8;
+    color: #7a8ca8 !important;
 }
 
+/* ===================================== */
+/* ===== BADGE ========================= */
+/* ===================================== */
 
-/* ============================= */
-/* ===== TABLE HEADER ========== */
-/* ============================= */
-
-.table thead th {
-    background-color: #f4f6fb;
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: #2c3e50;
+.badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 8px;
 }
 
+/* ===================================== */
+/* ===== EMPTY CELL FIX ================ */
+/* ===================================== */
 
-/* ============================= */
-/* ===== SLOT COLUMN =========== */
-/* ============================= */
-
-.table td:first-child {
-    background-color: #eef1f6;
-    font-weight: 600;
+.schedule-cell:empty::after {
+    content: "";
+    display: block;
+    height: 100%;
 }
 
+/* ===================================== */
+/* ===== CARD CONTAINER ================ */
+/* ===================================== */
 
-/* ============================= */
-/* ===== DARK MODE ============= */
-/* ============================= */
+.card {
+    border-radius: 12px;
+}
+
+/* ===================================== */
+/* ===== BREADCRUMB ==================== */
+/* ===================================== */
+
+.breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+    margin-bottom: 1rem;
+    list-style: none;
+    background-color: transparent;
+}
+
+.breadcrumb-item {
+    font-size: 15px;
+    color: #6B7280;
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item a {
+    color: #6B7280;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.breadcrumb-item a:hover {
+    color: #2563EB;
+}
+
+.breadcrumb-item.active {
+    color: #111827;
+    font-weight: 500;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+    padding: 0 8px;
+    color: #6B7280;
+}
+
+/* ===================================== */
+/* ===== DARK MODE ===================== */
+/* ===================================== */
 
 body.dark .schedule-cell {
     background-color: #1f2933;
@@ -103,20 +192,23 @@ body.dark .student-card {
     color: #ffffff;
 }
 
-body.dark .class-title {
+body.dark .class-title,
+body.dark .student-card .fw-bold {
     color: #ffffff;
 }
 
 body.dark .info-line,
-body.dark .course-name {
-    color: #d1d5db;
+body.dark .course-name,
+body.dark .student-card .small {
+    color: #d1d5db !important;
 }
 
 body.dark .table thead th {
-    background-color: #2b3a4d;
+    background-color: #2b3a4d !important;
     color: #ffffff;
 }
 
 body.dark .table td:first-child {
-    background-color: #243447;
+    background-color: #243447 !important;
+    color: #ffffff;
 }
