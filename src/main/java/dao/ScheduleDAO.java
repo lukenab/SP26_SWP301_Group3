@@ -9,9 +9,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import model.Classes;
+import model.Course;
+import model.Employee;
 import model.Room;
 import model.Schedule;
 import model.Slot;
+import model.User;
 import utils.DBContext;
 
 /**
@@ -27,8 +31,7 @@ public class ScheduleDAO extends DBContext {
                 + "FROM Schedule s "
                 + "ORDER BY s.LearningDate DESC, s.SlotID ASC";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             RoomDAO roomDAO = new RoomDAO();
             SlotDAO slotDAO = new SlotDAO();
