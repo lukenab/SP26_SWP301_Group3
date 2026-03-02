@@ -1,0 +1,105 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
+<link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
+
+<div class="container-fluid px-4 content-body">
+    <div class="mb-4">
+        <div aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="schedule?action=manage">Manage Schedule</a></li>
+                <li class="breadcrumb-item active">Create Schedule</li>
+            </ol>
+        </div>
+        <div class="content-header">
+            <div>
+                <h2 class="page-title">Create New Schedule</h2>
+                <p class="text-muted small mb-0">Add a new schedule to the system</p>
+            </div>
+        </div>
+    </div>
+
+    <c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-error-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+        <c:remove var="message" scope="session" />
+        <c:remove var="messageType" scope="session" />
+    </c:if>
+
+    <div class="card border-0 bg-white">
+        <div class="card-body p-4">
+            <form action="schedule" method="POST">
+                <input type="hidden" name="action" value="create">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Class <span class="text-danger">*</span></label>
+                        <select name="classId" class="form-select" required>
+                            <option value="">Select Class</option>
+                            <c:forEach items="${allClasses}" var="cls">
+                                <option value="${cls[0]}">${cls[1]} - ${cls[2]}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Room <span class="text-danger">*</span></label>
+                        <select name="roomId" class="form-select" required>
+                            <option value="">Select Room</option>
+                            <c:forEach items="${allRooms}" var="room">
+                                <option value="${room[0]}">${room[1]} (Capacity: ${room[2]})</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Slot <span class="text-danger">*</span></label>
+                        <select name="slotId" class="form-select" required>
+                            <option value="">Select Slot</option>
+                            <c:forEach items="${slots}" var="slot">
+                                <option value="${slot.slotID}">Slot ${slot.slotID} (${slot.startTime} - ${slot.endTime})</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Learning Date <span class="text-danger">*</span></label>
+                        <input type="date" name="learningDate" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class='bx bx-save'></i> Create Schedule
+                    </button>
+                    <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn btn-secondary">
+                        <i class='bx bx-x'></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="js/manageUser.js" type="text/javascript"></script>
+

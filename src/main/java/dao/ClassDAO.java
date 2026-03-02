@@ -161,4 +161,18 @@ public class ClassDAO extends DBContext {
 
         return null;
     }
+
+    public int getTeacherIdByClassId(int classId) {
+        String sql = "SELECT TeacherID FROM Class WHERE ClassID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("TeacherID");
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get teacher id by class id: " + e.getMessage());
+        }
+        return 0;
+    }
 }

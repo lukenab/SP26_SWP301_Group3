@@ -541,3 +541,14 @@ body.dark .toast-message {
 .btn-cancel:hover {
     background: #e5e5e5;
 }
+
+.btn-secondary {
+    background: #2563EB;
+    color: #fff;
+    border: 1px solid #2563EB;
+}
+.btn-secondary:hover {
+    background: #1d4ed8;
+    color: #fff;
+    border: 1px solid #1d4ed8;
+}

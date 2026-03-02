@@ -233,9 +233,9 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
+                            <a href="schedule?action=manage">
                                 <i class="bxr bx-calendar-event"></i>
-                                <span class="text nav-text">Schedule Management</span>
+                                <span class="text nav-text">Schedule</span>
                             </a>
                         </li>
 
