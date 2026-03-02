@@ -16,9 +16,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.sql.Date;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 import model.Classes;
 import model.Schedule;
@@ -93,13 +92,30 @@ public class ScheduleController extends HttpServlet {
             action = "view";
         }
 
+    
         List<Slot> allSlots = slotDAO.getAllSlots();
         String[] weekdays = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
         String selectedDate = request.getParameter("date");
         if (selectedDate == null || selectedDate.trim().isEmpty()) {
-            selectedDate = java.time.LocalDate.now().toString();
+            selectedDate = LocalDate.now().toString();
         }
+
+        LocalDate current = LocalDate.parse(selectedDate);
+        LocalDate mondayDate = current.with(DayOfWeek.MONDAY); 
+
+        String[] dateOfWeek = new String[7];
+        for (int i = 0; i < 7; i++) {
+            dateOfWeek[i] = mondayDate.plusDays(i).format(java.time.format.DateTimeFormatter.ofPattern("dd/MM"));
+        }
+
+        request.setAttribute("selectedDate", selectedDate);
+        request.setAttribute("monday", mondayDate.toString());
+        request.setAttribute("dateOfWeek", dateOfWeek);
+        request.setAttribute("prevWeek", mondayDate.minusWeeks(1).toString());
+        request.setAttribute("nextWeek", mondayDate.plusWeeks(1).toString());
+        request.setAttribute("weekdays", weekdays);
+        request.setAttribute("slots", allSlots);
 
         switch (action) {
             case "view":
@@ -107,32 +123,24 @@ public class ScheduleController extends HttpServlet {
                 List<Schedule> scheduleList;
 
                 if (classIdParam != null && !classIdParam.isEmpty()) {
-                
                     int classId = Integer.parseInt(classIdParam);
                     scheduleList = teacherDAO.getScheduleByClassId(classId, user.getUserId(), selectedDate);
 
                     List<Classes> allClass = teacherDAO.getAllClassOfTeacherID(user.getUserId());
-                    String className = "";
                     for (Classes c : allClass) {
                         if (c.getClassid() == classId) {
-                            className = c.getClassName();
+                            request.setAttribute("className", c.getClassName());
                             break;
                         }
                     }
                     request.setAttribute("classId", classId);
-                    request.setAttribute("className", className);
                     request.setAttribute("home_view", "teacher/view_class_schedule.jsp");
                 } else {
-
                     scheduleList = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
                     request.setAttribute("home_view", "teacher/teacher_schedule.jsp");
                 }
 
-                request.setAttribute("selectedDate", selectedDate);
-                request.setAttribute("weekdays", weekdays);
-                request.setAttribute("slots", allSlots);
                 request.setAttribute("scheduleList", scheduleList);
-
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 
@@ -177,6 +185,7 @@ public class ScheduleController extends HttpServlet {
                 try {
                     int classId = Integer.parseInt(request.getParameter("classId"));
                     List<Schedule> scheduleByClass = teacherDAO.getScheduleByClassId(classId, user.getUserId(), selectedDate);
+
                     List<Classes> classesOfTeacher = teacherDAO.getAllClassOfTeacherID(user.getUserId());
                     String currentClassName = "";
                     for (Classes c : classesOfTeacher) {

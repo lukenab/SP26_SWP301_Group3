@@ -131,10 +131,25 @@ public class LeadController extends HttpServlet {
             int interestedCourseID = Integer.parseInt(request.getParameter("interestedCourseID"));
             String status = normalizeStatus(request.getParameter("status"));
             String note = request.getParameter("note");
+            String normalizedEmail = isBlank(email) ? null : email.trim();
+
+            if (normalizedEmail == null) {
+                session.setAttribute("message", "Email is required.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=add");
+                return;
+            }
+
+            if (userDAO.isEmailExists(normalizedEmail) || leadDAO.isEmailExists(normalizedEmail)) {
+                session.setAttribute("message", "Email already exists. Please use another email.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=add");
+                return;
+            }
 
             Lead lead = new Lead();
             lead.setFullName(fullName);
-            lead.setEmail(email);
+            lead.setEmail(normalizedEmail);
             lead.setPhone(phone);
             lead.setInterestedCourseID(interestedCourseID);
             lead.setStatus(status);
