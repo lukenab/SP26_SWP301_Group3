@@ -120,6 +120,24 @@
     color: #fff;
 }
 
+.class-management-page .btn.btn-remove-student {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none !important;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-weight: 500;
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    text-decoration: none;
+}
+
+.class-management-page .btn.btn-remove-student:hover {
+    background: #b91c1c !important;
+    color: #ffffff !important;
+}
+
 .class-management-page .btn-back {
     background: #e2e8f0;
     color: #1e293b;
