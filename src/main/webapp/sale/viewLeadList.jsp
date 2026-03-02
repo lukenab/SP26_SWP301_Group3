@@ -1,9 +1,10 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <link href="css/viewLeadList.css" rel="stylesheet" type="text/css"/>
-
+<link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
 <div class="container-fluid px-4 content-body">
 
     <div class="mb-4">
@@ -23,6 +24,33 @@
             </a>
         </div>
     </div>
+    
+    <c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-error-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+
+        <c:remove var="message" scope="session" />
+        <c:remove var="messageType" scope="session" />
+    </c:if>
 
     <c:set var="newLead" value="0"/>
     <c:set var="convertedLead" value="0"/>
@@ -70,7 +98,9 @@
                 <h3>
                     <c:choose>
                         <c:when test="${fn:length(leadList) > 0}">
-                            ${convertedLead * 100 / fn:length(leadList)}%
+                            <fmt:formatNumber value="${(convertedLead * 100.0) / fn:length(leadList)}"
+                                              minFractionDigits="2"
+                                              maxFractionDigits="2"/>%
                         </c:when>
                         <c:otherwise>0%</c:otherwise>
                     </c:choose>
@@ -123,9 +153,7 @@
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item" href="#">New</a></li>
                     <li><a class="dropdown-item" href="#">Contacted</a></li>
-                    <li><a class="dropdown-item" href="#">Consulting</a></li>
                     <li><a class="dropdown-item" href="#">Converted</a></li>
-                    <li><a class="dropdown-item" href="#">Lost</a></li>
                 </ul>
             </div>
         </div>
@@ -161,14 +189,11 @@
                                     <c:when test="${l.status == 'Contacted'}">
                                         <span class="badge badge-teacher">Contacted</span>
                                     </c:when>
-                                    <c:when test="${l.status == 'Consulting'}">
-                                        <span class="badge badge-student">Consulting</span>
-                                    </c:when>
                                     <c:when test="${l.status == 'Converted'}">
                                         <span class="badge badge-saleStaff">Converted</span>
                                     </c:when>
                                     <c:otherwise>
-                                        <span class="badge badge-academicStaff">${l.status}</span>
+                                        <span class="badge badge-teacher">Contacted</span>
                                     </c:otherwise>
                                 </c:choose>
                             </td>
@@ -184,7 +209,16 @@
                                     </c:when>
                                     <c:otherwise>
                                         <a href="lead?action=detail&id=${l.leadId}" class="action-btn"><i class='bx bx-eye'></i></a>
-                                        <a href="lead?action=edit&id=${l.leadId}" class="action-btn"><i class='bx bx-edit'></i></a>
+                                        <c:choose>
+                                            <c:when test="${l.status == 'Converted'}">
+                                                <span class="action-btn action-disabled" title="Converted lead cannot be edited">
+                                                    <i class='bx bx-edit'></i>
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <a href="lead?action=edit&id=${l.leadId}" class="action-btn"><i class='bx bx-edit'></i></a>
+                                            </c:otherwise>
+                                        </c:choose>
                                         <c:if test="${l.status != 'Converted'}">
                                             <a href="lead?action=convertForm&id=${l.leadId}" class="action-btn" title="Convert to Student">
                                                 <i class='bx bx-user-check'></i>

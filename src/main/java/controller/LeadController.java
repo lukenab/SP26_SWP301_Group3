@@ -69,6 +69,12 @@ public class LeadController extends HttpServlet {
                     response.sendRedirect("lead?action=all");
                     return;
                 }
+                if ("Converted".equalsIgnoreCase(lead.getStatus())) {
+                    request.getSession().setAttribute("message", "Converted lead cannot be edited.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("lead?action=all");
+                    return;
+                }
                 request.setAttribute("lead", lead);
                 request.setAttribute("home_view", "/sale/editLead.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
@@ -125,10 +131,25 @@ public class LeadController extends HttpServlet {
             int interestedCourseID = Integer.parseInt(request.getParameter("interestedCourseID"));
             String status = normalizeStatus(request.getParameter("status"));
             String note = request.getParameter("note");
+            String normalizedEmail = isBlank(email) ? null : email.trim();
+
+            if (normalizedEmail == null) {
+                session.setAttribute("message", "Email is required.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=add");
+                return;
+            }
+
+            if (userDAO.isEmailExists(normalizedEmail) || leadDAO.isEmailExists(normalizedEmail)) {
+                session.setAttribute("message", "Email already exists. Please use another email.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=add");
+                return;
+            }
 
             Lead lead = new Lead();
             lead.setFullName(fullName);
-            lead.setEmail(email);
+            lead.setEmail(normalizedEmail);
             lead.setPhone(phone);
             lead.setInterestedCourseID(interestedCourseID);
             lead.setStatus(status);
@@ -150,6 +171,12 @@ public class LeadController extends HttpServlet {
                 response.sendRedirect("lead?action=all");
                 return;
             }
+            if ("Converted".equalsIgnoreCase(currentLead.getStatus())) {
+                session.setAttribute("message", "Converted lead cannot be edited.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=all");
+                return;
+            }
 
             String fullName = request.getParameter("fullName");
             String email = request.getParameter("email");
@@ -157,6 +184,13 @@ public class LeadController extends HttpServlet {
             int interestedCourseID = currentLead.getInterestedCourseID();
             String status = normalizeStatus(request.getParameter("status"));
             String note = request.getParameter("note");
+
+            if (!"New".equalsIgnoreCase(status) && !"Contacted".equalsIgnoreCase(status)) {
+                session.setAttribute("message", "Only New or Contacted status can be edited.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=all");
+                return;
+            }
 
             String interestedCourseIDParam = request.getParameter("interestedCourseID");
             if (interestedCourseIDParam != null && !interestedCourseIDParam.trim().isEmpty()) {
@@ -327,16 +361,12 @@ public class LeadController extends HttpServlet {
                 return "New";
             case "contacted":
                 return "Contacted";
-            case "consulting":
-                return "Consulting";
             case "converted":
                 return "Converted";
-            case "lost":
-                return "Lost";
             case "inactive":
                 return "Inactive";
             default:
-                return status.trim();
+                return "New";
         }
     }
 

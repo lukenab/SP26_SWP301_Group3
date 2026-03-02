@@ -34,7 +34,6 @@ public class RoomController extends HttpServlet {
         switch (action) {
             case "all":
                 List<Room> allRoom = rdao.getAllRoom();
-
                 // Check which rooms have classes assigned
                 Map<Integer, Boolean> roomUsageMap = new HashMap<>();
                 for (Room room : allRoom) {
@@ -129,18 +128,22 @@ public class RoomController extends HttpServlet {
 
                 // Check if room name already exists
                 if (rdao.checkRoomNameExists(name)) {
-                    request.getSession().setAttribute("error", "Room name '" + name + "' already exists. Please use a different name.");
+                    request.getSession().setAttribute("message", "Room name '" + name + "' already exists. Please use a different name.");
+                    request.getSession().setAttribute("messageType", "error");
                     response.sendRedirect("room?action=create");
                 } else if (name == null || name.trim().isEmpty()) {
-                    request.getSession().setAttribute("error", "Room name cannot be empty.");
+                    request.getSession().setAttribute("message", "Room name cannot be empty.");
+                    request.getSession().setAttribute("messageType", "error");
                     response.sendRedirect("room?action=create");
                 } else {
                     int changes = rdao.createRoom(name, capacity, type, status);
                     if (changes != -1) {
                         request.getSession().setAttribute("message", "Room created successfully!");
+                        request.getSession().setAttribute("messageType", "success");
                         response.sendRedirect("room");
                     } else {
-                        request.getSession().setAttribute("error", "Failed to create room.");
+                        request.getSession().setAttribute("message", "Failed to create room.");
+                        request.getSession().setAttribute("messageType", "error");
                         response.sendRedirect("room?action=create");
                     }
                 }
@@ -154,8 +157,10 @@ public class RoomController extends HttpServlet {
 
                 if (deleted > 0) {
                     request.getSession().setAttribute("message", "Room deleted successfully.");
+                    request.getSession().setAttribute("messageType", "success");
                 } else {
-                    request.getSession().setAttribute("error", "Failed to delete room.");
+                    request.getSession().setAttribute("message", "Failed to delete room.");
+                    request.getSession().setAttribute("messageType", "error");
                 }
                 response.sendRedirect("room");
                 break;
@@ -168,8 +173,10 @@ public class RoomController extends HttpServlet {
 
                 if (disabled > 0) {
                     request.getSession().setAttribute("message", "Room has been disabled successfully.");
+                    request.getSession().setAttribute("messageType", "success");
                 } else {
-                    request.getSession().setAttribute("error", "Failed to disable room.");
+                    request.getSession().setAttribute("message", "Failed to disable room.");
+                    request.getSession().setAttribute("messageType", "error");
                 }
                 response.sendRedirect("room");
                 break;
@@ -182,8 +189,10 @@ public class RoomController extends HttpServlet {
 
                 if (enabled > 0) {
                     request.getSession().setAttribute("message", "Room has been enabled successfully.");
+                    request.getSession().setAttribute("messageType", "success");
                 } else {
-                    request.getSession().setAttribute("error", "Failed to enable room.");
+                    request.getSession().setAttribute("message", "Failed to enable room.");
+                    request.getSession().setAttribute("messageType", "error");
                 }
                 response.sendRedirect("room");
                 break;
@@ -201,8 +210,10 @@ public class RoomController extends HttpServlet {
                 int updated = rdao.updateRoom(idUpdate, nameUpdateString, capacityUpdate, typeUpdateString, statusUpdate);
                 if (updated > 0) {
                     request.getSession().setAttribute("message", "Room updated successfully!");
+                    request.getSession().setAttribute("messageType", "success");
                 } else {
-                    request.getSession().setAttribute("error", "Failed to update room.");
+                    request.getSession().setAttribute("message", "Failed to update room.");
+                    request.getSession().setAttribute("messageType", "error");
                 }
                 response.sendRedirect("room");
                 break;

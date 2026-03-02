@@ -193,20 +193,6 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-group"></i>
-                                <span class="text nav-text">Students</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Setting</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
                             <a href="dashboard?action=profile">
                                 <i class="bxr bx-user"></i>
                                 <span class="text nav-text">Profile</span>
@@ -239,19 +225,17 @@
                                 <span class="text nav-text">Classes</span>
                             </a>
                         </li>
-
                         <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-calendar-event"></i>
-                                <span class="text nav-text">Schedule Management</span>
+                            <a href="course">
+                                <i class="bxr bx-book"></i>
+                                <span class="text nav-text">Courses</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
-                            <a href="room">
-                                <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Room</span>
-
+                            <a href="schedule?action=manage">
+                                <i class="bxr bx-calendar-event"></i>
+                                <span class="text nav-text">Schedule</span>
                             </a>
                         </li>
 

@@ -30,46 +30,95 @@
         </div>
     </c:if>
 
-    <form action="course" method="post" class="form-body">
-        <input type="hidden" name="action" value="delete">
-        <input type="hidden" name="courseId" value="${course.courseId}">
+    <c:choose>
+        <c:when test="${course.status}">
+            <form action="course" method="post" class="form-body">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="courseId" value="${course.courseId}">
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="courseName">Course Name</label>
-                <input type="text" id="courseName" name="courseName" value="${course.courseName}" readonly>
-            </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="courseName">Course Name</label>
+                        <input type="text" id="courseName" name="courseName" value="${course.courseName}" readonly>
+                    </div>
 
-            <div class="form-group">
-                <label for="totalSlots">Total Slots</label>
-                <input type="number" id="totalSlots" name="totalSlots" value="${course.totalSlots}" readonly>
-            </div>
-        </div>
+                    <div class="form-group">
+                        <label for="totalSlots">Total Slots</label>
+                        <input type="number" id="totalSlots" name="totalSlots" value="${course.totalSlots}" readonly>
+                    </div>
+                </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="tuitionFee">Tuition Fee</label>
-                <input type="text" id="tuitionFee" name="tuitionFee" value="${course.tuitionFee}" readonly>
-            </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tuitionFee">Tuition Fee</label>
+                        <input type="text" id="tuitionFee" name="tuitionFee" value="${course.tuitionFee}" readonly>
+                    </div>
 
-            <div class="form-group">
-                <label for="status">Status</label>
-                <input type="text" id="status" value="${course.status ? 'Active' : 'Inactive'}" readonly>
-            </div>
-        </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <input type="text" id="status" value="${course.status ? 'Active' : 'Inactive'}" readonly>
+                    </div>
+                </div>
 
-        <div class="form-row">
-            <div class="form-group" style="width:100%">
-                <label for="description">Description</label>
-                <input type="text" id="description" name="description" value="${course.description}" readonly>
-            </div>
-        </div>
+                <div class="form-row">
+                    <div class="form-group" style="width:100%">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" name="description" value="${course.description}" readonly>
+                    </div>
+                </div>
 
-        <div class="form-buttons">
-            <a href="course?action=all" class="btn btn-cancel">Cancel</a>
-            <button type="submit" class="btn btn-lock">
-                <i class='bx bx-lock'></i> Inactivate Course
-            </button>
-        </div>
-    </form>
+                <div class="form-buttons">
+                    <a href="course?action=all" class="btn btn-cancel">Cancel</a>
+                    <button type="submit" class="btn btn-lock">
+                        <i class='bx bx-lock'></i> Inactivate Course
+                    </button>
+                </div>
+            </form>
+        </c:when>
+
+        <c:otherwise>
+            <form action="course" method="post" class="form-body">
+                <input type="hidden" name="action" value="activate">
+                <input type="hidden" name="courseId" value="${course.courseId}">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="courseName">Course Name</label>
+                        <input type="text" id="courseName" name="courseName" value="${course.courseName}" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="totalSlots">Total Slots</label>
+                        <input type="number" id="totalSlots" name="totalSlots" value="${course.totalSlots}" readonly>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tuitionFee">Tuition Fee</label>
+                        <input type="text" id="tuitionFee" name="tuitionFee" value="${course.tuitionFee}" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <input type="text" id="status" value="${course.status ? 'Active' : 'Inactive'}" readonly>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group" style="width:100%">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" name="description" value="${course.description}" readonly>
+                    </div>
+                </div>
+
+                <div class="form-buttons">
+                    <a href="course?action=all" class="btn btn-cancel">Cancel</a>
+                    <button type="submit" class="btn btn-unlock">
+                        <i class='bx bx-lock-open'></i> Activate Course
+                    </button>
+                </div>
+            </form>
+        </c:otherwise>
+    </c:choose>
 </div>

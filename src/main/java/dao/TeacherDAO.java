@@ -7,13 +7,10 @@ package dao;
 import model.Schedule;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import model.Attendance;
 import model.Classes;
 import model.Course;
-import model.Enrollment;
 import model.Room;
 import model.Slot;
 import model.Student;
@@ -26,20 +23,26 @@ import utils.DBContext;
  */
 public class TeacherDAO extends DBContext {
 
-    public List<Schedule> getTeachingSchedule(int teacherId, String startDate) {
+    public List<Schedule> getTeachingSchedule(int teacherId, String selectedDate) {
         List<Schedule> list = new ArrayList<>();
-
-        String sql = "SELECT s.*, c.ClassName, r.RoomName "
+        // Sửa: Cột thực tế trong DB là SlotID
+        String sql = "SET DATEFIRST 1; "
+                + "SELECT s.*, c.ClassName, r.RoomName "
                 + "FROM Schedule s "
                 + "JOIN Class c ON s.ClassID = c.ClassID "
                 + "JOIN Room r ON s.RoomID = r.RoomID "
                 + "WHERE s.TeacherID = ? "
-                + "AND s.LearningDate BETWEEN ? AND DATEADD(day, 6, ?)";
+                + "AND s.LearningDate BETWEEN "
+                + "DATEADD(DAY, 1 - DATEPART(WEEKDAY, ?), ?) AND "
+                + "DATEADD(DAY, 7 - DATEPART(WEEKDAY, ?), ?)";
+
         try {
             PreparedStatement st = conn.prepareStatement(sql);
             st.setInt(1, teacherId);
-            st.setString(2, startDate);
-            st.setString(3, startDate);
+            st.setString(2, selectedDate);
+            st.setString(3, selectedDate);
+            st.setString(4, selectedDate);
+            st.setString(5, selectedDate);
             ResultSet rs = st.executeQuery();
 
             SlotDAO slotDAO = new SlotDAO();
@@ -56,12 +59,12 @@ public class TeacherDAO extends DBContext {
                 s.setLearningDate(rs.getDate("LearningDate"));
                 s.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
 
-                model.Classes c = new model.Classes();
+                Classes c = new Classes();
                 c.setClassid(rs.getInt("ClassID"));
                 c.setClassName(rs.getString("ClassName"));
                 s.setClasses(c);
 
-                model.Room r = new model.Room();
+                Room r = new Room();
                 r.setRoomId(rs.getInt("RoomID"));
                 r.setRoomName(rs.getString("RoomName"));
                 s.setRoom(r);
@@ -69,34 +72,36 @@ public class TeacherDAO extends DBContext {
                 list.add(s);
             }
         } catch (Exception e) {
-            System.out.println("getTeachingSchedule error: " + e.getMessage());
             e.printStackTrace();
         }
         return list;
     }
 
-    public List<Schedule> getScheduleByClassId(int classId, int teacherId) {
-
+    public List<Schedule> getScheduleByClassId(int classId, int teacherId, String selectedDate) {
         List<Schedule> list = new ArrayList<>();
-
-        String sql = "SELECT s.*, c.ClassName, r.RoomName "
+        String sql = "SET DATEFIRST 1; "
+                + "SELECT s.*, c.ClassName, r.RoomName "
                 + "FROM Schedule s "
                 + "JOIN Class c ON s.ClassID = c.ClassID "
                 + "JOIN Room r ON s.RoomID = r.RoomID "
-                + "WHERE s.ClassID = ? "
-                + "AND s.TeacherID = ?";
+                + "WHERE s.ClassID = ? AND s.TeacherID = ? "
+                + "AND s.LearningDate BETWEEN "
+                + "DATEADD(DAY, 1 - DATEPART(WEEKDAY, ?), ?) AND "
+                + "DATEADD(DAY, 7 - DATEPART(WEEKDAY, ?), ?)";
 
         try (PreparedStatement st = conn.prepareStatement(sql)) {
-
             st.setInt(1, classId);
             st.setInt(2, teacherId);
+            st.setString(3, selectedDate);
+            st.setString(4, selectedDate);
+            st.setString(5, selectedDate);
+            st.setString(6, selectedDate);
 
             ResultSet rs = st.executeQuery();
 
             SlotDAO slotDAO = new SlotDAO();
 
             while (rs.next()) {
-
                 Schedule s = new Schedule();
                 s.setScheduleId(rs.getInt("ScheduleID"));
                 s.setLearningDate(rs.getDate("LearningDate"));
@@ -118,11 +123,9 @@ public class TeacherDAO extends DBContext {
 
                 list.add(s);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return list;
     }
 
@@ -150,6 +153,35 @@ public class TeacherDAO extends DBContext {
 
             }
         } catch (Exception e) {
+        }
+        return list;
+    }
+
+    // Get all classes with course info for academic staff
+    public List<Classes> getAllClasses() {
+        List<Classes> list = new ArrayList<>();
+        String sql = "SELECT c.*, co.CourseName FROM Class c "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "WHERE c.Status = 'Active' "
+                + "ORDER BY c.ClassName ASC";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                Classes c = new Classes();
+                c.setClassid(rs.getInt("ClassID"));
+                c.setClassName(rs.getString("ClassName"));
+                c.setStartDate(rs.getDate("StartDate"));
+                c.setEndDate(rs.getDate("EndDate"));
+                c.setStatus(rs.getString("Status"));
+                Course course = new Course();
+                course.setCourseId(rs.getInt("CourseID"));
+                course.setCourseName(rs.getString("CourseName"));
+                c.setCourse(course);
+                list.add(c);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return list;
     }

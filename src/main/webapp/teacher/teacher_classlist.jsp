@@ -20,6 +20,32 @@
         </div>
     </div>
 
+    <c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-error-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+        <c:remove var="message" scope="session" />
+        <c:remove var="messageType" scope="session" />
+    </c:if>
+
     <c:set var="activeCount" value="0"/>
     <c:set var="pendingCount" value="0"/>
     <c:forEach var="c" items="${ClassList}">
@@ -34,7 +60,7 @@
                 <h3>${ClassList.size()}</h3>
             </div>
             <div class="icon-wrapper blue">
-                <i class='bx bxs-door-open'></i>
+                <i class='bx bx-door-open'></i>
             </div>
         </div>
         <div class="stat-card">
@@ -43,7 +69,7 @@
                 <h3>${activeCount}</h3> 
             </div>
             <div class="icon-wrapper green">
-                <i class='bx bxs-graduation'></i>
+                <i class='bx bx-lock-open-alt'></i>
             </div>
         </div>
         <div class="stat-card">
@@ -52,7 +78,7 @@
                 <h3>${pendingCount}</h3>
             </div>
             <div class="icon-wrapper cyan">
-                <i class='bx bxs-time-five'></i>
+                <i class='bx bx-clock-dashed-half'></i>
             </div>
         </div>  
     </div>
@@ -60,18 +86,14 @@
     <div class="filter-container flex-wrap mt-4">
         <div class="custom-search-bar">
             <i class='bx bx-search text-muted fs-5'></i>
-            <input type="text" placeholder="Search class by name...">
+            <input type="text" id="searchInput" placeholder="Search class by name...">
         </div>
         <div class="d-flex gap-3">
-            <div class="dropdown">
-                <button class="custom-select-filter" type="button" data-bs-toggle="dropdown">
-                    <i class='bx bx-filter-alt'></i> All Status <i class='bx bx-chevron-down ms-1'></i>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Active</a></li>
-                    <li><a class="dropdown-item" href="#">Pending</a></li>
-                </ul>
-            </div>
+            <select id="statusFilter" class="custom-select-filter" style="border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; outline: none; cursor: pointer;">
+                <option value="all">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Pending">Pending</option>
+            </select>
         </div>
     </div>
 
@@ -88,9 +110,9 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="classTableBody">
                     <c:forEach items="${ClassList}" var="c" varStatus="loop">
-                        <tr>
+                        <tr class="class-row">
                             <td>${loop.count}</td>
                             <td>
                                 <div class="user-item">
@@ -106,7 +128,7 @@
                             <td class="text-secondary">${c.startDate}</td>
                             <td class="text-secondary">${c.endDate}</td>
                             <td>
-                                <span class="badge ${c.status == 'Active' ? 'badge-teacher' : 'badge-academicStaff'}">
+                                <span class="badge status-text ${c.status == 'Active' ? 'badge-teacher' : 'badge-academicStaff'}">
                                     ${c.status}
                                 </span>
                             </td>
@@ -120,8 +142,14 @@
                             </td>
                         </tr>
                     </c:forEach>
+                    <tr id="noResultRow" style="display: none;">
+                        <td colspan="6" class="text-center py-4 text-muted">No classes match your search.</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<script src="js/teacherClassList.js" type="text/javascript"></script>
+<script src="js/manageUser.js" type="text/javascript"></script>

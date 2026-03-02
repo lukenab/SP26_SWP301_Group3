@@ -70,8 +70,13 @@
                         <span>${lead.createDate}</span>
                     </div> 
                     <div class="info-item">
-                        <p>Status</p>
-                        <span>${lead.status}</span>
+                        <p>Note</p>
+                        <span>
+                            <c:choose>
+                                <c:when test="${not empty lead.note}">${lead.note}</c:when>
+                                <c:otherwise>-</c:otherwise>
+                            </c:choose>
+                        </span>
                     </div> 
                 </div>
             </div>

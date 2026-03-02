@@ -130,6 +130,18 @@ public class ClassDAO extends DBContext {
         return false;
     }
 
+    public boolean updateClassStatus(int classId, String status) {
+        String sql = "UPDATE Class SET Status = ? WHERE ClassID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, classId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("Fail to update class status: " + e.getMessage());
+        }
+        return false;
+    }
+
     public String getClassNameById(int classId) {
 
         String sql = "SELECT ClassName FROM Class WHERE ClassID = ?";
@@ -148,5 +160,19 @@ public class ClassDAO extends DBContext {
         }
 
         return null;
+    }
+
+    public int getTeacherIdByClassId(int classId) {
+        String sql = "SELECT TeacherID FROM Class WHERE ClassID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("TeacherID");
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get teacher id by class id: " + e.getMessage());
+        }
+        return 0;
     }
 }

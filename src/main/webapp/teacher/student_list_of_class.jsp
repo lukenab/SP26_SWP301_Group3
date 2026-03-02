@@ -4,14 +4,6 @@
 
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
 <link href="css/student_list_of_class.css" rel="stylesheet" type="text/css"/>
-<c:if test="${not empty sessionScope.message}">
-    <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
-        <i class='bx ${sessionScope.messageType == 'success' ? 'bx-check-circle' : 'bx-error-circle'} me-2'></i>
-        <span>${sessionScope.message}</span>
-    </div>
-    <c:remove var="message" scope="session"/>
-    <c:remove var="messageType" scope="session"/>
-</c:if>
 
 <div class="container-fluid px-4 content-body">
 
@@ -34,11 +26,40 @@
                 </p>
             </div>
 
-            <a href="class" class="btn btn-add-new">
-                <i class='bx bx-left-arrow-alt'></i> Back
+            <a href="class" class="btn-secondary">
+                <i class='bx bx-arrow-left'></i> Back to Class Management
             </a>
         </div>
     </div>
+
+    <c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-error-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+
+        <c:remove var="message" scope="session" />
+        <c:remove var="messageType" scope="session" />
+    </c:if>
+
+
     <div class="card user-table-card border-0 bg-white">
     </div> <div class="row mb-3">
         <div class="col-md-5">
@@ -133,3 +154,4 @@
 </div>
 
 <script src="js/student_list_of_class.js" type="text/javascript"></script>
+<script src="js/manageUser.js" type="text/javascript"></script>

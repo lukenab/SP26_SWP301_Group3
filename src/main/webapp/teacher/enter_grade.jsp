@@ -6,18 +6,29 @@
 
 <c:if test="${not empty sessionScope.message}">
     <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+        <div class="toast-icon">
+            <c:choose>
+                <c:when test="${sessionScope.messageType == 'success'}">
+                    <i class='bx bx-check-circle'></i>
+                </c:when>
+                <c:otherwise>
+                    <i class='bx bx-error-circle'></i>
+                </c:otherwise>
+            </c:choose>
+        </div>
         <div class="toast-content">
             <span class="toast-title">
                 ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
             </span>
-            <span class="toast-message">
-                ${sessionScope.message}
-            </span>
+            <span class="toast-message">${sessionScope.message}</span>
         </div>
+        <button class="toast-close" onclick="closeToast()">
+            <i class='bx bx-x'></i>
+        </button>
     </div>
 
-    <c:remove var="message" scope="session"/>
-    <c:remove var="messageType" scope="session"/>
+    <c:remove var="message" scope="session" />
+    <c:remove var="messageType" scope="session" />
 </c:if>
 
 <div class="container-fluid px-4 content-body">
@@ -46,9 +57,8 @@
                 </p>
             </div>
 
-            <a href="student?action=viewByClass&classId=${classId}"
-               class="btn btn-add-new">
-                Back
+            <a href="student?action=viewByClass&classId=${classId}" class="btn-secondary">
+                <i class='bx bx-arrow-left'></i> Back to Student List
             </a>
         </div>
     </div>
@@ -147,15 +157,14 @@
                 </c:if>
 
 
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                    <button type="submit" class="btn btn-save px-4">
-                        ${scoreMap == null ? "Save Grade" : "Update Grade"}
-                    </button>
-
+                <div class="d-flex align-items-center justify-content-end mt-4" style="gap: 10px">
                     <button type="reset" class="btn btn-cancel px-4">
                         Reset
                     </button>
 
+                    <button type="submit" class="btn btn-save px-4">
+                        ${scoreMap == null ? "Save Grade" : "Update Grade"}
+                    </button>
                 </div>
 
             </form>
@@ -164,4 +173,5 @@
     </div>
 
 </div>
-<script src="js/enterGrade.js" type="text/javascript"></script>
+
+<script src="js/manageUser.js" type="text/javascript"></script>
