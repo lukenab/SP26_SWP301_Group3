@@ -100,7 +100,7 @@
                                         <fmt:formatDate value="${s.learningDate}" pattern="EEEE" var="dayInSql"/>
                                         <fmt:formatDate value="${s.learningDate}" pattern="yyyy-MM-dd" var="learningDateStr"/>
 
-                                        <c:if test="${s.slot == slot.slotID && dayInSql == day}">
+                                        <c:if test="${s.slot.slotID == slot.slotID && dayInSql == day}">
                                             <div class="schedule-card shadow-sm p-2 mb-2 text-start border rounded bg-white">
                                                 <div class="class-name fw-bold text-primary">${s.classes.className}</div>
                                                 <div class="small text-muted mb-1">
