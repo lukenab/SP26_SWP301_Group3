@@ -8,9 +8,13 @@ import model.Schedule;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import model.Classes;
 import model.Course;
+import model.Enrollment;
+import model.Feedback;
 import model.Room;
 import model.Slot;
 import model.Student;
@@ -186,6 +190,50 @@ public class TeacherDAO extends DBContext {
         return list;
     }
 
+    public Map<String, Object> getTeacherFeedbackData(int teacherId) {
+        Map<String, Object> result = new HashMap<>();
+        List<Feedback> feedbackList = new ArrayList<>();
+        Map<Integer, String> studentNameMap = new HashMap<>();
+
+        String sql = "SELECT f.FeedbackID, u.FullName AS StudentName, c.ClassName, f.Rating, f.Comment, f.SentDate "
+                + "FROM Feedback f "
+                + "JOIN Enrollment e ON f.EnrollmentID = e.EnrollmentID "
+                + "JOIN [User] u ON e.StudentID = u.UserID "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "WHERE c.TeacherID = ? "
+                + "ORDER BY f.SentDate DESC";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, teacherId);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                int fId = rs.getInt("FeedbackID");
+
+                Feedback f = new Feedback();
+                f.setFeedbackId(fId);
+                f.setRating(rs.getInt("Rating"));
+                f.setComment(rs.getString("Comment"));
+                f.setSentDate(rs.getTimestamp("SentDate").toLocalDateTime());
+
+                Enrollment e = new Enrollment();
+                Classes clazz = new Classes();
+                clazz.setClassName(rs.getString("ClassName"));
+                e.setClasses(clazz);
+                f.setEnrollment(e);
+
+                feedbackList.add(f);
+         
+                studentNameMap.put(fId, rs.getString("StudentName"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        result.put("feedbackList", feedbackList);
+        result.put("studentNameMap", studentNameMap);
+        return result;
+    }
+
     public static void main(String[] args) {
         TeacherDAO dao = new TeacherDAO();
 
@@ -221,5 +269,24 @@ public class TeacherDAO extends DBContext {
                 System.out.println("--------------------------------------------------");
             }
         }
+
+        Map<String, Object> data = dao.getTeacherFeedbackData(3);
+
+        List<Feedback> flist = (List<Feedback>) data.get("feedbackList");
+        Map<Integer, String> names = (Map<Integer, String>) data.get("studentNameMap");
+
+        System.out.println("--- KET QUA TEST FEEDBACK ---");
+        if (list != null && !list.isEmpty()) {
+            for (Feedback f : flist) {
+               
+                System.out.println("ID: " + f.getFeedbackId()
+                        + " | Student: " + names.get(f.getFeedbackId())
+                        + " | Comment: " + f.getComment());
+            }
+        } else {
+            System.out.println("KHONG LAY DUOC DU LIEU! Kiem tra lai ket noi hoac SQL trong DAO.");
+        }
     }
+
+   
 }

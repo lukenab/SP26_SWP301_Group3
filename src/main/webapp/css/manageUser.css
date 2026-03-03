@@ -552,3 +552,24 @@ body.dark .toast-message {
     color: #fff;
     border: 1px solid #1d4ed8;
 }
+
+
+.feedback-card {
+    transition: transform 0.2s;
+}
+.feedback-card:hover {
+    transform: translateY(-3px);
+}
+
+.btn-feedback {
+    color: #6c757d !important;
+    background-color: #f8f9fa; 
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+
+.btn-feedback:hover {
+    background-color: #e9ecef;
+    color: #4e73df !important; 
+    transform: translateY(-2px);
+}

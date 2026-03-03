@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.TeacherDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -11,6 +12,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.util.List;
+import java.util.Map;
+import model.Classes;
+import model.User;
 
 /**
  *
@@ -57,7 +63,36 @@ public class FeedbackController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        if (user == null || user.getRole() == null || user.getRole().getRoleId() != 4) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        TeacherDAO teacherDAO = new TeacherDAO();
+        String action = request.getParameter("action");
+        if (action == null) {
+            action = "viewAll"; 
+        }
+
+        switch (action) {
+            case "viewAll":
+                String classId = request.getParameter("classId");
+                String from = request.getParameter("from");
+                List<Classes> classList = teacherDAO.getAllClassOfTeacherID(user.getUserId());
+                request.setAttribute("classList", classList);
+                request.setAttribute("from", from);
+                request.setAttribute("classId", classId); 
+                Map<String, Object> data = teacherDAO.getTeacherFeedbackData(user.getUserId());
+                request.setAttribute("feedbackList", data.get("feedbackList"));
+                request.setAttribute("studentNameMap", data.get("studentNameMap"));
+
+                request.setAttribute("home_view", "teacher/feedback_list.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+        }
     }
 
     /**

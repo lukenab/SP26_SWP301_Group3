@@ -191,6 +191,13 @@
                                 <span class="text nav-text">My Classes</span>
                             </a>
                         </li>
+                        
+                        <li class="nav-links">
+                            <a href="feedback">
+                                <i class="bxr bx-door"></i>
+                                <span class="text nav-text">My Feedback</span>
+                            </a>
+                        </li>
 
                         <li class="nav-links">
                             <a href="dashboard?action=profile">
