@@ -58,7 +58,7 @@ public class ScheduleController extends HttpServlet {
 
         // Allow both teacher (roleId 4) and academic staff (roleId 2)
         int roleId = user.getRole().getRoleId();
-        if (roleId != 4 && roleId != 2) {
+        if (roleId != 4 && roleId != 2 && roleId != 5 ) {
             response.sendRedirect("login.jsp");
             return;
         }
@@ -70,7 +70,6 @@ public class ScheduleController extends HttpServlet {
             action = "view";
         }
 
-    
         List<Slot> allSlots = slotDAO.getAllSlots();
         String[] weekdays = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
@@ -80,7 +79,7 @@ public class ScheduleController extends HttpServlet {
         }
 
         LocalDate current = LocalDate.parse(selectedDate);
-        LocalDate mondayDate = current.with(DayOfWeek.MONDAY); 
+        LocalDate mondayDate = current.with(DayOfWeek.MONDAY);
 
         String[] dateOfWeek = new String[7];
         for (int i = 0; i < 7; i++) {
@@ -203,18 +202,18 @@ public class ScheduleController extends HttpServlet {
 
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                         String json = String.format(
-                            "{\"scheduleId\":%d,\"classId\":%d,\"className\":\"%s\",\"roomId\":%d,\"roomName\":\"%s\"," +
-                            "\"slotId\":%d,\"slotTime\":\"%s - %s\",\"learningDate\":\"%s\",\"attendanceStatus\":%b}",
-                            schedule.getScheduleId(),
-                            schedule.getClasses().getClassid(),
-                            schedule.getClasses().getClassName(),
-                            schedule.getRoom().getRoomId(),
-                            schedule.getRoom().getRoomName(),
-                            schedule.getSlot().getSlotID(),
-                            schedule.getSlot().getStartTime(),
-                            schedule.getSlot().getEndTime(),
-                            sdf.format(schedule.getLearningDate()),
-                            schedule.isAttendanceStatus()
+                                "{\"scheduleId\":%d,\"classId\":%d,\"className\":\"%s\",\"roomId\":%d,\"roomName\":\"%s\","
+                                + "\"slotId\":%d,\"slotTime\":\"%s - %s\",\"learningDate\":\"%s\",\"attendanceStatus\":%b}",
+                                schedule.getScheduleId(),
+                                schedule.getClasses().getClassid(),
+                                schedule.getClasses().getClassName(),
+                                schedule.getRoom().getRoomId(),
+                                schedule.getRoom().getRoomName(),
+                                schedule.getSlot().getSlotID(),
+                                schedule.getSlot().getStartTime(),
+                                schedule.getSlot().getEndTime(),
+                                sdf.format(schedule.getLearningDate()),
+                                schedule.isAttendanceStatus()
                         );
                         out.print(json);
                         out.flush();
@@ -343,6 +342,93 @@ public class ScheduleController extends HttpServlet {
                 }
                 break;
 
+            case "studentView":
+
+                int studentId = user.getUserId();
+
+                LocalDate weekStart;
+                String weekStartParam = request.getParameter("weekStart");
+
+                if (weekStartParam != null && !weekStartParam.isBlank()) {
+                    weekStart = LocalDate.parse(weekStartParam);
+                } else {
+                    weekStart = LocalDate.now()
+                            .with(java.time.DayOfWeek.MONDAY);
+                }
+
+                LocalDate weekEnd = weekStart.plusDays(6);
+
+                ScheduleDAO scheduleDAO1 = new ScheduleDAO();
+                SlotDAO slotDAO1 = new SlotDAO();
+                UserDAO userDAO = new UserDAO();
+
+                List<Slot> studentSlots = slotDAO1.getAllSlots();
+
+                List<Schedule> studentScheduleList
+                        = scheduleDAO1.getScheduleByStudentWeek(
+                                studentId,
+                                weekStart.toString(),
+                                weekEnd.toString()
+                        );
+
+                Map<Integer, User> employeeUsers = new HashMap<>();
+
+                for (Schedule schedule : studentScheduleList) {
+                    if (schedule.getEmployee() != null) {
+                        int empId = schedule.getEmployee().getEmployeeId();
+
+                        // tránh query lặp
+                        if (!employeeUsers.containsKey(empId)) {
+                            User empUser = userDAO.getUserByEmployeeId(empId);
+                            employeeUsers.put(empId, empUser);
+                        }
+                    }
+                }
+
+                Map<LocalDate, Map<Integer, Schedule>> tempSchedule
+                        = new LinkedHashMap<>();
+
+                for (int i = 0; i < 7; i++) {
+                    LocalDate date = weekStart.plusDays(i);
+                    tempSchedule.put(date, new HashMap<>());
+                }
+
+                for (Schedule schedule : studentScheduleList) {
+
+                    LocalDate learningDate
+                            = ((java.sql.Date) schedule.getLearningDate())
+                                    .toLocalDate();
+
+                    int slotId = schedule.getSlot().getSlotID();
+
+                    Map<Integer, Schedule> daySchedule
+                            = tempSchedule.get(learningDate);
+
+                    if (daySchedule != null) {
+                        daySchedule.put(slotId, schedule);
+                    }
+                }
+
+                Map<java.sql.Date, Map<Integer, Schedule>> weeklySchedule
+                        = new LinkedHashMap<>();
+
+                for (Map.Entry<LocalDate, Map<Integer, Schedule>> entry : tempSchedule.entrySet()) {
+                    weeklySchedule.put(
+                            java.sql.Date.valueOf(entry.getKey()),
+                            entry.getValue()
+                    );
+                }
+
+                request.setAttribute("weeklySchedule", weeklySchedule);
+                request.setAttribute("slots", studentSlots);
+                request.setAttribute("weekStart", weekStart);
+                request.setAttribute("employeeUsers", employeeUsers);
+
+                request.setAttribute("home_view", "student/studentSchedule.jsp");
+                request.getRequestDispatcher("dashboard.jsp")
+                        .forward(request, response);
+
+                break;
         }
     }
 
@@ -487,8 +573,8 @@ public class ScheduleController extends HttpServlet {
 
             // Get existing schedule
             Schedule existingSchedule = scheduleDAO.getScheduleById(scheduleId);
-            int teacherId = existingSchedule.getEmployee() != null ?
-                          existingSchedule.getEmployee().getEmployeeId() : 0;
+            int teacherId = existingSchedule.getEmployee() != null
+                    ? existingSchedule.getEmployee().getEmployeeId() : 0;
             boolean attendanceStatus = existingSchedule.isAttendanceStatus();
 
             // If teacherId is 0, get from class
@@ -532,7 +618,7 @@ public class ScheduleController extends HttpServlet {
 
             // Update schedule
             boolean success = scheduleDAO.editSchedule(scheduleId, classId, roomId, slotId,
-                                                       learningDate, teacherId, attendanceStatus);
+                    learningDate, teacherId, attendanceStatus);
 
             if (success) {
                 session.setAttribute("message", "Schedule updated successfully!");
