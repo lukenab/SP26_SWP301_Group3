@@ -26,6 +26,42 @@ public class VoucherDAO extends DBContext {
         return list;
     }
 
+    public List<Voucher> searchAndFilterVouchers(String searchQuery, String status) {
+        List<Voucher> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status "
+                + "FROM Voucher WHERE 1=1 ");
+
+        boolean hasSearch = searchQuery != null && !searchQuery.trim().isEmpty();
+        boolean hasStatus = status != null && !status.trim().isEmpty() && !"all".equalsIgnoreCase(status.trim());
+
+        if (hasSearch) {
+            sql.append("AND Code LIKE ? ");
+        }
+        if (hasStatus) {
+            sql.append("AND Status = ? ");
+        }
+        sql.append("ORDER BY VoucherID DESC");
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql.toString());
+            int index = 1;
+            if (hasSearch) {
+                ps.setString(index++, "%" + searchQuery.trim().toUpperCase() + "%");
+            }
+            if (hasStatus) {
+                ps.setBoolean(index++, "1".equals(status) || "active".equalsIgnoreCase(status.trim()));
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapVoucher(rs));
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to search and filter voucher: " + e.getMessage());
+        }
+        return list;
+    }
+
     public List<Voucher> getActiveVoucher() {
         List<Voucher> list = new ArrayList<>();
         String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status "

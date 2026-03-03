@@ -32,9 +32,17 @@ public class LeadController extends HttpServlet {
 
         switch (action) {
             case "all":
-                List<Lead> leadList = leadDAO.getAllLeads();
+                String searchQuery = request.getParameter("searchQuery");
+                String status = request.getParameter("status");
+                if (status == null || status.trim().isEmpty()) {
+                    status = "all";
+                }
+
+                List<Lead> leadList = leadDAO.searchAndFilterLeads(searchQuery, status);
                 request.setAttribute("leadList", leadList);
                 request.setAttribute("totalLeads", leadList.size());
+                request.setAttribute("searchQuery", searchQuery == null ? "" : searchQuery);
+                request.setAttribute("statusFilter", status);
                 request.setAttribute("home_view", "/sale/viewLeadList.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
@@ -233,22 +241,13 @@ public class LeadController extends HttpServlet {
             String address = request.getParameter("address");
             String dobRaw = request.getParameter("dob");
             String genderRaw = request.getParameter("gender");
-            String password = request.getParameter("password");
-            String confirmPassword = request.getParameter("confirmPassword");
+            String defaultPassword = "123456";
             String enrollmentDateRaw = request.getParameter("enrollmentDate");
             String avatar = request.getParameter("avatar");
             String convertNote = request.getParameter("convertNote");
 
-            if (isBlank(fullName) || isBlank(email) || isBlank(password)
-                    || isBlank(confirmPassword) || isBlank(dobRaw) || isBlank(genderRaw)) {
+            if (isBlank(fullName) || isBlank(email) || isBlank(dobRaw) || isBlank(genderRaw)) {
                 session.setAttribute("message", "Please fill all required information for conversion.");
-                session.setAttribute("messageType", "error");
-                response.sendRedirect("lead?action=convertForm&id=" + leadId);
-                return;
-            }
-
-            if (!password.equals(confirmPassword)) {
-                session.setAttribute("message", "Password confirmation does not match.");
                 session.setAttribute("messageType", "error");
                 response.sendRedirect("lead?action=convertForm&id=" + leadId);
                 return;
@@ -279,7 +278,7 @@ public class LeadController extends HttpServlet {
             boolean created = userDAO.addNewUserFull(
                     fullName.trim(),
                     email.trim(),
-                    password,
+                    defaultPassword,
                     isBlank(phone) ? null : phone.trim(),
                     isBlank(address) ? null : address.trim(),
                     isFemale,
@@ -305,8 +304,14 @@ public class LeadController extends HttpServlet {
                     isBlank(phone) ? lead.getPhone() : phone.trim(),
                     lead.getInterestedCourseID(), "Converted", mergedNote);
 
-            session.setAttribute("message", "Convert successful. Student account: " + email.trim() + " / " + password);
-            session.setAttribute("messageType", "success");
+            boolean emailSent = EmailController.sendLeadConversionEmail(email.trim(), fullName.trim(), defaultPassword);
+            if (emailSent) {
+                session.setAttribute("message", "Convert successful. Default password 123456 has been sent to student email.");
+                session.setAttribute("messageType", "success");
+            } else {
+                session.setAttribute("message", "Convert successful, but failed to send default password email. Please send credentials manually.");
+                session.setAttribute("messageType", "error");
+            }
             response.sendRedirect("lead?action=all");
             return;
         }

@@ -33,10 +33,11 @@
                             <span class="profession">Language Center</span>
                         </div>
 
-                        <div class="search-field">
+                        <form action="landingPage" method="GET" class="search-field">
+                            <input type="hidden" name="action" value="all"/>
                             <i class="bx bx-search"></i>
-                            <input type="text" placeholder="Search for courses..." />
-                        </div>
+                            <input type="text" name="keyword" value="${searchKeyword}" placeholder="Search for courses..." />
+                        </form>
                     </div>
 
                     <div class="nav-right">
@@ -237,7 +238,7 @@
                                                 <fmt:formatNumber type="currency" value="${c.tuitionFee}" />                                           
                                             </span>
                                             <div class="courseDetail-btn">
-                                                <a href="courseDetail?id=${c.courseId}">View Details</a>
+                                                <a href="course?action=details&courseId=${c.courseId}">View Details</a>
                                             </div>
                                         </div>
                                     </div>

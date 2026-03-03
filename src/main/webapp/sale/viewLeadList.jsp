@@ -139,25 +139,27 @@
         <c:remove var="messageType" scope="session" />
     </c:if>
 
-    <div class="filter-container flex-wrap">
+    <form action="lead" method="GET" class="filter-container flex-wrap">
+        <input type="hidden" name="action" value="all">
         <div class="custom-search-bar">
             <i class='bx bx-search text-muted fs-5'></i>
-            <input type="text" placeholder="Search by name or email...">
+            <input type="text" name="searchQuery" value="${searchQuery}" placeholder="Search by name or email...">
         </div>
 
         <div class="d-flex gap-3">
-            <div class="dropdown">
-                <button class="custom-select-filter d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
-                    <i class='bx bx-slider-alt'></i> All Status <i class='bx bx-chevron-down ms-1'></i>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">New</a></li>
-                    <li><a class="dropdown-item" href="#">Contacted</a></li>
-                    <li><a class="dropdown-item" href="#">Converted</a></li>
-                </ul>
-            </div>
+            <select class="custom-select-filter" name="status">
+                <option value="all" ${statusFilter == 'all' ? 'selected' : ''}>All Status</option>
+                <option value="New" ${statusFilter == 'New' ? 'selected' : ''}>New</option>
+                <option value="Contacted" ${statusFilter == 'Contacted' ? 'selected' : ''}>Contacted</option>
+                <option value="Converted" ${statusFilter == 'Converted' ? 'selected' : ''}>Converted</option>
+                <option value="Inactive" ${statusFilter == 'Inactive' ? 'selected' : ''}>Inactive</option>
+            </select>
+            <button type="submit" class="btn btn-add-new">
+                <i class='bx bx-filter-alt'></i> Filter
+            </button>
+            <a href="lead?action=all" class="btn btn-cancel">Reset</a>
         </div>
-    </div>
+    </form>
 
     <div class="card user-table-card border-0 bg-white">
         <div class="table-responsive">

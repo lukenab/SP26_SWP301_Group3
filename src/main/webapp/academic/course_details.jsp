@@ -105,8 +105,15 @@
                         </div>
                     </div>
                     
-                    <a href="${pageContext.request.contextPath}/course" class="back-link">Back to Course List</a>
-                    <a href="${pageContext.request.contextPath}/" class="back-link" style="margin-left: 10px;">Back to Home</a>
+                    <c:choose>
+                        <c:when test="${not empty sessionScope.user}">
+                            <a href="${pageContext.request.contextPath}/course" class="back-link">Back to Course List</a>
+                            <a href="${pageContext.request.contextPath}/dashboard" class="back-link" style="margin-left: 10px;">Back to Dashboard</a>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/landingPage" class="back-link">Back to Home</a>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </c:otherwise>
         </c:choose>

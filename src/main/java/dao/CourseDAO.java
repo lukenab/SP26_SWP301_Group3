@@ -293,4 +293,34 @@ public class CourseDAO extends DBContext {
 
         return list;
     }
+
+    public List<Course> searchActiveCourses(String keyword) {
+        List<Course> list = new ArrayList<>();
+        String sql = "SELECT * FROM Course WHERE Status = 1 AND (CourseName LIKE ? OR Description LIKE ?)";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            String searchKeyword = "%" + keyword + "%";
+            ps.setString(1, searchKeyword);
+            ps.setString(2, searchKeyword);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Course course = new Course(
+                            rs.getInt("CourseID"),
+                            rs.getString("CourseName"),
+                            rs.getString("Description"),
+                            rs.getInt("TotalSlots"),
+                            rs.getBigDecimal("TuitionFee"),
+                            rs.getBoolean("Status"),
+                            rs.getString("Image")
+                    );
+                    list.add(course);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to search active courses: " + e.getMessage());
+        }
+
+        return list;
+    }
 }
