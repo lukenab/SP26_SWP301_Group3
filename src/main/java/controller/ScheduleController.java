@@ -333,7 +333,13 @@ public class ScheduleController extends HttpServlet {
                         session.setAttribute("selectedDate", sdf.format(deleteSchedule.getLearningDate()));
                     }
 
+                    // Get similar schedules (same class, slot, room) for series delete option
+                    List<Schedule> similarSchedules = scheduleDAO6.getSimilarSchedules(deleteScheduleId);
+                    int relatedCount = similarSchedules != null ? similarSchedules.size() : 0;
+
                     request.setAttribute("schedule", deleteSchedule);
+                    request.setAttribute("relatedCount", relatedCount);
+                    request.setAttribute("similarSchedules", similarSchedules);
                     request.setAttribute("home_view", "academic/deleteSchedule.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (Exception e) {
@@ -640,6 +646,7 @@ public class ScheduleController extends HttpServlet {
             ScheduleDAO scheduleDAO, HttpSession session) throws IOException {
         try {
             int scheduleId = Integer.parseInt(request.getParameter("scheduleId"));
+            String deleteScope = request.getParameter("deleteScope"); // "single" or "series"
 
             // Check if attendance has been taken
             Schedule schedule = scheduleDAO.getScheduleById(scheduleId);
@@ -650,15 +657,32 @@ public class ScheduleController extends HttpServlet {
                 return;
             }
 
-            // Delete schedule
-            boolean success = scheduleDAO.deleteSchedule(scheduleId);
+            boolean success = false;
+            String message = "";
 
-            if (success) {
-                session.setAttribute("message", "Schedule deleted successfully!");
-                session.setAttribute("messageType", "success");
+            if ("series".equals(deleteScope)) {
+                // Delete all similar schedules (same class, slot, room)
+                int deletedCount = scheduleDAO.deleteSimilarSchedules(scheduleId);
+
+                if (deletedCount > 0) {
+                    message = "Successfully deleted " + deletedCount + " schedule(s) in the series!";
+                    session.setAttribute("messageType", "success");
+                } else {
+                    message = "No schedules were deleted. They may have attendance already taken.";
+                    session.setAttribute("messageType", "error");
+                }
+                session.setAttribute("message", message);
             } else {
-                session.setAttribute("message", "Failed to delete schedule!");
-                session.setAttribute("messageType", "error");
+                // Delete only single schedule (default)
+                success = scheduleDAO.deleteSchedule(scheduleId);
+
+                if (success) {
+                    session.setAttribute("message", "Schedule deleted successfully!");
+                    session.setAttribute("messageType", "success");
+                } else {
+                    session.setAttribute("message", "Failed to delete schedule!");
+                    session.setAttribute("messageType", "error");
+                }
             }
 
         } catch (Exception e) {
