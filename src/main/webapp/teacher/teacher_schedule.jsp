@@ -126,7 +126,7 @@
                                                             </c:choose>
                                                         </c:when>
                                                         <c:when test="${learningDateStr > todayStr}">
-                                                            <span class="badge bg-info w-100 py-2 text-white">
+                                                            <span class="badge w-100 py-2 text-white" style="background-color: #4e73df;">
                                                                 <i class="fas fa-clock"></i> Upcoming
                                                             </span>
                                                         </c:when>

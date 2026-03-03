@@ -49,7 +49,7 @@
                 <thead class="text-white" style="background-color: #f8f9fc; color: #5a5c69 !important;">
                     <tr>
                         <th style="width: 10%;">Slot</th>
-                        <c:forEach items="${weekdays}" var="day" varStatus="loop">
+                            <c:forEach items="${weekdays}" var="day" varStatus="loop">
                             <th style="width: 12.8%;">
                                 <div class="fw-bold">${day}</div>
                                 <div class="small fw-normal text-muted" style="font-size: 0.75rem;">
@@ -74,7 +74,7 @@
                                         <fmt:setLocale value="en_US" />
                                         <fmt:formatDate value="${s.learningDate}" pattern="EEEE" var="dayInSql"/>
                                         <fmt:formatDate value="${s.learningDate}" pattern="yyyy-MM-dd" var="learningDateStr"/>
-                                        
+
                                         <c:if test="${s.slot.slotID == sl.slotID && dayInSql == dayName}">
                                             <div class="schedule-card shadow-sm p-2 mb-2 text-start border rounded bg-white">
                                                 <div class="small text-muted mb-1" style="font-size: 0.75rem;">
@@ -93,7 +93,13 @@
                                                             </a>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <span class="badge ${learningDateStr > todayStr ? 'bg-info' : (s.attendanceStatus ? 'bg-secondary' : 'bg-danger')} w-100 py-2 text-white" style="font-size: 0.7rem;">
+                                                            <span class="badge w-100 py-2 text-white ${learningDateStr > todayStr ? '' : (s.attendanceStatus ? 'bg-secondary' : 'bg-danger')}" 
+                                                                  style="font-size: 0.7rem; ${learningDateStr > todayStr ? 'background-color: #4e73df;' : ''}">
+
+                                                                <c:if test="${learningDateStr > todayStr}">
+                                                                    <i class="fas fa-clock"></i> 
+                                                                </c:if>
+
                                                                 ${learningDateStr > todayStr ? 'Upcoming' : (s.attendanceStatus ? 'Attended' : 'Missed')}
                                                             </span>
                                                         </c:otherwise>

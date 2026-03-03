@@ -139,6 +139,10 @@
                                 <a href="student?action=viewByClass&classId=${c.classid}" class="action-btn" title="Student List">
                                     <i class='bx bx-group'></i>
                                 </a>
+
+                                <a href="feedback?action=viewAll&classId=${c.className}&from=myClasses" class="action-btn btn-feedback" title="View Feedbacks">
+                                    <i class='bx bx-star'></i>
+                                </a>
                             </td>
                         </tr>
                     </c:forEach>
