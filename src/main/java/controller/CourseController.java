@@ -7,13 +7,16 @@ package controller;
 import dao.CourseDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Part;
 import java.util.List;
 import java.math.BigDecimal;
+import java.io.File;
 import model.Course;
 
 /**
@@ -21,6 +24,11 @@ import model.Course;
  * @author Legion
  */
 @WebServlet(name = "CourseController", urlPatterns = {"/course"})
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2,
+        maxFileSize = 1024 * 1024 * 10,
+        maxRequestSize = 1024 * 1024 * 50
+)
 public class CourseController extends HttpServlet {
 
     /**
@@ -233,6 +241,24 @@ public class CourseController extends HttpServlet {
                     String updTuitionFeeStr = request.getParameter("tuitionFee");
                     String updStatusStr = request.getParameter("status");
                     String updImages = request.getParameter("images");
+
+                    try {
+                        Part filePart = request.getPart("imageFile");
+                        if (filePart != null && filePart.getSize() > 0) {
+                            String uploadPath = getServletContext().getRealPath("") + File.separator + "images";
+                            File uploadDir = new File(uploadPath);
+                            if (!uploadDir.exists()) {
+                                uploadDir.mkdir();
+                            }
+
+                            String fileName = java.nio.file.Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                            String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
+                            filePart.write(uploadPath + File.separator + uniqueFileName);
+                            updImages = uniqueFileName;
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Error uploading course image: " + e.getMessage());
+                    }
                     
                     // Validate input
                     if (updCourseName == null || updCourseName.trim().isEmpty()) {
@@ -244,7 +270,7 @@ public class CourseController extends HttpServlet {
                     
                     int updTotalSlots = Integer.parseInt(updTotalSlotsStr);
                     BigDecimal updTuitionFee = new BigDecimal(updTuitionFeeStr);
-                    boolean updStatus = Boolean.parseBoolean(updStatusStr);
+                    boolean updStatus = (updStatusStr == null) ? existingCourse.isStatus() : Boolean.parseBoolean(updStatusStr);
                     
                     existingCourse.setCourseName(updCourseName.trim());
                     existingCourse.setDescription(updDescription != null ? updDescription.trim() : "");
