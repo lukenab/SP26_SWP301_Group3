@@ -22,18 +22,23 @@
                 <p class="text-muted small mb-0">Weekly timetable for this specific class</p>
             </div>
 
-            <div class="bg-white p-2 border rounded shadow-sm">
-                <form action="schedule" method="GET" class="row g-2 align-items-center mb-0">
+            <div class="bg-white p-2 border rounded shadow-sm d-flex align-items-center gap-2">
+                <a href="schedule?action=view&classId=${classId}&date=${prevWeek}" class="btn btn-outline-primary btn-sm">
+                    <i class='bx bx-chevron-left'></i> Prev
+                </a>
+
+                <form action="schedule" method="GET" class="row g-2 align-items-center mb-0 mx-1">
                     <input type="hidden" name="action" value="view">
                     <input type="hidden" name="classId" value="${classId}">
-                    <div class="col-auto"><label class="small fw-bold">Date:</label></div>
                     <div class="col-auto">
-                        <input type="date" name="date" class="form-control form-control-sm" value="${selectedDate}">
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary btn-sm px-3">Filter</button>
+                        <input type="date" name="date" class="form-control form-control-sm" 
+                               value="${selectedDate}" onchange="this.form.submit()">
                     </div>
                 </form>
+
+                <a href="schedule?action=view&classId=${classId}&date=${nextWeek}" class="btn btn-outline-primary btn-sm">
+                    Next <i class='bx bx-chevron-right'></i>
+                </a>
             </div>
         </div>
     </div>
@@ -44,12 +49,12 @@
                 <thead class="text-white" style="background-color: #f8f9fc; color: #5a5c69 !important;">
                     <tr>
                         <th style="width: 10%;">Slot</th>
-                        <c:forEach items="${weekdays}" var="day" varStatus="status">
+                        <c:forEach items="${weekdays}" var="day" varStatus="loop">
                             <th style="width: 12.8%;">
-                                ${day}
-                                <c:if test="${not empty weekDates}">
-                                    <br><span class="text-muted fw-normal" style="font-size: 0.85rem;">${weekDates[status.index]}</span>
-                                </c:if>
+                                <div class="fw-bold">${day}</div>
+                                <div class="small fw-normal text-muted" style="font-size: 0.75rem;">
+                                    ${dateOfWeek[loop.index]}
+                                </div>
                             </th>
                         </c:forEach>
                     </tr>
@@ -69,7 +74,8 @@
                                         <fmt:setLocale value="en_US" />
                                         <fmt:formatDate value="${s.learningDate}" pattern="EEEE" var="dayInSql"/>
                                         <fmt:formatDate value="${s.learningDate}" pattern="yyyy-MM-dd" var="learningDateStr"/>
-                                        <c:if test="${s.slot == sl.slotID && dayInSql == dayName}">
+                                        
+                                        <c:if test="${s.slot.slotID == sl.slotID && dayInSql == dayName}">
                                             <div class="schedule-card shadow-sm p-2 mb-2 text-start border rounded bg-white">
                                                 <div class="small text-muted mb-1" style="font-size: 0.75rem;">
                                                     <i class="fas fa-map-marker-alt"></i> Room: ${s.room.roomName}

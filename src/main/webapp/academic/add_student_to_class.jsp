@@ -65,7 +65,7 @@
                             <thead>
                                 <tr>
                                     <th style="width: 10%">
-                                        <input class="form-check-input" type="checkbox" id="selectAll"/>
+                                        <input class="form-check-input" type="checkbox" id="selectAllAvailable"/>
                                     </th>
                                     <th>Name</th>
                                     <th>Email</th>
@@ -110,34 +110,59 @@
                     <h5 class="mb-0">Students In Class (${studentsInClass.size()})</h5>
                 </div>
                 <div class="table-responsive">
-                    <table class="table mb-0 align-middle">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <c:if test="${empty studentsInClass}">
+                    <form action="enrollment" method="post">
+                        <input type="hidden" name="action" value="removeStudents"/>
+                        <input type="hidden" name="classId" value="${classInfo[0]}"/>
+
+                        <table class="table mb-0 align-middle">
+                            <thead>
                                 <tr>
-                                    <td colspan="2" class="text-center text-muted py-4">No students in class.</td>
+                                    <th style="width: 10%">
+                                        <input class="form-check-input" type="checkbox" id="selectAllInClass"/>
+                                    </th>
+                                    <th>Name</th>
+                                    <th>Enrollment Date</th>
+                                    <th>Status</th>
                                 </tr>
-                            </c:if>
-                            <c:forEach items="${studentsInClass}" var="s">
-                                <tr>
-                                    <td>
-                                        <div class="fw-semibold">${s[2]}</div>
-                                        <small class="text-muted">${s[3]}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge-status ${s[5] == 'Active' ? 'badge-active' : 'badge-inactive'}">
-                                            ${s[5]}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <c:if test="${empty studentsInClass}">
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No students in class.</td>
+                                    </tr>
+                                </c:if>
+
+                                <c:forEach items="${studentsInClass}" var="s">
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input inclass-checkbox"
+                                                   type="checkbox"
+                                                   name="studentIds"
+                                                   value="${s[1]}"/>
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold">${s[2]}</div>
+                                            <small class="text-muted">${s[3]}</small>
+                                        </td>
+                                        <td><fmt:formatDate value="${s[4]}" pattern="dd/MM/yyyy"/></td>
+                                        <td>
+                                            <span class="badge-status ${s[5] == 'Active' ? 'badge-active' : 'badge-inactive'}">
+                                                ${s[5]}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+
+                        <c:if test="${not empty studentsInClass}">
+                            <div class="p-3 border-top d-flex justify-content-end">
+                                <button type="submit" class="btn btn-remove-student">
+                                    <i class='bx bx-user-minus'></i> Remove Students
+                                </button>
+                            </div>
+                        </c:if>
+                    </form>
                 </div>
             </div>
         </div>
@@ -146,11 +171,19 @@
 
 <script>
     (function () {
-        const selectAll = document.getElementById('selectAll');
-        const checkboxes = document.querySelectorAll('.student-checkbox');
-        if (selectAll) {
-            selectAll.addEventListener('change', function () {
-                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        const selectAllAvailable = document.getElementById('selectAllAvailable');
+        const availableCheckboxes = document.querySelectorAll('.student-checkbox');
+        if (selectAllAvailable) {
+            selectAllAvailable.addEventListener('change', function () {
+                availableCheckboxes.forEach(cb => cb.checked = selectAllAvailable.checked);
+            });
+        }
+
+        const selectAllInClass = document.getElementById('selectAllInClass');
+        const inClassCheckboxes = document.querySelectorAll('.inclass-checkbox');
+        if (selectAllInClass) {
+            selectAllInClass.addEventListener('change', function () {
+                inClassCheckboxes.forEach(cb => cb.checked = selectAllInClass.checked);
             });
         }
     })();
