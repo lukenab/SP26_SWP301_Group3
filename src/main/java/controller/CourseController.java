@@ -75,6 +75,29 @@ public class CourseController extends HttpServlet {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 }
                 break;
+            case "publicDetails":
+                String publicCourseIdParam = request.getParameter("courseId");
+                if (publicCourseIdParam == null || publicCourseIdParam.isEmpty()) {
+                    publicCourseIdParam = request.getParameter("id");
+                }
+
+                if (publicCourseIdParam != null && !publicCourseIdParam.isEmpty()) {
+                    try {
+                        int courseId = Integer.parseInt(publicCourseIdParam);
+                        Course course = courseDAO.getCourseById(courseId);
+                        if (course != null && course.isStatus()) {
+                            request.setAttribute("course", course);
+                            request.getRequestDispatcher("courseDetailPublic.jsp").forward(request, response);
+                        } else {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        }
+                    } catch (NumberFormatException e) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                } else {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                }
+                break;
             case "add":
                 // Show add form
                 request.setAttribute("course", new Course());
