@@ -44,8 +44,13 @@
                 <thead class="text-white" style="background-color: #f8f9fc; color: #5a5c69 !important;">
                     <tr>
                         <th style="width: 10%;">Slot</th>
-                        <c:forEach items="${weekdays}" var="day">
-                            <th style="width: 12.8%;">${day}</th>
+                        <c:forEach items="${weekdays}" var="day" varStatus="status">
+                            <th style="width: 12.8%;">
+                                ${day}
+                                <c:if test="${not empty weekDates}">
+                                    <br><span class="text-muted fw-normal" style="font-size: 0.85rem;">${weekDates[status.index]}</span>
+                                </c:if>
+                            </th>
                         </c:forEach>
                     </tr>
                 </thead>

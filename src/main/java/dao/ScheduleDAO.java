@@ -156,6 +156,211 @@ public class ScheduleDAO extends DBContext {
         return false;
     }
 
+    // Create multiple schedules at once (batch operation) - NO DATABASE CHANGES NEEDED!
+    public int createMultipleSchedules(int classId, int roomId, int slotId, Date startDate, int teacherId,
+                                        String recurringType, String recurringDays, String endCondition,
+                                        Date endDate, Integer occurrences) {
+        try {
+            List<Date> scheduleDates = generateScheduleDates(startDate, recurringType, recurringDays,
+                                                             endCondition, endDate, occurrences);
+
+            if (scheduleDates.isEmpty()) {
+                System.out.println("No dates generated for recurring schedule");
+                return 0;
+            }
+
+            String sql = "INSERT INTO Schedule (ClassID, RoomID, SlotID, LearningDate, TeacherID, AttendanceStatus) " +
+                        "VALUES (?, ?, ?, ?, ?, ?)";
+
+            conn.setAutoCommit(false);
+            int createdCount = 0;
+
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                for (Date date : scheduleDates) {
+                    ps.setInt(1, classId);
+                    ps.setInt(2, roomId);
+                    ps.setInt(3, slotId);
+                    ps.setDate(4, date);
+                    ps.setInt(5, teacherId);
+                    ps.setBoolean(6, false);
+                    ps.addBatch();
+                }
+
+                int[] results = ps.executeBatch();
+                conn.commit();
+
+                // Count successful inserts
+                for (int result : results) {
+                    if (result > 0) createdCount++;
+                }
+
+                return createdCount;
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to create multiple schedules: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    // Generate list of dates based on recurring pattern
+    private List<Date> generateScheduleDates(Date startDate, String recurringType, String recurringDays,
+                                             String endCondition, Date endDate, Integer occurrences) {
+        List<Date> dates = new ArrayList<>();
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(startDate);
+
+        // Save the day of week from the start date for "weekly" pattern
+        int startDayOfWeek = cal.get(java.util.Calendar.DAY_OF_WEEK);
+
+        int maxIterations = 365; // Safety limit
+        if ("after".equals(endCondition) && occurrences != null) {
+            maxIterations = occurrences;
+        }
+
+        int count = 0;
+        while (count < maxIterations) {
+            Date currentDate = new Date(cal.getTimeInMillis());
+
+            // Check end condition
+            if ("on".equals(endCondition) && endDate != null && currentDate.after(endDate)) {
+                break;
+            }
+            if ("after".equals(endCondition) && count >= occurrences) {
+                break;
+            }
+
+            // Check if current date matches the recurring pattern
+            boolean shouldAdd = false;
+            switch (recurringType) {
+                case "daily":
+                    shouldAdd = true;
+                    break;
+                case "weekly":
+                    // Use the day of week from the start date, not today
+                    shouldAdd = (cal.get(java.util.Calendar.DAY_OF_WEEK) == startDayOfWeek);
+                    break;
+                case "weekdays":
+                    int dayOfWeek = cal.get(java.util.Calendar.DAY_OF_WEEK);
+                    shouldAdd = (dayOfWeek >= java.util.Calendar.MONDAY &&
+                               dayOfWeek <= java.util.Calendar.FRIDAY);
+                    break;
+                case "custom":
+                    if (recurringDays != null && !recurringDays.isEmpty()) {
+                        int currentDay = cal.get(java.util.Calendar.DAY_OF_WEEK);
+                        // Convert to Monday=1 format
+                        int day = currentDay == 1 ? 7 : currentDay - 1;
+                        shouldAdd = recurringDays.contains(String.valueOf(day));
+                    }
+                    break;
+                default:
+                    shouldAdd = (count == 0); // Single schedule
+                    break;
+            }
+
+            if (shouldAdd) {
+                dates.add(currentDate);
+                count++;
+            }
+
+            // Move to next day
+            cal.add(java.util.Calendar.DAY_OF_MONTH, 1);
+
+            // Safety check for "never" condition
+            if ("never".equals(endCondition) && dates.size() >= 100) {
+                break;
+            }
+        }
+
+        return dates;
+    }
+
+    // Find related schedules (same class, slot, room) - for series identification
+    public List<Schedule> findRelatedSchedules(int scheduleId) {
+        List<Schedule> schedules = new ArrayList<>();
+        String sql = "SELECT s2.ScheduleID, s2.ClassID, s2.RoomID, s2.SlotID, s2.LearningDate, " +
+                    "s2.TeacherID, s2.AttendanceStatus " +
+                    "FROM Schedule s1 " +
+                    "INNER JOIN Schedule s2 ON s1.ClassID = s2.ClassID " +
+                    "    AND s1.RoomID = s2.RoomID " +
+                    "    AND s1.SlotID = s2.SlotID " +
+                    "    AND s1.TeacherID = s2.TeacherID " +
+                    "WHERE s1.ScheduleID = ? " +
+                    "ORDER BY s2.LearningDate";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, scheduleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                RoomDAO roomDAO = new RoomDAO();
+                SlotDAO slotDAO = new SlotDAO();
+
+                while (rs.next()) {
+                    Schedule schedule = new Schedule();
+                    schedule.setScheduleId(rs.getInt("ScheduleID"));
+                    schedule.setLearningDate(rs.getDate("LearningDate"));
+                    schedule.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
+
+                    int roomId = rs.getInt("RoomID");
+                    Room room = roomDAO.getRoomByID(roomId);
+                    schedule.setRoom(room);
+
+                    int slotId = rs.getInt("SlotID");
+                    Slot slot = slotDAO.getSlotByID(slotId);
+                    schedule.setSlot(slot);
+
+                    schedules.add(schedule);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to find related schedules: " + e.getMessage());
+        }
+        return schedules;
+    }
+
+    // Delete multiple schedules by same pattern (class, slot, room, teacher)
+    public int deleteSchedulesByPattern(int classId, int roomId, int slotId, int teacherId) {
+        String sql = "DELETE FROM Schedule WHERE ClassID = ? AND RoomID = ? AND SlotID = ? AND TeacherID = ? AND AttendanceStatus = 0";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            ps.setInt(2, roomId);
+            ps.setInt(3, slotId);
+            ps.setInt(4, teacherId);
+            return ps.executeUpdate();
+        } catch (Exception e) {
+            System.out.println("Fail to delete schedules by pattern: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    // Update multiple schedules by pattern
+    public int updateSchedulesByPattern(int oldClassId, int oldRoomId, int oldSlotId, int oldTeacherId,
+                                        int newClassId, int newRoomId, int newSlotId, int newTeacherId) {
+        String sql = "UPDATE Schedule SET ClassID = ?, RoomID = ?, SlotID = ?, TeacherID = ? " +
+                    "WHERE ClassID = ? AND RoomID = ? AND SlotID = ? AND TeacherID = ? AND AttendanceStatus = 0";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, newClassId);
+            ps.setInt(2, newRoomId);
+            ps.setInt(3, newSlotId);
+            ps.setInt(4, newTeacherId);
+            ps.setInt(5, oldClassId);
+            ps.setInt(6, oldRoomId);
+            ps.setInt(7, oldSlotId);
+            ps.setInt(8, oldTeacherId);
+            return ps.executeUpdate();
+        } catch (Exception e) {
+            System.out.println("Fail to update schedules by pattern: " + e.getMessage());
+        }
+        return 0;
+    }
+
     // Check if room is available for a specific slot and date
     public boolean isRoomAvailable(int roomId, int slotId, Date learningDate, int excludeScheduleId) {
         String sql = "SELECT COUNT(*) as count FROM Schedule "

@@ -30,8 +30,13 @@
                 <thead class="table-light">
                     <tr>
                         <th style="width:8%;">Slot</th>
-                        <c:forEach items="${weekdays}" var="day">
-                            <th>${day}</th>
+                        <c:forEach items="${weekdays}" var="day" varStatus="status">
+                            <th>
+                                ${day}
+                                <c:if test="${not empty weekDates}">
+                                    <br><span class="text-muted fw-normal" style="font-size: 0.85rem;">${weekDates[status.index]}</span>
+                                </c:if>
+                            </th>
                         </c:forEach>
                     </tr>
                 </thead>

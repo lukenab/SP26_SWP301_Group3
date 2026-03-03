@@ -76,6 +76,35 @@
                     </div>
                 </div>
 
+                <!-- Series Delete Options (if multiple schedules with same pattern) -->
+                <c:if test="${relatedCount > 1}">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header bg-danger text-white">
+                            <h6 class="mb-0"><i class='bx bx-info-circle'></i> Detected Schedule Series</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">
+                                <i class='bx bx-calendar-check'></i>
+                                Found <strong>${relatedCount} schedules</strong> with same Class, Slot, and Room:
+                            </p>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="deleteScope" id="deleteSingle" value="single" checked>
+                                <label class="form-check-label" for="deleteSingle">
+                                    <strong>Delete only this schedule</strong>
+                                    <br><small class="text-muted">Only this single occurrence will be deleted (${formattedDate})</small>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="deleteScope" id="deleteSeries" value="series">
+                                <label class="form-check-label" for="deleteSeries">
+                                    <strong>Delete entire series (${relatedCount} schedules)</strong>
+                                    <br><small class="text-danger">⚠️ This will delete all ${relatedCount} schedules in this series (only non-attended ones)!</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </c:if>
+
                 <div class="d-flex gap-2 mt-4">
                     <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn btn-secondary">
                         <i class='bx bx-x'></i> Cancel

@@ -71,7 +71,7 @@
                         <select name="roomId" class="form-select" required>
                             <option value="">Select Room</option>
                             <c:forEach items="${allRooms}" var="room">
-                                <option value="${room[0]}" ${schedule.room.roomID == room[0] ? 'selected' : ''}>
+                                <option value="${room[0]}" ${schedule.room.roomId == room[0] ? 'selected' : ''}>
                                     ${room[1]} (Capacity: ${room[2]})
                                 </option>
                             </c:forEach>
@@ -96,6 +96,35 @@
                         <input type="date" name="learningDate" class="form-control" value="${learningDateStr}" required>
                     </div>
                 </div>
+
+                <!-- Series Edit Options (if multiple schedules with same pattern) -->
+                <c:if test="${relatedCount > 1}">
+                    <div class="card border-info mb-3">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0"><i class='bx bx-info-circle'></i> Detected Schedule Series</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">
+                                <i class='bx bx-calendar-check'></i>
+                                Found <strong>${relatedCount} schedules</strong> with same Class, Slot, and Room:
+                            </p>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="editScope" id="editSingle" value="single" checked>
+                                <label class="form-check-label" for="editSingle">
+                                    <strong>Edit only this schedule</strong>
+                                    <br><small class="text-muted">Changes will only affect this single occurrence (${learningDateStr})</small>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="editScope" id="editSeries" value="series">
+                                <label class="form-check-label" for="editSeries">
+                                    <strong>Edit entire series (${relatedCount} schedules)</strong>
+                                    <br><small class="text-muted">Update Class, Room, Slot, Teacher for all ${relatedCount} schedules (only non-attended ones)</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </c:if>
 
                 <div class="d-flex gap-2 mt-4">
                     <button type="submit" class="btn btn-warning text-white">

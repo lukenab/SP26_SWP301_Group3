@@ -101,6 +101,15 @@ public class ScheduleController extends HttpServlet {
             selectedDate = java.time.LocalDate.now().toString();
         }
 
+        // Calculate week dates based on selected date
+        java.time.LocalDate date = java.time.LocalDate.parse(selectedDate);
+        java.time.LocalDate monday = date.with(java.time.DayOfWeek.MONDAY);
+        List<String> weekDates = new ArrayList<>();
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM");
+        for (int i = 0; i < 7; i++) {
+            weekDates.add(monday.plusDays(i).format(formatter));
+        }
+
         switch (action) {
             case "view":
                 String classIdParam = request.getParameter("classId");
@@ -130,6 +139,7 @@ public class ScheduleController extends HttpServlet {
 
                 request.setAttribute("selectedDate", selectedDate);
                 request.setAttribute("weekdays", weekdays);
+                request.setAttribute("weekDates", weekDates);
                 request.setAttribute("slots", allSlots);
                 request.setAttribute("scheduleList", scheduleList);
 
@@ -163,6 +173,7 @@ public class ScheduleController extends HttpServlet {
                 request.setAttribute("selectedDate", selectedDate);
                 request.setAttribute("classId", classFilterId);
                 request.setAttribute("weekdays", weekdays);
+                request.setAttribute("weekDates", weekDates);
                 request.setAttribute("slots", allSlots);
                 request.setAttribute("scheduleList", managementScheduleList);
                 request.setAttribute("allClasses", allClasses);
@@ -191,6 +202,7 @@ public class ScheduleController extends HttpServlet {
                     request.setAttribute("className", currentClassName);
                     request.setAttribute("scheduleList", scheduleByClass);
                     request.setAttribute("weekdays", weekdays);
+                    request.setAttribute("weekDates", weekDates);
                     request.setAttribute("slots", allSlots);
 
                     request.setAttribute("home_view", "teacher/view_class_schedule.jsp");
@@ -277,6 +289,9 @@ public class ScheduleController extends HttpServlet {
                         return;
                     }
 
+                    // Find related schedules (same class, slot, room, teacher)
+                    List<Schedule> relatedSchedules = scheduleDAO4.findRelatedSchedules(editScheduleId);
+
                     List<Object[]> allClasses3 = classDAO3.getClassManagementList();
                     List<Object[]> allRooms3 = scheduleDAO4.getAllRooms();
                     List<Slot> allSlots3 = slotDAO3.getAllSlots();
@@ -284,6 +299,8 @@ public class ScheduleController extends HttpServlet {
                     System.out.println("Data loaded - Classes: " + allClasses3.size() + ", Rooms: " + allRooms3.size() + ", Slots: " + allSlots3.size());
 
                     request.setAttribute("schedule", editSchedule);
+                    request.setAttribute("relatedSchedules", relatedSchedules);
+                    request.setAttribute("relatedCount", relatedSchedules.size());
                     request.setAttribute("allClasses", allClasses3);
                     request.setAttribute("allRooms", allRooms3);
                     request.setAttribute("slots", allSlots3);
@@ -329,25 +346,17 @@ public class ScheduleController extends HttpServlet {
                     ScheduleDAO scheduleDAO6 = new ScheduleDAO();
                     Schedule deleteSchedule = scheduleDAO6.getScheduleById(deleteScheduleId);
 
-                    if (deleteSchedule == null) {
-                        session.setAttribute("message", "Schedule not found.");
-                        session.setAttribute("messageType", "error");
-                        response.sendRedirect("schedule?action=manage");
-                        return;
-                    }
+                    // Find related schedules (same class, slot, room, teacher)
+                    List<Schedule> relatedSchedules = scheduleDAO6.findRelatedSchedules(deleteScheduleId);
 
-                    // Save classId to session for Cancel button to use
-                    if (deleteSchedule.getClasses() != null) {
+                    // Save info to session
+                    if (deleteSchedule != null && deleteSchedule.getClasses() != null) {
                         session.setAttribute("selectedClassId", deleteSchedule.getClasses().getClassid());
                     }
 
-                    // Save learning date to session
-                    if (deleteSchedule.getLearningDate() != null) {
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                        session.setAttribute("selectedDate", sdf.format(deleteSchedule.getLearningDate()));
-                    }
-
                     request.setAttribute("schedule", deleteSchedule);
+                    request.setAttribute("relatedSchedules", relatedSchedules);
+                    request.setAttribute("relatedCount", relatedSchedules.size());
                     request.setAttribute("home_view", "academic/deleteSchedule.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (Exception e) {
@@ -420,6 +429,66 @@ public class ScheduleController extends HttpServlet {
             ClassDAO classDAO = new ClassDAO();
             int teacherId = classDAO.getTeacherIdByClassId(classId);
 
+            // Get recurring parameters
+            String recurringType = request.getParameter("recurringType");
+            String endCondition = request.getParameter("endCondition");
+            Date endDate = null;
+            Integer occurrences = null;
+            String recurringDays = null;
+
+            // Check if this is a recurring schedule
+            boolean isRecurring = recurringType != null && !"none".equals(recurringType);
+
+            if (isRecurring) {
+                // Get recurring options
+                if ("custom".equals(recurringType)) {
+                    String[] days = request.getParameterValues("recurringDays");
+                    if (days != null && days.length > 0) {
+                        recurringDays = String.join(",", days);
+                    }
+                }
+
+                if ("on".equals(endCondition)) {
+                    String endDateStr = request.getParameter("endDate");
+                    if (endDateStr != null && !endDateStr.isEmpty()) {
+                        endDate = Date.valueOf(endDateStr);
+                    }
+                } else if ("after".equals(endCondition)) {
+                    String occurrencesStr = request.getParameter("occurrences");
+                    if (occurrencesStr != null && !occurrencesStr.isEmpty()) {
+                        occurrences = Integer.parseInt(occurrencesStr);
+                    }
+                }
+
+                // Create multiple schedules - NO DATABASE CHANGES NEEDED!
+                int createdCount = scheduleDAO.createMultipleSchedules(classId, roomId, slotId, learningDate,
+                                                                       teacherId, recurringType, recurringDays,
+                                                                       endCondition, endDate, occurrences);
+                if (createdCount > 0) {
+                    session.setAttribute("message", "Successfully created " + createdCount + " schedule(s)!");
+                    session.setAttribute("messageType", "success");
+                } else {
+                    session.setAttribute("message", "Failed to create schedules!");
+                    session.setAttribute("messageType", "error");
+                }
+
+                // Redirect back to manage
+                Integer savedClassId = (Integer) session.getAttribute("selectedClassId");
+                String savedDate = (String) session.getAttribute("selectedDate");
+                StringBuilder redirectUrl = new StringBuilder("schedule?action=manage");
+                if (savedClassId != null && savedClassId > 0) {
+                    redirectUrl.append("&classId=").append(savedClassId);
+                } else {
+                    redirectUrl.append("&classId=").append(classId);
+                }
+                if (savedDate != null && !savedDate.isEmpty()) {
+                    redirectUrl.append("&date=").append(savedDate);
+                }
+                response.sendRedirect(redirectUrl.toString());
+                return;
+            }
+
+            // Original single schedule creation logic
             // 1. Check if there's a schedule conflict (same class, same slot, same date)
             if (scheduleDAO.hasScheduleConflict(classId, slotId, learningDate, 0)) {
                 session.setAttribute("message", "Schedule conflict: This class already has a schedule at this time slot on this date!");
@@ -498,6 +567,39 @@ public class ScheduleController extends HttpServlet {
             String learningDateStr = request.getParameter("learningDate");
             Date learningDate = Date.valueOf(learningDateStr);
 
+            // Check for series update
+            String editScope = request.getParameter("editScope");
+
+            if ("series".equals(editScope)) {
+                // Get original schedule info to find pattern
+                Schedule originalSchedule = scheduleDAO.getScheduleById(scheduleId);
+                if (originalSchedule != null) {
+                    ClassDAO classDAO = new ClassDAO();
+                    int oldClassId = originalSchedule.getClasses().getClassid();
+                    int oldRoomId = originalSchedule.getRoom().getRoomId();
+                    int oldSlotId = originalSchedule.getSlot().getSlotID();
+                    int oldTeacherId = classDAO.getTeacherIdByClassId(oldClassId);
+                    int newTeacherId = classDAO.getTeacherIdByClassId(classId);
+
+                    // Update all schedules with same pattern (only non-attended ones)
+                    int updatedCount = scheduleDAO.updateSchedulesByPattern(
+                        oldClassId, oldRoomId, oldSlotId, oldTeacherId,
+                        classId, roomId, slotId, newTeacherId
+                    );
+
+                    if (updatedCount > 0) {
+                        session.setAttribute("message", "Successfully updated " + updatedCount + " schedule(s) in the series!");
+                        session.setAttribute("messageType", "success");
+                    } else {
+                        session.setAttribute("message", "No schedules updated (may already have attendance taken)");
+                        session.setAttribute("messageType", "warning");
+                    }
+                }
+                response.sendRedirect("schedule?action=manage");
+                return;
+            }
+
+            // Single schedule update - existing code below
             // Get existing schedule
             Schedule existingSchedule = scheduleDAO.getScheduleById(scheduleId);
             int teacherId = existingSchedule.getEmployee() != null ?
@@ -568,6 +670,37 @@ public class ScheduleController extends HttpServlet {
         try {
             int scheduleId = Integer.parseInt(request.getParameter("scheduleId"));
 
+            // Check for series deletion
+            String deleteScope = request.getParameter("deleteScope");
+
+            if ("series".equals(deleteScope)) {
+                // Get schedule info to find pattern
+                Schedule schedule = scheduleDAO.getScheduleById(scheduleId);
+                if (schedule != null) {
+                    int classId = schedule.getClasses().getClassid();
+                    int roomId = schedule.getRoom().getRoomId();
+                    int slotId = schedule.getSlot().getSlotID();
+
+                    // Get teacher ID
+                    ClassDAO classDAO = new ClassDAO();
+                    int teacherId = classDAO.getTeacherIdByClassId(classId);
+
+                    // Delete all schedules with same pattern (only non-attended ones)
+                    int deletedCount = scheduleDAO.deleteSchedulesByPattern(classId, roomId, slotId, teacherId);
+
+                    if (deletedCount > 0) {
+                        session.setAttribute("message", "Successfully deleted " + deletedCount + " schedule(s) in the series!");
+                        session.setAttribute("messageType", "success");
+                    } else {
+                        session.setAttribute("message", "No schedules deleted (may already have attendance taken)");
+                        session.setAttribute("messageType", "warning");
+                    }
+                }
+                response.sendRedirect("schedule?action=manage");
+                return;
+            }
+
+            // Single schedule deletion
             // Check if attendance has been taken
             Schedule schedule = scheduleDAO.getScheduleById(scheduleId);
             if (schedule != null && schedule.isAttendanceStatus()) {
