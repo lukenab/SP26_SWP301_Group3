@@ -813,4 +813,102 @@ public class ScheduleDAO extends DBContext {
 
         System.out.println("\n=== Test Completed ===");
     }
+
+    /**
+     * Find similar schedules based on Class, Slot, and Room
+     * Used for bulk delete/edit operations
+     */
+    public List<Schedule> getSimilarSchedules(int scheduleId) {
+        List<Schedule> similarSchedules = new ArrayList<>();
+
+        // First get the reference schedule
+        Schedule refSchedule = getScheduleById(scheduleId);
+        if (refSchedule == null) {
+            return similarSchedules;
+        }
+
+        String sql = "SELECT s.ScheduleID, s.ClassID, s.RoomID, s.SlotID, s.LearningDate, s.TeacherID, s.AttendanceStatus, "
+                + "c.ClassName "
+                + "FROM Schedule s "
+                + "INNER JOIN Class c ON s.ClassID = c.ClassID "
+                + "WHERE s.ClassID = ? AND s.SlotID = ? AND s.RoomID = ? "
+                + "ORDER BY s.LearningDate ASC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, refSchedule.getClasses().getClassid());
+            ps.setInt(2, refSchedule.getSlot().getSlotID());
+            ps.setInt(3, refSchedule.getRoom().getRoomId());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                RoomDAO roomDAO = new RoomDAO();
+                SlotDAO slotDAO = new SlotDAO();
+
+                while (rs.next()) {
+                    Schedule schedule = new Schedule();
+                    schedule.setScheduleId(rs.getInt("ScheduleID"));
+                    schedule.setLearningDate(rs.getDate("LearningDate"));
+                    schedule.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
+
+                    // Get related room object
+                    int roomId = rs.getInt("RoomID");
+                    Room room = roomDAO.getRoomByID(roomId);
+                    schedule.setRoom(room);
+
+                    // Get related slot object
+                    int slotId = rs.getInt("SlotID");
+                    Slot slot = slotDAO.getSlotByID(slotId);
+                    schedule.setSlot(slot);
+
+                    // Set class info
+                    Classes classes = new Classes();
+                    classes.setClassid(rs.getInt("ClassID"));
+                    classes.setClassName(rs.getString("ClassName"));
+                    schedule.setClasses(classes);
+
+                    // Get employee info
+                    int teacherId = rs.getInt("TeacherID");
+                    if (teacherId > 0) {
+                        EmployeeDAO empDAO = new EmployeeDAO();
+                        Employee teacher = empDAO.getEmployeeById(teacherId);
+                        schedule.setEmployee(teacher);
+                    }
+
+                    similarSchedules.add(schedule);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get similar schedules: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return similarSchedules;
+    }
+
+    /**
+     * Delete similar schedules (only non-attended ones)
+     * Returns number of deleted schedules
+     */
+    public int deleteSimilarSchedules(int scheduleId) {
+        List<Schedule> similarSchedules = getSimilarSchedules(scheduleId);
+        int deletedCount = 0;
+
+        String sql = "DELETE FROM Schedule WHERE ScheduleID = ? AND AttendanceStatus = 0";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (Schedule schedule : similarSchedules) {
+                // Only delete non-attended schedules
+                if (!schedule.isAttendanceStatus()) {
+                    ps.setInt(1, schedule.getScheduleId());
+                    if (ps.executeUpdate() > 0) {
+                        deletedCount++;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to delete similar schedules: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return deletedCount;
+    }
 }
