@@ -4,6 +4,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <link href="css/viewVoucherList.css" rel="stylesheet" type="text/css"/>
+<link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body">
 
@@ -71,7 +72,9 @@
                 <h3>
                     <c:choose>
                         <c:when test="${fn:length(voucherList) > 0}">
-                            ${activeVoucher * 100 / fn:length(voucherList)}%
+                            <fmt:formatNumber value="${(activeVoucher * 100.0) / fn:length(voucherList)}"
+                                              minFractionDigits="2"
+                                              maxFractionDigits="2"/>%
                         </c:when>
                         <c:otherwise>0%</c:otherwise>
                     </c:choose>
@@ -110,18 +113,37 @@
         <c:remove var="messageType" scope="session" />
     </c:if>
 
+    <form action="voucher" method="GET" class="filter-container flex-wrap">
+        <input type="hidden" name="action" value="all">
+        <div class="custom-search-bar">
+            <i class='bx bx-search text-muted fs-5'></i>
+            <input type="text" name="searchQuery" value="${searchQuery}" placeholder="Search by voucher code...">
+        </div>
+
+        <div class="d-flex gap-3">
+            <select class="custom-select-filter" name="status">
+                <option value="all" ${statusFilter == 'all' ? 'selected' : ''}>All Status</option>
+                <option value="1" ${statusFilter == '1' ? 'selected' : ''}>Active</option>
+                <option value="0" ${statusFilter == '0' ? 'selected' : ''}>Inactive</option>
+            </select>
+            <button type="submit" class="btn btn-add-new">
+                <i class='bx bx-filter-alt'></i> Filter
+            </button>
+            <a href="voucher?action=all" class="btn btn-cancel">Reset</a>
+        </div>
+    </form>
+
     <div class="card user-table-card border-0 bg-white">
         <div class="table-responsive">
             <table class="table mb-0 align-middle">
                 <thead>
                     <tr>
                         <th style="width: 5%">#</th>
-                        <th style="width: 20%">Code</th>
-                        <th style="width: 15%">Amount</th>
-                        <th style="width: 15%">Percent</th>
+                        <th style="width: 22%">Code</th>
+                        <th style="width: 22%">Discount</th>
                         <th style="width: 20%">Valid Until</th>
-                        <th style="width: 10%">Status</th>
-                        <th style="width: 15%">Actions</th>
+                        <th style="width: 11%">Status</th>
+                        <th style="width: 20%">Actions</th>
                     </tr>
                 </thead>
 
@@ -130,8 +152,16 @@
                         <tr class="${!v.status ? 'row-inactive' : ''}">
                             <td>${loop.count}</td>
                             <td>${v.code}</td>
-                            <td><fmt:formatNumber value="${v.discountAmount}" type="number"/> VND</td>
-                            <td>${v.discountPercent}%</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${v.discountAmount > 0}">
+                                        <fmt:formatNumber value="${v.discountAmount}" type="number"/> VND
+                                    </c:when>
+                                    <c:otherwise>
+                                        <fmt:formatNumber value="${v.discountPercent}" minFractionDigits="0" maxFractionDigits="2"/>%
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
                             <td><fmt:formatDate value="${v.validUntil}" pattern="dd/MM/yyyy"/></td>
 
                             <td>

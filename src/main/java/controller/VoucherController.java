@@ -29,8 +29,16 @@ public class VoucherController extends HttpServlet {
 
         switch (action) {
             case "all":
-                List<Voucher> voucherList = voucherDAO.getAllVoucher();
+                String searchQuery = request.getParameter("searchQuery");
+                String status = request.getParameter("status");
+                if (status == null || status.trim().isEmpty()) {
+                    status = "all";
+                }
+
+                List<Voucher> voucherList = voucherDAO.searchAndFilterVouchers(searchQuery, status);
                 request.setAttribute("voucherList", voucherList);
+                request.setAttribute("searchQuery", searchQuery == null ? "" : searchQuery);
+                request.setAttribute("statusFilter", status);
                 request.setAttribute("today", LocalDate.now().toString());
                 request.setAttribute("home_view", "/sale/viewVoucherList.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
@@ -96,10 +104,26 @@ public class VoucherController extends HttpServlet {
         if ("update".equals(action)) {
             int id = parseInt(request.getParameter("voucherId"));
             String code = normalizeCode(request.getParameter("code"));
-            BigDecimal discountAmount = parseAmount(request.getParameter("discountAmount"));
-            double discountPercent = parsePercent(request.getParameter("discountPercent"));
+            String discountType = request.getParameter("discountType");
+            String discountValue = request.getParameter("discountValue");
+            String discountAmountRaw = request.getParameter("discountAmount");
+            String discountPercentRaw = request.getParameter("discountPercent");
+            BigDecimal discountAmount;
+            double discountPercent;
             Date validUntil = parseSqlDate(request.getParameter("validUntil"));
             boolean status = "1".equals(request.getParameter("status"));
+
+            if ("amount".equalsIgnoreCase(discountType)) {
+                discountAmount = parseAmount(isBlank(discountValue) ? discountAmountRaw : discountValue);
+                discountPercent = 0;
+            } else if ("percent".equalsIgnoreCase(discountType)) {
+                discountAmount = BigDecimal.ZERO;
+                discountPercent = parsePercent(isBlank(discountValue) ? discountPercentRaw : discountValue);
+            } else {
+                setSessionMessage(session, "Please choose discount type.", "error");
+                response.sendRedirect("voucher?action=all");
+                return;
+            }
 
             if (id <= 0 || !isVoucherInputValid(code, discountAmount, discountPercent, session)) {
                 response.sendRedirect("voucher?action=all");
@@ -152,10 +176,26 @@ public class VoucherController extends HttpServlet {
         HttpSession session = request.getSession();
 
         String code = normalizeCode(request.getParameter("code"));
-        BigDecimal discountAmount = parseAmount(request.getParameter("discountAmount"));
-        double discountPercent = parsePercent(request.getParameter("discountPercent"));
+        String discountType = request.getParameter("discountType");
+        String discountValue = request.getParameter("discountValue");
+        String discountAmountRaw = request.getParameter("discountAmount");
+        String discountPercentRaw = request.getParameter("discountPercent");
+        BigDecimal discountAmount;
+        double discountPercent;
         Date validUntil = parseSqlDate(request.getParameter("validUntil"));
         boolean status = "1".equals(request.getParameter("status"));
+
+        if ("amount".equalsIgnoreCase(discountType)) {
+            discountAmount = parseAmount(isBlank(discountValue) ? discountAmountRaw : discountValue);
+            discountPercent = 0;
+        } else if ("percent".equalsIgnoreCase(discountType)) {
+            discountAmount = BigDecimal.ZERO;
+            discountPercent = parsePercent(isBlank(discountValue) ? discountPercentRaw : discountValue);
+        } else {
+            setSessionMessage(session, "Please choose discount type.", "error");
+            response.sendRedirect("voucher?action=all");
+            return;
+        }
 
         if (!isVoucherInputValid(code, discountAmount, discountPercent, session)) {
             response.sendRedirect("voucher?action=all");
@@ -187,6 +227,10 @@ public class VoucherController extends HttpServlet {
 
     private String normalizeCode(String code) {
         return code == null ? null : code.trim().toUpperCase();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     private int parseInt(String value) {
@@ -243,8 +287,14 @@ public class VoucherController extends HttpServlet {
             setSessionMessage(session, "Discount percent must be from 0 to 100.", "error");
             return false;
         }
-        if (discountAmount.compareTo(BigDecimal.ZERO) == 0 && discountPercent == 0) {
-            setSessionMessage(session, "Voucher must have discount amount or discount percent.", "error");
+        boolean hasAmount = discountAmount.compareTo(BigDecimal.ZERO) > 0;
+        boolean hasPercent = discountPercent > 0;
+        if (!hasAmount && !hasPercent) {
+            setSessionMessage(session, "Voucher must have discount amount or discount percent greater than 0.", "error");
+            return false;
+        }
+        if (hasAmount && hasPercent) {
+            setSessionMessage(session, "Please choose only one discount type: amount or percent.", "error");
             return false;
         }
         return true;

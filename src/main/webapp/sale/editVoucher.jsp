@@ -29,13 +29,22 @@
         <span>${fn:toUpperCase(fn:substring(voucher.code, 0, 1))}</span>
     </div>
 
-    <div class="profile-header-info">
+        <div class="profile-header-info">
         <h2 class="profile-name">${voucher.code}</h2>
         <span class="profile-active ${voucher.status ? 'status-consulting' : 'status-lost'}">${voucher.status ? 'Active' : 'Inactive'}</span>
         <div class="profile-info-content">
             <div class="profile-header-left">
-                <span class="user-email"><i class="bx bx-money"></i>${voucher.discountAmount} VND</span>
-                <span class="user-email"><i class="bx bx-percent"></i>${voucher.discountPercent}%</span>
+                <span class="user-email">
+                    <i class="bx bx-money"></i>
+                    <c:choose>
+                        <c:when test="${voucher.discountAmount > 0}">
+                            ${voucher.discountAmount} VND
+                        </c:when>
+                        <c:otherwise>
+                            ${voucher.discountPercent}%
+                        </c:otherwise>
+                    </c:choose>
+                </span>
             </div>
         </div>
     </div>
@@ -59,12 +68,18 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label for="discountAmount">Discount Amount</label>
-                <input type="number" id="discountAmount" name="discountAmount" value="${voucher.discountAmount}" min="0" step="1000" required>
+                <label for="discountType">Discount Type</label>
+                <select id="discountType" name="discountType" required>
+                    <option value="amount" ${voucher.discountAmount > 0 ? 'selected' : ''}>Amount (VND)</option>
+                    <option value="percent" ${voucher.discountAmount <= 0 ? 'selected' : ''}>Percent (%)</option>
+                </select>
             </div>
             <div class="form-group">
-                <label for="discountPercent">Discount Percent</label>
-                <input type="number" id="discountPercent" name="discountPercent" value="${voucher.discountPercent}" min="0" max="100" step="0.1" required>
+                <label for="discountValue" id="discountValueLabel">Discount Value</label>
+                <input type="number" id="discountValue" name="discountValue"
+                       value="${voucher.discountAmount > 0 ? voucher.discountAmount : voucher.discountPercent}"
+                       min="0" step="${voucher.discountAmount > 0 ? '1000' : '0.1'}"
+                       max="${voucher.discountAmount > 0 ? '' : '100'}" required>
             </div>
         </div>
 
@@ -86,3 +101,34 @@
         </div>
     </form>
 </div>
+
+<script>
+    (function () {
+        const discountType = document.getElementById("discountType");
+        const discountValue = document.getElementById("discountValue");
+        const discountValueLabel = document.getElementById("discountValueLabel");
+
+        function syncDiscountInput() {
+            const isAmount = discountType.value === "amount";
+            if (isAmount) {
+                discountValueLabel.textContent = "Discount Amount";
+                discountValue.step = "1000";
+                discountValue.min = "0";
+                discountValue.max = "";
+                discountValue.placeholder = "Enter amount (VND)";
+            } else {
+                discountValueLabel.textContent = "Discount Percent";
+                discountValue.step = "0.1";
+                discountValue.min = "0";
+                discountValue.max = "100";
+                discountValue.placeholder = "Enter percent (%)";
+                if (discountValue.value && parseFloat(discountValue.value) > 100) {
+                    discountValue.value = "";
+                }
+            }
+        }
+
+        discountType.addEventListener("change", syncDiscountInput);
+        syncDiscountInput();
+    })();
+</script>

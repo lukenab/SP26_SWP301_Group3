@@ -34,7 +34,8 @@
                             <span class="profession">Language Center</span>
                         </div>
 
-                        <div class="search-field">
+                        <form action="landingPage" method="GET" class="search-field">
+                            <input type="hidden" name="action" value="all"/>
                             <i class="bx bx-search"></i>
                             <input type="text" id="courseSearchInput" placeholder="Search for courses..." />
                         </div>

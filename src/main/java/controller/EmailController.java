@@ -31,6 +31,27 @@ public class EmailController {
     }
 
     public static boolean sendEmail(String toEmail, String fullName, String newPassword) {
+        String subject = "Your Password Has Been Reset - LMCS System";
+        String content = "Hi " + fullName + ",\n\n"
+                + "Your password has been successfully reset by the System Admin.\n\n"
+                + "Your new temporary password is: " + newPassword + "\n\n"
+                + "Please log in and change your password immediately to ensure your account security.\n\n"
+                + "Best regards,\nLMCS Support Team";
+        return sendPlainTextEmail(toEmail, subject, content);
+    }
+
+    public static boolean sendLeadConversionEmail(String toEmail, String fullName, String defaultPassword) {
+        String subject = "Your Student Account Has Been Created - LMCS System";
+        String content = "Hi " + fullName + ",\n\n"
+                + "Your lead profile has been converted to a student account.\n\n"
+                + "Login email: " + toEmail + "\n"
+                + "Default password: " + defaultPassword + "\n\n"
+                + "Please log in and change your password as soon as possible.\n\n"
+                + "Best regards,\nLMCS Support Team";
+        return sendPlainTextEmail(toEmail, subject, content);
+    }
+
+    private static boolean sendPlainTextEmail(String toEmail, String subject, String content) {
         final String fromEmail = "binhce200008@gmail.com";
         final String appPassword = "cjrwaydcrdpovelz";
 
@@ -51,13 +72,7 @@ public class EmailController {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(fromEmail));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
-            message.setSubject("Your Password Has Been Reset - LMCS System");
-
-            String content = "Hi " + fullName + ",\n\n"
-                    + "Your password has been successfully reset by the System Admin.\n\n"
-                    + "Your new temporary password is: " + newPassword + "\n\n"
-                    + "Please log in and change your password immediately to ensure your account security.\n\n"
-                    + "Best regards,\nLMCS Support Team";
+            message.setSubject(subject);
             message.setText(content);
 
             Transport.send(message);

@@ -71,8 +71,18 @@ public class CourseController extends HttpServlet {
                         Course course = courseDAO.getCourseById(courseId);
                         if(course != null){
                             request.setAttribute("course", course);
-                            request.setAttribute("home_view", "/academic/course_details.jsp");
-                            request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                            HttpSession session = request.getSession(false);
+                            boolean isLoggedIn = (session != null && session.getAttribute("user") != null);
+                            if (isLoggedIn) {
+                                request.setAttribute("home_view", "/academic/course_details.jsp");
+                                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                            } else {
+                                if (!course.isStatus()) {
+                                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                    return;
+                                }
+                                request.getRequestDispatcher("/academic/course_details.jsp").forward(request, response);
+                            }
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         }
