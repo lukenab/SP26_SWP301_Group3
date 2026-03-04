@@ -114,8 +114,8 @@ public class AuthFilter implements Filter {
                 ? servletPath.substring(0, servletPath.length() - 1)
                 : servletPath;
         String action = req.getParameter("action");
-        boolean isCourseGuestDetails = "/course".equalsIgnoreCase(normalizedServletPath)
-                && "details".equalsIgnoreCase(action);
+        boolean isPublicCourseDetails = uri.endsWith("course") && "publicDetails".equals(action);
+
 
         
         if (uri.endsWith("landingPage")
@@ -126,8 +126,9 @@ public class AuthFilter implements Filter {
                 || uri.contains("/css/")
                 || uri.contains("/images/")
                 || uri.contains("/js/")
-                || uri.endsWith("login")
-                || isCourseGuestDetails) { 
+                || isPublicCourseDetails
+                || uri.endsWith("login")) { 
+
 
             chain.doFilter(request, response);
             return;
@@ -243,3 +244,4 @@ public class AuthFilter implements Filter {
     }
 
 }
+        
