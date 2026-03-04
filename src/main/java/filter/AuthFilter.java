@@ -110,7 +110,11 @@ public class AuthFilter implements Filter {
 
         String uri = req.getRequestURI();
         String action = req.getParameter("action");
+<<<<<<< phuc/UI_course_detail_add_file_inmage_edit_course_fix
+        boolean isPublicCourseDetails = uri.endsWith("course") && "publicDetails".equals(action);
+=======
         boolean isCourseGuestDetails = uri.endsWith("course") && "details".equalsIgnoreCase(action);
+>>>>>>> master
 
         if (uri.endsWith("landingPage")
                 || uri.endsWith("/")
@@ -120,8 +124,13 @@ public class AuthFilter implements Filter {
                 || uri.contains("/css/")
                 || uri.contains("/images/")
                 || uri.contains("/js/")
+<<<<<<< phuc/UI_course_detail_add_file_inmage_edit_course_fix
+                || isPublicCourseDetails
+                || uri.endsWith("login")) { 
+=======
                 || uri.endsWith("login")
                 || isCourseGuestDetails) { 
+>>>>>>> master
 
             chain.doFilter(request, response);
             return;
