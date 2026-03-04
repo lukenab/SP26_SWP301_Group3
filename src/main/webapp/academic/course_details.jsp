@@ -1,115 +1,114 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>${course.courseName} - Details</title>
-    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/course_list.css">
-    <style>
-        .course-detail-container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .course-detail-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .course-detail-image {
-            width: 100%;
-            max-height: 300px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .course-detail-info {
-            margin: 15px 0;
-        }
-        
-        .course-detail-label {
-            font-weight: bold;
-            color: #555;
-            display: inline-block;
-            width: 100px;
-        }
-        
-        .course-detail-value {
-            color: #333;
-        }
-        
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 15px;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-        
-        .back-link:hover {
-            background-color: #2980b9;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <c:choose>
-            <c:when test="${empty course}">
-                <div class="no-courses">Course not found.</div>
-            </c:when>
-            <c:otherwise>
-                <div class="course-detail-container">
-                    <div class="course-detail-header">
-                        <h1>${course.courseName}</h1>
-                    </div>
-                    
-                    <c:if test="${not empty course.images}">
-                        <img src="images/${course.images}" alt="${course.courseName}" class="course-detail-image">
-                    </c:if>
-                    
-                    <div class="course-detail-info">
-                        <div class="detail-item">
-                            <span class="course-detail-label">Description:</span>
-                            <span class="course-detail-value">${course.description}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="course-detail-info">
-                        <div class="detail-item">
-                            <span class="course-detail-label">Slots:</span>
-                            <span class="course-detail-value">${course.totalSlots}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="course-detail-info">
-                        <div class="detail-item">
-                            <span class="course-detail-label">Fee:</span>
-                            <span class="course-detail-value">$${course.tuitionFee}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="course-detail-info">
-                        <div class="detail-item">
-                            <span class="course-detail-label">Status:</span>
-                            <span class="status ${course.status ? 'active' : 'inactive'}">
-                                ${course.status ? 'Active' : 'Inactive'}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <a href="${pageContext.request.contextPath}/course" class="back-link">Back to Course List</a>
-                    <a href="${pageContext.request.contextPath}/" class="back-link" style="margin-left: 10px;">Back to Home</a>
-                </div>
-            </c:otherwise>
-        </c:choose>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<link href="css/course_details.css" rel="stylesheet" type="text/css"/>
+
+<div class="container-fluid px-4 content-body course-detail-page">
+    <div class="mb-4">
+        <div aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="course?action=all">Course Management</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Course Details</li>
+            </ol>
+        </div>
+
+        <div class="content-header">
+            <div>
+                <h2 class="page-title">Course Details</h2>
+                <p class="text-muted small mb-0">Overview and quick management actions</p>
+            </div>
+            <div class="detail-header-actions">
+                <a href="course?action=all" class="btn btn-outline-secondary">
+                    <i class='bx bx-arrow-left'></i> Back
+                </a>
+                <c:if test="${not empty course}">
+                    <a href="course?action=edit&courseId=${course.courseId}" class="btn btn-primary">
+                        <i class='bx bx-edit'></i> Edit Course
+                    </a>
+                </c:if>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+
+    <c:choose>
+        <c:when test="${empty course}">
+            <div class="detail-card empty-state">
+                <i class='bx bx-book-open empty-icon'></i>
+                <h4>Course not found</h4>
+                <p class="mb-0">The requested course may have been deleted or is unavailable.</p>
+            </div>
+        </c:when>
+        <c:otherwise>
+            <div class="detail-card hero-card">
+                <div class="hero-image-wrap">
+                    <c:choose>
+                        <c:when test="${not empty course.images}">
+                            <img src="images/${course.images}" alt="${course.courseName}" class="hero-image">
+                        </c:when>
+                        <c:otherwise>
+                            <div class="hero-image-fallback">
+                                <i class='bx bx-book'></i>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
+                <div class="hero-content">
+                    <span class="course-id">Course ID: #${course.courseId}</span>
+                    <h1>${course.courseName}</h1>
+
+                    <div class="chips">
+                        <span class="chip chip-slots">
+                            <i class='bx bx-group'></i> ${course.totalSlots} slots
+                        </span>
+                        <span class="chip chip-fee">
+                            <i class='bx bx-dollar-circle'></i>
+                            <fmt:formatNumber type="currency" value="${course.tuitionFee}" />
+                        </span>
+                        <span class="chip ${course.status ? 'chip-active' : 'chip-inactive'}">
+                            <i class='bx ${course.status ? "bx-check-circle" : "bx-block"}'></i>
+                            ${course.status ? 'Active' : 'Inactive'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-card section-card">
+                    <div class="section-title">
+                        <i class='bx bx-detail'></i>
+                        <h5>Course Description</h5>
+                    </div>
+                    <p class="description-text">
+                        <c:choose>
+                            <c:when test="${not empty course.description}">
+                                ${course.description}
+                            </c:when>
+                            <c:otherwise>
+                                No description has been added for this course.
+                            </c:otherwise>
+                        </c:choose>
+                    </p>
+                </div>
+
+                <div class="detail-card section-card">
+                    <div class="section-title">
+                        <i class='bx bx-cog'></i>
+                        <h5>Quick Actions</h5>
+                    </div>
+                    <div class="quick-action-list">
+                        <a href="course?action=edit&courseId=${course.courseId}" class="quick-action">
+                            <span><i class='bx bx-edit'></i> Update Information</span>
+                            <i class='bx bx-chevron-right'></i>
+                        </a>
+                        <a href="course?action=all" class="quick-action">
+                            <span><i class='bx bx-list-ul'></i> Back to Course List</span>
+                            <i class='bx bx-chevron-right'></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </c:otherwise>
+    </c:choose>
+</div>
