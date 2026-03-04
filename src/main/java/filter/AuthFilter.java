@@ -109,10 +109,15 @@ public class AuthFilter implements Filter {
         HttpServletResponse res = (HttpServletResponse) response;
 
         String uri = req.getRequestURI();
+        String servletPath = req.getServletPath();
+        String normalizedServletPath = servletPath != null && servletPath.endsWith("/") && servletPath.length() > 1
+                ? servletPath.substring(0, servletPath.length() - 1)
+                : servletPath;
         String action = req.getParameter("action");
         boolean isPublicCourseDetails = uri.endsWith("course") && "publicDetails".equals(action);
 
 
+        
         if (uri.endsWith("landingPage")
                 || uri.endsWith("/")
                 || uri.endsWith("login.jsp")
