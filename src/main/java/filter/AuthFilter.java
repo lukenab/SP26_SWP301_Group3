@@ -109,8 +109,13 @@ public class AuthFilter implements Filter {
         HttpServletResponse res = (HttpServletResponse) response;
 
         String uri = req.getRequestURI();
+        String servletPath = req.getServletPath();
+        String normalizedServletPath = servletPath != null && servletPath.endsWith("/") && servletPath.length() > 1
+                ? servletPath.substring(0, servletPath.length() - 1)
+                : servletPath;
         String action = req.getParameter("action");
-        boolean isCourseGuestDetails = uri.endsWith("course") && "details".equalsIgnoreCase(action);
+        boolean isCourseGuestDetails = "/course".equalsIgnoreCase(normalizedServletPath)
+                && "details".equalsIgnoreCase(action);
 
         if (uri.endsWith("landingPage")
                 || uri.endsWith("/")
