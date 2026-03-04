@@ -82,6 +82,86 @@ public class LeadDAO extends DBContext {
         return list;
     }
 
+    public List<Lead> searchAndFilterLeads(String searchQuery, String statusFilter) {
+
+        List<Lead> list = new ArrayList<>();
+
+        syncConvertedStatusForAllLeads();
+
+        StringBuilder sql = new StringBuilder("SELECT l.LeadID, l.FullName, l.Email, l.Phone, "
+                + "l.InterestedCourseID, co.CourseName, "
+                + "l.Status, "
+                + "l.CreateDate, c.Note "
+                + "FROM Lead l "
+                + "LEFT JOIN Course co ON l.InterestedCourseID = co.CourseID "
+                + "LEFT JOIN Consultation c ON l.LeadID = c.LeadID "
+                + "WHERE 1=1 ");
+
+        boolean hasSearch = searchQuery != null && !searchQuery.trim().isEmpty();
+        boolean hasStatus = statusFilter != null && !statusFilter.trim().isEmpty()
+                && !"all".equalsIgnoreCase(statusFilter.trim());
+
+        if (hasSearch) {
+            sql.append("AND (l.FullName LIKE ? OR l.Email LIKE ?) ");
+        }
+        if (hasStatus) {
+            sql.append("AND l.Status = ? ");
+        }
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql.toString());
+            int index = 1;
+
+            if (hasSearch) {
+                String keyword = "%" + searchQuery.trim() + "%";
+                ps.setString(index++, keyword);
+                ps.setString(index++, keyword);
+            }
+            if (hasStatus) {
+                ps.setString(index++, statusFilter.trim());
+            }
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                int leadID = rs.getInt("LeadID");
+                String fullName = rs.getString("FullName");
+                String email = rs.getString("Email");
+                String phone = rs.getString("Phone");
+
+                int interestedCourseID = rs.getInt("InterestedCourseID");
+                String courseName = rs.getString("CourseName");
+
+                String status = rs.getString("Status");
+
+                Timestamp ts = rs.getTimestamp("CreateDate");
+                LocalDateTime createDate = null;
+                if (ts != null) {
+                    createDate = ts.toLocalDateTime();
+                }
+
+                String note = rs.getString("Note");
+
+                Course course = null;
+                if (courseName != null) {
+                    course = new Course();
+                    course.setCourseId(interestedCourseID);
+                    course.setCourseName(courseName);
+                }
+
+                Lead lead = new Lead(leadID, fullName, email, phone, interestedCourseID, course, status, createDate);
+                lead.setNote(note);
+                list.add(lead);
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Fail to search and filter leads: " + e.getMessage());
+        }
+
+        return list;
+    }
+
     public Lead getLeadByID(int id) {
 
         syncConvertedStatusForLead(id);

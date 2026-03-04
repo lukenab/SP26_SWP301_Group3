@@ -35,12 +35,15 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label for="discountAmount">Discount Amount <span class="text-danger">*</span></label>
-                <input type="number" id="discountAmount" name="discountAmount" min="0" step="1000" value="0" required>
+                <label for="discountType">Discount Type <span class="text-danger">*</span></label>
+                <select id="discountType" name="discountType" required>
+                    <option value="amount" selected>Amount (VND)</option>
+                    <option value="percent">Percent (%)</option>
+                </select>
             </div>
             <div class="form-group">
-                <label for="discountPercent">Discount Percent <span class="text-danger">*</span></label>
-                <input type="number" id="discountPercent" name="discountPercent" min="0" max="100" step="0.1" value="0" required>
+                <label for="discountValue" id="discountValueLabel">Discount Amount <span class="text-danger">*</span></label>
+                <input type="number" id="discountValue" name="discountValue" min="0" step="1000" placeholder="Enter amount (VND)" required>
             </div>
         </div>
 
@@ -62,3 +65,34 @@
         </div>
     </form>
 </div>
+
+<script>
+    (function () {
+        const discountType = document.getElementById("discountType");
+        const discountValue = document.getElementById("discountValue");
+        const discountValueLabel = document.getElementById("discountValueLabel");
+
+        function syncDiscountInput() {
+            const isAmount = discountType.value === "amount";
+            if (isAmount) {
+                discountValueLabel.innerHTML = 'Discount Amount <span class="text-danger">*</span>';
+                discountValue.placeholder = "Enter amount (VND)";
+                discountValue.step = "1000";
+                discountValue.min = "0";
+                discountValue.max = "";
+            } else {
+                discountValueLabel.innerHTML = 'Discount Percent <span class="text-danger">*</span>';
+                discountValue.placeholder = "Enter percent (%)";
+                discountValue.step = "0.1";
+                discountValue.min = "0";
+                discountValue.max = "100";
+                if (discountValue.value && parseFloat(discountValue.value) > 100) {
+                    discountValue.value = "";
+                }
+            }
+        }
+
+        discountType.addEventListener("change", syncDiscountInput);
+        syncDiscountInput();
+    })();
+</script>

@@ -31,6 +31,7 @@
 
 <div class="convert-alert">
     Complete missing information, then click confirm to create Student account and mark this lead as Converted.
+    System will auto set default password as <strong>123456</strong> and send it to student email.
 </div>
 
 <div class="form-container">
@@ -77,12 +78,12 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" minlength="6" required>
+                <label for="passwordPreview">Password (Auto)</label>
+                <input type="text" id="passwordPreview" value="123456" readonly disabled>
             </div>
             <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" minlength="6" required>
+                <label for="confirmPasswordPreview">Confirm Password (Auto)</label>
+                <input type="text" id="confirmPasswordPreview" value="123456" readonly disabled>
             </div>
         </div>
 

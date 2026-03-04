@@ -45,8 +45,15 @@ public class LandingPageController extends HttpServlet {
 
         switch (action) {
             case "all":
-                List<Course> list = courseDAO.getActiveCourses();
+                String keyword = request.getParameter("keyword");
+                List<Course> list;
+                if (isBlank(keyword)) {
+                    list = courseDAO.getActiveCourses();
+                } else {
+                    list = courseDAO.searchActiveCourses(keyword.trim());
+                }
                 request.setAttribute("courseList", list);
+                request.setAttribute("searchKeyword", isBlank(keyword) ? "" : keyword.trim());
                 request.getRequestDispatcher("landingPage.jsp").forward(request, response);
                 break;
             default:
