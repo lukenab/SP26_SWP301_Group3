@@ -109,6 +109,8 @@ public class AuthFilter implements Filter {
         HttpServletResponse res = (HttpServletResponse) response;
 
         String uri = req.getRequestURI();
+        String action = req.getParameter("action");
+        boolean isPublicCourseDetails = uri.endsWith("course") && "publicDetails".equals(action);
 
         if (uri.endsWith("landingPage")
                 || uri.endsWith("/")
@@ -118,6 +120,7 @@ public class AuthFilter implements Filter {
                 || uri.contains("/css/")
                 || uri.contains("/images/")
                 || uri.contains("/js/")
+                || isPublicCourseDetails
                 || uri.endsWith("login")) { 
 
             chain.doFilter(request, response);

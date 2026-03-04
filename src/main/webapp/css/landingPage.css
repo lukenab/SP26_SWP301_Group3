@@ -328,6 +328,60 @@ nav{
     box-shadow: 0 8px 16px rgba(0,0,0,0.05);
 }
 
+/* Keep price options as circular radios */
+.course-price-filter[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #7f8ea3;
+    border-radius: 50%;
+    background-color: #fff;
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.course-price-filter[type="radio"]:checked {
+    border-color: #0056D2;
+    box-shadow: inset 0 0 0 4px #0056D2;
+}
+
+.course-price-filter[type="radio"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 86, 210, 0.2);
+}
+
+/* Keep category/level options as square checkboxes */
+.course-category-filter[type="checkbox"],
+.course-level-filter[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #7f8ea3;
+    border-radius: 3px;
+    background-color: #fff;
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.course-category-filter[type="checkbox"]:checked,
+.course-level-filter[type="checkbox"]:checked {
+    border-color: #0056D2;
+    background-color: #0056D2;
+    box-shadow: inset 0 0 0 2px #fff;
+}
+
+.course-category-filter[type="checkbox"]:focus,
+.course-level-filter[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 86, 210, 0.2);
+}
+
 .footer-sec{
     background-color: #1c5174;
     padding: 5px;
