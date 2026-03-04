@@ -117,6 +117,7 @@ public class AuthFilter implements Filter {
         boolean isCourseGuestDetails = "/course".equalsIgnoreCase(normalizedServletPath)
                 && "details".equalsIgnoreCase(action);
 
+        
         if (uri.endsWith("landingPage")
                 || uri.endsWith("/")
                 || uri.endsWith("login.jsp")
