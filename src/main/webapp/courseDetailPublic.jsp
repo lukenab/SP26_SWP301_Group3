@@ -34,7 +34,7 @@
                         <div class="nav-actions">
                             <a href="${pageContext.request.contextPath}/landingPage#content-2">Categories</a>
                             <a href="${pageContext.request.contextPath}/login">Login</a>
-                            <a class="nav-primary" href="${pageContext.request.contextPath}/landingPage#contact">Sign Up</a>
+                            <a class="nav-primary" href="${pageContext.request.contextPath}/landingPage#contact">Contact</a>
                         </div>
                     </div>
                 </nav>
