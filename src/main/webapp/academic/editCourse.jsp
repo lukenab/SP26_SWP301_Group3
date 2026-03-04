@@ -28,7 +28,7 @@
     <div class="profile-avatar-section">
         <div class="form-row user-img">
             <div class="info-img">
-                <img src="${course.images}" class="rounded-circle object-fit-cover">
+                <img src="images/${course.images}" class="rounded-circle object-fit-cover">
             </div>
 
             <div class="info-img-icon" onclick="toggleAvatarInput()">
@@ -38,14 +38,15 @@
 
         <div id="avatarInputContainer">
             <div class="form-group mb-0">
-                <label>New Image URL:</label>
+                <label>Upload New Course Image:</label>
                 <div class="avatar-input-content">
-                    <input type="text"
+                    <input type="file"
+                           name="imageFile"
                            id="avatarVisualInput"
                            class="form-control form-control-sm"
-                           value="${course.images}"
-                           placeholder="Paste image link here..."
-                           oninput="updateAvatar()">
+                           accept="image/*"
+                           onchange="updateAvatar(this)"
+                           form="updateCourseForm">
 
                     <button type="button"
                             class="btn-secondary avatar-input-btn"
@@ -68,7 +69,7 @@
 
 <!-- ===== FORM ===== -->
 <div class="form-container">
-    <form action="course?action=update" method="POST" class="form-body">
+    <form id="updateCourseForm" action="course?action=update" method="POST" enctype="multipart/form-data" class="form-body">
 
         <input type="hidden" name="courseId" value="${course.courseId}">
         <input type="hidden" id="uAvatar" name="images" value="${course.images}">
