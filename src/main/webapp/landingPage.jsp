@@ -7,7 +7,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <fmt:setLocale value="vi_VN"/>
 <!DOCTYPE html>
 <html>
@@ -34,10 +33,9 @@
                             <span class="profession">Language Center</span>
                         </div>
 
-                        <form action="landingPage" method="GET" class="search-field">
-                            <input type="hidden" name="action" value="all"/>
+                        <div class="search-field">
                             <i class="bx bx-search"></i>
-                            <input type="text" id="courseSearchInput" placeholder="Search for courses..." />
+                            <input type="text" placeholder="Search for courses..." />
                         </div>
                     </div>
 
@@ -181,46 +179,42 @@
                         <hr>
                         <h6>Category</h6>
                         <div class="form-check">
-                            <input class="form-check-input course-category-filter" type="checkbox" id="category-ielts" value="IELTS">
-                            <label class="form-check-label" for="category-ielts">IELTS</label>
+                            <input class="form-check-input" type="checkbox" id="cat1">
+                            <label class="form-check-label" for="cat1">IELTS</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input course-category-filter" type="checkbox" id="category-toeic" value="TOEIC">
-                            <label class="form-check-label" for="category-toeic">TOEIC</label>
+                            <input class="form-check-input" type="checkbox" id="cat2">
+                            <label class="form-check-label" for="cat2">TOEIC</label>
                         </div>
 
                         <div class="form-check">
-                            <input class="form-check-input course-category-filter" type="checkbox" id="category-toefl" value="TOEFL">
-                            <label class="form-check-label" for="category-toefl">TOEFL</label>
+                            <input class="form-check-input" type="checkbox" id="cat2">
+                            <label class="form-check-label" for="cat2">TOEFL</label>
                         </div>
 
                         <h6 class="mt-3">Price</h6>
                         <div class="form-check">
-                            <input class="form-check-input course-price-filter" type="radio" name="price" id="price-all" value="all" checked>
-                            <label class="form-check-label" for="price-all">All</label>
+                            <input class="form-check-input" type="radio" name="price" checked>
+                            <label class="form-check-label">All</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input course-price-filter" type="radio" name="price" id="price-free" value="free">
-                            <label class="form-check-label" for="price-free">Free</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input course-price-filter" type="radio" name="price" id="price-paid" value="paid">
-                            <label class="form-check-label" for="price-paid">Paid</label>
+                            <input class="form-check-input" type="radio" name="price">
+                            <label class="form-check-label">Free</label>
                         </div>
 
                         <hr>
                         <h6>Level</h6>
                         <div class="form-check">
-                            <input class="form-check-input course-level-filter" type="checkbox" id="level-beginner" value="BEGINNER">
-                            <label class="form-check-label" for="level-beginner">Beginner</label>
+                            <input class="form-check-input" type="checkbox" id="cat1">
+                            <label class="form-check-label" for="cat1">Beginner</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input course-level-filter" type="checkbox" id="level-intermediate" value="INTERMEDIATE">
-                            <label class="form-check-label" for="level-intermediate">Intermediate</label>
+                            <input class="form-check-input" type="checkbox" id="cat2">
+                            <label class="form-check-label" for="cat2">Immediate</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input course-level-filter" type="checkbox" id="level-advanced" value="ADVANCED">
-                            <label class="form-check-label" for="level-advanced">Advanced</label>
+                            <input class="form-check-input" type="checkbox" id="cat2">
+                            <label class="form-check-label" for="cat2">Advanced</label>
                         </div>
                     </div>
                 </div>
@@ -230,35 +224,7 @@
 
                     <div class="row row-cols-md-3 g-4">
                         <c:forEach items="${courseList}" var="c">
-                            <c:set var="searchText" value="${fn:toLowerCase(c.courseName)} ${fn:toLowerCase(c.description)}" />
-                            <c:set var="courseCategory" value="OTHER" />
-                            <c:if test="${fn:contains(searchText, 'ielts')}">
-                                <c:set var="courseCategory" value="IELTS" />
-                            </c:if>
-                            <c:if test="${fn:contains(searchText, 'toeic')}">
-                                <c:set var="courseCategory" value="TOEIC" />
-                            </c:if>
-                            <c:if test="${fn:contains(searchText, 'toefl')}">
-                                <c:set var="courseCategory" value="TOEFL" />
-                            </c:if>
-
-                            <c:set var="courseLevel" value="OTHER" />
-                            <c:if test="${fn:contains(searchText, 'beginner') || fn:contains(searchText, 'foundation') || fn:contains(searchText, 'basic')}">
-                                <c:set var="courseLevel" value="BEGINNER" />
-                            </c:if>
-                            <c:if test="${fn:contains(searchText, 'intermediate') || fn:contains(searchText, 'intensive')}">
-                                <c:set var="courseLevel" value="INTERMEDIATE" />
-                            </c:if>
-                            <c:if test="${fn:contains(searchText, 'advanced') || fn:contains(searchText, 'expert')}">
-                                <c:set var="courseLevel" value="ADVANCED" />
-                            </c:if>
-
-                            <div class="col course-item"
-                                 data-name="${fn:toLowerCase(c.courseName)}"
-                                 data-desc="${fn:toLowerCase(c.description)}"
-                                 data-fee="${c.tuitionFee}"
-                                 data-category="${courseCategory}"
-                                 data-level="${courseLevel}">
+                            <div class="col">
                                 <div class="card course-card">
                                     <img src="images/${c.images}" class="card-img-top" alt="${c.courseName}">
 
@@ -271,7 +237,7 @@
                                                 <fmt:formatNumber type="currency" value="${c.tuitionFee}" />                                           
                                             </span>
                                             <div class="courseDetail-btn">
-                                                <a href="${pageContext.request.contextPath}/course?action=publicDetails&courseId=${c.courseId}">View Details</a>
+                                                <a href="courseDetail?id=${c.courseId}">View Details</a>
                                             </div>
                                         </div>
                                     </div>
@@ -279,7 +245,6 @@
                             </div>
                         </c:forEach>
                     </div>
-                    <p id="emptyCourseMessage" class="text-center text-muted mt-4 d-none">No courses match your filters.</p>
                 </div>
             </div>
         </div>
@@ -357,84 +322,5 @@
         </footer>
 
         <script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
-        <script>
-            (function () {
-                const searchInput = document.getElementById("courseSearchInput");
-                const categoryFilters = Array.from(document.querySelectorAll(".course-category-filter"));
-                const levelFilters = Array.from(document.querySelectorAll(".course-level-filter"));
-                const priceFilters = Array.from(document.querySelectorAll(".course-price-filter"));
-                const courseItems = Array.from(document.querySelectorAll(".course-item"));
-                const emptyMessage = document.getElementById("emptyCourseMessage");
-
-                if (!courseItems.length) {
-                    return;
-                }
-
-                function getCheckedValues(filters) {
-                    return filters.filter(function (f) {
-                        return f.checked;
-                    }).map(function (f) {
-                        return f.value;
-                    });
-                }
-
-                function getSelectedPrice() {
-                    const selected = priceFilters.find(function (f) {
-                        return f.checked;
-                    });
-                    return selected ? selected.value : "all";
-                }
-
-                function applyCourseFilter() {
-                    const keyword = (searchInput && searchInput.value ? searchInput.value : "").trim().toLowerCase();
-                    const selectedCategories = getCheckedValues(categoryFilters);
-                    const selectedLevels = getCheckedValues(levelFilters);
-                    const selectedPrice = getSelectedPrice();
-                    let visibleCount = 0;
-
-                    courseItems.forEach(function (item) {
-                        const name = (item.dataset.name || "").toLowerCase();
-                        const desc = (item.dataset.desc || "").toLowerCase();
-                        const category = item.dataset.category || "";
-                        const level = item.dataset.level || "";
-                        const fee = parseFloat(item.dataset.fee || "0");
-
-                        const matchKeyword = !keyword || name.includes(keyword) || desc.includes(keyword);
-                        const matchCategory = selectedCategories.length === 0 || selectedCategories.includes(category);
-                        const matchLevel = selectedLevels.length === 0 || selectedLevels.includes(level);
-
-                        let matchPrice = true;
-                        if (selectedPrice === "free") {
-                            matchPrice = fee === 0;
-                        } else if (selectedPrice === "paid") {
-                            matchPrice = fee > 0;
-                        }
-
-                        const isVisible = matchKeyword && matchCategory && matchLevel && matchPrice;
-                        item.classList.toggle("d-none", !isVisible);
-                        if (isVisible) {
-                            visibleCount++;
-                        }
-                    });
-
-                    if (emptyMessage) {
-                        emptyMessage.classList.toggle("d-none", visibleCount > 0);
-                    }
-                }
-
-                if (searchInput) {
-                    searchInput.addEventListener("input", applyCourseFilter);
-                }
-                categoryFilters.forEach(function (f) {
-                    f.addEventListener("change", applyCourseFilter);
-                });
-                levelFilters.forEach(function (f) {
-                    f.addEventListener("change", applyCourseFilter);
-                });
-                priceFilters.forEach(function (f) {
-                    f.addEventListener("change", applyCourseFilter);
-                });
-            })();
-        </script>
     </body>
 </html>
