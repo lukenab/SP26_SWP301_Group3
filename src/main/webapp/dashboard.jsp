@@ -240,7 +240,7 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
+                            <a href="payment?action=list">
                                 <i class="bxr bx-check-circle"></i>
                                 <span class="text nav-text">Verify Tuition Payment</span>
                             </a>
