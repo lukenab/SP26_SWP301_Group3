@@ -9,6 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import model.Classes;
+import model.Course;
+import model.Employee;
 import utils.DBContext;
 
 /**
@@ -44,6 +47,36 @@ public class ClassDAO extends DBContext {
             System.out.println("Fail to get class management list: " + e.getMessage());
         }
         return list;
+    }
+
+    public Classes getClassByID(int id) {
+        String sql = "SELECT * FROM Class WHERE ClassID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                CourseDAO courseDAO = new CourseDAO();
+                Course course = courseDAO.getCourseById(rs.getInt("CourseID"));
+
+                EmployeeDAO employeeDAO = new EmployeeDAO();
+                Employee employee = employeeDAO.getEmployeeById(rs.getInt("TeacherID"));
+
+                return new Classes(
+                        rs.getInt("ClassID"),
+                        rs.getString("ClassName"),
+                        course,
+                        employee,
+                        rs.getDate("StartDate"),
+                        rs.getDate("EndDate"),
+                        rs.getString("Status")
+                );
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail to get class by ID: " + e.getMessage());
+        }
+        return null;
     }
 
     public Object[] getClassById(int classId) {
