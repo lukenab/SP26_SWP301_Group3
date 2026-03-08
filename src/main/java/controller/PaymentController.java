@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
 import dao.PaymentDAO;
@@ -33,19 +29,15 @@ public class PaymentController extends HttpServlet {
             action = "list";
         }
 
-        PaymentDAO paymentDAO = new PaymentDAO();
-        CourseDAO courseDAO = new CourseDAO();
-        ClassDAO classDAO = new ClassDAO();
-
         switch (action) {
             case "list":
-                handleListPayments(request, response, paymentDAO, courseDAO, classDAO);
+                listPayments(request, response);
                 break;
             case "view":
-                handleViewPayment(request, response, paymentDAO);
+                viewPayment(request, response);
                 break;
             default:
-                handleListPayments(request, response, paymentDAO, courseDAO, classDAO);
+                listPayments(request, response);
                 break;
         }
     }
@@ -54,25 +46,26 @@ public class PaymentController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-        PaymentDAO paymentDAO = new PaymentDAO();
 
-        if ("approve".equals(action)) {
-            handleApprovePayment(request, response, paymentDAO);
-        } else if ("reject".equals(action)) {
-            handleRejectPayment(request, response, paymentDAO);
-        } else {
-            response.sendRedirect("payment?action=list");
+        switch (action != null ? action : "") {
+            case "approve":
+                approvePayment(request, response);
+                break;
+            case "reject":
+                rejectPayment(request, response);
+                break;
+            default:
+                response.sendRedirect("payment?action=list");
+                break;
         }
     }
 
-    /**
-     * Handle listing payments with filters
-     */
-    private void handleListPayments(HttpServletRequest request, HttpServletResponse response,
-            PaymentDAO paymentDAO, CourseDAO courseDAO, ClassDAO classDAO)
+    private void listPayments(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        PaymentDAO paymentDAO = new PaymentDAO();
+        CourseDAO courseDAO = new CourseDAO();
+        ClassDAO classDAO = new ClassDAO();
 
-        // Get filter parameters
         String courseIdParam = request.getParameter("courseId");
         String classIdParam = request.getParameter("classId");
         String status = request.getParameter("status");
@@ -91,7 +84,6 @@ public class PaymentController extends HttpServlet {
             // Invalid format, ignore
         }
 
-        // Get filtered payments
         List<PaymentDisplay> paymentList;
         if (courseId != null || classId != null || (status != null && !status.isEmpty())) {
             paymentList = paymentDAO.getFilteredPayments(courseId, classId, status);
@@ -99,20 +91,16 @@ public class PaymentController extends HttpServlet {
             paymentList = paymentDAO.getAllPayments();
         }
 
-        // Get statistics
         int totalPayments = paymentDAO.getPaymentCountByStatus(null);
         int pendingPayments = paymentDAO.getPaymentCountByStatus("Pending");
         int approvedPayments = paymentDAO.getPaymentCountByStatus("Approved");
         int rejectedPayments = paymentDAO.getPaymentCountByStatus("Rejected");
-
         BigDecimal totalAmount = paymentDAO.getTotalAmountByStatus(null);
         BigDecimal approvedAmount = paymentDAO.getTotalAmountByStatus("Approved");
 
-        // Get filter options
         List<Object[]> courseOptions = classDAO.getActiveCoursesForClassForm();
         List<Object[]> classList = classDAO.getClassManagementList();
 
-        // Set attributes
         request.setAttribute("paymentList", paymentList);
         request.setAttribute("totalPayments", totalPayments);
         request.setAttribute("pendingPayments", pendingPayments);
@@ -122,24 +110,18 @@ public class PaymentController extends HttpServlet {
         request.setAttribute("approvedAmount", approvedAmount);
         request.setAttribute("courseOptions", courseOptions);
         request.setAttribute("classList", classList);
-
-        // Set current filters for display
         request.setAttribute("selectedCourseId", courseIdParam);
         request.setAttribute("selectedClassId", classIdParam);
         request.setAttribute("selectedStatus", status);
-
         request.setAttribute("home_view", "/academic/payment_list.jsp");
         request.getRequestDispatcher("dashboard.jsp").forward(request, response);
     }
 
-    /**
-     * Handle viewing payment details
-     */
-    private void handleViewPayment(HttpServletRequest request, HttpServletResponse response,
-            PaymentDAO paymentDAO)
+    private void viewPayment(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        PaymentDAO paymentDAO = new PaymentDAO();
         String paymentIdParam = request.getParameter("id");
+
         if (paymentIdParam == null || paymentIdParam.isEmpty()) {
             response.sendRedirect("payment?action=list");
             return;
@@ -159,20 +141,16 @@ public class PaymentController extends HttpServlet {
             request.setAttribute("payment", payment);
             request.setAttribute("home_view", "/academic/payment_detail.jsp");
             request.getRequestDispatcher("dashboard.jsp").forward(request, response);
-
         } catch (NumberFormatException e) {
             response.sendRedirect("payment?action=list");
         }
     }
 
-    /**
-     * Handle approving payment
-     */
-    private void handleApprovePayment(HttpServletRequest request, HttpServletResponse response,
-            PaymentDAO paymentDAO)
+    private void approvePayment(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        PaymentDAO paymentDAO = new PaymentDAO();
         String paymentIdParam = request.getParameter("paymentId");
+
         if (paymentIdParam == null || paymentIdParam.isEmpty()) {
             response.sendRedirect("payment?action=list");
             return;
@@ -180,7 +158,7 @@ public class PaymentController extends HttpServlet {
 
         try {
             int paymentId = Integer.parseInt(paymentIdParam);
-            boolean success = paymentDAO.updatePaymentStatus(paymentId, "Approved");
+            boolean success = paymentDAO.approvePayment(paymentId);
 
             if (success) {
                 request.getSession().setAttribute("message", "Payment approved successfully.");
@@ -197,14 +175,11 @@ public class PaymentController extends HttpServlet {
         response.sendRedirect("payment?action=list");
     }
 
-    /**
-     * Handle rejecting payment
-     */
-    private void handleRejectPayment(HttpServletRequest request, HttpServletResponse response,
-            PaymentDAO paymentDAO)
+    private void rejectPayment(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        PaymentDAO paymentDAO = new PaymentDAO();
         String paymentIdParam = request.getParameter("paymentId");
+
         if (paymentIdParam == null || paymentIdParam.isEmpty()) {
             response.sendRedirect("payment?action=list");
             return;
@@ -212,7 +187,7 @@ public class PaymentController extends HttpServlet {
 
         try {
             int paymentId = Integer.parseInt(paymentIdParam);
-            boolean success = paymentDAO.updatePaymentStatus(paymentId, "Rejected");
+            boolean success = paymentDAO.rejectPayment(paymentId);
 
             if (success) {
                 request.getSession().setAttribute("message", "Payment rejected successfully.");

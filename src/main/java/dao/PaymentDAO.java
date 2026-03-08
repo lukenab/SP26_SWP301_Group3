@@ -299,6 +299,24 @@ public class PaymentDAO extends DBContext {
         return payment;
     }
 
+    /**
+     * Approve payment by ID
+     * @param paymentId Payment ID
+     * @return true if successful, false otherwise
+     */
+    public boolean approvePayment(int paymentId) {
+        return updatePaymentStatus(paymentId, "Approved");
+    }
+
+    /**
+     * Reject payment by ID
+     * @param paymentId Payment ID
+     * @return true if successful, false otherwise
+     */
+    public boolean rejectPayment(int paymentId) {
+        return updatePaymentStatus(paymentId, "Rejected");
+    }
+
     // Helper class to hold payment display data
     public static class PaymentDisplay {
         private Payment payment;
