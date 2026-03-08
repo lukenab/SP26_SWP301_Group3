@@ -4,6 +4,8 @@
  */
 package controller;
 
+import dao.ClassDAO;
+import dao.ScheduleDAO;
 import dao.TeacherDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,8 +14,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import model.Classes;
+import model.Schedule;
 import model.User;
 
 /**
@@ -69,7 +74,7 @@ public class ClassController extends HttpServlet {
         switch (action) {
 
             case "all":
-              
+
                 User user = (User) request.getSession().getAttribute("user");
                 if (user != null) {
                     int teacherID = user.getUserId();
@@ -82,6 +87,78 @@ public class ClassController extends HttpServlet {
                 }
                 break;
 
+            case "availableClass":
+
+                ClassDAO classDAO = new ClassDAO();
+                ScheduleDAO scheduleDAO = new ScheduleDAO();
+
+                List<Object[]> classList = classDAO.getOpenClassesForStudent();
+
+                for (Object[] row : classList) {
+
+                    int classId = (int) row[0];
+
+                    List<Schedule> schedules = scheduleDAO.getSchedulesByClass(classId);
+
+                    Set<String> days = new LinkedHashSet<>();
+                    String timeRange = "";
+
+                    for (Schedule s : schedules) {
+
+                        java.time.LocalDate learningDate
+                                = ((java.sql.Date) s.getLearningDate()).toLocalDate();
+
+                        java.time.DayOfWeek d = learningDate.getDayOfWeek();
+
+                        switch (d) {
+                            case MONDAY:
+                                days.add("Mon");
+                                break;
+                            case TUESDAY:
+                                days.add("Tue");
+                                break;
+                            case WEDNESDAY:
+                                days.add("Wed");
+                                break;
+                            case THURSDAY:
+                                days.add("Thu");
+                                break;
+                            case FRIDAY:
+                                days.add("Fri");
+                                break;
+                            case SATURDAY:
+                                days.add("Sat");
+                                break;
+                            case SUNDAY:
+                                days.add("Sun");
+                                break;
+                        }
+
+                        if (timeRange.isEmpty()) {
+                            timeRange = s.getSlot().getStartTime() + " - " + s.getSlot().getEndTime();
+                        }
+                    }
+
+                    String dayString = String.join("-", days);
+
+                    Object[] newRow = new Object[10];
+
+                    System.arraycopy(row, 0, newRow, 0, row.length);
+
+                    newRow[8] = dayString;
+                    newRow[9] = timeRange;
+
+                    int index = classList.indexOf(row);
+                    classList.set(index, newRow);
+                }
+
+                request.setAttribute("classList", classList);
+
+                request.setAttribute("home_view", "student/studentClassList.jsp");
+
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+
+                break;
         }
     }
 

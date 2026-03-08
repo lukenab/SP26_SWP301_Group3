@@ -4,7 +4,10 @@
  */
 package controller;
 
+import dao.ClassDAO;
+import dao.FeedbackDAO;
 import dao.TeacherDAO;
+import dao.UserDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -16,6 +19,8 @@ import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
 import model.Classes;
+import model.Enrollment;
+import model.Feedback;
 import model.User;
 
 /**
@@ -66,15 +71,16 @@ public class FeedbackController extends HttpServlet {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
 
-        if (user == null || user.getRole() == null || user.getRole().getRoleId() != 4) {
+        if (user == null || user.getRole() == null || (user.getRole().getRoleId() != 4 && user.getRole().getRoleId() != 5)) {
             response.sendRedirect("login.jsp");
             return;
         }
 
         TeacherDAO teacherDAO = new TeacherDAO();
+        ClassDAO classDAO = new ClassDAO();
         String action = request.getParameter("action");
         if (action == null) {
-            action = "viewAll"; 
+            action = "viewAll";
         }
 
         switch (action) {
@@ -84,13 +90,62 @@ public class FeedbackController extends HttpServlet {
                 List<Classes> classList = teacherDAO.getAllClassOfTeacherID(user.getUserId());
                 request.setAttribute("classList", classList);
                 request.setAttribute("from", from);
-                request.setAttribute("classId", classId); 
+                request.setAttribute("classId", classId);
                 Map<String, Object> data = teacherDAO.getTeacherFeedbackData(user.getUserId());
                 request.setAttribute("feedbackList", data.get("feedbackList"));
                 request.setAttribute("studentNameMap", data.get("studentNameMap"));
 
                 request.setAttribute("home_view", "teacher/feedback_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
+            case "viewStudentCoursesFeedback":
+
+                if (user.getRole().getRoleId() != 5) {
+                    response.sendRedirect("login.jsp");
+                    return;
+                }
+
+                List<Object[]> classListFeedback
+                        = classDAO.getClassesByStudentId(user.getUserId());
+
+                request.setAttribute("classList", classListFeedback);
+
+                request.setAttribute("home_view",
+                        "student/studentFeedbackCourses.jsp");
+
+                request.getRequestDispatcher("dashboard.jsp")
+                        .forward(request, response);
+
+                break;
+
+            case "writeFeedback":
+
+                if (user.getRole().getRoleId() != 5) {
+                    response.sendRedirect("login.jsp");
+                    return;
+                }
+
+                int enrollmentId = Integer.parseInt(request.getParameter("enrollmentId"));
+
+                List<Object[]> classes = classDAO.getClassesByStudentId(user.getUserId());
+
+                Object[] selectedClass = null;
+
+                for (Object[] c : classes) {
+                    if ((int) c[0] == enrollmentId) {
+                        selectedClass = c;
+                        break;
+                    }
+                }
+
+                request.setAttribute("classInfo", selectedClass);
+                request.setAttribute("enrollmentId", enrollmentId);
+
+                request.setAttribute("home_view", "student/studentFeedback.jsp");
+
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+
                 break;
         }
     }
@@ -106,7 +161,70 @@ public class FeedbackController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        if (user == null || user.getRole() == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String action = request.getParameter("action");
+
+        try {
+
+            switch (action) {
+
+                case "studentFeedback":
+
+                    if (user.getRole().getRoleId() != 5) {
+                        response.sendRedirect("login.jsp");
+                        return;
+                    }
+
+                    int enrollmentId = Integer.parseInt(request.getParameter("enrollmentId"));
+                    int rating = Integer.parseInt(request.getParameter("rating"));
+                    String comment = request.getParameter("comment");
+
+                    FeedbackDAO feedbackDAO = new FeedbackDAO();
+
+                    if (feedbackDAO.isFeedbackExist(enrollmentId)) {
+                        session.setAttribute("error", "You already sent feedback for this course!");
+                        response.sendRedirect("feedback?action=writeFeedback&enrollmentId=" + enrollmentId);
+                        return;
+                    }
+
+                    Enrollment enrollment = new Enrollment();
+                    enrollment.setEnrollmentId(enrollmentId);
+
+                    Feedback feedback = new Feedback();
+                    feedback.setEnrollment(enrollment);
+                    feedback.setRating(rating);
+                    feedback.setComment(comment);
+
+                    boolean result = feedbackDAO.studentFeedback(feedback);
+
+                    if (result) {
+                        session.setAttribute("success", "Feedback sent successfully!");
+                    } else {
+                        session.setAttribute("message", "Send feedback failed!");
+                    }
+
+                    response.sendRedirect("feedback?action=writeFeedback&enrollmentId=" + enrollmentId);
+                    break;
+
+                default:
+                    response.sendRedirect("dashboard");
+                    break;
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            session.setAttribute("message", "Error: " + e.getMessage());
+            response.sendRedirect("dashboard");
+
+        }
     }
 
     /**
