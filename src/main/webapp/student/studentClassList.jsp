@@ -100,8 +100,7 @@
                                 View Details
                             </a>
 
-                            <a href="registerClass?classId=${c[0]}"
-                               class="btn btn-primary">
+                            <a href="payment?action=checkout&classId=${c[0]}&className=${c[1]}&amount=${c[7]}" class="btn btn-primary">
                                 Register Now
                             </a>
 

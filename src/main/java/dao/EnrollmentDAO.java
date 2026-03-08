@@ -201,6 +201,47 @@ public class EnrollmentDAO extends DBContext {
         return 0;
     }
     
+   public int getOrCreateEnrollment(int studentId, int classId) {
+        int enrollmentId = -1;
+        try {
+            // BƯỚC CỨU CÁNH: Tự động thêm User vào bảng Student nếu chưa có (Tránh lỗi Khóa Ngoại)
+            String checkStudent = "SELECT StudentID FROM Student WHERE StudentID = ?";
+            PreparedStatement psStudent = conn.prepareStatement(checkStudent);
+            psStudent.setInt(1, studentId);
+            if (!psStudent.executeQuery().next()) {
+                PreparedStatement psInsertStudent = conn.prepareStatement("INSERT INTO Student (StudentID, EnrollmentDate) VALUES (?, GETDATE())");
+                psInsertStudent.setInt(1, studentId);
+                psInsertStudent.executeUpdate();
+            }
+
+            // 1. Kiểm tra xem sinh viên đã đăng ký lớp này trước đó chưa
+            String checkQuery = "SELECT EnrollmentID FROM Enrollment WHERE StudentID = ? AND ClassID = ?";
+            PreparedStatement psCheck = conn.prepareStatement(checkQuery);
+            psCheck.setInt(1, studentId);
+            psCheck.setInt(2, classId);
+            ResultSet rs = psCheck.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt("EnrollmentID"); // Trả về ID cũ nếu đã từng bấm đăng ký
+            }
+
+            // 2. Nếu chưa thì Insert tạo mới (Bổ sung FinalGrade = 0 để SQL không báo lỗi)
+            String insertQuery = "INSERT INTO Enrollment (StudentID, ClassID, EnrollDate, Status, FinalGrade) VALUES (?, ?, GETDATE(), 'Unpaid', 0)";
+            PreparedStatement psInsert = conn.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
+            psInsert.setInt(1, studentId);
+            psInsert.setInt(2, classId);
+            psInsert.executeUpdate();
+
+            ResultSet generatedKeys = psInsert.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                enrollmentId = generatedKeys.getInt(1); 
+            }
+        } catch (Exception e) {
+            System.out.println("Error at getOrCreateEnrollment: " + e.getMessage());
+        }
+        return enrollmentId;
+    }
+    
     public static void main(String[] args) {
         EnrollmentDAO dao = new EnrollmentDAO();
 //        System.out.println(dao.getEnrollmentById(0));

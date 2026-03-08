@@ -14,9 +14,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.util.List;
 import model.Payment;
+import model.User;
 
 /**
  *
@@ -32,10 +34,16 @@ public class PaymentController extends HttpServlet {
         if (action == null) {
             action = "list";
         }
-
         PaymentDAO paymentDAO = new PaymentDAO();
         CourseDAO courseDAO = new CourseDAO();
         ClassDAO classDAO = new ClassDAO();
+
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
 
         switch (action) {
             case "list":
@@ -43,6 +51,64 @@ public class PaymentController extends HttpServlet {
                 break;
             case "view":
                 handleViewPayment(request, response, paymentDAO);
+                break;
+            case "checkout":
+                try {
+                    // 1. Lấy thông tin từ URL do JSP gửi sang
+                    String classIdStr = request.getParameter("classId");
+                    String amountStr = request.getParameter("amount");
+                    String className = request.getParameter("className");
+
+                    if (classIdStr == null || amountStr == null) {
+                        response.sendRedirect("student?action=dashboard");
+                        return;
+                    }
+
+                    int classId = Integer.parseInt(classIdStr);
+                    double amount = Double.parseDouble(amountStr);
+
+                    // 2. GỌI DAO TẠO PHIẾU ĐĂNG KÝ (Lấy EnrollmentID xịn)
+                    dao.EnrollmentDAO enrollmentDAO = new dao.EnrollmentDAO();
+                    int enrollmentId = enrollmentDAO.getOrCreateEnrollment(currentUser.getUserId(), classId);
+
+                    if (enrollmentId == -1) {
+                        session.setAttribute("message", "Lỗi tạo phiếu đăng ký!");
+                        session.setAttribute("messageType", "error");
+                        response.sendRedirect("student?action=dashboard");
+                        return;
+                    }
+
+                    // 3. Cấu hình VietQR
+                    String bankId = "MB";
+                    String accountNo = "0907625043"; // Số tài khoản của bạn
+                    String accountName = "TRUNG TAM NGOAI NGU LMCS";
+
+                    // Nội dung chuyển khoản: LMCS + [Mã phiếu] + [Tên lớp]
+                    String rawAddInfo = "LMCS " + enrollmentId + " " + className;
+                    String addInfo = rawAddInfo.replaceAll(" ", "%20");
+                    String urlAccountName = accountName.replaceAll(" ", "%20");
+
+                    long finalAmount = (long) amount;
+
+                    String qrUrl = "https://img.vietqr.io/image/" + bankId + "-" + accountNo + "-compact2.png"
+                            + "?amount=" + finalAmount
+                            + "&addInfo=" + addInfo
+                            + "&accountName=" + urlAccountName;
+
+                    // 4. Đẩy dữ liệu sang trang payment.jsp
+                    request.setAttribute("qrUrl", qrUrl);
+                    request.setAttribute("amount", finalAmount);
+                    request.setAttribute("addInfo", rawAddInfo);
+                    request.setAttribute("enrollmentId", enrollmentId); // EnrollmentID hàng real
+
+                    request.getRequestDispatcher("payment.jsp").forward(request, response);
+
+                } catch (Exception e) {
+                    System.out.println("PaymentController doGet Error: " + e.getMessage());
+                    session.setAttribute("message", "Lỗi tải trang thanh toán!");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("dashboard");
+                }
                 break;
             default:
                 handleListPayments(request, response, paymentDAO, courseDAO, classDAO);
@@ -54,14 +120,50 @@ public class PaymentController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
+        if (action == null) {
+            response.sendRedirect("payment?action=list");
+            return;
+        }
+
         PaymentDAO paymentDAO = new PaymentDAO();
 
-        if ("approve".equals(action)) {
-            handleApprovePayment(request, response, paymentDAO);
-        } else if ("reject".equals(action)) {
-            handleRejectPayment(request, response, paymentDAO);
-        } else {
-            response.sendRedirect("payment?action=list");
+        switch (action) {
+            case "approve":
+                handleApprovePayment(request, response, paymentDAO);
+                break;
+            case "reject":
+                handleRejectPayment(request, response, paymentDAO);
+                break;
+            case "confirmPayment":
+                HttpSession session = request.getSession();
+                try {
+                    int enrollmentId = Integer.parseInt(request.getParameter("enrollmentId"));
+                    double amount = Double.parseDouble(request.getParameter("amount"));
+
+                    // Gọi hàm lưu vào DB với EvidenceImage = NULL và Status = 'Pending'
+                    boolean isSuccess = paymentDAO.confirmQRPayment(enrollmentId, amount);
+
+                    if (isSuccess) {
+                        session.setAttribute("message", "Xác nhận thành công! Vui lòng chờ trung tâm đối chiếu giao dịch.");
+                        session.setAttribute("messageType", "success");
+                    } else {
+                        session.setAttribute("message", "Có lỗi xảy ra khi xác nhận thanh toán, vui lòng thử lại.");
+                        session.setAttribute("messageType", "error");
+                    }
+
+                    // Chuyển hướng về dashboard
+                    response.sendRedirect("dashboard");
+
+                } catch (Exception e) {
+                    System.out.println("PaymentController doPost Error: " + e.getMessage());
+                    session.setAttribute("message", "Lỗi xử lý xác nhận thanh toán!");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("dashboard");
+                }
+                break;
+            default:
+                response.sendRedirect("payment?action=list");
+                break;
         }
     }
 
@@ -229,4 +331,3 @@ public class PaymentController extends HttpServlet {
         response.sendRedirect("payment?action=list");
     }
 }
-

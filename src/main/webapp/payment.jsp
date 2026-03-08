@@ -32,7 +32,7 @@
 
             <form action="payment" method="post">
                 <input type="hidden" name="action" value="confirmPayment">
-                <input type="hidden" name="enrollmentId" value="${param.enrollmentId}">
+                <input type="hidden" name="enrollmentId" value="${enrollmentId}">
                 <input type="hidden" name="amount" value="${amount}">
                 
                 <button type="submit" class="btn-confirm">TÔI ĐÃ CHUYỂN KHOẢN THÀNH CÔNG</button>

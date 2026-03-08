@@ -315,5 +315,24 @@ public class PaymentDAO extends DBContext {
         public String getStudentName() { return studentName; }
         public String getStudentEmail() { return studentEmail; }
     }
+    
+    public boolean confirmQRPayment(int enrollmentId, double amount) {
+        // Thay chữ NULL thành '' để lách luật SQL Server
+        String sql = "INSERT INTO Payment (EnrollmentID, Amount, PaymentDate, PaymentMethod, EvidenceImage, Status) "
+                     + "VALUES (?, ?, GETDATE(), 'QR Transfer', '', 'Pending')";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, enrollmentId);
+            ps.setDouble(2, amount);
+            
+            int rowAffected = ps.executeUpdate();
+            return rowAffected > 0;
+        } catch (Exception e) {
+            System.out.println("Error at confirmQRPayment: " + e.getMessage());
+        }
+        return false;
+    }
+    
+    
 }
 
