@@ -1,0 +1,44 @@
+.syllabus-page .learning-path-preview {
+    max-width: 520px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #3b4a65;
+}
+
+.syllabus-page .badge-soft {
+    background: #eef4ff;
+    color: #1f3f7a;
+    border: 1px solid #d8e5ff;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+}
+
+.syllabus-page .status-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 72px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.syllabus-page .status-active {
+    background: #eafaf1;
+    color: #1a7f46;
+}
+
+.syllabus-page .status-draft {
+    background: #fff5e7;
+    color: #9a6400;
+}
+
+.syllabus-page .syllabus-textarea {
+    min-height: 150px;
+    resize: vertical;
+    line-height: 1.6;
+}

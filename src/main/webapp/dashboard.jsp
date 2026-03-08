@@ -240,6 +240,13 @@
                         </li>
 
                         <li class="nav-links">
+                            <a href="syllabus?action=manage">
+                                <i class="bxr bx-book-content"></i>
+                                <span class="text nav-text">Manage Syllabus</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
                             <a href="schedule?action=manage">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">Schedule</span>
