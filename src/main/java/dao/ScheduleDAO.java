@@ -771,6 +771,7 @@ public class ScheduleDAO extends DBContext {
 
         return list;
     }
+    
 
     // Main method for testing
     public static void main(String[] args) {

@@ -336,6 +336,13 @@
                         </li>
 
                         <li class="nav-links">
+                            <a href="class?action=availableClass">
+                                <i class="bxr bx-book-open"></i>
+                                <span class="text nav-text">Available Classes</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
                             <a href="dashboard?action=profile">
                                 <i class="bxr bx-user"></i>
                                 <span class="text nav-text">Profile</span>
