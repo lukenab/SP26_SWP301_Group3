@@ -20,16 +20,17 @@ public class ClassDAO extends DBContext {
     public List<Object[]> getClassManagementList() {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, u.FullName AS TeacherName, "
-                + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount "
+                + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount, "
+                + "co.TotalSlots, DATEADD(DAY, -5, c.StartDate) AS RegistrationDeadline "
                 + "FROM Class c "
                 + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
                 + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
                 + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
-                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status "
+                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status, co.TotalSlots "
                 + "ORDER BY c.StartDate DESC, c.ClassID DESC";
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Object[] row = new Object[8];
+                Object[] row = new Object[10];
                 row[0] = rs.getInt("ClassID");
                 row[1] = rs.getString("ClassName");
                 row[2] = rs.getString("CourseName");
@@ -38,6 +39,8 @@ public class ClassDAO extends DBContext {
                 row[5] = rs.getDate("EndDate");
                 row[6] = rs.getString("Status");
                 row[7] = rs.getInt("StudentCount");
+                row[8] = rs.getInt("TotalSlots");
+                row[9] = rs.getDate("RegistrationDeadline");
                 list.add(row);
             }
         } catch (Exception e) {
@@ -48,18 +51,19 @@ public class ClassDAO extends DBContext {
 
     public Object[] getClassById(int classId) {
         String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, u.FullName AS TeacherName, "
-                + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount "
+                + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount, "
+                + "co.TotalSlots, DATEADD(DAY, -5, c.StartDate) AS RegistrationDeadline "
                 + "FROM Class c "
                 + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
                 + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
                 + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
                 + "WHERE c.ClassID = ? "
-                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status";
+                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status, co.TotalSlots";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, classId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Object[] row = new Object[8];
+                    Object[] row = new Object[10];
                     row[0] = rs.getInt("ClassID");
                     row[1] = rs.getString("ClassName");
                     row[2] = rs.getString("CourseName");
@@ -68,6 +72,8 @@ public class ClassDAO extends DBContext {
                     row[5] = rs.getDate("EndDate");
                     row[6] = rs.getString("Status");
                     row[7] = rs.getInt("StudentCount");
+                    row[8] = rs.getInt("TotalSlots");
+                    row[9] = rs.getDate("RegistrationDeadline");
                     return row;
                 }
             }

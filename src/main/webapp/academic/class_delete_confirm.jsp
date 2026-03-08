@@ -6,6 +6,17 @@
 <c:set var="isActive" value="${classInfo[6] == 'Active'}"/>
 <fmt:formatDate value="${classInfo[4]}" pattern="dd/MM/yyyy" var="startDateFormatted"/>
 <fmt:formatDate value="${classInfo[5]}" pattern="dd/MM/yyyy" var="endDateFormatted"/>
+<c:if test="${not empty classInfo[9]}">
+    <fmt:formatDate value="${classInfo[9]}" pattern="dd/MM/yyyy" var="registrationDeadlineFormatted"/>
+</c:if>
+<c:choose>
+    <c:when test="${not empty registrationDeadlineFormatted}">
+        <c:set var="registrationPeriodDisplay" value="${registrationDeadlineFormatted}"/>
+    </c:when>
+    <c:otherwise>
+        <c:set var="registrationPeriodDisplay" value="N/A"/>
+    </c:otherwise>
+</c:choose>
 
 <div class="mb-4">
     <div class="content-header">
@@ -68,6 +79,17 @@
             <div class="form-group">
                 <label for="endDate">End Date</label>
                 <input type="text" id="endDate" value="${endDateFormatted}" readonly>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="text" id="quantity" value="${classInfo[7]}/${classInfo[8]}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="registrationDeadline">Registration Deadline</label>
+                <input type="text" id="registrationDeadline" value="${registrationPeriodDisplay}" readonly>
             </div>
         </div>
 
