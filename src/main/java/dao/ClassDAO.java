@@ -9,6 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import model.Classes;
+import model.Course;
+import model.Employee;
 import utils.DBContext;
 
 /**
@@ -47,6 +50,36 @@ public class ClassDAO extends DBContext {
             System.out.println("Fail to get class management list: " + e.getMessage());
         }
         return list;
+    }
+
+    public Classes getClassByID(int id) {
+        String sql = "SELECT * FROM Class WHERE ClassID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                CourseDAO courseDAO = new CourseDAO();
+                Course course = courseDAO.getCourseById(rs.getInt("CourseID"));
+
+                EmployeeDAO employeeDAO = new EmployeeDAO();
+                Employee employee = employeeDAO.getEmployeeById(rs.getInt("TeacherID"));
+
+                return new Classes(
+                        rs.getInt("ClassID"),
+                        rs.getString("ClassName"),
+                        course,
+                        employee,
+                        rs.getDate("StartDate"),
+                        rs.getDate("EndDate"),
+                        rs.getString("Status")
+                );
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail to get class by ID: " + e.getMessage());
+        }
+        return null;
     }
 
     public Object[] getClassById(int classId) {
@@ -222,5 +255,84 @@ public class ClassDAO extends DBContext {
             System.out.println("Fail to get teacher id by class id: " + e.getMessage());
         }
         return 0;
+    }
+
+    public List<Object[]> getClassesByStudentId(int studentId) {
+
+        List<Object[]> list = new ArrayList<>();
+
+        String sql = "SELECT e.EnrollmentID, c.ClassName, co.CourseName, u.FullName AS TeacherName "
+                + "FROM Enrollment e "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "JOIN [User] u ON c.TeacherID = u.UserID "
+                + "WHERE e.StudentID = ? "
+                + "AND e.Status = 'Active'";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, studentId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                Object[] row = new Object[4];
+
+                row[0] = rs.getInt("EnrollmentID");
+                row[1] = rs.getString("ClassName");
+                row[2] = rs.getString("CourseName");
+                row[3] = rs.getString("TeacherName");
+
+                list.add(row);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public List<Object[]> getOpenClassesForStudent() {
+
+        List<Object[]> list = new ArrayList<>();
+
+        String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, "
+                + "u.FullName AS TeacherName, "
+                + "c.StartDate, c.EndDate, "
+                + "COUNT(e.EnrollmentID) AS StudentCount, "
+                + "co.TuitionFee "
+                + "FROM Class c "
+                + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
+                + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
+                + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
+                + "WHERE c.Status = 'Active' "
+                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, "
+                + "u.FullName, c.StartDate, c.EndDate, co.TuitionFee "
+                + "ORDER BY c.StartDate ASC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+
+                Object[] row = new Object[8];
+
+                row[0] = rs.getInt("ClassID");
+                row[1] = rs.getString("ClassName");
+                row[2] = rs.getString("CourseName");
+                row[3] = rs.getString("TeacherName");
+                row[4] = rs.getDate("StartDate");
+                row[5] = rs.getDate("EndDate");
+                row[6] = rs.getInt("StudentCount");
+                row[7] = rs.getDouble("TuitionFee");
+
+                list.add(row);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail to get open classes: " + e.getMessage());
+        }
+
+        return list;
     }
 }
