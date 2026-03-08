@@ -4,10 +4,14 @@
  */
 package dao;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import model.Classes;
+import model.Enrollment;
+import model.Student;
 import utils.DBContext;
 
 /**
@@ -15,6 +19,60 @@ import utils.DBContext;
  * @author Legion
  */
 public class EnrollmentDAO extends DBContext {
+    
+    public List<Enrollment> getAllEnrollment(){
+        List<Enrollment> list = new ArrayList<>();
+        String sql = "SELECT * FROM Enrollment";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                int enrollmentId = rs.getInt("EnrollmentID");
+                
+                StudentDAO studentDAO = new StudentDAO();
+                Student student = studentDAO.getStudentById(rs.getInt("StudentID"));
+                
+                ClassDAO classDAO = new ClassDAO();
+                Classes cl = classDAO.getClassByID(rs.getInt("ClassID"));
+                Date enrollDate = rs.getDate("EnrollDate");
+                String status = rs.getString("Status");
+                Double finalGrade = rs.getDouble("FinalGrade");
+                
+                Enrollment enrollment = new Enrollment(enrollmentId, student, cl, enrollDate, status, finalGrade);
+                list.add(enrollment);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get all enrollment: " +e.getMessage());
+        }
+        return list;
+    }
+    
+    public Enrollment getEnrollmentById(int id){
+        String sql = "SELECT * FROM Enrollment WHERE EnrollmentID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                int enrollmentId = rs.getInt("EnrollmentID");
+                
+                StudentDAO studentDAO = new StudentDAO();
+                Student student = studentDAO.getStudentById(rs.getInt("StudentID"));
+                
+                ClassDAO classDAO = new ClassDAO();
+                Classes cl = classDAO.getClassByID(rs.getInt("ClassID"));
+                Date enrollDate = rs.getDate("EnrollDate");
+                String status = rs.getString("Status");
+                Double finalGrade = rs.getDouble("FinalGrade");
+                
+                Enrollment enrollment = new Enrollment(enrollmentId, student, cl, enrollDate, status, finalGrade);
+                return enrollment;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get enrollment by ID: " +e.getMessage());
+        }
+        return null;
+    }
 
     public List<Object[]> getStudentsInClass(int classId) {
         List<Object[]> list = new ArrayList<>();
@@ -141,6 +199,11 @@ public class EnrollmentDAO extends DBContext {
             }
         }
         return 0;
+    }
+    
+    public static void main(String[] args) {
+        EnrollmentDAO dao = new EnrollmentDAO();
+//        System.out.println(dao.getEnrollmentById(0));
     }
 
 }
