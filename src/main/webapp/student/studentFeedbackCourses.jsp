@@ -3,57 +3,57 @@
 
 <style>
 
-.feedback-container{
-    padding:20px 10px;
-}
+    .feedback-container{
+        padding:20px 10px;
+    }
 
-.feedback-card{
-    border-radius:18px;
-    border:none;
-    transition:all 0.3s ease;
-}
+    .feedback-card{
+        border-radius:18px;
+        border:none;
+        transition:all 0.3s ease;
+    }
 
-.feedback-card:hover{
-    transform:translateY(-6px);
-    box-shadow:0 15px 30px rgba(0,0,0,0.12);
-}
+    .feedback-card:hover{
+        transform:translateY(-6px);
+        box-shadow:0 15px 30px rgba(0,0,0,0.12);
+    }
 
-.feedback-title{
-    font-size:1.2rem;
-    font-weight:600;
-    margin-bottom:10px;
-}
+    .feedback-title{
+        font-size:1.2rem;
+        font-weight:600;
+        margin-bottom:10px;
+    }
 
-.teacher-name{
-    font-size:14px;
-    color:#6c757d;
-}
+    .teacher-name{
+        font-size:14px;
+        color:#6c757d;
+    }
 
-.feedback-btn{
-    border-radius:50px;
-    font-weight:500;
-    padding:8px 0;
-}
+    .feedback-btn{
+        border-radius:50px;
+        font-weight:500;
+        padding:8px 0;
+    }
 
-.empty-box{
-    padding:40px;
-    border-radius:12px;
-}
+    .empty-box{
+        padding:40px;
+        border-radius:12px;
+    }
 
-/* DARK MODE */
+    /* DARK MODE */
 
-body.dark .feedback-card{
-    background:#1e1e1e;
-    box-shadow:0 10px 25px rgba(0,0,0,0.6);
-}
+    body.dark .feedback-card{
+        background:#1e1e1e;
+        box-shadow:0 10px 25px rgba(0,0,0,0.6);
+    }
 
-body.dark .feedback-title{
-    color:#fff;
-}
+    body.dark .feedback-title{
+        color:#fff;
+    }
 
-body.dark .teacher-name{
-    color:#b0b3b8;
-}
+    body.dark .teacher-name{
+        color:#b0b3b8;
+    }
 
 </style>
 
@@ -116,11 +116,11 @@ body.dark .teacher-name{
 
 
                                 <a href="feedback?action=writeFeedback&enrollmentId=${c[0]}"
-                                   class="btn btn-outline-primary feedback-btn w-100">
-
+                                   class="btn btn-outline-primary feedback-btn w-100"
+                                   style="display: flex; align-items: center; justify-content: center; text-align: center; background-color: #0d6efd; color: white; border-color: #0d6efd; cursor: default;">
                                     Give Feedback
-
                                 </a>
+
 
                             </div>
 
