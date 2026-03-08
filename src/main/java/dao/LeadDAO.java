@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import model.Consultation;
 import model.Course;
 import model.Lead;
 import utils.DBContext;
@@ -30,12 +31,17 @@ public class LeadDAO extends DBContext {
         syncConvertedStatusForAllLeads();
 
         String sql = "SELECT l.LeadID, l.FullName, l.Email, l.Phone, "
-        + "l.InterestedCourseID, co.CourseName, "
-        + "l.Status, "
-        + "l.CreateDate, c.Note "
-        + "FROM Lead l "
-        + "LEFT JOIN Course co ON l.InterestedCourseID = co.CourseID "
-        + "LEFT JOIN Consultation c ON l.LeadID = c.LeadID";
+                + "l.InterestedCourseID, co.CourseName, "
+                + "l.Status, "
+                + "l.CreateDate, latest.Note, COALESCE(latest.ConsultDate, l.CreateDate) AS LastUpdatedDate "
+                + "FROM Lead l "
+                + "LEFT JOIN Course co ON l.InterestedCourseID = co.CourseID "
+                + "OUTER APPLY ( "
+                + "    SELECT TOP 1 c.Note, c.ConsultDate "
+                + "    FROM Consultation c "
+                + "    WHERE c.LeadID = l.LeadID "
+                + "    ORDER BY c.ConsultDate DESC, c.ConsultationID DESC "
+                + ") latest";
 
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -52,7 +58,7 @@ public class LeadDAO extends DBContext {
                 String courseName = rs.getString("CourseName");
 
                 String status = rs.getString("Status");
-                
+
                 Timestamp ts = rs.getTimestamp("CreateDate");
                 LocalDateTime createDate = null;
                 if (ts != null) {
@@ -60,6 +66,11 @@ public class LeadDAO extends DBContext {
                 }
 
                 String note = rs.getString("Note");
+                Timestamp updatedTs = rs.getTimestamp("LastUpdatedDate");
+                LocalDateTime lastUpdatedDate = null;
+                if (updatedTs != null) {
+                    lastUpdatedDate = updatedTs.toLocalDateTime();
+                }
 
                 Course course = null;
                 if (courseName != null) {
@@ -71,6 +82,7 @@ public class LeadDAO extends DBContext {
                 Lead lead = new Lead(leadID, fullName, email, phone, interestedCourseID, course, status, createDate);
 
                 lead.setNote(note);
+                lead.setLastUpdatedDate(lastUpdatedDate);
 
                 list.add(lead);
             }
@@ -82,7 +94,8 @@ public class LeadDAO extends DBContext {
         return list;
     }
 
-    public List<Lead> searchAndFilterLeads(String searchQuery, String statusFilter) {
+    public List<Lead> searchAndFilterLeads(String searchQuery, String statusFilter, Integer interestCourseId,
+            LocalDateTime fromDate, LocalDateTime toDate) {
 
         List<Lead> list = new ArrayList<>();
 
@@ -91,21 +104,38 @@ public class LeadDAO extends DBContext {
         StringBuilder sql = new StringBuilder("SELECT l.LeadID, l.FullName, l.Email, l.Phone, "
                 + "l.InterestedCourseID, co.CourseName, "
                 + "l.Status, "
-                + "l.CreateDate, c.Note "
+                + "l.CreateDate, latest.Note, COALESCE(latest.ConsultDate, l.CreateDate) AS LastUpdatedDate "
                 + "FROM Lead l "
                 + "LEFT JOIN Course co ON l.InterestedCourseID = co.CourseID "
-                + "LEFT JOIN Consultation c ON l.LeadID = c.LeadID "
+                + "OUTER APPLY ( "
+                + "    SELECT TOP 1 c.Note, c.ConsultDate "
+                + "    FROM Consultation c "
+                + "    WHERE c.LeadID = l.LeadID "
+                + "    ORDER BY c.ConsultDate DESC, c.ConsultationID DESC "
+                + ") latest "
                 + "WHERE 1=1 ");
 
         boolean hasSearch = searchQuery != null && !searchQuery.trim().isEmpty();
         boolean hasStatus = statusFilter != null && !statusFilter.trim().isEmpty()
                 && !"all".equalsIgnoreCase(statusFilter.trim());
+        boolean hasInterest = interestCourseId != null && interestCourseId > 0;
+        boolean hasFromDate = fromDate != null;
+        boolean hasToDate = toDate != null;
 
         if (hasSearch) {
             sql.append("AND (l.FullName LIKE ? OR l.Email LIKE ?) ");
         }
         if (hasStatus) {
             sql.append("AND l.Status = ? ");
+        }
+        if (hasInterest) {
+            sql.append("AND l.InterestedCourseID = ? ");
+        }
+        if (hasFromDate) {
+            sql.append("AND l.CreateDate >= ? ");
+        }
+        if (hasToDate) {
+            sql.append("AND l.CreateDate <= ? ");
         }
 
         try {
@@ -119,6 +149,15 @@ public class LeadDAO extends DBContext {
             }
             if (hasStatus) {
                 ps.setString(index++, statusFilter.trim());
+            }
+            if (hasInterest) {
+                ps.setInt(index++, interestCourseId);
+            }
+            if (hasFromDate) {
+                ps.setTimestamp(index++, Timestamp.valueOf(fromDate));
+            }
+            if (hasToDate) {
+                ps.setTimestamp(index++, Timestamp.valueOf(toDate));
             }
 
             ResultSet rs = ps.executeQuery();
@@ -142,6 +181,11 @@ public class LeadDAO extends DBContext {
                 }
 
                 String note = rs.getString("Note");
+                Timestamp updatedTs = rs.getTimestamp("LastUpdatedDate");
+                LocalDateTime lastUpdatedDate = null;
+                if (updatedTs != null) {
+                    lastUpdatedDate = updatedTs.toLocalDateTime();
+                }
 
                 Course course = null;
                 if (courseName != null) {
@@ -152,6 +196,7 @@ public class LeadDAO extends DBContext {
 
                 Lead lead = new Lead(leadID, fullName, email, phone, interestedCourseID, course, status, createDate);
                 lead.setNote(note);
+                lead.setLastUpdatedDate(lastUpdatedDate);
                 list.add(lead);
             }
 
@@ -162,14 +207,200 @@ public class LeadDAO extends DBContext {
         return list;
     }
 
+    public List<Lead> searchAndFilterLeadsPaged(String searchQuery, String statusFilter, Integer interestCourseId,
+            LocalDateTime fromDate, LocalDateTime toDate, int page, int pageSize) {
+
+        List<Lead> list = new ArrayList<>();
+
+        syncConvertedStatusForAllLeads();
+
+        StringBuilder sql = new StringBuilder("SELECT l.LeadID, l.FullName, l.Email, l.Phone, "
+                + "l.InterestedCourseID, co.CourseName, "
+                + "l.Status, "
+                + "l.CreateDate, latest.Note, COALESCE(latest.ConsultDate, l.CreateDate) AS LastUpdatedDate "
+                + "FROM Lead l "
+                + "LEFT JOIN Course co ON l.InterestedCourseID = co.CourseID "
+                + "OUTER APPLY ( "
+                + "    SELECT TOP 1 c.Note, c.ConsultDate "
+                + "    FROM Consultation c "
+                + "    WHERE c.LeadID = l.LeadID "
+                + "    ORDER BY c.ConsultDate DESC, c.ConsultationID DESC "
+                + ") latest "
+                + "WHERE 1=1 ");
+
+        boolean hasSearch = searchQuery != null && !searchQuery.trim().isEmpty();
+        boolean hasStatus = statusFilter != null && !statusFilter.trim().isEmpty()
+                && !"all".equalsIgnoreCase(statusFilter.trim());
+        boolean hasInterest = interestCourseId != null && interestCourseId > 0;
+        boolean hasFromDate = fromDate != null;
+        boolean hasToDate = toDate != null;
+
+        if (hasSearch) {
+            sql.append("AND (l.FullName LIKE ? OR l.Email LIKE ?) ");
+        }
+        if (hasStatus) {
+            sql.append("AND l.Status = ? ");
+        }
+        if (hasInterest) {
+            sql.append("AND l.InterestedCourseID = ? ");
+        }
+        if (hasFromDate) {
+            sql.append("AND l.CreateDate >= ? ");
+        }
+        if (hasToDate) {
+            sql.append("AND l.CreateDate <= ? ");
+        }
+
+        sql.append("ORDER BY COALESCE(latest.ConsultDate, l.CreateDate) DESC, l.LeadID DESC ");
+        sql.append("OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql.toString());
+            int index = 1;
+
+            if (hasSearch) {
+                String keyword = "%" + searchQuery.trim() + "%";
+                ps.setString(index++, keyword);
+                ps.setString(index++, keyword);
+            }
+            if (hasStatus) {
+                ps.setString(index++, statusFilter.trim());
+            }
+            if (hasInterest) {
+                ps.setInt(index++, interestCourseId);
+            }
+            if (hasFromDate) {
+                ps.setTimestamp(index++, Timestamp.valueOf(fromDate));
+            }
+            if (hasToDate) {
+                ps.setTimestamp(index++, Timestamp.valueOf(toDate));
+            }
+
+            int safePage = Math.max(1, page);
+            int safePageSize = Math.max(1, pageSize);
+            int offset = (safePage - 1) * safePageSize;
+            ps.setInt(index++, offset);
+            ps.setInt(index++, safePageSize);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                int leadID = rs.getInt("LeadID");
+                String fullName = rs.getString("FullName");
+                String email = rs.getString("Email");
+                String phone = rs.getString("Phone");
+
+                int interestedCourseID = rs.getInt("InterestedCourseID");
+                String courseName = rs.getString("CourseName");
+                String status = rs.getString("Status");
+
+                Timestamp ts = rs.getTimestamp("CreateDate");
+                LocalDateTime createDate = null;
+                if (ts != null) {
+                    createDate = ts.toLocalDateTime();
+                }
+
+                String note = rs.getString("Note");
+                Timestamp updatedTs = rs.getTimestamp("LastUpdatedDate");
+                LocalDateTime lastUpdatedDate = null;
+                if (updatedTs != null) {
+                    lastUpdatedDate = updatedTs.toLocalDateTime();
+                }
+
+                Course course = null;
+                if (courseName != null) {
+                    course = new Course();
+                    course.setCourseId(interestedCourseID);
+                    course.setCourseName(courseName);
+                }
+
+                Lead lead = new Lead(leadID, fullName, email, phone, interestedCourseID, course, status, createDate);
+                lead.setNote(note);
+                lead.setLastUpdatedDate(lastUpdatedDate);
+                list.add(lead);
+            }
+        } catch (SQLException e) {
+            System.out.println("Fail to search and filter leads with paging: " + e.getMessage());
+        }
+
+        return list;
+    }
+
+    public int countLeadsByFilters(String searchQuery, String statusFilter, Integer interestCourseId,
+            LocalDateTime fromDate, LocalDateTime toDate) {
+        syncConvertedStatusForAllLeads();
+
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) AS TotalCount FROM Lead l WHERE 1=1 ");
+
+        boolean hasSearch = searchQuery != null && !searchQuery.trim().isEmpty();
+        boolean hasStatus = statusFilter != null && !statusFilter.trim().isEmpty()
+                && !"all".equalsIgnoreCase(statusFilter.trim());
+        boolean hasInterest = interestCourseId != null && interestCourseId > 0;
+        boolean hasFromDate = fromDate != null;
+        boolean hasToDate = toDate != null;
+
+        if (hasSearch) {
+            sql.append("AND (l.FullName LIKE ? OR l.Email LIKE ?) ");
+        }
+        if (hasStatus) {
+            sql.append("AND l.Status = ? ");
+        }
+        if (hasInterest) {
+            sql.append("AND l.InterestedCourseID = ? ");
+        }
+        if (hasFromDate) {
+            sql.append("AND l.CreateDate >= ? ");
+        }
+        if (hasToDate) {
+            sql.append("AND l.CreateDate <= ? ");
+        }
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql.toString());
+            int index = 1;
+
+            if (hasSearch) {
+                String keyword = "%" + searchQuery.trim() + "%";
+                ps.setString(index++, keyword);
+                ps.setString(index++, keyword);
+            }
+            if (hasStatus) {
+                ps.setString(index++, statusFilter.trim());
+            }
+            if (hasInterest) {
+                ps.setInt(index++, interestCourseId);
+            }
+            if (hasFromDate) {
+                ps.setTimestamp(index++, Timestamp.valueOf(fromDate));
+            }
+            if (hasToDate) {
+                ps.setTimestamp(index++, Timestamp.valueOf(toDate));
+            }
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("TotalCount");
+            }
+        } catch (SQLException e) {
+            System.out.println("Fail to count leads by filters: " + e.getMessage());
+        }
+
+        return 0;
+    }
+
     public Lead getLeadByID(int id) {
 
         syncConvertedStatusForLead(id);
 
-        String sql = "SELECT l.*, c.Note, co.CourseName "
+        String sql = "SELECT l.*, latest.Note, co.CourseName, COALESCE(latest.ConsultDate, l.CreateDate) AS LastUpdatedDate "
                 + "FROM Lead l "
-                + "LEFT JOIN Consultation c ON l.LeadID = c.LeadID "
                 + "LEFT JOIN Course co ON l.InterestedCourseID = co.CourseID "
+                + "OUTER APPLY ( "
+                + "    SELECT TOP 1 c.Note, c.ConsultDate "
+                + "    FROM Consultation c "
+                + "    WHERE c.LeadID = l.LeadID "
+                + "    ORDER BY c.ConsultDate DESC, c.ConsultationID DESC "
+                + ") latest "
                 + "WHERE l.LeadID = ?";
 
         Lead lead = null;
@@ -191,6 +422,11 @@ public class LeadDAO extends DBContext {
                 LocalDateTime createDate = rs.getTimestamp("CreateDate").toLocalDateTime();
                 String note = rs.getString("Note");
                 String courseName = rs.getString("CourseName");
+                Timestamp updatedTs = rs.getTimestamp("LastUpdatedDate");
+                LocalDateTime lastUpdatedDate = null;
+                if (updatedTs != null) {
+                    lastUpdatedDate = updatedTs.toLocalDateTime();
+                }
 
                 Course course = null;
                 if (courseName != null) {
@@ -203,6 +439,7 @@ public class LeadDAO extends DBContext {
                         interestedCourseID, course, status, createDate);
 
                 lead.setNote(note);
+                lead.setLastUpdatedDate(lastUpdatedDate);
             }
 
         } catch (SQLException e) {
@@ -210,6 +447,65 @@ public class LeadDAO extends DBContext {
         }
 
         return lead;
+    }
+
+    public List<Consultation> getConsultationHistoryByLeadId(int leadId) {
+        List<Consultation> history = new ArrayList<>();
+        String sql = "SELECT c.ConsultationID, c.LeadID, c.SaleID, c.Note, c.ConsultDate, u.FullName AS SaleName "
+                + "FROM Consultation c "
+                + "LEFT JOIN [User] u ON c.SaleID = u.UserID "
+                + "WHERE c.LeadID = ? "
+                + "ORDER BY c.ConsultDate DESC, c.ConsultationID DESC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, leadId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Consultation consultation = new Consultation();
+                    consultation.setConsultationId(rs.getInt("ConsultationID"));
+
+                    int saleIdValue = rs.getInt("SaleID");
+                    if (!rs.wasNull()) {
+                        consultation.setSaleId(saleIdValue);
+                    }
+
+                    consultation.setSaleName(rs.getString("SaleName"));
+                    consultation.setNote(rs.getString("Note"));
+
+                    Timestamp consultTs = rs.getTimestamp("ConsultDate");
+                    if (consultTs != null) {
+                        consultation.setConsultation(consultTs.toLocalDateTime());
+                    }
+
+                    history.add(consultation);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Fail to get consultation history: " + e.getMessage());
+        }
+
+        return history;
+    }
+
+    public boolean insertConsultationLog(int leadId, Integer saleId, String note, LocalDateTime consultDate) {
+        String sql = "INSERT INTO Consultation (LeadID, SaleID, Note, ConsultDate) VALUES (?, ?, ?, ?)";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, leadId);
+            if (saleId == null) {
+                ps.setNull(2, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(2, saleId);
+            }
+            ps.setString(3, note);
+            LocalDateTime safeDate = consultDate == null ? LocalDateTime.now() : consultDate;
+            ps.setTimestamp(4, Timestamp.valueOf(safeDate));
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("Fail to insert consultation log: " + e.getMessage());
+        }
+
+        return false;
     }
 
     public boolean isEmailExists(String email) {
@@ -221,6 +517,19 @@ public class LeadDAO extends DBContext {
             return rs.next();
         } catch (SQLException e) {
             System.out.println("Fail to check existing lead email: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean isPhoneExists(String phone) {
+        String sql = "SELECT 1 FROM Lead WHERE Phone = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, phone);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            System.out.println("Fail to check existing lead phone: " + e.getMessage());
         }
         return false;
     }
@@ -264,7 +573,7 @@ public class LeadDAO extends DBContext {
         String sqlLead = "INSERT INTO Lead (FullName, Email, Phone, InterestedCourseID, Status, CreateDate) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
 
-        String sqlConsult = "INSERT INTO Consultation (LeadID, Note) VALUES (?, ?)";
+        String sqlConsult = "INSERT INTO Consultation (LeadID, SaleID, Note, ConsultDate) VALUES (?, ?, ?, ?)";
 
         try {
             conn.setAutoCommit(false);
@@ -287,10 +596,14 @@ public class LeadDAO extends DBContext {
                 newLeadID = rs.getInt(1);
             }
 
-            PreparedStatement psConsult = conn.prepareStatement(sqlConsult);
-            psConsult.setInt(1, newLeadID);
-            psConsult.setString(2, lead.getNote());
-            psConsult.executeUpdate();
+            if (!isBlank(lead.getNote())) {
+                PreparedStatement psConsult = conn.prepareStatement(sqlConsult);
+                psConsult.setInt(1, newLeadID);
+                psConsult.setNull(2, java.sql.Types.INTEGER);
+                psConsult.setString(3, lead.getNote());
+                psConsult.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+                psConsult.executeUpdate();
+            }
 
             conn.commit();
 
@@ -309,8 +622,8 @@ public class LeadDAO extends DBContext {
 
         String sqlLead = "UPDATE Lead SET FullName = ?, Email = ?, Phone = ?, "
                 + "InterestedCourseID = ?, Status = ? WHERE LeadID = ?";
-        String sqlConsultUpdate = "UPDATE Consultation SET Note = ? WHERE LeadID = ?";
-        String sqlConsultInsert = "INSERT INTO Consultation (LeadID, Note) VALUES (?, ?)";
+
+        String sqlConsultInsert = "INSERT INTO Consultation (LeadID, SaleID, Note, ConsultDate) VALUES (?, ?, ?, ?)";
 
         try {
             conn.setAutoCommit(false);
@@ -324,17 +637,13 @@ public class LeadDAO extends DBContext {
             ps1.setInt(6, id);
             ps1.executeUpdate();
 
-            PreparedStatement ps2 = conn.prepareStatement(sqlConsultUpdate);
-            ps2.setString(1, note);
-            ps2.setInt(2, id);
-
-            int affected = ps2.executeUpdate();
-
-            if (affected == 0) {
-                PreparedStatement ps3 = conn.prepareStatement(sqlConsultInsert);
-                ps3.setInt(1, id);
-                ps3.setString(2, note);
-                ps3.executeUpdate();
+            if (!isBlank(note)) {
+                PreparedStatement ps2 = conn.prepareStatement(sqlConsultInsert);
+                ps2.setInt(1, id);
+                ps2.setNull(2, java.sql.Types.INTEGER);
+                ps2.setString(3, note.trim());
+                ps2.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+                ps2.executeUpdate();
             }
 
             conn.commit();
@@ -351,7 +660,7 @@ public class LeadDAO extends DBContext {
         }
     }
 
-   public void deleteLead(int id) {
+    public void deleteLead(int id) {
         String sql = "UPDATE Lead SET Status = 'Inactive' WHERE LeadID = ?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -360,9 +669,9 @@ public class LeadDAO extends DBContext {
         } catch (SQLException e) {
             System.out.println("Fail to soft delete lead: " + e.getMessage());
         }
-   }
+    }
 
-   public void restoreLead(int id) {
+    public void restoreLead(int id) {
         String sql = "UPDATE Lead SET Status = 'New' WHERE LeadID = ?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -371,7 +680,12 @@ public class LeadDAO extends DBContext {
         } catch (SQLException e) {
             System.out.println("Fail to restore lead: " + e.getMessage());
         }
-   }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
     public static void main(String[] args) {
         LeadDAO dao = new LeadDAO();
         List<Lead> list = dao.getAllLeads();

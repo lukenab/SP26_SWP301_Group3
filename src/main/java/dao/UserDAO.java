@@ -145,6 +145,19 @@ public class UserDAO extends DBContext {
         return false;
     }
 
+    public boolean isPhoneExists(String phone) {
+        String sql = "SELECT 1 FROM [User] WHERE Phone = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, phone);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (Exception e) {
+            System.out.println("Fail to check existing phone: " + e.getMessage());
+        }
+        return false;
+    }
+
     public Boolean addNewUserFull(String fullName, String email, String password, String phone, String address, Boolean gender, Date dob, String avatar, Boolean status, int roleId, Date hireDate, String education, String experience, Date enrollmentDate) {
         String sqlUser = "INSERT INTO [dbo].[User] ([FullName],[Email],[Password],[Phone],[Address],[Gender],[Dob],[Avatar],[Status],[RoleID]) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String sqlEmp = "INSERT INTO Employee (EmployeeID, HireDate, Education, Experience) VALUES (?, ?, ?, ?)";

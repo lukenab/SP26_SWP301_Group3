@@ -14,6 +14,9 @@ public class Consultation {
     private int consultationId;
     private Lead lead;
     private Employee employee;
+    private Integer saleId;
+    private String saleName;
+    private String interactionType;
     private String note;
     private LocalDateTime consultation;
 
@@ -52,6 +55,30 @@ public class Consultation {
         this.employee = employee;
     }
 
+    public Integer getSaleId() {
+        return saleId;
+    }
+
+    public void setSaleId(Integer saleId) {
+        this.saleId = saleId;
+    }
+
+    public String getSaleName() {
+        return saleName;
+    }
+
+    public void setSaleName(String saleName) {
+        this.saleName = saleName;
+    }
+
+    public String getInteractionType() {
+        return interactionType;
+    }
+
+    public void setInteractionType(String interactionType) {
+        this.interactionType = interactionType;
+    }
+
     public String getNote() {
         return note;
     }
@@ -70,9 +97,9 @@ public class Consultation {
 
     @Override
     public String toString() {
-        return "Consultation{" + "consultationId=" + consultationId + ", lead=" + lead + ", employee=" + employee + ", note=" + note + ", consultation=" + consultation + '}';
+        return "Consultation{" + "consultationId=" + consultationId + ", lead=" + lead + ", employee=" + employee + ", saleId=" + saleId + ", saleName=" + saleName + ", interactionType=" + interactionType + ", note=" + note + ", consultation=" + consultation + '}';
     }
 
-    
-    
+
+
 }

@@ -285,6 +285,27 @@
                             </a>
                         </li>
 
+                        <li class="nav-links">
+                            <a href="payment?action=all">
+                                <i class="bxr bx-check-circle"></i>
+                                <span class="text nav-text">View Payment Status</span>
+                            </a>
+                        </li>
+                        
+                        <li class="nav-links">
+                            <a href="lead?action=salesReport">
+                                <i class="bxr bx-file-report"></i>
+                                <span class="text nav-text">Sales Reports</span>
+                            </a>
+                        </li>
+                        
+                        <li class="nav-links">
+                            <a href="lead?action=revenueReport">
+                                <i class="bxr bx-wallet-alt"></i>
+                                <span class="text nav-text">Revenue Report</span>
+                            </a>
+                        </li>
+
                         <c:if test="${sessionScope.user.role.manageFinance}">
                             <li class="nav-links">
                                 <a href="voucher?action=all">
