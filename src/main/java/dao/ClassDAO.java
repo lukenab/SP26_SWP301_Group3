@@ -175,4 +175,40 @@ public class ClassDAO extends DBContext {
         }
         return 0;
     }
+
+    public List<Object[]> getClassesByStudentId(int studentId) {
+
+        List<Object[]> list = new ArrayList<>();
+
+        String sql = "SELECT e.EnrollmentID, c.ClassName, co.CourseName, u.FullName AS TeacherName "
+                + "FROM Enrollment e "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "JOIN [User] u ON c.TeacherID = u.UserID "
+                + "WHERE e.StudentID = ? "
+                + "AND e.Status = 'Active'";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, studentId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                Object[] row = new Object[4];
+
+                row[0] = rs.getInt("EnrollmentID");
+                row[1] = rs.getString("ClassName");
+                row[2] = rs.getString("CourseName");
+                row[3] = rs.getString("TeacherName");
+
+                list.add(row);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
 }

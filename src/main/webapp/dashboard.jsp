@@ -191,7 +191,7 @@
                                 <span class="text nav-text">My Classes</span>
                             </a>
                         </li>
-                        
+
                         <li class="nav-links">
                             <a href="feedback">
                                 <i class="bxr bx-door"></i>
@@ -325,6 +325,13 @@
                             <a href="schedule?action=studentView">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">My Schedule</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="feedback?action=viewStudentCoursesFeedback">
+                                <i class="bxr bx-poll"></i>
+                                <span class="text nav-text">Course Feedback</span>
                             </a>
                         </li>
 
