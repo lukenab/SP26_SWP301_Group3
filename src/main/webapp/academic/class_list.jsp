@@ -188,24 +188,18 @@
                                 <a href="enrollment?action=addStudentForm&classId=${c[0]}" class="action-btn" title="Add Student">
                                     <i class='bx bx-user-plus'></i>
                                 </a>
-                                <form action="enrollment" method="post" style="display:inline;">
-                                    <input type="hidden" name="action" value="updateClassStatus">
-                                    <input type="hidden" name="classId" value="${c[0]}">
-                                    <c:choose>
-                                        <c:when test="${isActive}">
-                                            <input type="hidden" name="status" value="Inactive">
-                                            <button type="submit" class="action-btn delete p-0 bg-transparent border-0" title="Set Inactive">
-                                                <i class='bx bx-lock'></i>
-                                            </button>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <input type="hidden" name="status" value="Active">
-                                            <button type="submit" class="action-btn p-0 bg-transparent border-0" title="Set Active">
-                                                <i class='bx bx-lock-open'></i>
-                                            </button>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </form>
+                                <c:choose>
+                                    <c:when test="${isActive}">
+                                        <a href="enrollment?action=deleteClass&classId=${c[0]}" class="action-btn delete" title="Set Inactive">
+                                            <i class='bx bx-lock'></i>
+                                        </a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a href="enrollment?action=deleteClass&classId=${c[0]}" class="action-btn" title="Set Active">
+                                            <i class='bx bx-lock-open'></i>
+                                        </a>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
                         </tr>
                     </c:forEach>

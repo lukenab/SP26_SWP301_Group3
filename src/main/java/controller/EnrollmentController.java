@@ -40,6 +40,26 @@ public class EnrollmentController extends HttpServlet {
                 request.setAttribute("home_view", "/academic/class_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
+            case "deleteClass":
+                String deleteClassIdParam = request.getParameter("classId");
+                if (deleteClassIdParam == null || deleteClassIdParam.isEmpty()) {
+                    response.sendRedirect("enrollment?action=classes");
+                    return;
+                }
+                try {
+                    int classId = Integer.parseInt(deleteClassIdParam);
+                    Object[] classInfo = classDAO.getClassById(classId);
+                    if (classInfo == null) {
+                        response.sendRedirect("enrollment?action=classes");
+                        return;
+                    }
+                    request.setAttribute("classInfo", classInfo);
+                    request.setAttribute("home_view", "/academic/class_delete_confirm.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                } catch (NumberFormatException e) {
+                    response.sendRedirect("enrollment?action=classes");
+                }
+                break;
             case "createClassForm":
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
@@ -174,6 +194,34 @@ public class EnrollmentController extends HttpServlet {
                     request.getSession().setAttribute("messageType", "success");
                 } else {
                     request.getSession().setAttribute("message", "Failed to update class status.");
+                    request.getSession().setAttribute("messageType", "error");
+                }
+                response.sendRedirect("enrollment?action=classes");
+            } catch (NumberFormatException e) {
+                request.getSession().setAttribute("message", "Invalid class ID.");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("enrollment?action=classes");
+            }
+        } else if ("deactivateClass".equals(action) || "activateClass".equals(action)) {
+            String classIdParam = request.getParameter("classId");
+            if (classIdParam == null || classIdParam.isEmpty()) {
+                request.getSession().setAttribute("message", "Invalid class status request.");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("enrollment?action=classes");
+                return;
+            }
+
+            String targetStatus = "deactivateClass".equals(action) ? "Inactive" : "Active";
+            try {
+                int classId = Integer.parseInt(classIdParam);
+                boolean updated = classDAO.updateClassStatus(classId, targetStatus);
+                if (updated) {
+                    request.getSession().setAttribute("message",
+                            "deactivateClass".equals(action) ? "Inactivate Class Success!" : "Activate Class Success!");
+                    request.getSession().setAttribute("messageType", "success");
+                } else {
+                    request.getSession().setAttribute("message",
+                            "deactivateClass".equals(action) ? "Fail To Inactivate Class" : "Fail To Activate Class");
                     request.getSession().setAttribute("messageType", "error");
                 }
                 response.sendRedirect("enrollment?action=classes");
