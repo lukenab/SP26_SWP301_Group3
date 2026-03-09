@@ -4,7 +4,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Forgot Password</title>
+        <title>Set New Password</title>
         <link href="css/login.css" rel="stylesheet" type="text/css"/>
         <link href="css/editUser.css" rel="stylesheet" type="text/css"/>
         <link href="css/forgotPassword.css" rel="stylesheet" type="text/css"/>
@@ -23,27 +23,35 @@
                 <c:remove var="messageType" scope="session" />
             </c:if>
 
-            <div class="login-card" style="height: 350px">
+            <div class="login-card" style="height: 450px">
                 <div class="login-header">
-                    <h2>Forgot Password</h2>
-                    <p>Enter your email to receive an OTP code</p>
+                    <h2>Reset Password</h2>
+                    <p>Please enter your new password below.</p>
                 </div>
 
                 <form class="login-form" action="forgotPassword" method="post">
-                    <input type="hidden" name="action" value="sendOTP">
+                    <input type="hidden" name="action" value="updatePassword">
                     
                     <div class="form-group">
-                        <div class="input-wrapper">
-                            <input type="email" id="email" name="email" required placeholder=" " style="height: 44px" />
-                            <label for="email">Your Email</label>
+                        <div class="input-wrapper password-wrapper">
+                            <input type="password" id="newPassword" name="newPassword" required placeholder=" " style="height: 44px" />
+                            <label for="newPassword">New Password</label>
                             <span class="input-border"></span>
                         </div>
                     </div>
 
-                    <div class="form-buttons" style="align-items: center; margin-top: 30px;">
+                    <div class="form-group" style="margin-top: 20px;">
+                        <div class="input-wrapper password-wrapper">
+                            <input type="password" id="confirmPassword" name="confirmPassword" required placeholder=" " style="height: 44px" />
+                            <label for="confirmPassword">Confirm New Password</label>
+                            <span class="input-border"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-buttons" style="align-items: center; margin-top: 35px;">
                         <a href="login" class="btn btn-cancel">Cancel</a>
                         <button type="submit" class="btn btn-save" style="height: 41px">
-                             Send OTP
+                             Save Password
                         </button>
                     </div>
                 </form>
@@ -56,5 +64,7 @@
                 if(toast) toast.style.display = 'none';
             }, 5000);
         </script>
+        
+        <script src="js/manageUser.js" type="text/javascript"></script>
     </body>
 </html>

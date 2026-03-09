@@ -6,7 +6,6 @@ package controller;
 
 import dao.UserDAO;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -33,7 +32,37 @@ public class ForgotPasswordController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher("forgotPassword.jsp").forward(request, response);
+        String action = request.getParameter("action");
+        
+        if(action == null){
+            action = "enterEmail";
+        }
+        
+        HttpSession session = request.getSession();
+        
+        switch(action){
+            case "enterEmail": 
+                request.getRequestDispatcher("forgotPassword.jsp").forward(request, response);
+                break;
+            
+            case "verifyOtp":
+                if(session.getAttribute("resetEmail") == null){
+                    response.sendRedirect("forgotPassword");
+                } else{
+                   request.getRequestDispatcher("verifyOtp.jsp").forward(request, response);
+                }
+                break;
+              
+            case "resetPassword": 
+                Boolean canReset = (Boolean) session.getAttribute("canResetPassword");
+                if(canReset != null && canReset){
+                    request.getRequestDispatcher("resetPassword.jsp").forward(request, response);
+                }
+                else{
+                    response.sendRedirect("forgotPassword");
+                }
+                break;
+        }
     }
 
     /**
@@ -44,40 +73,106 @@ public class ForgotPasswordController extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    @Override
+   @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String email = request.getParameter("email");
-        UserDAO userDAO = new UserDAO();
+        
+        String action = request.getParameter("action");
         HttpSession session = request.getSession();
+        UserDAO userDAO = new UserDAO();
 
-        User user = userDAO.getUserByEmail(email);
-        if (user != null) {
-            String plainPassword = EmailController.generateRandomPassword();
-            String hashedNewPassword = userDAO.hashMD5(plainPassword);
-
-            boolean isUpdated = userDAO.updatePassword(hashedNewPassword, user.getUserId());
-
-            if (isUpdated) {
-                boolean isEmailSent = EmailController.sendEmail(email, user.getFullName(), plainPassword);
-                if (isEmailSent) {
-                    session.setAttribute("message", "A new password has been sent to your email!");
-                    session.setAttribute("messageType", "success");
-                    response.sendRedirect("login.jsp");
-                } else {
-                    session.setAttribute("message", "Password reset but failed to send email. Please contact admin.");
-                    session.setAttribute("messageType", "error");
-                }
-            } else {
-                session.setAttribute("message", "System error! Cannot reset password.");
-                session.setAttribute("messageType", "error");
-                response.sendRedirect("forgotPassword");
-            }
+        if (action == null) {
+            action = "sendOTP"; 
         }
-        else{
-            session.setAttribute("message", "This email is not registered in our system!");
-            session.setAttribute("messageType", "error");
-            response.sendRedirect("forgotPassword");
+
+        switch (action) {
+            case "sendOTP":
+                String email = request.getParameter("email");
+                User user = userDAO.getUserByEmail(email);
+
+                if (user != null) {
+                    String otp = EmailController.generateOTP();
+                    boolean isEmailSent = EmailController.sendOTPEmail(email, user.getFullName(), otp);
+
+                    if (isEmailSent) {
+                        session.setAttribute("resetEmail", email);
+                        session.setAttribute("otpCode", otp);
+                        session.setMaxInactiveInterval(300); 
+
+                        session.setAttribute("message", "An OTP has been sent to your email!");
+                        session.setAttribute("messageType", "success");
+                        // Đẩy sang giao diện nhập OTP
+                        response.sendRedirect("forgotPassword?action=verifyOtp"); 
+                    } else {
+                        session.setAttribute("message", "Failed to send OTP email. Please try again.");
+                        session.setAttribute("messageType", "error");
+                        response.sendRedirect("forgotPassword");
+                    }
+                } else {
+                    session.setAttribute("message", "This email is not registered in our system!");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("forgotPassword");
+                }
+                break;
+
+            case "verifyOTP":
+                String inputOtp = request.getParameter("otp");
+                String sessionOtp = (String) session.getAttribute("otpCode");
+
+                if (sessionOtp == null) {
+                    session.setAttribute("message", "OTP has expired. Please request a new one.");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("forgotPassword");
+                    break;
+                }
+
+                if (inputOtp != null && inputOtp.trim().equals(sessionOtp)) {
+                    session.setAttribute("canResetPassword", true);
+                    session.removeAttribute("otpCode"); 
+                    response.sendRedirect("forgotPassword?action=resetPassword"); 
+                } else {
+                    session.setAttribute("message", "Invalid OTP code. Please try again.");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("forgotPassword?action=verifyOtp");
+                }
+                break;
+
+            case "updatePassword":
+                Boolean canReset = (Boolean) session.getAttribute("canResetPassword");
+                String resetEmail = (String) session.getAttribute("resetEmail");
+
+                if (canReset == null || !canReset || resetEmail == null) {
+                    response.sendRedirect("forgotPassword");
+                    break;
+                }
+
+                String newPass = request.getParameter("newPassword");
+                String confirmPass = request.getParameter("confirmPassword");
+
+                if (!newPass.equals(confirmPass)) {
+                    session.setAttribute("message", "Passwords do not match!");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("forgotPassword?action=resetPassword");
+                    break;
+                }
+
+                User targetUser = userDAO.getUserByEmail(resetEmail);
+                String hashedNewPassword = userDAO.hashMD5(newPass);
+                boolean isUpdated = userDAO.updatePassword(hashedNewPassword, targetUser.getUserId());
+
+                if (isUpdated) {
+                    session.removeAttribute("canResetPassword");
+                    session.removeAttribute("resetEmail");
+
+                    session.setAttribute("message", "Password reset successfully! Please login.");
+                    session.setAttribute("messageType", "success");
+                    response.sendRedirect("login");
+                } else {
+                    session.setAttribute("message", "System error. Cannot update password.");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("forgotPassword?action=resetPassword");
+                }
+                break;
         }
     }
 
