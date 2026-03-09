@@ -314,13 +314,21 @@ public class PaymentDAO extends DBContext {
         public String getStudentEmail() { return studentEmail; }
     }
     
-    public boolean confirmQRPayment(int enrollmentId, double amount) {
-        String sql = "INSERT INTO Payment (EnrollmentID, Amount, PaymentDate, PaymentMethod, EvidenceImage, Status) "
-                     + "VALUES (?, ?, GETDATE(), 'QR Transfer', '', 'Pending')";
+   public boolean confirmQRPayment(int enrollmentId, double amount, Integer voucherId) {
+        // Bổ sung thêm cột VoucherID vào lệnh INSERT
+        String sql = "INSERT INTO Payment (EnrollmentID, Amount, PaymentDate, PaymentMethod, EvidenceImage, Status, VoucherID) "
+                     + "VALUES (?, ?, GETDATE(), 'QR Transfer', '', 'Pending', ?)";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, enrollmentId);
             ps.setDouble(2, amount);
+            
+            // Nếu có dùng voucher thì insert ID, không có thì để NULL
+            if (voucherId != null) {
+                ps.setInt(3, voucherId);
+            } else {
+                ps.setNull(3, java.sql.Types.INTEGER);
+            }
             
             int rowAffected = ps.executeUpdate();
             return rowAffected > 0;
@@ -328,6 +336,22 @@ public class PaymentDAO extends DBContext {
             System.out.println("Error at confirmQRPayment: " + e.getMessage());
         }
         return false;
+    }
+    
+    // Hàm chuyên tạo URL ảnh VietQR
+    public String generateVietQRUrl(long amountToPay, String rawAddInfo) {
+        String bankId = "MB";
+        String accountNo = "0907625043";
+        String accountName = "LMCS Center";
+        
+        // Xử lý mã hóa khoảng trắng cho URL
+        String addInfo = rawAddInfo.replaceAll(" ", "%20");
+        String urlAccountName = accountName.replaceAll(" ", "%20");
+        
+        return "https://img.vietqr.io/image/" + bankId + "-" + accountNo + "-compact2.png"
+                + "?amount=" + amountToPay
+                + "&addInfo=" + addInfo
+                + "&accountName=" + urlAccountName;
     }
     
     

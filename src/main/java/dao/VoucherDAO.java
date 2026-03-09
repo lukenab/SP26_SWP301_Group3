@@ -210,4 +210,42 @@ public class VoucherDAO extends DBContext {
         voucher.setStatus(rs.getBoolean("Status"));
         return voucher;
     }
+
+    public boolean hasUserUsedVoucher(int studentId, int voucherId) {
+        boolean hasUsed = false;
+        String sql = "SELECT 1 FROM Enrollment WHERE StudentID = ? AND VoucherID = ? "
+                + "UNION "
+                + "SELECT 1 FROM Payment p JOIN Enrollment e ON p.EnrollmentID = e.EnrollmentID "
+                + "WHERE e.StudentID = ? AND p.VoucherID = ? AND p.Status != 'Rejected'";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, studentId);
+            ps.setInt(2, voucherId);
+            ps.setInt(3, studentId);
+            ps.setInt(4, voucherId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                hasUsed = true;
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi hasUserUsedVoucher: " + e.getMessage());
+        }
+        return hasUsed;
+    }
+
+    public double calculateDiscountAmount(Voucher voucher, double originalPrice) {
+        if (voucher == null || !voucher.isStatus()) {
+            return 0;
+        }
+
+        double discountAmount = 0;
+        if (voucher.getDiscountAmount() != null && voucher.getDiscountAmount().doubleValue() > 0) {
+            discountAmount = voucher.getDiscountAmount().doubleValue();
+        } else if (voucher.getDiscountPercent() > 0) {
+            discountAmount = originalPrice * (voucher.getDiscountPercent() / 100.0);
+        }
+
+        return discountAmount;
+    }
 }

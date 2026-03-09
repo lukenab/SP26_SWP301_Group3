@@ -335,4 +335,25 @@ public class ClassDAO extends DBContext {
 
         return list;
     }
+    
+    public double getClassPrice(int classId) {
+        double price = 0;
+        String sql = "SELECT co.TuitionFee "
+                   + "FROM Class c "
+                   + "JOIN Course co ON c.CourseID = co.CourseID "
+                   + "WHERE c.ClassID = ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                price = rs.getDouble("TuitionFee");
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get class price: " + e.getMessage());
+        }
+        
+        return price;
+    }
 }

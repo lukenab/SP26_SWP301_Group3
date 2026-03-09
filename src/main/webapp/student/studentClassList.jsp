@@ -3,10 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <div class="container-fluid student-course-container">
-
-    <!-- BREADCRUMB -->
     <div class="mb-4 mt-4">
-
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item">
@@ -36,7 +33,7 @@
                         <i class='bx bx-check-circle'></i>
                     </c:when>
                     <c:otherwise>
-                        <i class='bx bx-error-circle'></i>
+                        <i class='bx bx-cross-circle'></i>
                     </c:otherwise>
                 </c:choose>
             </div>
@@ -56,39 +53,27 @@
     </c:if>
 
 
-    <!-- CLASS CARDS -->
     <div class="row">
-
         <c:forEach var="c" items="${classList}">
-
             <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-
-                <div class="card shadow-sm h-100">
-
+                <div class="card shadow-sm h-100 border-0" style="border-radius: 8px; padding: 5px;">
                     <div class="card-body">
-
-                        <!-- STATUS -->
-                        <span class="badge bg-success mb-2">
-                            Open for Enrollment
-                        </span>
-
-                        <!-- CLASS NAME -->
-                        <h5 class="card-title">
+                        <h5 class="card-title" style="display: flex; justify-content: space-between">
                             Class: ${c[1]}
+                            <span class="badge bg-success mb-2">
+                                Open for Enrollment
+                            </span>
                         </h5>
 
-                        <!-- COURSE -->
                         <p class="text-muted">
                             Course: ${c[2]}
                         </p>
 
-                        <!-- TEACHER -->
                         <p>
                             <i class="bx bx-user"></i>
-                            ${c[3]}
+                            Instructor: ${c[3]}
                         </p>
 
-                        <!-- SCHEDULE -->
                         <p>
                             <i class="bx bx-calendar"></i>
                             ${c[8]}
@@ -129,17 +114,10 @@
                             <a href="payment?action=review&classId=${c[0]}&className=${c[1]}&amount=${c[7]}" class="btn btn-primary">
                                 Register Now
                             </a>
-
                         </div>
-
                     </div>
-
                 </div>
-
             </div>
-
         </c:forEach>
-
     </div>
-
 </div>
