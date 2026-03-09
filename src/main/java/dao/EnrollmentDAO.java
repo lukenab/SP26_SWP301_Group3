@@ -4,10 +4,14 @@
  */
 package dao;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import model.Classes;
+import model.Enrollment;
+import model.Student;
 import utils.DBContext;
 
 /**
@@ -15,6 +19,60 @@ import utils.DBContext;
  * @author Legion
  */
 public class EnrollmentDAO extends DBContext {
+    
+    public List<Enrollment> getAllEnrollment(){
+        List<Enrollment> list = new ArrayList<>();
+        String sql = "SELECT * FROM Enrollment";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                int enrollmentId = rs.getInt("EnrollmentID");
+                
+                StudentDAO studentDAO = new StudentDAO();
+                Student student = studentDAO.getStudentById(rs.getInt("StudentID"));
+                
+                ClassDAO classDAO = new ClassDAO();
+                Classes cl = classDAO.getClassByID(rs.getInt("ClassID"));
+                Date enrollDate = rs.getDate("EnrollDate");
+                String status = rs.getString("Status");
+                Double finalGrade = rs.getDouble("FinalGrade");
+                
+                Enrollment enrollment = new Enrollment(enrollmentId, student, cl, enrollDate, status, finalGrade);
+                list.add(enrollment);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get all enrollment: " +e.getMessage());
+        }
+        return list;
+    }
+    
+    public Enrollment getEnrollmentById(int id){
+        String sql = "SELECT * FROM Enrollment WHERE EnrollmentID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                int enrollmentId = rs.getInt("EnrollmentID");
+                
+                StudentDAO studentDAO = new StudentDAO();
+                Student student = studentDAO.getStudentById(rs.getInt("StudentID"));
+                
+                ClassDAO classDAO = new ClassDAO();
+                Classes cl = classDAO.getClassByID(rs.getInt("ClassID"));
+                Date enrollDate = rs.getDate("EnrollDate");
+                String status = rs.getString("Status");
+                Double finalGrade = rs.getDouble("FinalGrade");
+                
+                Enrollment enrollment = new Enrollment(enrollmentId, student, cl, enrollDate, status, finalGrade);
+                return enrollment;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get enrollment by ID: " +e.getMessage());
+        }
+        return null;
+    }
 
     public List<Object[]> getStudentsInClass(int classId) {
         List<Object[]> list = new ArrayList<>();
@@ -141,6 +199,52 @@ public class EnrollmentDAO extends DBContext {
             }
         }
         return 0;
+    }
+    
+   public int getOrCreateEnrollment(int studentId, int classId) {
+        int enrollmentId = -1;
+        try {
+            // BƯỚC CỨU CÁNH: Tự động thêm User vào bảng Student nếu chưa có (Tránh lỗi Khóa Ngoại)
+            String checkStudent = "SELECT StudentID FROM Student WHERE StudentID = ?";
+            PreparedStatement psStudent = conn.prepareStatement(checkStudent);
+            psStudent.setInt(1, studentId);
+            if (!psStudent.executeQuery().next()) {
+                PreparedStatement psInsertStudent = conn.prepareStatement("INSERT INTO Student (StudentID, EnrollmentDate) VALUES (?, GETDATE())");
+                psInsertStudent.setInt(1, studentId);
+                psInsertStudent.executeUpdate();
+            }
+
+            // 1. Kiểm tra xem sinh viên đã đăng ký lớp này trước đó chưa
+            String checkQuery = "SELECT EnrollmentID FROM Enrollment WHERE StudentID = ? AND ClassID = ?";
+            PreparedStatement psCheck = conn.prepareStatement(checkQuery);
+            psCheck.setInt(1, studentId);
+            psCheck.setInt(2, classId);
+            ResultSet rs = psCheck.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt("EnrollmentID"); // Trả về ID cũ nếu đã từng bấm đăng ký
+            }
+
+            // 2. Nếu chưa thì Insert tạo mới (Bổ sung FinalGrade = 0 để SQL không báo lỗi)
+            String insertQuery = "INSERT INTO Enrollment (StudentID, ClassID, EnrollDate, Status, FinalGrade) VALUES (?, ?, GETDATE(), 'Unpaid', 0)";
+            PreparedStatement psInsert = conn.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
+            psInsert.setInt(1, studentId);
+            psInsert.setInt(2, classId);
+            psInsert.executeUpdate();
+
+            ResultSet generatedKeys = psInsert.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                enrollmentId = generatedKeys.getInt(1); 
+            }
+        } catch (Exception e) {
+            System.out.println("Error at getOrCreateEnrollment: " + e.getMessage());
+        }
+        return enrollmentId;
+    }
+    
+    public static void main(String[] args) {
+        EnrollmentDAO dao = new EnrollmentDAO();
+//        System.out.println(dao.getEnrollmentById(0));
     }
 
 }

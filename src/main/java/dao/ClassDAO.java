@@ -9,6 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import model.Classes;
+import model.Course;
+import model.Employee;
 import utils.DBContext;
 
 /**
@@ -20,16 +23,17 @@ public class ClassDAO extends DBContext {
     public List<Object[]> getClassManagementList() {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, u.FullName AS TeacherName, "
-                + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount "
+                + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount, "
+                + "co.TotalSlots, DATEADD(DAY, -5, c.StartDate) AS RegistrationDeadline "
                 + "FROM Class c "
                 + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
                 + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
                 + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
-                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status "
+                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status, co.TotalSlots "
                 + "ORDER BY c.StartDate DESC, c.ClassID DESC";
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Object[] row = new Object[8];
+                Object[] row = new Object[10];
                 row[0] = rs.getInt("ClassID");
                 row[1] = rs.getString("ClassName");
                 row[2] = rs.getString("CourseName");
@@ -38,6 +42,8 @@ public class ClassDAO extends DBContext {
                 row[5] = rs.getDate("EndDate");
                 row[6] = rs.getString("Status");
                 row[7] = rs.getInt("StudentCount");
+                row[8] = rs.getInt("TotalSlots");
+                row[9] = rs.getDate("RegistrationDeadline");
                 list.add(row);
             }
         } catch (Exception e) {
@@ -46,20 +52,51 @@ public class ClassDAO extends DBContext {
         return list;
     }
 
+    public Classes getClassByID(int id) {
+        String sql = "SELECT * FROM Class WHERE ClassID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                CourseDAO courseDAO = new CourseDAO();
+                Course course = courseDAO.getCourseById(rs.getInt("CourseID"));
+
+                EmployeeDAO employeeDAO = new EmployeeDAO();
+                Employee employee = employeeDAO.getEmployeeById(rs.getInt("TeacherID"));
+
+                return new Classes(
+                        rs.getInt("ClassID"),
+                        rs.getString("ClassName"),
+                        course,
+                        employee,
+                        rs.getDate("StartDate"),
+                        rs.getDate("EndDate"),
+                        rs.getString("Status")
+                );
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail to get class by ID: " + e.getMessage());
+        }
+        return null;
+    }
+
     public Object[] getClassById(int classId) {
         String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, u.FullName AS TeacherName, "
-                + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount "
+                + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount, "
+                + "co.TotalSlots, DATEADD(DAY, -5, c.StartDate) AS RegistrationDeadline "
                 + "FROM Class c "
                 + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
                 + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
                 + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
                 + "WHERE c.ClassID = ? "
-                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status";
+                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status, co.TotalSlots";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, classId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Object[] row = new Object[8];
+                    Object[] row = new Object[10];
                     row[0] = rs.getInt("ClassID");
                     row[1] = rs.getString("ClassName");
                     row[2] = rs.getString("CourseName");
@@ -68,6 +105,8 @@ public class ClassDAO extends DBContext {
                     row[5] = rs.getDate("EndDate");
                     row[6] = rs.getString("Status");
                     row[7] = rs.getInt("StudentCount");
+                    row[8] = rs.getInt("TotalSlots");
+                    row[9] = rs.getDate("RegistrationDeadline");
                     return row;
                 }
             }
@@ -130,6 +169,48 @@ public class ClassDAO extends DBContext {
         return false;
     }
 
+    public Object[] getClassForEdit(int classId) {
+        String sql = "SELECT ClassID, ClassName, CourseID, TeacherID, StartDate, EndDate, Status "
+                + "FROM Class WHERE ClassID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Object[] row = new Object[7];
+                    row[0] = rs.getInt("ClassID");
+                    row[1] = rs.getString("ClassName");
+                    row[2] = rs.getInt("CourseID");
+                    row[3] = rs.getInt("TeacherID");
+                    row[4] = rs.getDate("StartDate");
+                    row[5] = rs.getDate("EndDate");
+                    row[6] = rs.getString("Status");
+                    return row;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get class for edit: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean updateClass(int classId, String className, int courseId, int teacherId, Date startDate, Date endDate) {
+        String sql = "UPDATE Class "
+                + "SET ClassName = ?, CourseID = ?, TeacherID = ?, StartDate = ?, EndDate = ? "
+                + "WHERE ClassID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, className);
+            ps.setInt(2, courseId);
+            ps.setInt(3, teacherId);
+            ps.setDate(4, startDate);
+            ps.setDate(5, endDate);
+            ps.setInt(6, classId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("Fail to update class: " + e.getMessage());
+        }
+        return false;
+    }
+
     public boolean updateClassStatus(int classId, String status) {
         String sql = "UPDATE Class SET Status = ? WHERE ClassID = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -174,5 +255,84 @@ public class ClassDAO extends DBContext {
             System.out.println("Fail to get teacher id by class id: " + e.getMessage());
         }
         return 0;
+    }
+
+    public List<Object[]> getClassesByStudentId(int studentId) {
+
+        List<Object[]> list = new ArrayList<>();
+
+        String sql = "SELECT e.EnrollmentID, c.ClassName, co.CourseName, u.FullName AS TeacherName "
+                + "FROM Enrollment e "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "JOIN [User] u ON c.TeacherID = u.UserID "
+                + "WHERE e.StudentID = ? "
+                + "AND e.Status = 'Active'";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, studentId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                Object[] row = new Object[4];
+
+                row[0] = rs.getInt("EnrollmentID");
+                row[1] = rs.getString("ClassName");
+                row[2] = rs.getString("CourseName");
+                row[3] = rs.getString("TeacherName");
+
+                list.add(row);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public List<Object[]> getOpenClassesForStudent() {
+
+        List<Object[]> list = new ArrayList<>();
+
+        String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, "
+                + "u.FullName AS TeacherName, "
+                + "c.StartDate, c.EndDate, "
+                + "COUNT(e.EnrollmentID) AS StudentCount, "
+                + "co.TuitionFee "
+                + "FROM Class c "
+                + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
+                + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
+                + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
+                + "WHERE c.Status = 'Active' "
+                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, "
+                + "u.FullName, c.StartDate, c.EndDate, co.TuitionFee "
+                + "ORDER BY c.StartDate ASC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+
+                Object[] row = new Object[8];
+
+                row[0] = rs.getInt("ClassID");
+                row[1] = rs.getString("ClassName");
+                row[2] = rs.getString("CourseName");
+                row[3] = rs.getString("TeacherName");
+                row[4] = rs.getDate("StartDate");
+                row[5] = rs.getDate("EndDate");
+                row[6] = rs.getInt("StudentCount");
+                row[7] = rs.getDouble("TuitionFee");
+
+                list.add(row);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail to get open classes: " + e.getMessage());
+        }
+
+        return list;
     }
 }

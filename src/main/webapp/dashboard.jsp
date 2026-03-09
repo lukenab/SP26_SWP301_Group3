@@ -191,7 +191,7 @@
                                 <span class="text nav-text">My Classes</span>
                             </a>
                         </li>
-                        
+
                         <li class="nav-links">
                             <a href="feedback">
                                 <i class="bxr bx-door"></i>
@@ -247,7 +247,7 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
+                            <a href="payment?action=list">
                                 <i class="bxr bx-check-circle"></i>
                                 <span class="text nav-text">Verify Tuition Payment</span>
                             </a>
@@ -346,6 +346,20 @@
                             <a href="schedule?action=studentView">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">My Schedule</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="feedback?action=viewStudentCoursesFeedback">
+                                <i class="bxr bx-poll"></i>
+                                <span class="text nav-text">Course Feedback</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="class?action=availableClass">
+                                <i class="bxr bx-book-open"></i>
+                                <span class="text nav-text">Available Classes</span>
                             </a>
                         </li>
 

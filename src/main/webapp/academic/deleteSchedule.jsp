@@ -106,12 +106,12 @@
                 </c:if>
 
                 <div class="d-flex gap-2 mt-4">
-                    <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn btn-secondary">
-                        <i class='bx bx-x'></i> Cancel
-                    </a>
                     <button type="submit" class="btn btn-danger">
                         <i class='bx bx-trash'></i> Delete Schedule
                     </button>
+                    <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn btn-secondary">
+                        <i class='bx bx-x'></i> Cancel
+                    </a>
                 </div>
             </form>
         </div>
