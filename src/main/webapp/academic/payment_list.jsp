@@ -153,44 +153,44 @@
                             </tr>
                         </c:when>
                         <c:otherwise>
-                            <c:forEach items="${paymentList}" var="paymentDisplay" varStatus="loop">
+                            <c:forEach items="${paymentList}" var="paymentRow" varStatus="loop">
                                 <tr>
                                     <td>${loop.count}</td>
                                     <td>
                                         <div class="d-flex flex-column">
-                                            <span class="user-name">${paymentDisplay.studentName}</span>
-                                            <span class="user-email text-muted small">${paymentDisplay.studentEmail}</span>
+                                            <span class="user-name">${paymentRow[1]}</span>
+                                            <span class="user-email text-muted small">${paymentRow[2]}</span>
                                         </div>
                                     </td>
-                                    <td>${paymentDisplay.payment.enrollment.classes.course.courseName}</td>
-                                    <td><span class="badge badge-student">${paymentDisplay.payment.enrollment.classes.className}</span></td>
+                                    <td>${paymentRow[3]}</td>
+                                    <td><span class="badge badge-student">${paymentRow[4]}</span></td>
                                     <td>
-                                        <c:set var="paymentDateTime" value="${paymentDisplay.payment.paymentDate}" />
+                                        <c:set var="paymentDateTime" value="${paymentRow[0].paymentDate}" />
                                         <c:if test="${paymentDateTime != null}">
                                             ${paymentDateTime.toString().replace('T', ' ').substring(0, 16)}
                                         </c:if>
                                     </td>
                                     <td>
                                         <strong style="color: #2563eb;">
-                                            <fmt:formatNumber value="${paymentDisplay.payment.amount}" type="currency" currencySymbol="$" />
+                                            <fmt:formatNumber value="${paymentRow[0].amount}" type="currency" currencySymbol="$" />
                                         </strong>
-                                        <c:if test="${paymentDisplay.payment.voucher != null}">
-                                            <br><small class="text-success"><i class='bx bx-purchase-tag'></i> ${paymentDisplay.payment.voucher.code}</small>
+                                        <c:if test="${paymentRow[0].voucher != null}">
+                                            <br><small class="text-success"><i class='bx bx-purchase-tag'></i> ${paymentRow[0].voucher.code}</small>
                                         </c:if>
                                     </td>
                                     <td>
                                         <c:choose>
-                                            <c:when test="${paymentDisplay.payment.status == 'Pending'}">
+                                            <c:when test="${paymentRow[0].status == 'Pending'}">
                                                 <span class="badge" style="background: #fef3c7; color: #d97706; padding: 6px 12px; border-radius: 6px; font-weight: 500;">
                                                     <i class='bx bx-time-five'></i> Pending
                                                 </span>
                                             </c:when>
-                                            <c:when test="${paymentDisplay.payment.status == 'Approved'}">
+                                            <c:when test="${paymentRow[0].status == 'Approved'}">
                                                 <span class="badge" style="background: #dcfce7; color: #16a34a; padding: 6px 12px; border-radius: 6px; font-weight: 500;">
                                                     <i class='bx bx-check-circle'></i> Approved
                                                 </span>
                                             </c:when>
-                                            <c:when test="${paymentDisplay.payment.status == 'Rejected'}">
+                                            <c:when test="${paymentRow[0].status == 'Rejected'}">
                                                 <span class="badge" style="background: #fee2e2; color: #dc2626; padding: 6px 12px; border-radius: 6px; font-weight: 500;">
                                                     <i class='bx bx-x-circle'></i> Rejected
                                                 </span>
@@ -198,19 +198,19 @@
                                         </c:choose>
                                     </td>
                                     <td>
-                                        <c:if test="${paymentDisplay.payment.evidenceImage != null && !paymentDisplay.payment.evidenceImage.isEmpty()}">
+                                        <c:if test="${paymentRow[0].evidenceImage != null && !paymentRow[0].evidenceImage.isEmpty()}">
                                             <button type="button" class="action-btn" title="View Evidence"
-                                                    onclick="viewEvidence('${paymentDisplay.payment.evidenceImage}', '${paymentDisplay.studentName}')">
+                                                    onclick="viewEvidence('${paymentRow[0].evidenceImage}', '${paymentRow[1]}')">
                                                 <i class='bx bx-image'></i>
                                             </button>
                                         </c:if>
-                                        <c:if test="${paymentDisplay.payment.status == 'Pending'}">
+                                        <c:if test="${paymentRow[0].status == 'Pending'}">
                                             <button type="button" class="action-btn" title="Approve"
-                                                    onclick="approvePayment(${paymentDisplay.payment.paymentId}, '${paymentDisplay.studentName}')">
+                                                    onclick="approvePayment(${paymentRow[0].paymentId}, '${paymentRow[1]}')">
                                                 <i class='bx bx-check' style='color: #16a34a;'></i>
                                             </button>
                                             <button type="button" class="action-btn delete" title="Reject"
-                                                    onclick="rejectPayment(${paymentDisplay.payment.paymentId}, '${paymentDisplay.studentName}')">
+                                                    onclick="rejectPayment(${paymentRow[0].paymentId}, '${paymentRow[1]}')">
                                                 <i class='bx bx-x'></i>
                                             </button>
                                         </c:if>
