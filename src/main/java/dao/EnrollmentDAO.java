@@ -130,9 +130,12 @@ public class EnrollmentDAO extends DBContext {
         return list;
     }
 
-    public int addStudentsToClass(int classId, int[] studentIds) {
+    public int addStudentsToClass(int classId, int[] studentIds, String enrollmentStatus) {
         if (studentIds == null || studentIds.length == 0) {
             return 0;
+        }
+        if (enrollmentStatus == null || enrollmentStatus.trim().isEmpty()) {
+            enrollmentStatus = "UnPaid";
         }
         String sql = "INSERT INTO Enrollment (StudentID, ClassID, EnrollDate, Status, FinalGrade) "
                 + "VALUES (?, ?, GETDATE(), ?, ?)";
@@ -143,7 +146,7 @@ public class EnrollmentDAO extends DBContext {
                 for (int studentId : studentIds) {
                     ps.setInt(1, studentId);
                     ps.setInt(2, classId);
-                    ps.setString(3, "Active");
+                    ps.setString(3, enrollmentStatus);
                     ps.setDouble(4, 0);
                     insertedCount += ps.executeUpdate();
                 }

@@ -94,7 +94,14 @@
                             </tbody>
                         </table>
 
-                        <div class="p-3 border-top d-flex justify-content-end">
+                        <div class="p-3 border-top d-flex justify-content-end align-items-center gap-3">
+                            <div class="payment-status-toggle" role="radiogroup" aria-label="Payment status">
+                                <input type="radio" id="statusPaid" name="enrollmentStatus" value="Paid">
+                                <label for="statusPaid">Paid</label>
+
+                                <input type="radio" id="statusUnpaid" name="enrollmentStatus" value="UnPaid" checked>
+                                <label for="statusUnpaid">UnPaid</label>
+                            </div>
                             <button type="submit" class="btn btn-add-new">
                                 <i class='bx bx-user-plus'></i> Add Selected Students
                             </button>
@@ -146,8 +153,8 @@
                                         </td>
                                         <td><fmt:formatDate value="${s[4]}" pattern="dd/MM/yyyy"/></td>
                                         <td>
-                                            <span class="badge-status ${s[5] == 'Active' ? 'badge-active' : 'badge-inactive'}">
-                                                ${s[5]}
+                                            <span class="badge-status ${s[5] == 'Paid' || s[5] == 'Active' ? 'badge-active' : 'badge-inactive'}">
+                                                ${s[5] == 'Active' ? 'Paid' : s[5]}
                                             </span>
                                         </td>
                                     </tr>

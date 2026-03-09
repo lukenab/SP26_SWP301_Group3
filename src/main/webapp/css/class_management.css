@@ -148,6 +148,50 @@
     color: #0f172a;
 }
 
+.class-management-page .payment-status-toggle {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px;
+    border: 1px solid var(--cm-border);
+    border-radius: 999px;
+    background: #f8fafc;
+    gap: 4px;
+}
+
+.class-management-page .payment-status-toggle input[type="radio"] {
+    display: none;
+}
+
+.class-management-page .payment-status-toggle label {
+    margin: 0;
+    min-width: 86px;
+    text-align: center;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.class-management-page .payment-status-toggle label:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.class-management-page .payment-status-toggle input#statusPaid:checked + label {
+    background: #dcfce7;
+    color: #166534;
+    box-shadow: 0 2px 8px rgba(22, 101, 52, 0.2);
+}
+
+.class-management-page .payment-status-toggle input#statusUnpaid:checked + label {
+    background: #fee2e2;
+    color: #b91c1c;
+    box-shadow: 0 2px 8px rgba(185, 28, 28, 0.2);
+}
+
 .class-management-page .custom-toast {
     position: fixed;
     top: 120px;
