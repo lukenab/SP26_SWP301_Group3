@@ -82,7 +82,7 @@ public class StudentDAO extends DBContext {
                 u.setEmail(rs.getString("Email"));
                 u.setPhone(rs.getString("Phone"));
                 u.setAddress(rs.getString("Address"));
-
+                u.setAvatar(rs.getString("Avatar"));
                 list.add(u);
             }
 
@@ -110,7 +110,7 @@ public class StudentDAO extends DBContext {
                 u.setEmail(rs.getString("Email"));
                 u.setPhone(rs.getString("Phone"));
                 u.setAddress(rs.getString("Address"));
-
+                u.setAvatar(rs.getString("Avatar"));
                 return u;
             }
 

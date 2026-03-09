@@ -27,8 +27,9 @@
             </div>
 
             <a href="class" class="btn-secondary">
-                <i class='bx bx-arrow-left'></i> Back to Class Management
+                <i class='bx bx-arrow-left'></i> Back to Class
             </a>
+
         </div>
     </div>
 
@@ -93,22 +94,43 @@
                             <td class="text-center text-muted small">${loop.count}</td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar-circle me-3 bg-soft-primary text-primary fw-bold">
-                                        ${s.fullName.substring(0,1).toUpperCase()}
+                                    <div class="avatar-container me-3">
+                                        <c:choose>
+                                            <%-- Trường hợp có ảnh: Dùng contextPath và onerror để dự phòng --%>
+                                            <c:when test="${not empty s.avatar}">
+                                                <img src="${pageContext.request.contextPath}/${s.avatar}" 
+                                                     class="avatar-img" 
+                                                     alt="Student"
+                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+
+                                                <div class="avatar-placeholder" style="display: none;">
+                                                    <i class='bx bx-user'></i>
+                                                </div>
+                                            </c:when>
+
+                                            <%-- Trường hợp không có ảnh --%>
+                                            <c:otherwise>
+                                                <div class="avatar-placeholder">
+                                                    <i class='bx bx-user'></i>
+                                                </div>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
+
                                     <div>
                                         <div class="fw-bold text-dark student-name">${s.fullName}</div>
                                         <div class="small text-muted student-email">${s.email}</div>
                                     </div>
                                 </div>
                             </td>
+                            
                             <td class="text-center text-muted small">${s.phone}</td>
 
                             <td class="text-center">
                                 <c:choose>
                                     <c:when test="${avg != null}">
-                                        <span class="badge rounded-pill px-3 ${avg < 5 ? 'bg-danger' : 'bg-success'} shadow-sm">
-                                            <fmt:formatNumber value="${avg}" maxFractionDigits="1"/>
+                                        <span class="badge rounded-pill px-3 ${avg < 5 ? 'bg-danger' : 'bg-success'} shadow-sm final-score-value">
+                                            <fmt:formatNumber value="${avg}" maxFractionDigits="1" type="number" />
                                         </span>
                                     </c:when>
                                     <c:otherwise>
@@ -149,6 +171,24 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="card-footer bg-white border-top py-3 px-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex gap-4 px-3 py-2">
+                    <div class="small fw-bold text-dark">
+                        Total Students: <span id="totalStudents" class="text-primary">${studentList.size()}</span>
+                    </div>
+                    <div class="small fw-bold text-success">
+                        Passed: <span id="countPassed">0</span> 
+                    </div>
+                    <div class="small fw-bold text-danger">
+                        Failed: <span id="countFailed">0</span> 
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 </div>
 </div>

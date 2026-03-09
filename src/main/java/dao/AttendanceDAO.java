@@ -86,7 +86,7 @@ public class AttendanceDAO extends DBContext {
         List<User> studentList = new ArrayList<>();
         Map<Integer, Attendance> attendanceMap = new HashMap<>();
 
-        String sql = "SELECT e.EnrollmentID, u.UserID, u.FullName "
+        String sql = "SELECT e.EnrollmentID, u.UserID, u.FullName, u.Avatar "
                 + "FROM Enrollment e "
                 + "JOIN [User] u ON e.StudentID = u.UserID "
                 + "WHERE e.ClassID = ? "
@@ -103,14 +103,12 @@ public class AttendanceDAO extends DBContext {
                 int enrollmentId = rs.getInt("EnrollmentID");
                 int userId = rs.getInt("UserID");
 
-                // tạo User object
                 User user = new User();
                 user.setUserId(userId);
                 user.setFullName(rs.getString("FullName"));
-
+                user.setAvatar(rs.getString("Avatar"));
                 studentList.add(user);
 
-                // lấy attendance
                 Attendance attendance
                         = getOrCreateAttendance(scheduleId, enrollmentId);
 
