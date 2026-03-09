@@ -148,7 +148,7 @@ public class PaymentController extends HttpServlet {
                         session.setAttribute("messageType", "error");
                     }
 
-                    response.sendRedirect("dashboard");
+                    response.sendRedirect("class?action=availableClass");
 
                 } catch (Exception e) {
                     System.out.println("PaymentController doPost Error: " + e.getMessage());
@@ -182,7 +182,7 @@ public class PaymentController extends HttpServlet {
                     String addInfo = rawAddInfo.replaceAll(" ", "%20");
                     String urlAccountName = accountName.replaceAll(" ", "%20");
 
-                    long amountToPay = (long) finalAmount; 
+                    long amountToPay = (long) finalAmount;
 
                     String qrUrl = "https://img.vietqr.io/image/" + bankId + "-" + accountNo + "-compact2.png"
                             + "?amount=" + amountToPay
@@ -193,6 +193,12 @@ public class PaymentController extends HttpServlet {
                     request.setAttribute("amount", amountToPay);
                     request.setAttribute("addInfo", rawAddInfo);
                     request.setAttribute("enrollmentId", enrollmentId);
+                    request.setAttribute("qrUrl", qrUrl);
+                    request.setAttribute("amount", amountToPay);
+                    request.setAttribute("addInfo", rawAddInfo);
+                    request.setAttribute("enrollmentId", enrollmentId);
+
+                    request.setAttribute("className", className);
 
                     request.getRequestDispatcher("payment.jsp").forward(request, response);
 
