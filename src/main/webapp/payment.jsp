@@ -140,6 +140,9 @@
                                     <input type="hidden" name="action" value="confirmPayment">
                                     <input type="hidden" name="enrollmentId" value="${enrollmentId}">
                                     <input type="hidden" name="amount" value="${amount}">
+                                    
+                                    <input type="hidden" name="voucherId" value="${voucherId}">
+                                    
 
                                     <button type="submit" class="btn btn-navy btn-lg w-100 py-3 fw-bold shadow-sm">
                                         <i class="fa-solid fa-circle-check me-2"></i> I Have Completed the Transfer

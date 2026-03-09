@@ -241,6 +241,49 @@ public class EnrollmentDAO extends DBContext {
         }
         return enrollmentId;
     }
+   
+    public String checkEnrollmentStatus(int studentId, int classId) {
+        String status = null;
+        String sql = "SELECT Status FROM Enrollment WHERE StudentID = ? AND ClassID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, studentId);
+            ps.setInt(2, classId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                status = rs.getString("Status"); 
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to check Enrollment Status: " + e.getMessage());
+        }
+        return status; // Trả về "Active", "Unpaid" hoặc null
+    }
+
+    public void updateEnrollmentVoucher(int enrollmentId, int voucherId) {
+        String sql = "UPDATE Enrollment SET VoucherID = ? WHERE EnrollmentID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, voucherId);
+            ps.setInt(2, enrollmentId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            System.out.println("Fail to update Enrollment Voucher: " + e.getMessage());
+        }
+    }
+    
+    // Hàm cập nhật trạng thái của Enrollment (ví dụ: từ Unpaid -> Active)
+    public boolean updateEnrollmentStatus(int enrollmentId, String status) {
+        String sql = "UPDATE Enrollment SET Status = ? WHERE EnrollmentID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, status);
+            ps.setInt(2, enrollmentId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("Fail to update Enrollment Status: " + e.getMessage());
+        }
+        return false;
+    }
     
     public static void main(String[] args) {
         EnrollmentDAO dao = new EnrollmentDAO();

@@ -96,7 +96,7 @@
                             <input type="hidden" name="classId" value="${classId}">
                             <input type="hidden" name="className" value="${className}">
                             <input type="hidden" name="finalAmount" value="${finalAmount}">
-                            <input type="hidden" name="voucherId" value="${voucherId}">
+                            <input type="hidden" name="voucherCode" value="${voucherCode}">
                             
                             <button type="submit" class="btn btn-primary btn-pay w-100 fs-5 text-uppercase">
                                 Confirm & Pay Now <i class="fa-solid fa-arrow-right ms-2"></i>

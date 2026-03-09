@@ -86,7 +86,7 @@
                         <i class='bx bx-check-circle'></i>
                     </c:when>
                     <c:otherwise>
-                        <i class='bx bx-error-circle'></i>
+                        <i class='bx bx-cross-circle'></i>
                     </c:otherwise>
                 </c:choose>
             </div>
