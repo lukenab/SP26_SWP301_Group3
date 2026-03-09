@@ -45,13 +45,13 @@ public class LoginController extends HttpServlet {
         String maxAttemptsStr = settingDAO.getSettingValue("MAX_LOGIN_ATTEMPTS");
         if (maxAttemptsStr != null) {
             try { maxAttempts = Integer.parseInt(maxAttemptsStr); } 
-            catch (NumberFormatException e) { System.out.println("Loi parse MAX_LOGIN_ATTEMPTS"); }
+            catch (NumberFormatException e) { System.out.println("Fail parse MAX_LOGIN_ATTEMPTS"); }
         }
         
         String timeoutStr = settingDAO.getSettingValue("SESSION_TIMEOUT_MINUTES");
         if (timeoutStr != null) {
             try { timeoutMinutes = Integer.parseInt(timeoutStr); } 
-            catch (NumberFormatException e) { System.out.println("Loi parse SESSION_TIMEOUT_MINUTES"); }
+            catch (NumberFormatException e) { System.out.println("Fail parse SESSION_TIMEOUT_MINUTES"); }
         }
 
         User userByEmail = userDAO.getUserByEmail(email);
