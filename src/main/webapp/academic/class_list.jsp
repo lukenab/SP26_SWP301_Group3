@@ -202,6 +202,9 @@
                             </td>
 
                             <td>
+                                <a href="enrollment?action=editClassForm&classId=${c[0]}" class="action-btn" title="Edit Class">
+                                    <i class='bx bx-edit'></i>
+                                </a>
                                 <a href="enrollment?action=addStudentForm&classId=${c[0]}" class="action-btn" title="Add Student">
                                     <i class='bx bx-user-plus'></i>
                                 </a>

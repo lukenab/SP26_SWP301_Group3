@@ -169,6 +169,48 @@ public class ClassDAO extends DBContext {
         return false;
     }
 
+    public Object[] getClassForEdit(int classId) {
+        String sql = "SELECT ClassID, ClassName, CourseID, TeacherID, StartDate, EndDate, Status "
+                + "FROM Class WHERE ClassID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Object[] row = new Object[7];
+                    row[0] = rs.getInt("ClassID");
+                    row[1] = rs.getString("ClassName");
+                    row[2] = rs.getInt("CourseID");
+                    row[3] = rs.getInt("TeacherID");
+                    row[4] = rs.getDate("StartDate");
+                    row[5] = rs.getDate("EndDate");
+                    row[6] = rs.getString("Status");
+                    return row;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get class for edit: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean updateClass(int classId, String className, int courseId, int teacherId, Date startDate, Date endDate) {
+        String sql = "UPDATE Class "
+                + "SET ClassName = ?, CourseID = ?, TeacherID = ?, StartDate = ?, EndDate = ? "
+                + "WHERE ClassID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, className);
+            ps.setInt(2, courseId);
+            ps.setInt(3, teacherId);
+            ps.setDate(4, startDate);
+            ps.setDate(5, endDate);
+            ps.setInt(6, classId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("Fail to update class: " + e.getMessage());
+        }
+        return false;
+    }
+
     public boolean updateClassStatus(int classId, String status) {
         String sql = "UPDATE Class SET Status = ? WHERE ClassID = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {

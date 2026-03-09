@@ -66,6 +66,28 @@ public class EnrollmentController extends HttpServlet {
                 request.setAttribute("home_view", "/academic/create_class.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
+            case "editClassForm":
+                String editClassIdParam = request.getParameter("classId");
+                if (editClassIdParam == null || editClassIdParam.isEmpty()) {
+                    response.sendRedirect("enrollment?action=classes");
+                    return;
+                }
+                try {
+                    int classId = Integer.parseInt(editClassIdParam);
+                    Object[] classEditInfo = classDAO.getClassForEdit(classId);
+                    if (classEditInfo == null) {
+                        response.sendRedirect("enrollment?action=classes");
+                        return;
+                    }
+                    request.setAttribute("classEditInfo", classEditInfo);
+                    request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
+                    request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
+                    request.setAttribute("home_view", "/academic/edit_class.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                } catch (NumberFormatException e) {
+                    response.sendRedirect("enrollment?action=classes");
+                }
+                break;
             case "addStudentForm":
                 String classIdParam = request.getParameter("classId");
                 if (classIdParam == null || classIdParam.isEmpty()) {
@@ -164,6 +186,52 @@ public class EnrollmentController extends HttpServlet {
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
                 request.setAttribute("home_view", "/academic/create_class.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+            }
+        } else if ("updateClass".equals(action)) {
+            String classIdParam = request.getParameter("classId");
+            String className = request.getParameter("className");
+            String courseIdParam = request.getParameter("courseId");
+            String teacherIdParam = request.getParameter("teacherId");
+            String startDateParam = request.getParameter("startDate");
+            String endDateParam = request.getParameter("endDate");
+
+            if (classIdParam == null || classIdParam.isEmpty()
+                    || className == null || className.trim().isEmpty()
+                    || courseIdParam == null || teacherIdParam == null
+                    || startDateParam == null || endDateParam == null) {
+                request.getSession().setAttribute("message", "Please fill all required fields.");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("enrollment?action=classes");
+                return;
+            }
+
+            try {
+                int classId = Integer.parseInt(classIdParam);
+                int courseId = Integer.parseInt(courseIdParam);
+                int teacherId = Integer.parseInt(teacherIdParam);
+                Date startDate = Date.valueOf(startDateParam);
+                Date endDate = Date.valueOf(endDateParam);
+
+                if (endDate.before(startDate)) {
+                    request.getSession().setAttribute("message", "End date must be after or equal to start date.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=editClassForm&classId=" + classId);
+                    return;
+                }
+
+                boolean updated = classDAO.updateClass(classId, className.trim(), courseId, teacherId, startDate, endDate);
+                if (updated) {
+                    request.getSession().setAttribute("message", "Class updated successfully.");
+                    request.getSession().setAttribute("messageType", "success");
+                } else {
+                    request.getSession().setAttribute("message", "Failed to update class.");
+                    request.getSession().setAttribute("messageType", "error");
+                }
+                response.sendRedirect("enrollment?action=classes");
+            } catch (Exception e) {
+                request.getSession().setAttribute("message", "Invalid input format.");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("enrollment?action=classes");
             }
         } else if ("updateClassStatus".equals(action)) {
             String classIdParam = request.getParameter("classId");
