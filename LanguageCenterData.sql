@@ -131,6 +131,23 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+/****** Object:  Table [dbo].[Syllabus]    Script Date: 24-Feb-26 7:59:23 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Syllabus](
+	[SyllabusID] [int] IDENTITY(1,1) NOT NULL,
+	[CourseID] [int] NOT NULL,
+	[OrderIndex] [int] NOT NULL,
+	[TopicName] [nvarchar](255) NOT NULL,
+	[Description] [nvarchar](max) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[SyllabusID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
 /****** Object:  Table [dbo].[Consultation]    Script Date: 24-Feb-26 7:59:23 PM ******/
 SET ANSI_NULLS ON
 GO
@@ -595,6 +612,9 @@ REFERENCES [dbo].[Course] ([CourseID])
 GO
 ALTER TABLE [dbo].[Class]  WITH CHECK ADD FOREIGN KEY([TeacherID])
 REFERENCES [dbo].[Employee] ([EmployeeID])
+GO
+ALTER TABLE [dbo].[Syllabus]  WITH CHECK ADD FOREIGN KEY([CourseID])
+REFERENCES [dbo].[Course] ([CourseID])
 GO
 ALTER TABLE [dbo].[Consultation]  WITH CHECK ADD FOREIGN KEY([LeadID])
 REFERENCES [dbo].[Lead] ([LeadID])

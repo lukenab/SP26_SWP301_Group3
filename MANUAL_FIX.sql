@@ -47,3 +47,30 @@ BEGIN
     ADD CONSTRAINT [FK_VoucherUsage_User]
     FOREIGN KEY([UsedByUserID]) REFERENCES [dbo].[User] ([UserID]);
 END
+
+-- ========================================
+-- Syllabus table (for Manage Syllabus / Learning Path)
+-- ========================================
+IF OBJECT_ID('dbo.Syllabus', 'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[Syllabus](
+        [SyllabusID] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        [CourseID] [int] NOT NULL,
+        [OrderIndex] [int] NOT NULL,
+        [TopicName] [nvarchar](255) NOT NULL,
+        [Description] [nvarchar](max) NULL
+    );
+
+    ALTER TABLE [dbo].[Syllabus] WITH CHECK
+    ADD CONSTRAINT [FK_Syllabus_Course]
+    FOREIGN KEY([CourseID]) REFERENCES [dbo].[Course] ([CourseID]);
+END
+
+IF NOT EXISTS (SELECT 1 FROM [dbo].[Syllabus])
+BEGIN
+    INSERT INTO [dbo].[Syllabus] ([CourseID], [OrderIndex], [TopicName], [Description]) VALUES
+    (12, 1, N'Introduction to IELTS Writing Task 1', N'Overview of Task 1 format, scoring criteria, and common mistakes.'),
+    (12, 2, N'Grammar and Sentence Structures', N'Practice complex sentence patterns and coherence in writing.'),
+    (13, 1, N'Advanced Listening Strategies', N'Apply note-taking and distractor-handling for higher band targets.'),
+    (15, 1, N'TOEIC Part 1-2 Foundation', N'Build listening reflexes with photo and question-response practice.');
+END

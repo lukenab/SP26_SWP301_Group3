@@ -1,0 +1,93 @@
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<link href="css/course_list.css" rel="stylesheet" type="text/css"/>
+<link href="css/syllabus_management.css" rel="stylesheet" type="text/css"/>
+
+<div class="container-fluid px-4 content-body syllabus-page">
+    <div class="mb-4">
+        <div aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Manage Syllabus</li>
+            </ol>
+        </div>
+        <div class="content-header">
+            <div>
+                <h2 class="page-title">Manage Syllabus</h2>
+                <p class="text-muted small mb-0">Manage session order, topic, and lesson description by course.</p>
+            </div>
+            <a href="course?action=all" class="btn btn-add-new">
+                <i class='bx bx-book-content'></i> Back to Courses
+            </a>
+        </div>
+    </div>
+
+    <c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-error-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}</span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+        <c:remove var="message" scope="session"/>
+        <c:remove var="messageType" scope="session"/>
+    </c:if>
+
+    <div class="card user-table-card border-0 bg-white">
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 6%">#</th>
+                        <th style="width: 20%">Course</th>
+                        <th style="width: 10%">Session No.</th>
+                        <th style="width: 22%">Topic Name</th>
+                        <th style="width: 32%">Description</th>
+                        <th style="width: 5%">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:if test="${empty syllabusList}">
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No syllabus found.</td>
+                        </tr>
+                    </c:if>
+
+                    <c:forEach items="${syllabusList}" var="s" varStatus="loop">
+                        <tr>
+                            <td>${loop.count}</td>
+                            <td>${s.courseName}</td>
+                            <td><span class="badge-soft">Session ${s.orderIndex}</span></td>
+                            <td>${s.topicName}</td>
+                            <td><div class="learning-path-preview">${s.description}</div></td>
+                            <td>
+                                <a href="syllabus?action=edit&syllabusId=${s.syllabusId}" class="action-btn" title="Update Syllabus">
+                                    <i class='bx bx-edit'></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-between align-items-center p-3 border-top">
+            <div class="text-muted small">Showing ${syllabusList.size()} syllabus records</div>
+        </div>
+    </div>
+</div>
+
+<script src="js/manageUser.js" type="text/javascript"></script>
