@@ -75,8 +75,38 @@
 
                             <tr>
                                 <td class="ps-4">
-                                    <div class="fw-bold text-dark">${s.fullName}</div>
-                                    <small class="text-muted">ID: ${s.userId}</small>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-container me-3">
+                                            <c:choose>
+                                               
+                                                <c:when test="${not empty s.avatar}">
+                                                    <img src="${pageContext.request.contextPath}/${s.avatar}" 
+                                                         class="avatar-img" 
+                                                         alt="Student"
+                                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+
+                                                    <div class="avatar-placeholder" style="display: none;">
+                                                        <i class='bx bx-user'></i>
+                                                    </div>
+                                                </c:when>
+               
+                                                <c:otherwise>
+                                                    <div class="avatar-placeholder">
+                                                        <i class='bx bx-user'></i>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </div>
+
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold text-dark" style="font-size: 0.95rem; line-height: 1.2;">
+                                                ${s.fullName}
+                                            </span>
+                                            <small class="text-muted" style="font-size: 0.75rem; margin-top: 2px;">
+                                                ID: ${s.userId}
+                                            </small>
+                                        </div>
+                                    </div>
                                 </td>
 
                                 <td>
@@ -135,18 +165,35 @@
                         </tr>
                     </c:if>
                     </tbody>
+
                 </table>
+
             </div>
 
-            <div class="card-footer bg-white border-0 py-3 px-4">
-                <div class="d-flex justify-content-end">
+            <div class="card-footer bg-white border-top py-3 px-4">
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div class="d-flex gap-4 px-3 py-2  rounded-pill">
+                        <div class="small fw-bold text-dark">
+                            Total: <span id="totalStudents" class="text-primary">${studentList.size()}</span>
+                        </div>
+                        <div class="small fw-bold text-success">
+                            Present: <span id="countPresent">0</span>
+                        </div>
+                        <div class="small fw-bold text-danger">
+                            Absent: <span id="countAbsent">0</span>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn btn-primary btn-sm px-4 shadow-sm fw-bold">
                         <i class='bx bx-save me-1'></i> Confirm & Save
                     </button>
                 </div>
             </div>
+
         </form>
     </div>
 </div>
 
 <script src="js/manageUser.js" type="text/javascript"></script>
+<script src="js/takeAtendance.js" type="text/javascript"></script>
