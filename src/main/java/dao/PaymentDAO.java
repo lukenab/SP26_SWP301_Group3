@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import model.Classes;
@@ -17,7 +16,6 @@ import model.Course;
 import model.Enrollment;
 import model.Payment;
 import model.Student;
-import model.User;
 import model.Voucher;
 import utils.DBContext;
 
@@ -317,7 +315,6 @@ public class PaymentDAO extends DBContext {
     }
     
     public boolean confirmQRPayment(int enrollmentId, double amount) {
-        // Thay chữ NULL thành '' để lách luật SQL Server
         String sql = "INSERT INTO Payment (EnrollmentID, Amount, PaymentDate, PaymentMethod, EvidenceImage, Status) "
                      + "VALUES (?, ?, GETDATE(), 'QR Transfer', '', 'Pending')";
         try {

@@ -8,6 +8,7 @@ import dao.PaymentDAO;
 import dao.PaymentDAO.PaymentDisplay;
 import dao.CourseDAO;
 import dao.ClassDAO;
+import dao.VoucherDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -19,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import model.Payment;
 import model.User;
+import model.Voucher;
 
 /**
  *
@@ -52,62 +54,58 @@ public class PaymentController extends HttpServlet {
             case "view":
                 handleViewPayment(request, response, paymentDAO);
                 break;
-            case "checkout":
+
+            case "review":
                 try {
-                    // 1. Lấy thông tin từ URL do JSP gửi sang
-                    String classIdStr = request.getParameter("classId");
-                    String amountStr = request.getParameter("amount");
+                    String classId = request.getParameter("classId");
                     String className = request.getParameter("className");
+                    String amountStr = request.getParameter("amount");
+                    String voucherCode = request.getParameter("voucherCode");
 
-                    if (classIdStr == null || amountStr == null) {
-                        response.sendRedirect("student?action=dashboard");
-                        return;
+                    double originalAmount = Double.parseDouble(amountStr);
+                    double discountAmount = 0;
+                    String voucherMessage = "";
+                    int voucherId = -1;
+
+                    if (voucherCode != null && !voucherCode.trim().isEmpty()) {
+                        VoucherDAO voucherDAO = new VoucherDAO();
+                        Voucher voucher = voucherDAO.getVoucherByCode(voucherCode);
+
+                        if (voucher != null && voucher.isStatus()) {
+
+                            if (voucher.getDiscountAmount() != null && voucher.getDiscountAmount().doubleValue() > 0) {
+                                discountAmount = voucher.getDiscountAmount().doubleValue();
+                            } else if (voucher.getDiscountPercent() > 0) {
+                                discountAmount = originalAmount * (voucher.getDiscountPercent() / 100.0);
+                            }
+                            voucherMessage = "Discount code applied successfully!";
+                            voucherId = voucher.getVoucherId();
+                            request.setAttribute("voucherType", "success");
+                        } else {
+                            voucherMessage = "The discount code is invalid or has expired!";
+                            request.setAttribute("voucherType", "error");
+                        }
                     }
 
-                    int classId = Integer.parseInt(classIdStr);
-                    double amount = Double.parseDouble(amountStr);
-
-                    // 2. GỌI DAO TẠO PHIẾU ĐĂNG KÝ (Lấy EnrollmentID xịn)
-                    dao.EnrollmentDAO enrollmentDAO = new dao.EnrollmentDAO();
-                    int enrollmentId = enrollmentDAO.getOrCreateEnrollment(currentUser.getUserId(), classId);
-
-                    if (enrollmentId == -1) {
-                        session.setAttribute("message", "Lỗi tạo phiếu đăng ký!");
-                        session.setAttribute("messageType", "error");
-                        response.sendRedirect("student?action=dashboard");
-                        return;
+                    double finalAmount = originalAmount - discountAmount;
+                    if (finalAmount < 0) {
+                        finalAmount = 0;
                     }
 
-                    // 3. Cấu hình VietQR
-                    String bankId = "MB";
-                    String accountNo = "0907625043"; // Số tài khoản của bạn
-                    String accountName = "TRUNG TAM NGOAI NGU LMCS";
+                    request.setAttribute("classId", classId);
+                    request.setAttribute("className", className);
+                    request.setAttribute("originalAmount", originalAmount);
+                    request.setAttribute("discountAmount", discountAmount);
+                    request.setAttribute("finalAmount", finalAmount);
+                    request.setAttribute("voucherCode", voucherCode);
+                    request.setAttribute("voucherMessage", voucherMessage);
+                    request.setAttribute("voucherId", voucherId);
 
-                    // Nội dung chuyển khoản: LMCS + [Mã phiếu] + [Tên lớp]
-                    String rawAddInfo = "LMCS " + enrollmentId + " " + className;
-                    String addInfo = rawAddInfo.replaceAll(" ", "%20");
-                    String urlAccountName = accountName.replaceAll(" ", "%20");
-
-                    long finalAmount = (long) amount;
-
-                    String qrUrl = "https://img.vietqr.io/image/" + bankId + "-" + accountNo + "-compact2.png"
-                            + "?amount=" + finalAmount
-                            + "&addInfo=" + addInfo
-                            + "&accountName=" + urlAccountName;
-
-                    // 4. Đẩy dữ liệu sang trang payment.jsp
-                    request.setAttribute("qrUrl", qrUrl);
-                    request.setAttribute("amount", finalAmount);
-                    request.setAttribute("addInfo", rawAddInfo);
-                    request.setAttribute("enrollmentId", enrollmentId); // EnrollmentID hàng real
-
-                    request.getRequestDispatcher("payment.jsp").forward(request, response);
+                    request.setAttribute("home_view", "/student/reviewPayment.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
 
                 } catch (Exception e) {
-                    System.out.println("PaymentController doGet Error: " + e.getMessage());
-                    session.setAttribute("message", "Lỗi tải trang thanh toán!");
-                    session.setAttribute("messageType", "error");
-                    response.sendRedirect("dashboard");
+                    System.out.println("Fail at action review: " + e.getMessage());
                 }
                 break;
             default:
@@ -140,24 +138,66 @@ public class PaymentController extends HttpServlet {
                     int enrollmentId = Integer.parseInt(request.getParameter("enrollmentId"));
                     double amount = Double.parseDouble(request.getParameter("amount"));
 
-                    // Gọi hàm lưu vào DB với EvidenceImage = NULL và Status = 'Pending'
                     boolean isSuccess = paymentDAO.confirmQRPayment(enrollmentId, amount);
 
                     if (isSuccess) {
-                        session.setAttribute("message", "Xác nhận thành công! Vui lòng chờ trung tâm đối chiếu giao dịch.");
+                        session.setAttribute("message", "Confirmation successful! Please wait while the center verifies the transaction.");
                         session.setAttribute("messageType", "success");
                     } else {
-                        session.setAttribute("message", "Có lỗi xảy ra khi xác nhận thanh toán, vui lòng thử lại.");
+                        session.setAttribute("message", "An error occurred while confirming the payment. Please try again.");
                         session.setAttribute("messageType", "error");
                     }
 
-                    // Chuyển hướng về dashboard
                     response.sendRedirect("dashboard");
 
                 } catch (Exception e) {
                     System.out.println("PaymentController doPost Error: " + e.getMessage());
-                    session.setAttribute("message", "Lỗi xử lý xác nhận thanh toán!");
+                    session.setAttribute("message", "Error processing payment confirmation!");
                     session.setAttribute("messageType", "error");
+                    response.sendRedirect("dashboard");
+                }
+                break;
+
+            case "checkout":
+                try {
+                    int classId = Integer.parseInt(request.getParameter("classId"));
+                    double finalAmount = Double.parseDouble(request.getParameter("finalAmount"));
+                    String className = request.getParameter("className");
+
+                    HttpSession sessionCheckout = request.getSession();
+                    User currentU = (User) sessionCheckout.getAttribute("user");
+
+                    dao.EnrollmentDAO enrollmentDAO = new dao.EnrollmentDAO();
+                    int enrollmentId = enrollmentDAO.getOrCreateEnrollment(currentU.getUserId(), classId);
+
+                    if (enrollmentId == -1) {
+                        response.sendRedirect("dashboard");
+                        return;
+                    }
+
+                    String bankId = "MB";
+                    String accountNo = "0907625043";
+                    String accountName = "LMCS Center";
+                    String rawAddInfo = "LMCS " + enrollmentId + " " + className;
+                    String addInfo = rawAddInfo.replaceAll(" ", "%20");
+                    String urlAccountName = accountName.replaceAll(" ", "%20");
+
+                    long amountToPay = (long) finalAmount; 
+
+                    String qrUrl = "https://img.vietqr.io/image/" + bankId + "-" + accountNo + "-compact2.png"
+                            + "?amount=" + amountToPay
+                            + "&addInfo=" + addInfo
+                            + "&accountName=" + urlAccountName;
+
+                    request.setAttribute("qrUrl", qrUrl);
+                    request.setAttribute("amount", amountToPay);
+                    request.setAttribute("addInfo", rawAddInfo);
+                    request.setAttribute("enrollmentId", enrollmentId);
+
+                    request.getRequestDispatcher("payment.jsp").forward(request, response);
+
+                } catch (Exception e) {
+                    System.out.println("Lỗi checkout: " + e.getMessage());
                     response.sendRedirect("dashboard");
                 }
                 break;
