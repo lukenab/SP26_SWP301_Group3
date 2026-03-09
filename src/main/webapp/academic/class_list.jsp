@@ -2,6 +2,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setLocale value="en_US"/>
 
 <link href="css/course_list.css" rel="stylesheet" type="text/css"/>
 
@@ -132,7 +133,9 @@
                         <th style="width: 25%">Class Info</th>
                         <th style="width: 20%">Course</th>
                         <th style="width: 15%">Teacher</th>
-                        <th style="width: 20%">Schedule</th>
+                        <th style="width: 20%">Study Period</th>
+                        <th style="width: 12%">Quantity</th>
+                        <th style="width: 12%">Registration Deadline</th>
                         <th style="width: 10%">Status</th>
                         <th style="width: 5%">Students</th>
                         <th style="width: 10%">Actions</th>
@@ -142,7 +145,7 @@
                 <tbody>
                     <c:if test="${empty classList}">
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">No classes found.</td>
+                            <td colspan="10" class="text-center text-muted py-4">No classes found.</td>
                         </tr>
                     </c:if>
 
@@ -166,9 +169,23 @@
                             <td>${c[2]}</td>
                             <td>${empty c[3] ? 'N/A' : c[3]}</td>
                             <td>
-                                <fmt:formatDate value="${c[4]}" pattern="dd/MM/yyyy"/>
-                                -
-                                <fmt:formatDate value="${c[5]}" pattern="dd/MM/yyyy"/>
+                                <div class="d-flex flex-column small">
+                                    <span><strong>Start:</strong> <fmt:formatDate value="${c[4]}" pattern="dd MMM yyyy"/></span>
+                                    <span><strong>End:</strong> <fmt:formatDate value="${c[5]}" pattern="dd MMM yyyy"/></span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="text-secondary">${c[7]}/${c[8]}</span>
+                            </td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty c[9]}">
+                                        <fmt:formatDate value="${c[9]}" pattern="dd MMM yyyy"/>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="text-secondary">N/A</span>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
 
                             <td>
