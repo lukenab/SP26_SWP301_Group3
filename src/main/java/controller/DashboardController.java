@@ -77,10 +77,6 @@ public class DashboardController extends HttpServlet {
                 request.setAttribute("home_view", "profile.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
-                
-                
-                
-                
         }
     }
 

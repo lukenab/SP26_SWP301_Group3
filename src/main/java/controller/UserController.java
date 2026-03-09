@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.util.Date;
 import java.util.List;
 import model.Employee;
 import model.Role;
@@ -24,6 +23,7 @@ import model.User;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.Part;
 import java.io.File;
+import java.sql.Date;
 
 /**
  *
@@ -37,14 +37,6 @@ import java.io.File;
 )
 public class UserController extends HttpServlet {
 
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -52,6 +44,7 @@ public class UserController extends HttpServlet {
         RoleDAO roleDAO = new RoleDAO();
         EmployeeDAO employeeDAO = new EmployeeDAO();
         StudentDAO studentDAO = new StudentDAO();
+        
         String action = request.getParameter("action");
         if (action == null) {
             action = "all";
@@ -71,12 +64,14 @@ public class UserController extends HttpServlet {
                 request.setAttribute("home_view", "/admin/manageUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
+
             case "add":
                 List<Role> roleList = roleDAO.getAllRole();
                 request.setAttribute("roleList", roleList);
                 request.setAttribute("home_view", "/admin/createUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
+
             case "inActivate":
                 int dId = Integer.parseInt(request.getParameter("id"));
                 User uDelete = userDAO.getUserById(dId);
@@ -84,6 +79,7 @@ public class UserController extends HttpServlet {
                 request.setAttribute("home_view", "/admin/deleteUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
+
             case "view":
                 int id = Integer.parseInt(request.getParameter("id"));
                 User user = userDAO.getUserById(id);
@@ -95,8 +91,14 @@ public class UserController extends HttpServlet {
                 request.setAttribute("home_view", "/admin/viewUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
+
             case "update":
-                int uId = Integer.parseInt(request.getParameter("id"));
+                int uId = getIntParam(request, "id", 0);
+                if (uId <= 0) {
+                    response.sendRedirect("user");
+                    return;
+                }
+
                 User updateUser = userDAO.getUserById(uId);
                 Student uStudent = studentDAO.getStudentById(uId);
                 Employee uEmployee = employeeDAO.getEmployeeById(uId);
@@ -106,72 +108,41 @@ public class UserController extends HttpServlet {
                 request.setAttribute("home_view", "/admin/editUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
-
         }
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         UserDAO userDAO = new UserDAO();
-        RoleDAO roleDAO = new RoleDAO();
         String action = request.getParameter("action");
-        if (action == null) {
-            action = "all";
-        }
 
         switch (action) {
             case "add":
-                String fullName = request.getParameter("fullName");
-                String email = request.getParameter("email");
-                String password = request.getParameter("password");
-                String phone = request.getParameter("phone");
-                String address = request.getParameter("address");
-                if (address == null || address.trim().isEmpty()) {
-                    address = "";
-                }
-                Boolean gender = Boolean.valueOf(request.getParameter("gender"));
-                String dobStr = request.getParameter("dob");
-                java.sql.Date dob = null;
-                if (dobStr != null && !dobStr.isEmpty()) {
-                    dob = java.sql.Date.valueOf(dobStr);
-                }
+                String fullName = getStringParam(request, "fullName", "");
+                String email = getStringParam(request, "email", "");
+                String password = getStringParam(request, "password", "");
+                String phone = getStringParam(request, "phone", "");
+                String address = getStringParam(request, "address", "");
+                Boolean gender = getBoolParam(request, "gender");
+                Date dob = getDateParam(request, "dob");
+                String avatar = getStringParam(request, "avatar", "https://cdn-icons-png.flaticon.com/512/149/149071.png");
 
-                String avatar = request.getParameter("avatar");
-                if (avatar == null || avatar.trim().isEmpty()) {
-                    avatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-                }
+                Boolean status = getBoolParam(request, "status");
 
-                Boolean status = Boolean.valueOf(request.getParameter("status"));
+                int roleId = getIntParam(request, "roleId", 5); // roleId = 5 => Student
 
-                int roleId = Integer.parseInt(request.getParameter("roleId"));
-                Role role = roleDAO.getRoleByID(roleId);
-
-                java.sql.Date hireDate = null;
+                Date hireDate = null;
                 String education = null;
                 String experience = null;
-                java.sql.Date enrollmentDate = null;
+                Date enrollmentDate = null;
 
                 if (roleId == 2 || roleId == 3 || roleId == 4) {
-                    String hDate = request.getParameter("hireDate");
-                    if (hDate != null && !hDate.isEmpty()) {
-                        hireDate = java.sql.Date.valueOf(hDate);
-                    }
-                    education = request.getParameter("education");
-                    experience = request.getParameter("experience");
+                    hireDate = getDateParam(request, "hireDate");
+                    education = getStringParam(request, "education", null);
+                    experience = getStringParam(request, "experience", null);
                 } else if (roleId == 5) {
-                    String enrollStr = request.getParameter("enrollmentDate");
-                    if (enrollStr != null && !enrollStr.isEmpty()) {
-                        enrollmentDate = java.sql.Date.valueOf(enrollStr);
-                    }
+                    enrollmentDate = getDateParam(request, "enrollmentDate");
                 }
 
                 Boolean isAdded = userDAO.addNewUserFull(fullName, email, password, phone, address, gender, dob, avatar, status, roleId, hireDate, education, experience, enrollmentDate);
@@ -186,6 +157,7 @@ public class UserController extends HttpServlet {
                 }
                 response.sendRedirect("user");
                 break;
+
             case "inActivate":
                 int id = Integer.parseInt(request.getParameter("id"));
                 Boolean inactivateSuccess = userDAO.inactivateUser(id);
@@ -199,6 +171,7 @@ public class UserController extends HttpServlet {
                 }
                 response.sendRedirect("user");
                 break;
+
             case "activate":
                 int aId = Integer.parseInt(request.getParameter("id"));
                 Boolean activateSuccess = userDAO.activateUser(aId);
@@ -212,42 +185,17 @@ public class UserController extends HttpServlet {
                 }
                 response.sendRedirect("user");
                 break;
+
             case "update":
-                String uFullName = request.getParameter("fullName");
-                String uPhone = request.getParameter("phone");
-                String uAddress = request.getParameter("address");
-                if (uAddress == null || uAddress.trim().isEmpty()) {
-                    uAddress = "";
-                }
-                Boolean uGender = Boolean.valueOf(request.getParameter("gender"));
-                java.sql.Date uDob = java.sql.Date.valueOf(request.getParameter("dob"));
-                String uAvatar = request.getParameter("avatar");
+                String uFullName = getStringParam(request, "fullName", "");
+                String uPhone = getStringParam(request, "phone", "");
+                String uAddress = getStringParam(request, "address", "");
+                Boolean uGender = getBoolParam(request, "gender");
+                Date uDob = getDateParam(request, "dob");
 
-                try {
-                    Part filePart = request.getPart("avatarFile");
-
-                    if (filePart != null && filePart.getSize() > 0) {
-
-                        String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads";
-                        File uploadDir = new File(uploadPath);
-                        if (!uploadDir.exists()) {
-                            uploadDir.mkdir();
-                        }
-
-                        String fileName = java.nio.file.Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-
-                        String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
-
-                        filePart.write(uploadPath + File.separator + uniqueFileName);
-
-                        uAvatar = "uploads/" + uniqueFileName;
-                    }
-                } catch (Exception e) {
-                    System.out.println("Error uploading file: " + e.getMessage());
-                }
+                String uAvatar = uploadAvatar(request, request.getParameter("avatar"));
 
                 int uUserId = Integer.parseInt(request.getParameter("userId"));
-
                 int uRoleId = Integer.parseInt(request.getParameter("roleId"));
 
                 java.sql.Date uHDate = null;
@@ -256,18 +204,13 @@ public class UserController extends HttpServlet {
                 java.sql.Date uEnrollmentDate = null;
 
                 if (uRoleId == 2 || uRoleId == 3 || uRoleId == 4) {
-                    String uhireDate = request.getParameter("hireDate");
-                    if (uhireDate != null && !uhireDate.isEmpty()) {
-                        uHDate = java.sql.Date.valueOf(uhireDate);
-                    }
-                    uEducation = request.getParameter("education");
-                    uExperience = request.getParameter("experience");
+                    uHDate = getDateParam(request, "hireDate");
+                    uEducation = getStringParam(request, "education", "");
+                    uExperience = getStringParam(request, "experience", "");
                 } else if (uRoleId == 5) {
-                    String enrollStr = request.getParameter("enrollmentDate");
-                    if (enrollStr != null && !enrollStr.isEmpty()) {
-                        uEnrollmentDate = java.sql.Date.valueOf(enrollStr);
-                    }
+                    uEnrollmentDate = getDateParam(request, "enrollmentDate");
                 }
+                
                 boolean isUpdated = userDAO.updateUserById(uFullName, uPhone, uAddress, uGender, uDob, uAvatar, uRoleId, uUserId, uEnrollmentDate, uHDate, uEducation, uExperience);
                 HttpSession session = request.getSession();
                 if (isUpdated) {
@@ -279,6 +222,7 @@ public class UserController extends HttpServlet {
                 }
                 response.sendRedirect("user");
                 break;
+
             case "changePassword":
                 int cpUserId = Integer.parseInt(request.getParameter("userId"));
                 String currentPassword = request.getParameter("currentPassword");
@@ -321,64 +265,26 @@ public class UserController extends HttpServlet {
             case "updateProfile":
                 String pFullName = request.getParameter("fullName");
                 String pPhone = request.getParameter("phone");
-                String pAddress = request.getParameter("address");
-                if (pAddress == null) {
-                    pAddress = "";
-                }
+                String pAddress = getStringParam(request, "address", "");
+                Boolean pGender = getBoolParam(request, "gender");
+                Date pDob = getDateParam(request, "dob");
 
-                Boolean pGender = Boolean.valueOf(request.getParameter("gender"));
-
-                String DobStr = request.getParameter("dob");
-                java.sql.Date pDob = null;
-                if (DobStr != null && !DobStr.isEmpty()) {
-                    pDob = java.sql.Date.valueOf(DobStr);
-                }
-
-                String pAvatar = request.getParameter("avatar");
-
-                try {
-                    Part filePart = request.getPart("avatarFile");
-
-                    if (filePart != null && filePart.getSize() > 0) {
-
-                        String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads";
-                        File uploadDir = new File(uploadPath);
-                        if (!uploadDir.exists()) {
-                            uploadDir.mkdir();
-                        }
-
-                        String fileName = java.nio.file.Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-
-                        String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
-
-                        filePart.write(uploadPath + File.separator + uniqueFileName);
-
-                        pAvatar = "uploads/" + uniqueFileName;
-                    }
-                } catch (Exception e) {
-                    System.out.println("Error uploading file: " + e.getMessage());
-                }
+                String pAvatar = uploadAvatar(request, request.getParameter("avatar"));
 
                 int pUserId = Integer.parseInt(request.getParameter("userId"));
                 int pRoleId = Integer.parseInt(request.getParameter("roleId"));
 
-                java.sql.Date pHireDate = null;
+                Date pHireDate = null;
                 String pEducation = null;
                 String pExperience = null;
-                java.sql.Date pEnrollmentDate = null;
+                Date pEnrollmentDate = null;
 
                 if (pRoleId == 2 || pRoleId == 3 || pRoleId == 4) {
-                    String hDate = request.getParameter("hireDate");
-                    if (hDate != null && !hDate.isEmpty()) {
-                        pHireDate = java.sql.Date.valueOf(hDate);
-                    }
-                    pEducation = request.getParameter("education");
-                    pExperience = request.getParameter("experience");
+                    pHireDate = getDateParam(request, "hireDate");
+                    pEducation = getStringParam(request, "education", "");
+                    pExperience = getStringParam(request, "experience", "");
                 } else if (pRoleId == 5) {
-                    String enrollStr = request.getParameter("enrollmentDate");
-                    if (enrollStr != null && !enrollStr.isEmpty()) {
-                        pEnrollmentDate = java.sql.Date.valueOf(enrollStr);
-                    }
+                    pEnrollmentDate = getDateParam(request, "enrollmentDate");
                 }
 
                 boolean isProfUpdated = userDAO.updateUserById(pFullName, pPhone, pAddress, pGender, pDob, pAvatar, pRoleId, pUserId, pEnrollmentDate, pHireDate, pEducation, pExperience);
@@ -445,14 +351,58 @@ public class UserController extends HttpServlet {
         }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+    private String uploadAvatar(HttpServletRequest request, String currentAvatar) {
+        try {
+            Part filePart = request.getPart("avatarFile");
+            if (filePart != null && filePart.getSize() > 0) {
+                String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads";
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdir();
+                }
 
+                String fileName = java.nio.file.Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
+                filePart.write(uploadPath + File.separator + uniqueFileName);
+                return "uploads/" + uniqueFileName;
+            }
+        } catch (Exception e) {
+            System.out.println("Error uploading file: " + e.getMessage());
+        }
+        return currentAvatar;
+    }
+
+    private int getIntParam(HttpServletRequest request, String name, int defaultValue) {
+        String value = request.getParameter(name);
+        try {
+            if (value != null && !value.isEmpty()) {
+                return Integer.parseInt(value.trim());
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Fail to parse number for parameter " + name + ":" + e.getMessage());
+        }
+        return defaultValue;
+    }
+
+    private java.sql.Date getDateParam(HttpServletRequest request, String name) {
+        String value = request.getParameter(name);
+        try {
+            if (value != null && !value.isEmpty()) {
+                return java.sql.Date.valueOf(value);
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println("Fail to format date for param: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private String getStringParam(HttpServletRequest request, String name, String defaultValue) {
+        String value = request.getParameter(name);
+        return (value != null && !value.trim().isEmpty() ? value.trim() : defaultValue);
+    }
+
+    private boolean getBoolParam(HttpServletRequest request, String name) {
+        String value = request.getParameter(name);
+        return Boolean.parseBoolean(value);
+    }
 }
