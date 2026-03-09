@@ -50,8 +50,23 @@
                 <span class="user-email"><i class="bx bx-phone"></i>${lead.phone}</span>
             </div>
             <div class="profile-header-right">
-                <span class="user-email"><i class="bx bx-calendar-event"></i>Created ${lead.createDate}</span>
+                <span class="user-email">
+                    <i class="bx bx-calendar-event"></i>
+                    Created
+                    <c:choose>
+                        <c:when test="${not empty lead.createDate}">
+                            ${fn:substring(lead.createDate, 8, 10)}/${fn:substring(lead.createDate, 5, 7)}/${fn:substring(lead.createDate, 0, 4)}
+                            ${fn:substring(lead.createDate, 11, 16)}
+                        </c:when>
+                        <c:otherwise>-</c:otherwise>
+                    </c:choose>
+                </span>
             </div>
+        </div>
+        <div class="mt-3">
+            <a href="lead?action=logForm&id=${lead.leadId}" class="btn btn-add-new">
+                <i class='bx bx-edit-alt'></i>
+            </a>
         </div>
     </div>
 </div>
@@ -88,8 +103,10 @@
 
         <div class="form-row">
             <div class="form-group form-group-full">
-                <label for="note">Note</label>
-                <textarea id="note" name="note" rows="3" placeholder="Add consultation note...">${lead.note}</textarea>
+                <label>Latest Consultation Note</label>
+                <div style="border:1px solid #ddd; border-radius:8px; background:#fff; padding:10px 12px; line-height:1.4; color:#334155; white-space:normal; word-break:break-word; min-height:44px;">
+                    <c:out value="${empty lead.note ? '-' : fn:trim(lead.note)}"/>
+                </div>
             </div>
         </div>
 

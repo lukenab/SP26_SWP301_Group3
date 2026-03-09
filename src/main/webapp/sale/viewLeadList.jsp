@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+﻿<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -24,7 +24,7 @@
             </a>
         </div>
     </div>
-    
+
     <c:if test="${not empty sessionScope.message}">
         <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
             <div class="toast-icon">
@@ -68,7 +68,7 @@
         <div class="stat-card">
             <div class="stat-info">
                 <p>Total Leads</p>
-                <h3>${fn:length(leadList)}</h3>
+                <h3>${totalLeads}</h3>
             </div>
             <div class="icon-wrapper blue">
                 <i class='bx bxs-reading'></i>
@@ -112,48 +112,30 @@
         </div>
     </div>
 
-    <c:if test="${not empty sessionScope.message}">
-        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
-            <div class="toast-icon">
-                <c:choose>
-                    <c:when test="${sessionScope.messageType == 'success'}">
-                        <i class='bx bx-check-circle'></i>
-                    </c:when>
-                    <c:otherwise>
-                        <i class='bx bx-error-circle'></i>
-                    </c:otherwise>
-                </c:choose>
-            </div>
-            <div class="toast-content">
-                <span class="toast-title">
-                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
-                </span>
-                <span class="toast-message">${sessionScope.message}</span>
-            </div>
-            <button class="toast-close" onclick="closeToast()">
-                <i class='bx bx-x'></i>
-            </button>
-        </div>
-
-        <c:remove var="message" scope="session" />
-        <c:remove var="messageType" scope="session" />
-    </c:if>
-
-    <form action="lead" method="GET" class="filter-container flex-wrap">
+    <form id="leadFilterForm" action="lead" method="GET" class="filter-container flex-wrap">
         <input type="hidden" name="action" value="all">
+        <input type="hidden" id="pageInput" name="page" value="${currentPage}">
         <div class="custom-search-bar">
             <i class='bx bx-search text-muted fs-5'></i>
-            <input type="text" name="searchQuery" value="${searchQuery}" placeholder="Search by name or email...">
+            <input id="searchQueryInput" type="text" name="searchQuery" value="${searchQuery}" placeholder="Search by name or email...">
         </div>
 
         <div class="d-flex gap-3">
-            <select class="custom-select-filter" name="status">
+            <select id="statusFilterSelect" class="custom-select-filter" name="status">
                 <option value="all" ${statusFilter == 'all' ? 'selected' : ''}>All Status</option>
                 <option value="New" ${statusFilter == 'New' ? 'selected' : ''}>New</option>
                 <option value="Contacted" ${statusFilter == 'Contacted' ? 'selected' : ''}>Contacted</option>
                 <option value="Converted" ${statusFilter == 'Converted' ? 'selected' : ''}>Converted</option>
                 <option value="Inactive" ${statusFilter == 'Inactive' ? 'selected' : ''}>Inactive</option>
             </select>
+            <select id="interestFilterSelect" class="custom-select-filter" name="interestCourseId">
+                <option value="">All Interest</option>
+                <c:forEach items="${interestCourseList}" var="co">
+                    <option value="${co.courseId}" ${interestCourseId == co.courseId ? 'selected' : ''}>${co.courseName}</option>
+                </c:forEach>
+            </select>
+            <input type="date" class="custom-select-filter" name="fromDate" value="${fromDate}" title="From date">
+            <input type="date" class="custom-select-filter" name="toDate" value="${toDate}" title="To date">
             <button type="submit" class="btn btn-add-new">
                 <i class='bx bx-filter-alt'></i> Filter
             </button>
@@ -167,21 +149,31 @@
                 <thead>
                     <tr>
                         <th style="width: 5%">#</th>
-                        <th style="width: 20%">Lead Name</th>
-                        <th style="width: 25%">Email</th>
-                        <th style="width: 15%">Phone</th>
-                        <th style="width: 15%">Status</th>
-                        <th style="width: 20%">Actions</th>
+                        <th style="width: 18%">Lead Name</th>
+                        <th style="width: 21%">Email</th>
+                        <th style="width: 13%">Phone</th>
+                        <th style="width: 14%">Last Updated</th>
+                        <th style="width: 14%">Status</th>
+                        <th style="width: 15%">Actions</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     <c:forEach items="${leadList}" var="l" varStatus="loop">
                         <tr class="${l.status == 'Inactive' ? 'row-inactive' : ''}">
-                            <td>${loop.count}</td>
+                            <td>${(currentPage - 1) * pageSize + loop.count}</td>
                             <td>${l.fullName}</td>
                             <td class="text-secondary">${l.email}</td>
                             <td>${l.phone}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty l.lastUpdatedDate}">
+                                        ${fn:substring(l.lastUpdatedDate, 8, 10)}/${fn:substring(l.lastUpdatedDate, 5, 7)}/${fn:substring(l.lastUpdatedDate, 0, 4)}
+                                        ${fn:substring(l.lastUpdatedDate, 11, 16)}
+                                    </c:when>
+                                    <c:otherwise>-</c:otherwise>
+                                </c:choose>
+                            </td>
 
                             <td>
                                 <c:choose>
@@ -205,6 +197,9 @@
                                     <c:when test="${l.status == 'Inactive'}">
                                         <span class="action-btn action-disabled"><i class='bx bx-eye'></i></span>
                                         <span class="action-btn action-disabled"><i class='bx bx-edit'></i></span>
+                                        <span class="action-btn action-disabled" title="Cannot log for inactive lead">
+                                            <i class='bx bx-edit-alt'></i>
+                                        </span>
                                         <a href="lead?action=delete&id=${l.leadId}" class="action-btn">
                                             <i class='bx bx-lock-open'></i>
                                         </a>
@@ -219,6 +214,18 @@
                                             </c:when>
                                             <c:otherwise>
                                                 <a href="lead?action=edit&id=${l.leadId}" class="action-btn"><i class='bx bx-edit'></i></a>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <c:choose>
+                                            <c:when test="${l.status == 'Converted'}">
+                                                <span class="action-btn action-disabled" title="Converted lead cannot be logged">
+                                                    <i class='bx bx-edit-alt'></i>
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <a href="lead?action=logForm&id=${l.leadId}" class="action-btn" title="Log Consultation">
+                                                    <i class='bx bx-edit-alt'></i>
+                                                </a>
                                             </c:otherwise>
                                         </c:choose>
                                         <c:if test="${l.status != 'Converted'}">
@@ -239,12 +246,39 @@
         </div>
 
         <div class="d-flex justify-content-between align-items-center p-3 border-top">
-            <div class="text-muted small">Total ${fn:length(leadList)} leads</div>
+            <div class="text-muted small">Total ${totalLeads} leads</div>
             <div>
                 <ul class="pagination pagination-sm mb-0">
-                    <li class="page-item disabled"><a class="page-link" href="#"><i class='bx bx-chevron-left'></i> Previous</a></li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item disabled"><a class="page-link" href="#">Next <i class='bx bx-chevron-right'></i></a></li>
+                    <c:url var="prevUrl" value="lead">
+                        <c:param name="action" value="all"/>
+                        <c:param name="page" value="${currentPage - 1}"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="status" value="${statusFilter}"/>
+                        <c:param name="interestCourseId" value="${empty interestCourseId ? '' : interestCourseId}"/>
+                        <c:param name="fromDate" value="${fromDate}"/>
+                        <c:param name="toDate" value="${toDate}"/>
+                    </c:url>
+                    <c:url var="nextUrl" value="lead">
+                        <c:param name="action" value="all"/>
+                        <c:param name="page" value="${currentPage + 1}"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="status" value="${statusFilter}"/>
+                        <c:param name="interestCourseId" value="${empty interestCourseId ? '' : interestCourseId}"/>
+                        <c:param name="fromDate" value="${fromDate}"/>
+                        <c:param name="toDate" value="${toDate}"/>
+                    </c:url>
+
+                    <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="${currentPage <= 1 ? '#' : prevUrl}">
+                            <i class='bx bx-chevron-left'></i> Previous
+                        </a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">${currentPage}</a></li>
+                    <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="${currentPage >= totalPages ? '#' : nextUrl}">
+                            Next <i class='bx bx-chevron-right'></i>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -252,3 +286,37 @@
 </div>
 
 <script src="js/manageUser.js" type="text/javascript"></script>
+<script>
+    (function () {
+        const form = document.getElementById('leadFilterForm');
+        const searchInput = document.getElementById('searchQueryInput');
+        const statusSelect = document.getElementById('statusFilterSelect');
+        const interestSelect = document.getElementById('interestFilterSelect');
+        const pageInput = document.getElementById('pageInput');
+        let searchTimer = null;
+
+        if (!form || !searchInput || !statusSelect || !interestSelect || !pageInput) {
+            return;
+        }
+
+        statusSelect.addEventListener('change', function () {
+            pageInput.value = '1';
+            form.submit();
+        });
+
+        interestSelect.addEventListener('change', function () {
+            pageInput.value = '1';
+            form.submit();
+        });
+
+        searchInput.addEventListener('input', function () {
+            if (searchTimer) {
+                clearTimeout(searchTimer);
+            }
+            searchTimer = setTimeout(function () {
+                pageInput.value = '1';
+                form.submit();
+            }, 350);
+        });
+    })();
+</script>

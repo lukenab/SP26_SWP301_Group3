@@ -19,6 +19,7 @@ public class Lead {
     private Course course;
     private String status;
     private LocalDateTime createDate;
+    private LocalDateTime lastUpdatedDate;
     private String Note;
 
     public Lead() {
@@ -41,6 +42,14 @@ public class Lead {
 
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
+    }
+
+    public LocalDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(LocalDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 
     public int getLeadId() {
