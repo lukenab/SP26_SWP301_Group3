@@ -44,7 +44,7 @@ public class UserController extends HttpServlet {
         RoleDAO roleDAO = new RoleDAO();
         EmployeeDAO employeeDAO = new EmployeeDAO();
         StudentDAO studentDAO = new StudentDAO();
-        
+
         String action = request.getParameter("action");
         if (action == null) {
             action = "all";
@@ -73,9 +73,13 @@ public class UserController extends HttpServlet {
                 break;
 
             case "inActivate":
-                int dId = Integer.parseInt(request.getParameter("id"));
-                User uDelete = userDAO.getUserById(dId);
-                request.setAttribute("uDelete", uDelete);
+                int targetId = getIntParam(request, "id", 0);
+                if (targetId <= 0) {
+                    response.sendRedirect("user");
+                    return;
+                }
+                User targetUser = userDAO.getUserById(targetId);
+                request.setAttribute("uDelete", targetUser);
                 request.setAttribute("home_view", "/admin/deleteUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
@@ -159,29 +163,26 @@ public class UserController extends HttpServlet {
                 break;
 
             case "inActivate":
-                int id = Integer.parseInt(request.getParameter("id"));
-                Boolean inactivateSuccess = userDAO.inactivateUser(id);
+            case "activate":
+                int id = getIntParam(request, "id", 0);
+                if(id <= 0){
+                    response.sendRedirect("user");
+                    return;
+                }
+                
+                boolean newStatus = action.equals("activate");
+                
+                Boolean statusUpdated = userDAO.updateUserStatus(id, newStatus);
+                
                 HttpSession uSession = request.getSession();
-                if (inactivateSuccess) {
-                    uSession.setAttribute("message", "Inactivate User Success!");
+                String actionName = newStatus ? "Activate" : "Inactivate";
+                
+                if (statusUpdated) {
+                    uSession.setAttribute("message", actionName + " User Success!");
                     uSession.setAttribute("messageType", "success");
                 } else {
-                    uSession.setAttribute("message", "Fail To Inactivate User");
+                    uSession.setAttribute("message", "Fail To " +actionName + " User");
                     uSession.setAttribute("messageType", "error");
-                }
-                response.sendRedirect("user");
-                break;
-
-            case "activate":
-                int aId = Integer.parseInt(request.getParameter("id"));
-                Boolean activateSuccess = userDAO.activateUser(aId);
-                HttpSession activateSession = request.getSession();
-                if (activateSuccess) {
-                    activateSession.setAttribute("message", "Activate User Success!");
-                    activateSession.setAttribute("messageType", "success");
-                } else {
-                    activateSession.setAttribute("message", "Fail To Activate User");
-                    activateSession.setAttribute("messageType", "error");
                 }
                 response.sendRedirect("user");
                 break;
@@ -210,7 +211,7 @@ public class UserController extends HttpServlet {
                 } else if (uRoleId == 5) {
                     uEnrollmentDate = getDateParam(request, "enrollmentDate");
                 }
-                
+
                 boolean isUpdated = userDAO.updateUserById(uFullName, uPhone, uAddress, uGender, uDob, uAvatar, uRoleId, uUserId, uEnrollmentDate, uHDate, uEducation, uExperience);
                 HttpSession session = request.getSession();
                 if (isUpdated) {
@@ -333,6 +334,7 @@ public class UserController extends HttpServlet {
 
                 response.sendRedirect("user");
                 break;
+                
             case "toggleLock":
                 int lockUserId = Integer.parseInt(request.getParameter("id"));
                 boolean lockVal = Boolean.parseBoolean(request.getParameter("val"));

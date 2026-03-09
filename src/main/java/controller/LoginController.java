@@ -55,6 +55,7 @@ public class LoginController extends HttpServlet {
         }
 
         User userByEmail = userDAO.getUserByEmail(email);
+        
         if (userByEmail == null) {
             loginSession.setAttribute("loginMessage", "Invalid email or password!");
             response.sendRedirect("login");
@@ -73,15 +74,15 @@ public class LoginController extends HttpServlet {
             return;
         }
 
-        User validUser = userDAO.checkLogin(email, password);
+        String hashPassword = userDAO.hashMD5(password);
         
-        if (validUser != null) {
-            userDAO.resetFailedLogin(email);
-            loginSession.setAttribute("user", validUser);
+        if (userByEmail.getPassword().equals(hashPassword)) {
+            userDAO.updateFailLoginAttempts(userByEmail.getUserId(), 0);
+            loginSession.setAttribute("user", userByEmail);
             
             loginSession.setMaxInactiveInterval(timeoutMinutes * 60);
 
-            int roleId = validUser.getRole().getRoleId();
+            int roleId = userByEmail.getRole().getRoleId();
             if (roleId == 1) {
                 response.sendRedirect("dashboard?action=admin");
             } else if (roleId == 2 || roleId == 3 || roleId == 4) {
@@ -91,11 +92,11 @@ public class LoginController extends HttpServlet {
             }
         }
         else {
-            userDAO.incrementFailedLogin(email);
             int attempts = userByEmail.getFailedLoginAttempts() + 1;
+            userDAO.updateFailLoginAttempts(userByEmail.getUserId(), attempts);
             
             if(attempts >= maxAttempts){
-                userDAO.lockUser(email);
+                userDAO.toggleLockUser(userByEmail.getUserId(), true);
                 loginSession.setAttribute("loginMessage", "You have entered the wrong password " + maxAttempts + " times. Your account is LOCKED.");
             }
             else{

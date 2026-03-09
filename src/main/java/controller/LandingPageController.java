@@ -99,7 +99,7 @@ public class LandingPageController extends HttpServlet {
         UserDAO userDAO = new UserDAO();
 
         if (normalizedEmail != null
-                && (userDAO.isEmailExists(normalizedEmail) || leadDAO.isEmailExists(normalizedEmail))) {
+                && (userDAO.isFieldExists("email", normalizedEmail) || leadDAO.isEmailExists(normalizedEmail))) {
             session.setAttribute("message", "Email already exists. Please use another email.");
             session.setAttribute("messageType", "error");
             response.sendRedirect("landingPage");

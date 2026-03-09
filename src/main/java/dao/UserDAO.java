@@ -8,10 +8,8 @@ import java.security.MessageDigest;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import model.Role;
 import model.User;
 import utils.DBContext;
 
@@ -107,59 +105,19 @@ public class UserDAO extends DBContext {
         return null;
     }
 
-    public User checkLogin(String email, String password) {
-        String sql = "SELECT * FROM [User] WHERE Email = ? AND Password = ?";
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, email);
-            String hashedPassword = hashMD5(password);
-            ps.setString(2, hashedPassword);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                int userId = rs.getInt("UserID");
-                String fullname = rs.getString("FullName");
-
-                String phone = rs.getString("Phone");
-                String address = rs.getString("Address");
-                Boolean gender = rs.getBoolean("Gender");
-                Date birthdate = rs.getDate("Dob");
-                String avatar = rs.getString("Avatar");
-                Boolean status = rs.getBoolean("Status");
-                Role role = roleDAO.getRoleByID(rs.getInt("RoleID"));
-                Timestamp createdAt = rs.getTimestamp("CreatedAt");
-
-                User user = new User(userId, fullname, email, hashedPassword, phone, address, gender, birthdate, avatar, status, role, createdAt);
-                user.setIsLocked(rs.getBoolean("IsLocked"));
-                return user;
+      public boolean isFieldExists(String fieldName, String value){
+        if(!fieldName.equals("email") && !fieldName.equals("phone")){
+            return false;
+        }
+        
+        String sql = "SELECT 1 FROM [User] WHERE " + fieldName + " = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)){
+            ps.setString(1, value);
+            try (ResultSet rs = ps.executeQuery()){
+                return rs.next();
             }
         } catch (Exception e) {
-            System.out.println("Fail to check login: " + e.getMessage());
-        }
-        return null;
-    }
-
-    public boolean isEmailExists(String email) {
-        String sql = "SELECT 1 FROM [User] WHERE Email = ?";
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, email);
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
-        } catch (Exception e) {
-            System.out.println("Fail to check existing email: " + e.getMessage());
-        }
-        return false;
-    }
-
-    public boolean isPhoneExists(String phone) {
-        String sql = "SELECT 1 FROM [User] WHERE Phone = ?";
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, phone);
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
-        } catch (Exception e) {
-            System.out.println("Fail to check existing phone: " + e.getMessage());
+            System.out.println("Faill to check existing " +fieldName + ": " + e.getMessage());
         }
         return false;
     }
@@ -224,32 +182,14 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    public boolean inactivateUser(int id) {
-        String sql = "UPDATE [USER] SET Status = 0 WHERE UserID = ?";
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, id);
-            int row = ps.executeUpdate();
-            if (row > 0) {
-                return true;
-            }
+    public boolean updateUserStatus(int userId, boolean status) {
+        String sql = "UPDATE [USER] SET Status = ? WHERE UserID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, status);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            System.out.println("Fail to inactivate User: " + e.getMessage());
-        }
-        return false;
-    }
-
-    public boolean activateUser(int id) {
-        String sql = "UPDATE [USER] SET Status = 1 WHERE UserID = ?";
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, id);
-            int row = ps.executeUpdate();
-            if (row > 0) {
-                return true;
-            }
-        } catch (Exception e) {
-            System.out.println("Fail to activate User: " + e.getMessage());
+            System.out.println("Fail to update user: " + e.getMessage());
         }
         return false;
     }
@@ -359,7 +299,7 @@ public class UserDAO extends DBContext {
     public boolean toggleLockUser(int userId, boolean isLocked) {
         String sql = "UPDATE [User] SET IsLocked = ? WHERE UserID = ?";
         try {
-            PreparedStatement ps = conn.prepareCall(sql);
+            PreparedStatement ps = conn.prepareStatement(sql);
             ps.setBoolean(1, isLocked);
             ps.setInt(2, userId);
             int row = ps.executeUpdate();
@@ -372,33 +312,15 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    public void incrementFailedLogin(String email) {
-        String sql = "UPDATE [User] SET FailedLoginAttempts = FailedLoginAttempts + 1 WHERE Email = ?";
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, email);
+    public void updateFailLoginAttempts(int userId, int attempts) {
+        String sql = "UPDATE [User] SET FailedLoginAttempts = ? WHERE UserID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, attempts);
+            ps.setInt(2, userId);
+            
             ps.executeUpdate();
         } catch (Exception e) {
-        }
-    }
-
-    public void resetFailedLogin(String email) {
-        String sql = "UPDATE [User] SET FailedLoginAttempts = 0 WHERE Email = ?";
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, email);
-            ps.executeUpdate();
-        } catch (Exception e) {
-        }
-    }
-
-    public void lockUser(String email) {
-        String sql = "UPDATE [User] SET IsLocked = 1 WHERE Email = ?";
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, email);
-            ps.executeUpdate();
-        } catch (Exception e) {
+            System.out.println("Fail to update login attempts: " +e.getMessage());
         }
     }
 

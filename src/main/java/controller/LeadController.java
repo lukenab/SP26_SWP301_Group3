@@ -285,13 +285,13 @@ public class LeadController extends HttpServlet {
                 return;
             }
 
-            if (userDAO.isEmailExists(normalizedEmail) || leadDAO.isEmailExists(normalizedEmail)) {
+            if (userDAO.isFieldExists("email", normalizedEmail) || leadDAO.isEmailExists(normalizedEmail)) {
                 session.setAttribute("message", "Email already exists. Please use another email.");
                 session.setAttribute("messageType", "error");
                 response.sendRedirect("lead?action=add");
                 return;
             }
-            if (userDAO.isPhoneExists(normalizedPhone) || leadDAO.isPhoneExists(normalizedPhone)) {
+            if (userDAO.isFieldExists("phone", normalizedPhone) || leadDAO.isPhoneExists(normalizedPhone)) {
                 session.setAttribute("message", "Phone already exists. Please use another phone number.");
                 session.setAttribute("messageType", "error");
                 response.sendRedirect("lead?action=add");
@@ -454,7 +454,7 @@ public class LeadController extends HttpServlet {
                 return;
             }
 
-            if (userDAO.isEmailExists(email.trim())) {
+            if (userDAO.isFieldExists("email", email.trim())) {
                 session.setAttribute("message", "Email already exists in user system.");
                 session.setAttribute("messageType", "error");
                 response.sendRedirect("lead?action=convertForm&id=" + leadId);
