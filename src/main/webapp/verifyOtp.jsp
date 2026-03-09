@@ -4,11 +4,20 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Forgot Password</title>
+        <title>Verify OTP</title>
         <link href="css/login.css" rel="stylesheet" type="text/css"/>
         <link href="css/editUser.css" rel="stylesheet" type="text/css"/>
         <link href="css/forgotPassword.css" rel="stylesheet" type="text/css"/>
         <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+        <style>
+            #otp {
+                letter-spacing: 1em;
+                text-align: center;
+                font-size: 1.2rem;
+                font-weight: bold;
+                padding-left: 20px;
+            }
+        </style>
     </head>
     <body>
         <div class="login-container">
@@ -23,19 +32,19 @@
                 <c:remove var="messageType" scope="session" />
             </c:if>
 
-            <div class="login-card" style="height: 350px">
+            <div class="login-card" style="height: 380px">
                 <div class="login-header">
-                    <h2>Forgot Password</h2>
-                    <p>Enter your email to receive an OTP code</p>
+                    <h2>Verify OTP</h2>
+                    <p>Enter the 6-digit code sent to <strong>${sessionScope.resetEmail}</strong></p>
                 </div>
 
                 <form class="login-form" action="forgotPassword" method="post">
-                    <input type="hidden" name="action" value="sendOTP">
+                    <input type="hidden" name="action" value="verifyOTP">
                     
                     <div class="form-group">
                         <div class="input-wrapper">
-                            <input type="email" id="email" name="email" required placeholder=" " style="height: 44px" />
-                            <label for="email">Your Email</label>
+                            <input type="text" id="otp" name="otp" required placeholder=" " maxlength="6" style="height: 50px" autocomplete="off" />
+                            <label for="otp">6-digit OTP</label>
                             <span class="input-border"></span>
                         </div>
                     </div>
@@ -43,8 +52,13 @@
                     <div class="form-buttons" style="align-items: center; margin-top: 30px;">
                         <a href="login" class="btn btn-cancel">Cancel</a>
                         <button type="submit" class="btn btn-save" style="height: 41px">
-                             Send OTP
+                             Verify
                         </button>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
+                        <span class="text-muted">Didn't receive code? </span>
+                        <a href="forgotPassword.jsp" style="color: #4361ee; text-decoration: none; font-weight: 500;">Try again</a>
                     </div>
                 </form>
             </div>
