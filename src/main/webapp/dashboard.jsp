@@ -254,13 +254,6 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="payment?action=list">
-                                <i class="bxr bx-check-circle"></i>
-                                <span class="text nav-text">Verify Tuition Payment</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
                             <a href="#">
                                 <i class="bxr bx-user-check"></i>
                                 <span class="text nav-text">Teacher Assignment</span>
@@ -293,19 +286,19 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="payment?action=all">
-                                <i class="bxr bx-check-circle"></i>
-                                <span class="text nav-text">View Payment Status</span>
-                            </a>
-                        </li>
-                        
-                        <li class="nav-links">
                             <a href="lead?action=salesReport">
                                 <i class="bxr bx-file-report"></i>
                                 <span class="text nav-text">Sales Reports</span>
                             </a>
                         </li>
-                        
+
+                        <li class="nav-links">
+                            <a href="payment?action=list">
+                                <i class="bxr bx-check-circle"></i>
+                                <span class="text nav-text">Verify Tuition Payment</span>
+                            </a>
+                        </li>
+
                         <li class="nav-links">
                             <a href="lead?action=revenueReport">
                                 <i class="bxr bx-wallet-alt"></i>

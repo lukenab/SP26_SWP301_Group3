@@ -11,6 +11,7 @@
         <link href="https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css" rel="stylesheet"/>
         <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
         <link href="css/courseDetailPublic.css" rel="stylesheet" type="text/css"/>
+        <link href="css/landingPage.css" rel="stylesheet" type="text/css"/>
     </head>
     <body>
         <c:choose>
@@ -21,20 +22,34 @@
                 </div>
             </c:when>
             <c:otherwise>
-                <nav class="top-nav">
-                    <div class="nav-inner">
-                        <a class="brand-link" href="${pageContext.request.contextPath}/landingPage">
-                            <img src="${pageContext.request.contextPath}/images/logo.png" alt="LMCS">
-                            <span>LMCS</span>
-                        </a>
-                        <div class="nav-search">
-                            <i class="bx bx-search"></i>
-                            <input type="text" placeholder="Search for courses..." readonly>
-                        </div>
-                        <div class="nav-actions">
-                            <a href="${pageContext.request.contextPath}/landingPage#content-2">Categories</a>
-                            <a href="${pageContext.request.contextPath}/login">Login</a>
-                            <a class="nav-primary" href="${pageContext.request.contextPath}/landingPage#contact">Contact</a>
+                <nav>
+                    <div class="navbar"> 
+                        <div class="nav-items">
+                            <div class="nav-left">
+                                <div class="logo-header">
+                                    <img src="images/logo.png" alt="logo" />
+                                </div>
+
+                                <div class="logo-text">
+                                    <span class="name">LMCS</span>
+                                    <span class="profession">Language Center</span>
+                                </div>
+
+                                <div class="search-field">
+                                    <i class="bx bx-search"></i>
+                                    <input type="text" id="courseSearchInput" placeholder="Search for courses..." />
+                                </div>
+                            </div>
+
+                            <div class="nav-right">
+                                <div class="login-btn">
+                                    <a type="button" href="login">Login</a>
+                                </div>
+
+                                <div class="contact-btn">
+                                    <a class="nav-primary" href="${pageContext.request.contextPath}/landingPage#contact">Contact</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </nav>
@@ -112,7 +127,7 @@
                                 <span>Preview this course</span>
                             </div>
                             <div class="price-block">
-                                <h3><fmt:formatNumber type="currency" value="${course.tuitionFee}" /></h3>
+                                <h3><fmt:formatNumber pattern="#,###" value="${course.tuitionFee}" /> VND</h3>
                                 <p>Limited seats available</p>
                             </div>
                             <a href="${pageContext.request.contextPath}/landingPage#contact" class="btn-enroll">Enroll Now</a>
@@ -129,17 +144,6 @@
                         </div>
                     </aside>
                 </main>
-
-                <section class="cta-section">
-                    <div class="container cta-inner">
-                        <h2>Start learning today - Sign up for free</h2>
-                        <p>Join thousands of learners and accelerate your learning journey.</p>
-                        <div class="cta-actions">
-                            <a href="${pageContext.request.contextPath}/landingPage#contact" class="cta-primary">Get Free Consultation</a>
-                            <a href="${pageContext.request.contextPath}/landingPage#content-2" class="cta-outline">Browse All Courses</a>
-                        </div>
-                    </div>
-                </section>
             </c:otherwise>
         </c:choose>
     </body>
