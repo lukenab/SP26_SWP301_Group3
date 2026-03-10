@@ -183,6 +183,7 @@ body {
     font-size: 16px;
     font-weight: 500;
     color: #4b5563;
+    cursor: pointer;
 }
 
 .tab.active {
@@ -196,6 +197,14 @@ body {
     border-top: none;
     border-radius: 0 0 12px 12px;
     padding: 30px;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
 }
 
 .content-box h2 {
@@ -231,6 +240,212 @@ body {
     color: #374151;
     line-height: 1.8;
     margin-bottom: 10px;
+}
+
+.section-intro {
+    color: #6b7280;
+    margin-bottom: 22px;
+}
+
+.empty-content {
+    min-height: 220px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    gap: 10px;
+    color: #6b7280;
+    border: 1px dashed #cdd7e8;
+    border-radius: 14px;
+    background: #f8fbff;
+    padding: 24px;
+}
+
+.empty-content i {
+    font-size: 36px;
+    color: #0f5bd3;
+}
+
+.curriculum-list {
+    display: grid;
+    gap: 16px;
+}
+
+.curriculum-item {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 18px;
+    padding: 18px;
+    border: 1px solid #e6ebf4;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+}
+
+.curriculum-order {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e8f0ff;
+    color: #0f5bd3;
+    border-radius: 12px;
+    font-weight: 600;
+    min-height: 48px;
+    padding: 0 12px;
+}
+
+.curriculum-body h3 {
+    margin: 0 0 8px;
+    font-size: 22px;
+}
+
+.curriculum-body p {
+    margin: 0;
+}
+
+.instructor-card {
+    display: grid;
+    gap: 24px;
+}
+
+.instructor-header {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+}
+
+.instructor-header img {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #e8f0ff;
+}
+
+.instructor-role {
+    color: #0f5bd3;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.instructor-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    color: #475569;
+}
+
+.instructor-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.instructor-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.info-card {
+    border: 1px solid #e6ebf4;
+    border-radius: 12px;
+    padding: 16px;
+    background: #fbfcff;
+}
+
+.info-card span {
+    display: block;
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.info-card strong {
+    color: #111827;
+}
+
+.instructor-bio {
+    border-top: 1px solid #edf1f7;
+    padding-top: 20px;
+}
+
+.instructor-bio h3 {
+    margin-top: 0;
+}
+
+.reviews-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: start;
+    margin-bottom: 22px;
+}
+
+.review-summary {
+    min-width: 140px;
+    text-align: center;
+    background: #f2f7ff;
+    border-radius: 14px;
+    padding: 14px 18px;
+}
+
+.review-summary strong {
+    display: block;
+    font-size: 32px;
+    color: #0f5bd3;
+}
+
+.review-summary span {
+    color: #64748b;
+}
+
+.review-list {
+    display: grid;
+    gap: 16px;
+}
+
+.review-item {
+    border: 1px solid #e6ebf4;
+    border-radius: 14px;
+    padding: 18px;
+    background: #fff;
+}
+
+.review-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: start;
+    margin-bottom: 10px;
+}
+
+.review-top h3 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.review-top p {
+    margin: 2px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.review-rating {
+    white-space: nowrap;
+    color: #0f5bd3;
+    font-weight: 700;
+}
+
+.review-rating i {
+    color: #f7c649;
+}
+
+.review-comment {
+    margin-bottom: 8px;
+}
+
+.review-date {
+    color: #6b7280;
+    font-size: 14px;
 }
 
 .content-box ul {
@@ -447,6 +662,19 @@ body {
 
     .learn-grid {
         grid-template-columns: 1fr;
+    }
+
+    .curriculum-item,
+    .instructor-grid,
+    .reviews-header,
+    .review-top {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+
+    .instructor-header {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
     .cta-actions {

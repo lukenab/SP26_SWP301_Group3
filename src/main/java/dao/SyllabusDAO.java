@@ -34,6 +34,35 @@ public class SyllabusDAO extends DBContext {
         return list;
     }
 
+    public List<Syllabus> getSyllabusByCourseId(int courseId) {
+        List<Syllabus> list = new ArrayList<>();
+        String sql = "SELECT s.SyllabusID, s.CourseID, s.[OrderIndex], s.TopicName, s.Description, c.CourseName "
+                + "FROM Syllabus s "
+                + "JOIN Course c ON s.CourseID = c.CourseID "
+                + "WHERE s.CourseID = ? "
+                + "ORDER BY s.[OrderIndex], s.SyllabusID";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, courseId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Syllabus s = new Syllabus();
+                    s.setSyllabusId(rs.getInt("SyllabusID"));
+                    s.setCourseId(rs.getInt("CourseID"));
+                    s.setOrderIndex(rs.getInt("OrderIndex"));
+                    s.setTopicName(rs.getString("TopicName"));
+                    s.setDescription(rs.getString("Description"));
+                    s.setCourseName(rs.getString("CourseName"));
+                    list.add(s);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get syllabus by course id: " + e.getMessage());
+        }
+
+        return list;
+    }
+
     public Syllabus getSyllabusById(int syllabusId) {
         String sql = "SELECT s.SyllabusID, s.CourseID, s.[OrderIndex], s.TopicName, s.Description, c.CourseName "
                 + "FROM Syllabus s "
