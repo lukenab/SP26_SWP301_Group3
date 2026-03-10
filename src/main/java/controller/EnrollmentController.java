@@ -307,21 +307,36 @@ public class EnrollmentController extends HttpServlet {
             try {
                 int classId = Integer.parseInt(classIdParam);
                 String[] selectedStudentIds = request.getParameterValues("studentIds");
+                String enrollmentStatus = request.getParameter("enrollmentStatus");
                 if (selectedStudentIds == null || selectedStudentIds.length == 0) {
                     request.getSession().setAttribute("message", "Please choose at least one student.");
                     request.getSession().setAttribute("messageType", "error");
                     response.sendRedirect("enrollment?action=addStudentForm&classId=" + classId);
                     return;
                 }
+                if (enrollmentStatus == null || enrollmentStatus.trim().isEmpty()) {
+                    request.getSession().setAttribute("message", "Please choose status Paid or UnPaid.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=addStudentForm&classId=" + classId);
+                    return;
+                }
+                String normalizedStatus = enrollmentStatus.trim();
+                if (!"Paid".equalsIgnoreCase(normalizedStatus) && !"UnPaid".equalsIgnoreCase(normalizedStatus)) {
+                    request.getSession().setAttribute("message", "Status must be Paid or UnPaid.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=addStudentForm&classId=" + classId);
+                    return;
+                }
+                normalizedStatus = "Paid".equalsIgnoreCase(normalizedStatus) ? "Paid" : "UnPaid";
 
                 int[] studentIds = new int[selectedStudentIds.length];
                 for (int i = 0; i < selectedStudentIds.length; i++) {
                     studentIds[i] = Integer.parseInt(selectedStudentIds[i]);
                 }
 
-                int inserted = enrollmentDAO.addStudentsToClass(classId, studentIds);
+                int inserted = enrollmentDAO.addStudentsToClass(classId, studentIds, normalizedStatus);
                 if (inserted > 0) {
-                    request.getSession().setAttribute("message", "Added " + inserted + " student(s) to class successfully.");
+                    request.getSession().setAttribute("message", "Added " + inserted + " student(s) to class with status " + normalizedStatus + ".");
                     request.getSession().setAttribute("messageType", "success");
                 } else {
                     request.getSession().setAttribute("message", "Cannot add students to class.");
