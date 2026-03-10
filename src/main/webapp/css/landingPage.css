@@ -54,7 +54,7 @@ nav{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 95%;
+    width: 80%;
     max-width: 1400px;
 }
 
@@ -65,6 +65,13 @@ nav{
     align-items: center;
     gap: 15px;
     color: var(--sidebar-text);
+}
+
+.nav-left a{
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
 }
 
 .logo-header{
@@ -265,17 +272,30 @@ nav{
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     border-radius: 12px;
     overflow: hidden;
-    height: 470px;
+    height: 100%; 
+    display: flex;
+    flex-direction: column;
 }
+
 .course-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0,0,0,0.2);
 }
+
 .card-img-top {
-    height: 270px;
-    object-fit: cover;
     width: 100%;
+    height: 220px;
+    object-fit: cover; 
 }
+
+.card-title {
+    font-size: 17px;
+}
+
+.card-text{
+    font-size: 14px;
+}
+
 .price-tag {
     color: #0056D2;
     font-weight: bold;
@@ -283,7 +303,7 @@ nav{
 }
 
 .carousel-item img{
-    height: 600px;
+    height: 500px;
 }
 
 .explore-course h3{
@@ -319,8 +339,8 @@ nav{
 }
 
 .course-filter{
-    margin-left: 30px;
-    width: 320px;
+    margin-left: 20px;
+    width: 280px;
     background-color: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.05);
     padding: 30px;

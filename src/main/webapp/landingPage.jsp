@@ -25,14 +25,16 @@
             <div class="navbar"> 
                 <div class="nav-items">
                     <div class="nav-left">
-                        <div class="logo-header">
-                            <img src="images/logo.png" alt="logo" />
-                        </div>
+                        <a href="#">
+                            <div class="logo-header">
+                                <img src="images/logo.png" alt="logo" />
+                            </div>
 
-                        <div class="logo-text">
-                            <span class="name">LMCS</span>
-                            <span class="profession">Language Center</span>
-                        </div>
+                            <div class="logo-text">
+                                <span class="name">LMCS</span>
+                                <span class="profession">Language Center</span>
+                            </div>
+                        </a>
 
                         <div class="search-field">
                             <i class="bx bx-search"></i>
@@ -267,7 +269,7 @@
 
                                         <div class="mt-auto d-flex justify-content-between align-items-center">
                                             <span class="price-tag">
-                                                <fmt:formatNumber type="currency" value="${c.tuitionFee}" />                                           
+                                                <fmt:formatNumber pattern="#,###" value="${c.tuitionFee}" /> VND                                           
                                             </span>
                                             <div class="courseDetail-btn">
                                                 <a href="${pageContext.request.contextPath}/course?action=publicDetails&courseId=${c.courseId}">View Details</a>
@@ -289,31 +291,22 @@
                     <div class="col-md footer-1">
                         <ul>
                             <li class="footer-header"><strong>Quick links</strong></li>
-
                             <li>
                                 <a href="#about" class="footer-icon">
-                                    <i class="fa-solid fa-angle-right"></i>
-                                    About
+                                    <i class="fa-solid fa-angle-right"></i>About
                                 </a>
                             </li>
-
 
                             <li>
                                 <a href="#projects" class="footer-icon">
-                                    <i class="fa-solid fa-angle-right"></i>
-                                    Projects
+                                    <i class="fa-solid fa-angle-right"></i>Projects
                                 </a>
                             </li>
-
-
                             <li>
                                 <a href="#home" class="footer-icon">
-                                    <i class="fa-solid fa-angle-right"></i>
-                                    Home
+                                    <i class="fa-solid fa-angle-right"></i>Home
                                 </a>
                             </li>
-
-
                         </ul>
                     </div>
 
