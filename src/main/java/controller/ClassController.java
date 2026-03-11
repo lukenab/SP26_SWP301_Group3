@@ -5,6 +5,7 @@
 package controller;
 
 import dao.ClassDAO;
+import dao.EnrollmentDAO;
 import dao.ScheduleDAO;
 import dao.TeacherDAO;
 import java.io.IOException;
@@ -67,6 +68,8 @@ public class ClassController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         TeacherDAO dao = new TeacherDAO();
+        ClassDAO classDAO = new ClassDAO();
+        ScheduleDAO scheduleDAO = new ScheduleDAO();
         String action = request.getParameter("action");
         if (action == null) {
             action = "all";
@@ -88,9 +91,6 @@ public class ClassController extends HttpServlet {
                 break;
 
             case "availableClass":
-
-                ClassDAO classDAO = new ClassDAO();
-                ScheduleDAO scheduleDAO = new ScheduleDAO();
 
                 List<Object[]> classList = classDAO.getOpenClassesForStudent();
 
@@ -155,6 +155,60 @@ public class ClassController extends HttpServlet {
                 request.setAttribute("classList", classList);
 
                 request.setAttribute("home_view", "student/studentClassList.jsp");
+
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+
+                break;
+
+            case "detail":
+
+                String classIdRaw = request.getParameter("classId");
+                int classId = Integer.parseInt(classIdRaw);
+
+                // lấy nguồn trang
+                String source = request.getParameter("source");
+                if (source == null) {
+                    source = "availableClass"; // mặc định
+                }
+
+                Object[] data = classDAO.getClassDetail(classId);
+
+                Classes classDetail = (Classes) data[0];
+                String teacherName = (String) data[1];
+                String roomName = (String) data[2];
+
+                List<Schedule> schedules = scheduleDAO.getSchedulesByClass(classId);
+
+                request.setAttribute("classDetail", classDetail);
+                request.setAttribute("teacherName", teacherName);
+                 request.setAttribute("roomName", roomName); 
+                request.setAttribute("scheduleList", schedules);
+
+                // truyền sang JSP để breadcrumb biết nguồn
+                request.setAttribute("sourcePage", source);
+
+                request.setAttribute("home_view", "student/classDetail.jsp");
+
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+
+                break;
+
+            case "myClasses":
+
+                User student = (User) request.getSession().getAttribute("user");
+
+                if (student == null) {
+                    response.sendRedirect("login.jsp");
+                    return;
+                }
+
+                int studentId = student.getUserId();
+
+                List<Object[]> myClassList = classDAO.getStudentClasses(studentId);
+
+                request.setAttribute("classList", myClassList);
+
+                request.setAttribute("home_view", "student/studentMyClassList.jsp");
 
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
 
