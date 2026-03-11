@@ -136,6 +136,7 @@ public class ClassDAO extends DBContext {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT u.UserID, u.FullName, u.Email "
                 + "FROM [User] u "
+                + "INNER JOIN Employee e ON u.UserID = e.EmployeeID "
                 + "WHERE u.RoleID = 4 "
                 + "ORDER BY u.FullName ASC";
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
@@ -150,6 +151,22 @@ public class ClassDAO extends DBContext {
             System.out.println("Fail to get teacher options: " + e.getMessage());
         }
         return list;
+    }
+
+    public boolean isAssignableTeacher(int teacherId) {
+        String sql = "SELECT 1 "
+                + "FROM [User] u "
+                + "INNER JOIN Employee e ON u.UserID = e.EmployeeID "
+                + "WHERE u.UserID = ? AND u.RoleID = 4";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, teacherId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to validate assignable teacher: " + e.getMessage());
+        }
+        return false;
     }
 
     public boolean createClass(String className, int courseId, int teacherId, Date startDate, Date endDate, String status) {

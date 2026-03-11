@@ -162,6 +162,15 @@ public class EnrollmentController extends HttpServlet {
                 Date startDate = Date.valueOf(startDateParam);
                 Date endDate = Date.valueOf(endDateParam);
 
+                if (!classDAO.isAssignableTeacher(teacherId)) {
+                    request.setAttribute("errorMessage", "Selected teacher is not available for class assignment.");
+                    request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
+                    request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
+                    request.setAttribute("home_view", "/academic/create_class.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                    return;
+                }
+
                 if (endDate.before(startDate)) {
                     request.setAttribute("errorMessage", "End date must be after or equal to start date.");
                     request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
@@ -211,6 +220,13 @@ public class EnrollmentController extends HttpServlet {
                 int teacherId = Integer.parseInt(teacherIdParam);
                 Date startDate = Date.valueOf(startDateParam);
                 Date endDate = Date.valueOf(endDateParam);
+
+                if (!classDAO.isAssignableTeacher(teacherId)) {
+                    request.getSession().setAttribute("message", "Selected teacher is not available for class assignment.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=editClassForm&classId=" + classId);
+                    return;
+                }
 
                 if (endDate.before(startDate)) {
                     request.getSession().setAttribute("message", "End date must be after or equal to start date.");
