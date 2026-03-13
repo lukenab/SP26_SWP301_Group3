@@ -110,3 +110,57 @@
     font-size: 14px;
     color: #475569;
 }
+
+/* --- Values & Trends --- */
+.stat-value {
+    font-size: 34px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 15px 0;
+}
+
+.stat-trend {
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stat-trend.trend-up { color: #22c55e; }
+.stat-trend.trend-down { color: #ef4444; }
+
+.trend-text {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* --- Chart Section --- */
+.chart-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    border: 1px solid #f8fafc;
+}
+
+.chart-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 25px;
+}
+
+.chart-container {
+    height: 350px;
+    width: 100%;
+}
+
+/* Responsive cho màn hình nhỏ */
+@media (max-width: 1200px) {
+    .stat-card-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .stat-card-grid { grid-template-columns: 1fr; }
+}

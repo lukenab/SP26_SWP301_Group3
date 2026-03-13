@@ -254,13 +254,6 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-user-check"></i>
-                                <span class="text nav-text">Teacher Assignment</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
                             <a href="dashboard?action=profile">
                                 <i class="bxr bx-user"></i>
                                 <span class="text nav-text">Profile</span>
