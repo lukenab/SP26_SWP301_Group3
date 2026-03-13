@@ -222,7 +222,7 @@
                         <li class="nav-links">
                             <a href="room">
                                 <i class="bxr bx-door-open"></i>
-                                <span class="text nav-text">Room Management</span>
+                                <span class="text nav-text">Rooms</span>
                             </a>
                         </li>
 
@@ -250,13 +250,6 @@
                             <a href="schedule?action=manage">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">Schedule</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-user-check"></i>
-                                <span class="text nav-text">Teacher Assignment</span>
                             </a>
                         </li>
 

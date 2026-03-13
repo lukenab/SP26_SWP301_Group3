@@ -2,7 +2,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<link href="css/adminDashboard.css" rel="stylesheet" type="text/css"/> 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="css/adminDashboard.css" rel="stylesheet" type="text/css"/>
+
 <div class="mb-4">
     <div aria-label="breadcrumb">
         <ol class="breadcrumb mb-1">
@@ -64,3 +66,15 @@
         </div>
     </div>  
 </div>
+<div class="chart-section mt-4">
+    <div class="chart-card">
+        <h4 class="chart-title">Revenue Analytics</h4>
+        <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="js/adminDashboard.js" type="text/javascript"></script>
+
+
