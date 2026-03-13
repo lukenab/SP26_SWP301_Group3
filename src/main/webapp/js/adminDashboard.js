@@ -45,6 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     ticks: {color: '#94a3b8'},
                     grid: {display: false},
                     border: {color: '#e2e8f0'}
+                    //
                 }
             }
         }
