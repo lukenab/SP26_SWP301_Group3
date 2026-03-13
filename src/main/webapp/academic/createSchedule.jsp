@@ -2,8 +2,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
+<link href="css/scheduleManagement.css" rel="stylesheet" type="text/css"/>
 
-<div class="container-fluid px-4 content-body">
+<div class="container-fluid px-4 content-body schedule-page">
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
@@ -17,6 +18,9 @@
                 <h2 class="page-title">Create New Schedule</h2>
                 <p class="text-muted small mb-0">Add a new schedule to the system</p>
             </div>
+            <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
+                <i class='bx bx-arrow-left'></i> Back to Schedule List
+            </a>
         </div>
     </div>
 
@@ -46,7 +50,7 @@
         <c:remove var="messageType" scope="session" />
     </c:if>
 
-    <div class="card border-0 bg-white">
+    <div class="card user-table-card border-0 bg-white section-card">
         <div class="card-body p-4">
             <form action="schedule" method="POST">
                 <input type="hidden" name="action" value="create">
@@ -90,7 +94,7 @@
                 </div>
 
                 <!-- Recurring Schedule Options -->
-                <div class="card border-primary mb-3">
+                <div class="card border-primary mb-3 series-card">
                     <div class="card-header bg-primary text-white">
                         <h6 class="mb-0"><i class='bx bx-repeat'></i> Recurring Schedule Options</h6>
                     </div>
@@ -174,13 +178,13 @@
                     </div>
                 </div>
 
-                <div class="d-flex gap-2 mt-4">
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
+                        Cancel
+                    </a>
                     <button type="submit" class="btn btn-primary">
                         <i class='bx bx-save'></i> Create Schedule
                     </button>
-                    <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn btn-secondary">
-                        <i class='bx bx-x'></i> Cancel
-                    </a>
                 </div>
             </form>
         </div>

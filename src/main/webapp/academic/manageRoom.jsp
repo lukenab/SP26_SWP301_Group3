@@ -3,8 +3,9 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
+<link href="css/roomManagement.css" rel="stylesheet" type="text/css"/>
 
-<div class="container-fluid px-4 content-body">
+<div class="container-fluid px-4 content-body room-page">
 
     <div class="mb-4">
         <div aria-label="breadcrumb">
@@ -56,7 +57,7 @@
             <c:choose>
                 <c:when test="${empty allRooms}">
                     <div class="text-center py-5">
-                        <i class='bx bx-door-open' style="font-size: 4rem; color: var(--text-secondary);"></i>
+                        <i class='bx bx-door-open room-empty-icon'></i>
                         <p class="text-muted mt-3">No rooms found.</p>
                         <a href="room?action=create" class="btn btn-add-new mt-2">
                             <i class='bx bx-plus-circle'></i> Create Your First Room
@@ -67,7 +68,7 @@
                     <table class="table mb-0 align-middle">
                         <thead>
                             <tr>
-                                <th style="width: 30px">#</th>
+                                <th class="room-index-col">#</th>
                                 <th>Room Name</th>
                                 <th>Capacity</th>
                                 <th>Type</th>
@@ -77,11 +78,11 @@
                         </thead>
                         <tbody>
                             <c:forEach var="r" items="${allRooms}" varStatus="loop">
-                                <tr style="${!r.status ? 'opacity: 0.6; background-color: #f9f9f9;' : ''}">
+                                <tr class="${!r.status ? 'room-row-disabled' : ''}">
                                     <td>${loop.count}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <i class='bx bx-door-open me-2' style="font-size: 1.5rem; color: var(--primary-blue);"></i>
+                                            <i class='bx bx-door-open me-2 room-row-icon'></i>
                                             <span class="user-name">${r.roomName}</span>
                                         </div>
                                     </td>
@@ -90,10 +91,10 @@
                                     <td>
                                         <c:choose>
                                             <c:when test="${r.status}">
-                                                <span class="badge" style="background-color: #10b981; color: white; padding: 4px 12px; border-radius: 12px;">Active</span>
+                                                <span class="badge room-status-badge active">Active</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="badge" style="background-color: #ef4444; color: white; padding: 4px 12px; border-radius: 12px;">Disabled</span>
+                                                <span class="badge room-status-badge disabled">Disabled</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
@@ -108,7 +109,7 @@
                                             <c:choose>
                                                 <c:when test="${roomUsageMap[r.roomId]}">
                                                     <!-- Room has classes, show Disable button -->
-                                                    <a href="room?action=disable&id=${r.roomId}" class="action-btn" style="color: #f59e0b;" title="Disable Room">
+                                                    <a href="room?action=disable&id=${r.roomId}" class="action-btn room-action-disable" title="Disable Room">
                                                         <i class='bx bx-lock'></i>
                                                     </a>
                                                 </c:when>
@@ -122,7 +123,7 @@
                                         </c:if>
                                         <c:if test="${!r.status}">
                                             <!-- Room is disabled, show Enable button -->
-                                            <a href="room?action=enable&id=${r.roomId}" class="action-btn" style="color: #10b981;" title="Enable Room">
+                                            <a href="room?action=enable&id=${r.roomId}" class="action-btn room-action-enable" title="Enable Room">
                                                 <i class='bx bx-check-circle'></i>
                                             </a>
                                         </c:if>

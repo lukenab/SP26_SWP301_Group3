@@ -1,0 +1,201 @@
+.schedule-page .section-card {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.schedule-page .filter-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.schedule-page .schedule-table th,
+.schedule-page .schedule-table td {
+    padding: 14px 12px;
+    border: 1px solid var(--border-color);
+    vertical-align: top;
+}
+
+.schedule-page .schedule-table thead th {
+    background-color: #f9fafb;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.schedule-page .schedule-table .slot-cell {
+    min-width: 140px;
+    background-color: #f9fafb;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.schedule-page .schedule-table .slot-time {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-secondary);
+    font-size: 0.74rem;
+    font-weight: 500;
+}
+
+.schedule-page .schedule-table .day-header-date {
+    display: block;
+    margin-top: 3px;
+    color: var(--text-secondary);
+    font-size: 0.73rem;
+    font-weight: 500;
+    text-transform: none;
+}
+
+.schedule-page .schedule-cell {
+    min-width: 165px;
+    background: #ffffff;
+}
+
+.schedule-page .schedule-item {
+    border: 1px solid #dbeafe;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
+    background: #f8fbff;
+}
+
+.schedule-page .schedule-item:last-child {
+    margin-bottom: 0;
+}
+
+.schedule-page .schedule-class-name {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: #1d4ed8;
+}
+
+.schedule-page .schedule-meta {
+    font-size: 0.76rem;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+
+.schedule-page .schedule-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #d1d5db;
+}
+
+.schedule-page .schedule-action-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 30px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    font-size: 0.76rem;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.schedule-page .schedule-action-btn i {
+    font-size: 0.92rem;
+}
+
+.schedule-page .schedule-action-btn.view {
+    color: #1d4ed8;
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.schedule-page .schedule-action-btn.edit {
+    color: #1d4ed8;
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.schedule-page .schedule-action-btn.delete {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fca5a5;
+}
+
+.schedule-page .schedule-action-btn:hover {
+    filter: brightness(0.96);
+}
+
+.schedule-page .empty-state {
+    text-align: center;
+    padding: 56px 20px;
+}
+
+.schedule-page .empty-state i {
+    font-size: 3.5rem;
+    color: #9ca3af;
+}
+
+.schedule-page .summary-card {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px;
+    background: #f9fafb;
+    height: 100%;
+}
+
+.schedule-page .summary-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.schedule-page .summary-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.schedule-page .schedule-neutral-btn {
+    background: #f0f0f0;
+    color: #555;
+    border: 1px solid #ddd;
+}
+
+.schedule-page .schedule-neutral-btn:hover {
+    background: #e9e9e9;
+    color: #444;
+    border-color: #cfcfcf;
+}
+
+.schedule-page .series-card {
+    border-radius: 12px;
+}
+
+.schedule-page .calendar-card {
+    border-radius: 10px;
+    padding: 10px;
+    color: #ffffff;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.schedule-page .calendar-card .course-name {
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.schedule-page .calendar-card small {
+    display: block;
+    opacity: 0.95;
+    line-height: 1.35;
+}
+

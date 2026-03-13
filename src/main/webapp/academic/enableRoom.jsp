@@ -2,7 +2,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <link href="css/createUser.css" rel="stylesheet" type="text/css"/>
+<link href="css/roomManagement.css" rel="stylesheet" type="text/css"/>
 
+<div class="room-page">
 <div class="mb-4">
     <div class="content-header">
         <div>
@@ -26,7 +28,7 @@
 
     <c:choose>
         <c:when test="${not empty roomEnable}">
-            <div class="alert-box info" style="margin-top: 24px; margin-bottom: 24px;">
+            <div class="alert-box info room-alert-spaced">
                 <i class='bx bx-info-circle'></i> <strong>Note:</strong> Enabling this room will make it available for class assignments again.
             </div>
 
@@ -76,5 +78,7 @@
             </div>
         </c:otherwise>
     </c:choose>
+</div>
+
 </div>
 

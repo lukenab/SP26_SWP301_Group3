@@ -1,0 +1,177 @@
+.room-page .room-empty-icon {
+    font-size: 4rem;
+    color: #6b7280;
+}
+
+.room-page .room-index-col {
+    width: 30px;
+}
+
+.room-page .room-row-disabled {
+    opacity: 0.6;
+    background-color: #f9f9f9;
+}
+
+.room-page .room-row-icon {
+    font-size: 1.5rem;
+    color: #2563eb;
+}
+
+.room-page .room-status-badge {
+    color: #ffffff;
+    padding: 4px 12px;
+    border-radius: 12px;
+}
+
+.room-page .room-status-badge.active {
+    background-color: #10b981;
+}
+
+.room-page .room-status-badge.disabled {
+    background-color: #ef4444;
+}
+
+.room-page .room-action-disable {
+    color: #f59e0b;
+}
+
+.room-page .room-action-enable {
+    color: #10b981;
+}
+
+.room-page .room-avatar {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.room-page .room-avatar-icon {
+    font-size: 4rem;
+    color: #ffffff;
+}
+
+.room-page .room-profile-disabled {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.room-page .room-section-title {
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #374151;
+}
+
+.room-page .room-table-wrapper {
+    overflow-x: auto;
+}
+
+.room-page .room-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.room-page .room-detail-table thead {
+    background-color: #f9fafb;
+}
+
+.room-page .room-detail-table th {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.room-page .room-detail-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #374151;
+}
+
+.room-page .room-empty-section {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.room-page .room-empty-section i {
+    font-size: 3rem;
+    color: #9ca3af;
+}
+
+.room-page .room-empty-section p {
+    color: #6b7280;
+    margin-top: 12px;
+}
+
+.room-page .room-detail-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.room-page .room-btn-neutral,
+.room-page .room-btn-primary {
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.room-page .room-btn-neutral {
+    background: #f0f0f0;
+    color: #555;
+    border: 1px solid #ddd;
+}
+
+.room-page .room-btn-primary {
+    background: #1775f1;
+    color: #ffffff;
+}
+
+.room-page .room-alert-spaced {
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+.room-page .room-usage-wrap {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    background: #f9f9f9;
+}
+
+.room-page .room-usage-table {
+    width: 100%;
+    font-size: 14px;
+}
+
+.room-page .room-usage-table thead tr {
+    border-bottom: 2px solid #ddd;
+}
+
+.room-page .room-usage-table th,
+.room-page .room-usage-table td {
+    padding: 8px;
+    text-align: left;
+}
+
+.room-page .room-usage-table tbody tr {
+    border-bottom: 1px solid #eee;
+}
+

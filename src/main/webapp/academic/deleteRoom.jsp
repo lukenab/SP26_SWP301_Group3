@@ -2,7 +2,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <link href="css/createUser.css" rel="stylesheet" type="text/css"/>
+<link href="css/roomManagement.css" rel="stylesheet" type="text/css"/>
 
+<div class="room-page">
 <div class="mb-4">
     <div class="content-header">
         <div>
@@ -26,7 +28,7 @@
 
     <c:choose>
         <c:when test="${not empty roomDel}">
-            <div class="alert-box info" style="margin-top: 24px; margin-bottom: 24px;">
+            <div class="alert-box info room-alert-spaced">
                 <i class='bx bx-info-circle'></i> <strong>Warning:</strong> This action cannot be undone. Are you sure you want to delete this room?
             </div>
 
@@ -76,5 +78,7 @@
             </div>
         </c:otherwise>
     </c:choose>
+</div>
+
 </div>
 
