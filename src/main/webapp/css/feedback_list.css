@@ -1,0 +1,17 @@
+/* Căn chỉnh bảng feedback để không bị lệch */
+#feedbackContainer td {
+    padding: 12px 8px;
+}
+
+/* Cố định độ rộng các cột quan trọng */
+.feedback-item td:nth-child(2) { width: 250px; } /* Cột Student Info */
+.feedback-item td:nth-child(3) { width: 120px; } /* Cột Class */
+.feedback-item td:nth-child(4) { width: 130px; } /* Cột Rating */
+.feedback-item td:nth-child(5) { min-width: 300px; } /* Cột Comment (chiếm phần còn lại) */
+
+/* Style cho badge lớp học đồng bộ */
+.bg-soft-primary {
+    background-color: #eef2f7 !important;
+    color: #4e73df !important;
+    border: 1px solid #d1d3e2 !important;
+}

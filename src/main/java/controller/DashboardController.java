@@ -52,19 +52,19 @@ public class DashboardController extends HttpServlet {
                 request.setAttribute("home_view", "/admin/adminDashboard.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
-            case "profile": 
+            case "profile":
                 HttpSession session = request.getSession();
-                User loggedInUser = (User)session.getAttribute("user");
-                
-                if(loggedInUser == null){
+                User loggedInUser = (User) session.getAttribute("user");
+
+                if (loggedInUser == null) {
                     response.sendRedirect("login");
-                    return; 
+                    return;
                 }
-                
+
                 User freshUser = userDAO.getUserById(loggedInUser.getUserId());
-                session.setAttribute("user", freshUser); 
+                session.setAttribute("user", freshUser);
                 request.setAttribute("user", freshUser);
-                
+
                 int roleId = freshUser.getRole().getRoleId();
                 if (roleId == 5) {
                     dao.StudentDAO stuDAO = new dao.StudentDAO();
@@ -73,8 +73,53 @@ public class DashboardController extends HttpServlet {
                     dao.EmployeeDAO empDAO = new dao.EmployeeDAO();
                     request.setAttribute("employee", empDAO.getEmployeeById(freshUser.getUserId()));
                 }
-                
+
                 request.setAttribute("home_view", "profile.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
+            case "teacher":
+                User t = (User) request.getSession().getAttribute("user");
+                if (t == null) {
+                    response.sendRedirect("login");
+                    return;
+                }
+
+                dao.TeacherDAO tDAO = new dao.TeacherDAO();
+                int tId = t.getUserId();
+                String today = java.time.LocalDate.now().toString();
+
+                List<model.Schedule> weekly = tDAO.getTeachingSchedule(tId, today);
+                List<model.Schedule> todaySlots = new java.util.ArrayList<>();
+                for (model.Schedule s : weekly) {
+                    if (s.getLearningDate().toString().equals(today)) {
+                        todaySlots.add(s);
+                    }
+                }
+                request.setAttribute("todaySlots", todaySlots);
+
+                List<model.Classes> tClasses = tDAO.getAllClassOfTeacherID(tId);
+                java.util.Map<Integer, Integer> progressMap = new java.util.HashMap<>();
+                for (model.Classes c : tClasses) {
+                    progressMap.put(c.getClassid(), tDAO.getClassProgress(c.getClassid()));
+                }
+
+                request.setAttribute("totalSlotsTaught", tDAO.getTotalSlotsTaught(tId));
+                request.setAttribute("teacherClasses", tClasses);
+                request.setAttribute("progressMap", progressMap);
+                request.setAttribute("totalStudents", tDAO.getTotalStudentsByTeacher(tId));
+
+                double avgRating = tDAO.getAverageRating(tId);
+                java.util.Map<String, Object> fData = tDAO.getTeacherFeedbackData(tId);
+                List<model.Feedback> allF = (List<model.Feedback>) fData.get("feedbackList");
+
+                request.setAttribute("avgRating", String.format("%.1f", avgRating));
+                if (allF != null) {
+                    request.setAttribute("latestFeedbacks", allF.size() > 5 ? allF.subList(0, 5) : allF);
+                }
+                request.setAttribute("studentNameMap", fData.get("studentNameMap"));
+
+                request.setAttribute("home_view", "teacher/teacherDashboard.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
         }
