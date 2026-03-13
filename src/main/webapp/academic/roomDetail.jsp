@@ -3,8 +3,9 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <link href="css/viewUser.css" rel="stylesheet" type="text/css"/>
+<link href="css/roomManagement.css" rel="stylesheet" type="text/css"/>
 
-<div class="page-header">
+<div class="page-header room-page">
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
@@ -15,7 +16,7 @@
         </div>
         <div class="content-header">
             <div>
-                <h2 class="page-title">Room Management</h2>
+                <h2 class="page-title">Room Detail</h2>
                 <p class="text-muted small mb-0">View room details and assignments</p>
             </div>
             <a href="room" class="btn-secondary">
@@ -27,8 +28,8 @@
     <div class="profile-header-card">
         <div class="profile-avatar-section">
             <div class="form-row user-img">
-                <div class="info-img" style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                    <i class='bx bx-door-open' style="font-size: 4rem; color: white;"></i>
+                <div class="info-img room-avatar">
+                    <i class='bx bx-door-open room-avatar-icon'></i>
                 </div>
             </div>
         </div>
@@ -41,7 +42,7 @@
                     <span class="profile-active">Active</span>
                 </c:when>
                 <c:otherwise>
-                    <span class="profile-active" style="background-color: #fee2e2; color: #991b1b;">Disabled</span>
+                    <span class="profile-active room-profile-disabled">Disabled</span>
                 </c:otherwise>
             </c:choose>
             <p>Capacity: ${roomDetail.capacity} people</p>
@@ -68,7 +69,7 @@
 
         <div class="tab-content" id="overview">
             <div class="info-section">
-                <h6 style="font-weight: 600; margin-bottom: 16px; color: #374151;">Basic Information</h6>
+                <h6 class="room-section-title">Basic Information</h6>
                 <div class="info-grid">
                     <div class="info-item">
                         <p>Room Name</p>
@@ -91,24 +92,24 @@
 
             <c:if test="${not empty classesUsingRoom}">
                 <div class="info-section">
-                    <h6 style="font-weight: 600; margin-bottom: 16px; color: #374151;">
+                    <h6 class="room-section-title">
                         <i class='bx bx-calendar-event'></i> Classes Using This Room
                     </h6>
-                    <div style="overflow-x: auto;">
-                        <table class="table" style="width: 100%; border-collapse: collapse;">
-                            <thead style="background-color: #f9fafb;">
+                    <div class="room-table-wrapper">
+                        <table class="table room-detail-table">
+                            <thead>
                                 <tr>
-                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #6b7280; font-size: 14px;">Class Name</th>
-                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #6b7280; font-size: 14px;">Learning Date</th>
-                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #6b7280; font-size: 14px;">Slot</th>
+                                    <th>Class Name</th>
+                                    <th>Learning Date</th>
+                                    <th>Slot</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:forEach var="classInfo" items="${classesUsingRoom}">
                                     <tr>
-                                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #374151;">${classInfo[0]}</td>
-                                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #374151;">${classInfo[1]}</td>
-                                        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #374151;">Slot ${classInfo[2]}</td>
+                                        <td>${classInfo[0]}</td>
+                                        <td>${classInfo[1]}</td>
+                                        <td>Slot ${classInfo[2]}</td>
                                     </tr>
                                 </c:forEach>
                             </tbody>
@@ -118,18 +119,18 @@
             </c:if>
 
             <c:if test="${empty classesUsingRoom}">
-                <div class="info-section" style="text-align: center; padding: 40px 20px;">
-                    <i class='bx bx-calendar-x' style="font-size: 3rem; color: #9ca3af;"></i>
-                    <p style="color: #6b7280; margin-top: 12px;">No classes are currently assigned to this room.</p>
+                <div class="info-section room-empty-section">
+                    <i class='bx bx-calendar-x'></i>
+                    <p>No classes are currently assigned to this room.</p>
                 </div>
             </c:if>
 
-            <div class="form-buttons" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
-                <a href="room" class="btn btn-cancel" style="padding: 10px 18px; font-size: 14px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; text-decoration: none; background: #f0f0f0; color: #555; border: 1px solid #ddd;">
+            <div class="form-buttons room-detail-actions">
+                <a href="room" class="btn btn-cancel room-btn-neutral">
                     <i class='bx bx-arrow-left'></i> Back to List
                 </a>
                 <c:if test="${roomDetail.status}">
-                    <a href="room?action=update&id=${roomDetail.roomId}" class="btn btn-save" style="padding: 10px 18px; font-size: 14px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; text-decoration: none; background: #1775F1; color: #fff;">
+                    <a href="room?action=update&id=${roomDetail.roomId}" class="btn btn-save room-btn-primary">
                         <i class='bx bx-edit'></i> Edit Room
                     </a>
                 </c:if>

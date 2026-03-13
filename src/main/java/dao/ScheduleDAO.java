@@ -309,8 +309,8 @@ public class ScheduleDAO extends DBContext {
                     schedule.setLearningDate(rs.getDate("LearningDate"));
                     schedule.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
 
-                    int roomId = rs.getInt("RoomID");
-                    Room room = roomDAO.getRoomByID(roomId);
+                    int scheduleRoomId = rs.getInt("RoomID");
+                    Room room = roomDAO.getRoomByID(scheduleRoomId);
                     schedule.setRoom(room);
 
                     int slotId = rs.getInt("SlotID");
@@ -507,8 +507,8 @@ public class ScheduleDAO extends DBContext {
                     schedule.setLearningDate(rs.getDate("LearningDate"));
                     schedule.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
 
-                    int roomId = rs.getInt("RoomID");
-                    Room room = roomDAO.getRoomByID(roomId);
+                    int scheduleRoomId = rs.getInt("RoomID");
+                    Room room = roomDAO.getRoomByID(scheduleRoomId);
                     schedule.setRoom(room);
 
                     int slotId = rs.getInt("SlotID");
@@ -601,7 +601,7 @@ public class ScheduleDAO extends DBContext {
     }
 
     // Get schedules for management with filters (for academic staff)
-    public List<Schedule> getSchedulesForManagement(String selectedDate, Integer classId) {
+    public List<Schedule> getSchedulesForManagement(String selectedDate, Integer classId, Integer roomId) {
         List<Schedule> scheduleList = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT s.ScheduleID, s.ClassID, s.RoomID, s.SlotID, s.LearningDate, s.TeacherID, s.AttendanceStatus, ");
@@ -623,6 +623,11 @@ public class ScheduleDAO extends DBContext {
             sql.append("AND s.ClassID = ? ");
         }
 
+        // Add room filter
+        if (roomId != null && roomId > 0) {
+            sql.append("AND s.RoomID = ? ");
+        }
+
         sql.append("ORDER BY s.LearningDate ASC, s.SlotID ASC");
 
         try (PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -639,6 +644,10 @@ public class ScheduleDAO extends DBContext {
                 ps.setInt(paramIndex++, classId);
             }
 
+            if (roomId != null && roomId > 0) {
+                ps.setInt(paramIndex++, roomId);
+            }
+
             try (ResultSet rs = ps.executeQuery()) {
                 RoomDAO roomDAO = new RoomDAO();
                 SlotDAO slotDAO = new SlotDAO();
@@ -650,8 +659,8 @@ public class ScheduleDAO extends DBContext {
                     schedule.setAttendanceStatus(rs.getBoolean("AttendanceStatus"));
 
                     // Set room
-                    int roomId = rs.getInt("RoomID");
-                    Room room = roomDAO.getRoomByID(roomId);
+                    int scheduleRoomId = rs.getInt("RoomID");
+                    Room room = roomDAO.getRoomByID(scheduleRoomId);
                     schedule.setRoom(room);
 
                     // Set slot

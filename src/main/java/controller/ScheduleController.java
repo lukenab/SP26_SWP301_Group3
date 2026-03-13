@@ -127,16 +127,28 @@ public class ScheduleController extends HttpServlet {
                 ClassDAO classDAO = new ClassDAO();
 
                 String filterClassId = request.getParameter("classId");
+                String filterRoomId = request.getParameter("roomId");
                 Integer classFilterId = null;
+                Integer roomFilterId = null;
                 List<Schedule> managementScheduleList = new ArrayList<>();
 
                 if (filterClassId != null && !filterClassId.isEmpty() && !filterClassId.equals("0")) {
                     classFilterId = Integer.parseInt(filterClassId);
                     // Save selected classId to session for later use
                     session.setAttribute("selectedClassId", classFilterId);
-                    // Only load schedules if a class is selected
-                    managementScheduleList = scheduleDAO.getSchedulesForManagement(selectedDate, classFilterId);
+                } else {
+                    session.setAttribute("selectedClassId", 0);
                 }
+
+                if (filterRoomId != null && !filterRoomId.isEmpty() && !filterRoomId.equals("0")) {
+                    roomFilterId = Integer.parseInt(filterRoomId);
+                    session.setAttribute("selectedRoomId", roomFilterId);
+                } else {
+                    session.setAttribute("selectedRoomId", 0);
+                }
+
+                // Load schedules using selected filters (class/room/week)
+                managementScheduleList = scheduleDAO.getSchedulesForManagement(selectedDate, classFilterId, roomFilterId);
 
                 // Save selected date to session
                 session.setAttribute("selectedDate", selectedDate);
@@ -147,6 +159,7 @@ public class ScheduleController extends HttpServlet {
 
                 request.setAttribute("selectedDate", selectedDate);
                 request.setAttribute("classId", classFilterId);
+                request.setAttribute("roomId", roomFilterId);
                 request.setAttribute("weekdays", weekdays);
                 request.setAttribute("slots", allSlots);
                 request.setAttribute("scheduleList", managementScheduleList);
@@ -526,6 +539,7 @@ public class ScheduleController extends HttpServlet {
 
                     // Redirect back to manage with previously selected class and date
                     Integer savedClassId = (Integer) session.getAttribute("selectedClassId");
+                    Integer savedRoomId = (Integer) session.getAttribute("selectedRoomId");
                     String savedDate = (String) session.getAttribute("selectedDate");
 
                     StringBuilder redirectUrl = new StringBuilder("schedule?action=manage");
@@ -534,6 +548,12 @@ public class ScheduleController extends HttpServlet {
                         redirectUrl.append("&classId=").append(savedClassId);
                     } else {
                         redirectUrl.append("&classId=0");
+                    }
+
+                    if (savedRoomId != null && savedRoomId > 0) {
+                        redirectUrl.append("&roomId=").append(savedRoomId);
+                    } else {
+                        redirectUrl.append("&roomId=0");
                     }
 
                     if (savedDate != null && !savedDate.isEmpty()) {
@@ -615,7 +635,18 @@ public class ScheduleController extends HttpServlet {
                         session.setAttribute("messageType", "error");
                     }
 
-                    response.sendRedirect("schedule?action=manage");
+                    Integer savedClassId3 = (Integer) session.getAttribute("selectedClassId");
+                    Integer savedRoomId3 = (Integer) session.getAttribute("selectedRoomId");
+                    String savedDate3 = (String) session.getAttribute("selectedDate");
+
+                    StringBuilder redirectUrl3 = new StringBuilder("schedule?action=manage");
+                    redirectUrl3.append("&classId=").append(savedClassId3 != null ? savedClassId3 : 0);
+                    redirectUrl3.append("&roomId=").append(savedRoomId3 != null ? savedRoomId3 : 0);
+                    if (savedDate3 != null && !savedDate3.isEmpty()) {
+                        redirectUrl3.append("&date=").append(savedDate3);
+                    }
+
+                    response.sendRedirect(redirectUrl3.toString());
                     break;
 
                 case "delete":
@@ -668,6 +699,7 @@ public class ScheduleController extends HttpServlet {
 
                     // Redirect back to manage with previously selected class and date
                     Integer savedClassId2 = (Integer) session.getAttribute("selectedClassId");
+                    Integer savedRoomId2 = (Integer) session.getAttribute("selectedRoomId");
                     String savedDate2 = (String) session.getAttribute("selectedDate");
 
                     StringBuilder redirectUrl2 = new StringBuilder("schedule?action=manage");
@@ -676,6 +708,12 @@ public class ScheduleController extends HttpServlet {
                         redirectUrl2.append("&classId=").append(savedClassId2);
                     } else {
                         redirectUrl2.append("&classId=0");
+                    }
+
+                    if (savedRoomId2 != null && savedRoomId2 > 0) {
+                        redirectUrl2.append("&roomId=").append(savedRoomId2);
+                    } else {
+                        redirectUrl2.append("&roomId=0");
                     }
 
                     if (savedDate2 != null && !savedDate2.isEmpty()) {
