@@ -350,6 +350,13 @@
                         </li>
 
                         <li class="nav-links">
+                            <a href="class?action=myClasses">
+                                <i class="bxr bx-book"></i>
+                                <span class="text nav-text">My Classes</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
                             <a href="feedback?action=viewStudentCoursesFeedback">
                                 <i class="bxr bx-poll"></i>
                                 <span class="text nav-text">Course Feedback</span>

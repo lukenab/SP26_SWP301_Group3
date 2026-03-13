@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import model.Classes;
+import model.Course;
 import model.Enrollment;
 import model.Student;
 import utils.DBContext;
@@ -287,6 +288,7 @@ public class EnrollmentDAO extends DBContext {
         }
         return false;
     }
+    
     
     public static void main(String[] args) {
         EnrollmentDAO dao = new EnrollmentDAO();
