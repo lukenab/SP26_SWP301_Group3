@@ -72,12 +72,16 @@
                                 ${course.description}
                             </p>
                             <div class="hero-meta">
-                                <span><strong>4.8</strong> <i class='bx bxs-star'></i><i class='bx bxs-star'></i><i class='bx bxs-star'></i><i class='bx bxs-star'></i><i class='bx bxs-star'></i> (1,240 ratings)</span>
-                                <span><i class='bx bx-user'></i> 850 students enrolled</span>
+                                <span>
+                                    <strong><fmt:formatNumber value="${empty reviewCount ? 0 : averageRating}" minFractionDigits="1" maxFractionDigits="1"/></strong>
+                                    <i class='bx bxs-star'></i>
+                                    <span>(${reviewCount} reviews)</span>
+                                </span>
+                                <span><i class='bx bx-user'></i> ${reviewCount} learner reviews</span>
                                 <span><i class='bx bx-world'></i> English / Vietnamese</span>
                             </div>
                             <div class="hero-meta muted">
-                                <span><i class='bx bx-refresh'></i> Last updated: March 2026</span>
+                                <span><i class='bx bx-refresh'></i> Last updated: March 10, 2026</span>
                                 <span><i class='bx bx-book-open'></i> ${course.totalSlots} sessions</span>
                             </div>
                         </div>
@@ -87,13 +91,13 @@
                 <main class="container detail-layout">
                     <section class="content-col">
                         <div class="tabs-box">
-                            <button class="tab active" type="button">Overview</button>
-                            <button class="tab" type="button">Curriculum</button>
-                            <button class="tab" type="button">Instructor</button>
-                            <button class="tab" type="button">Reviews</button>
+                            <button class="tab active" type="button" data-target="overview-panel">Overview</button>
+                            <button class="tab" type="button" data-target="curriculum-panel">Curriculum</button>
+                            <button class="tab" type="button" data-target="instructor-panel">Instructor</button>
+                            <button class="tab" type="button" data-target="reviews-panel">Reviews</button>
                         </div>
 
-                        <article class="content-box">
+                        <article class="content-box tab-panel active" id="overview-panel">
                             <h2>What you'll learn</h2>
                             <div class="learn-grid">
                                 <div><i class='bx bx-check-shield'></i> Build communication confidence in real contexts</div>
@@ -117,6 +121,164 @@
                                 <li>Commitment to complete weekly practice</li>
                                 <li>Placement level suitable for this course</li>
                             </ul>
+                        </article>
+
+                        <article class="content-box tab-panel" id="curriculum-panel" hidden>
+                            <h2>Curriculum</h2>
+                            <p class="section-intro">
+                                This section is mapped directly from the course syllabus.
+                            </p>
+
+                            <c:choose>
+                                <c:when test="${empty syllabusList}">
+                                    <div class="empty-content">
+                                        <i class='bx bx-book-content'></i>
+                                        <p>No syllabus has been published for this course yet.</p>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="curriculum-list">
+                                        <c:forEach items="${syllabusList}" var="item">
+                                            <div class="curriculum-item">
+                                                <div class="curriculum-order">Session ${item.orderIndex}</div>
+                                                <div class="curriculum-body">
+                                                    <h3>${item.topicName}</h3>
+                                                    <p>
+                                                        <c:choose>
+                                                            <c:when test="${not empty item.description}">
+                                                                ${item.description}
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                Detailed content will be shared by the instructor during class.
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </c:forEach>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </article>
+
+                        <article class="content-box tab-panel" id="instructor-panel" hidden>
+                            <h2>Instructor</h2>
+
+                            <c:choose>
+                                <c:when test="${empty instructor}">
+                                    <div class="empty-content">
+                                        <i class='bx bx-user-x'></i>
+                                        <p>No instructor has been assigned to this course yet.</p>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="instructor-card">
+                                        <div class="instructor-header">
+                                            <img src="${instructor.avatar}" alt="${instructor.fullName}">
+                                            <div>
+                                                <h3>${instructor.fullName}</h3>
+                                                <p class="instructor-role">Course Instructor</p>
+                                                <div class="instructor-meta">
+                                                    <span><i class='bx bx-briefcase'></i> ${empty instructorClassCount ? 0 : instructorClassCount} class(es) in this course</span>
+                                                    <c:if test="${not empty instructorEmployee && not empty instructorEmployee.education}">
+                                                        <span><i class='bx bx-award'></i> ${instructorEmployee.education}</span>
+                                                    </c:if>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="instructor-grid">
+                                            <div class="info-card">
+                                                <span>Email</span>
+                                                <strong>${empty instructor.email ? 'Updating' : instructor.email}</strong>
+                                            </div>
+                                            <div class="info-card">
+                                                <span>Phone</span>
+                                                <strong>${empty instructor.phone ? 'Updating' : instructor.phone}</strong>
+                                            </div>
+                                            <div class="info-card">
+                                                <span>Location</span>
+                                                <strong>${empty instructor.address ? 'Updating' : instructor.address}</strong>
+                                            </div>
+                                            <div class="info-card">
+                                                <span>Hire Date</span>
+                                                <strong>
+                                                    <c:choose>
+                                                        <c:when test="${not empty instructorEmployee && not empty instructorEmployee.hireDate}">
+                                                            <fmt:formatDate value="${instructorEmployee.hireDate}" pattern="dd/MM/yyyy"/>
+                                                        </c:when>
+                                                        <c:otherwise>Updating</c:otherwise>
+                                                    </c:choose>
+                                                </strong>
+                                            </div>
+                                        </div>
+
+                                        <div class="instructor-bio">
+                                            <h3>Experience</h3>
+                                            <p>
+                                                <c:choose>
+                                                    <c:when test="${not empty instructorEmployee && not empty instructorEmployee.experience}">
+                                                        ${instructorEmployee.experience}
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        Instructor profile details are being updated.
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </article>
+
+                        <article class="content-box tab-panel" id="reviews-panel" hidden>
+                            <div class="reviews-header">
+                                <div>
+                                    <h2>Reviews</h2>
+                                    <p class="section-intro">Learner feedback collected from classes in this course.</p>
+                                </div>
+                                <div class="review-summary">
+                                    <strong><fmt:formatNumber value="${empty reviewCount ? 0 : averageRating}" minFractionDigits="1" maxFractionDigits="1"/></strong>
+                                    <span>Average rating</span>
+                                </div>
+                            </div>
+
+                            <c:choose>
+                                <c:when test="${empty reviewList}">
+                                    <div class="empty-content">
+                                        <i class='bx bx-message-rounded-x'></i>
+                                        <p>No reviews yet for this course.</p>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="review-list">
+                                        <c:forEach items="${reviewList}" var="review">
+                                            <div class="review-item">
+                                                <div class="review-top">
+                                                    <div>
+                                                        <h3>${review[1]}</h3>
+                                                        <p>${review[2]}<c:if test="${not empty review[3]}"> - Instructor: ${review[3]}</c:if></p>
+                                                    </div>
+                                                    <div class="review-rating">${review[4]}.0 <i class='bx bxs-star'></i></div>
+                                                </div>
+                                                <p class="review-comment">
+                                                    <c:choose>
+                                                        <c:when test="${not empty review[5]}">
+                                                            ${review[5]}
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            Student left a rating without written feedback.
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </p>
+                                                <div class="review-date">
+                                                    <fmt:formatDate value="${review[6]}" pattern="dd/MM/yyyy HH:mm"/>
+                                                </div>
+                                            </div>
+                                        </c:forEach>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
                         </article>
                     </section>
 
@@ -146,5 +308,29 @@
                 </main>
             </c:otherwise>
         </c:choose>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const tabs = document.querySelectorAll('.tab');
+                const panels = document.querySelectorAll('.tab-panel');
+
+                tabs.forEach(function (tab) {
+                    tab.addEventListener('click', function () {
+                        const targetId = tab.dataset.target;
+
+                        tabs.forEach(function (button) {
+                            button.classList.remove('active');
+                        });
+
+                        panels.forEach(function (panel) {
+                            const isActive = panel.id === targetId;
+                            panel.classList.toggle('active', isActive);
+                            panel.hidden = !isActive;
+                        });
+
+                        tab.classList.add('active');
+                    });
+                });
+            });
+        </script>
     </body>
 </html>

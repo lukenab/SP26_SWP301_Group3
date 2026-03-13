@@ -5,6 +5,8 @@
 package controller;
 
 import dao.CourseDAO;
+import dao.FeedbackDAO;
+import dao.SyllabusDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -17,7 +19,10 @@ import jakarta.servlet.http.Part;
 import java.util.List;
 import java.math.BigDecimal;
 import java.io.File;
+import model.Employee;
 import model.Course;
+import model.Syllabus;
+import model.User;
 
 /**
  *
@@ -104,7 +109,24 @@ public class CourseController extends HttpServlet {
                         int courseId = Integer.parseInt(publicCourseIdParam);
                         Course course = courseDAO.getCourseById(courseId);
                         if (course != null && course.isStatus()) {
+                            SyllabusDAO syllabusDAO = new SyllabusDAO();
+                            FeedbackDAO feedbackDAO = new FeedbackDAO();
+                            List<Syllabus> syllabusList = syllabusDAO.getSyllabusByCourseId(courseId);
+                            Object[] instructorProfile = courseDAO.getInstructorProfileByCourseId(courseId);
+                            List<Object[]> reviewList = feedbackDAO.getCourseReviews(courseId);
+
                             request.setAttribute("course", course);
+                            request.setAttribute("syllabusList", syllabusList);
+                            request.setAttribute("reviewList", reviewList);
+                            request.setAttribute("reviewCount", reviewList.size());
+                            request.setAttribute("averageRating", feedbackDAO.getAverageRatingByCourseId(courseId));
+
+                            if (instructorProfile != null) {
+                                request.setAttribute("instructor", (User) instructorProfile[0]);
+                                request.setAttribute("instructorEmployee", (Employee) instructorProfile[1]);
+                                request.setAttribute("instructorClassCount", (Integer) instructorProfile[2]);
+                            }
+
                             request.getRequestDispatcher("courseDetailPublic.jsp").forward(request, response);
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);

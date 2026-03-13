@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import model.Employee;
 import model.Course;
+import model.User;
 import utils.DBContext;
 
 /**
@@ -322,5 +324,53 @@ public class CourseDAO extends DBContext {
         }
 
         return list;
+    }
+
+    public Object[] getInstructorProfileByCourseId(int courseId) {
+        String sql = "SELECT TOP 1 "
+                + "u.UserID, u.FullName, u.Email, u.Phone, u.Address, u.Gender, u.Dob, u.Avatar, u.Status, "
+                + "e.EmployeeID, e.HireDate, e.Education, e.Experience, "
+                + "(SELECT COUNT(*) FROM Class c2 WHERE c2.CourseID = c.CourseID AND c2.TeacherID = u.UserID) AS ClassCount "
+                + "FROM Class c "
+                + "JOIN [User] u ON c.TeacherID = u.UserID "
+                + "LEFT JOIN Employee e ON e.EmployeeID = u.UserID "
+                + "WHERE c.CourseID = ? "
+                + "ORDER BY "
+                + "CASE WHEN c.Status = 'Active' THEN 0 WHEN c.Status = 'Pending' THEN 1 ELSE 2 END, "
+                + "c.StartDate DESC, c.ClassID DESC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, courseId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User instructor = new User();
+                    instructor.setUserId(rs.getInt("UserID"));
+                    instructor.setFullName(rs.getString("FullName"));
+                    instructor.setEmail(rs.getString("Email"));
+                    instructor.setPhone(rs.getString("Phone"));
+                    instructor.setAddress(rs.getString("Address"));
+                    instructor.setGender(rs.getBoolean("Gender"));
+                    instructor.setDob(rs.getDate("Dob"));
+                    instructor.setAvatar(rs.getString("Avatar"));
+                    instructor.setStatus(rs.getBoolean("Status"));
+
+                    Employee profile = null;
+                    int employeeId = rs.getInt("EmployeeID");
+                    if (!rs.wasNull()) {
+                        profile = new Employee();
+                        profile.setEmployeeId(employeeId);
+                        profile.setHireDate(rs.getDate("HireDate"));
+                        profile.setEducation(rs.getString("Education"));
+                        profile.setExperience(rs.getString("Experience"));
+                    }
+
+                    return new Object[]{instructor, profile, rs.getInt("ClassCount")};
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get instructor profile by course id: " + e.getMessage());
+        }
+
+        return null;
     }
 }
