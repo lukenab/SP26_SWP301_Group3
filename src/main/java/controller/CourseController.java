@@ -54,13 +54,13 @@ public class CourseController extends HttpServlet {
                 int totalCourse = list.size();
                 request.setAttribute("totalCourse", totalCourse);
                 request.setAttribute("courseList", list);
-                request.setAttribute("home_view", "/academic/course_list.jsp");
+                request.setAttribute("home_view", "/academic/course/course_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "active":
                 List<Course> activeList = courseDAO.getActiveCourses();
                 request.setAttribute("courseList", activeList);
-                request.setAttribute("home_view", "/academic/course_list.jsp");
+                request.setAttribute("home_view", "/academic/course/course_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "details":
@@ -74,14 +74,14 @@ public class CourseController extends HttpServlet {
                             HttpSession session = request.getSession(false);
                             boolean isLoggedIn = (session != null && session.getAttribute("user") != null);
                             if (isLoggedIn) {
-                                request.setAttribute("home_view", "/academic/course_details.jsp");
+                                request.setAttribute("home_view", "/academic/course/course_details.jsp");
                                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                             } else {
                                 if (!course.isStatus()) {
                                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
                                     return;
                                 }
-                                request.getRequestDispatcher("/academic/course_details.jsp").forward(request, response);
+                                request.getRequestDispatcher("/academic/course/course_details.jsp").forward(request, response);
                             }
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -121,7 +121,7 @@ public class CourseController extends HttpServlet {
                 request.setAttribute("course", new Course());
                 request.setAttribute("formAction", "add");
                 request.setAttribute("pageTitle", "Add New Course");
-                request.setAttribute("home_view", "/academic/course_form.jsp");
+                request.setAttribute("home_view", "/academic/course/course_form.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "edit":
@@ -134,7 +134,7 @@ public class CourseController extends HttpServlet {
                             request.setAttribute("course", course);
                             request.setAttribute("formAction", "update");
                             request.setAttribute("pageTitle", "Edit Course");
-                            request.setAttribute("home_view", "/academic/editCourse.jsp");
+                            request.setAttribute("home_view", "/academic/course/editCourse.jsp");
                             request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -154,7 +154,7 @@ public class CourseController extends HttpServlet {
                         Course course = courseDAO.getCourseById(courseId);
                         if(course != null){
                             request.setAttribute("course", course);
-                            request.setAttribute("home_view", "/academic/course_delete_confirm.jsp");
+                            request.setAttribute("home_view", "/academic/course/course_delete_confirm.jsp");
                             request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -176,13 +176,13 @@ public class CourseController extends HttpServlet {
                 }
                 request.setAttribute("courseList", searchResults);
                 request.setAttribute("searchKeyword", keyword);
-                request.setAttribute("home_view", "/academic/course_list.jsp");
+                request.setAttribute("home_view", "/academic/course/course_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             default:
                 List<Course> defaultList = courseDAO.getAllCourse();
                 request.setAttribute("courseList", defaultList);
-                request.setAttribute("home_view", "/academic/course_list.jsp");
+                request.setAttribute("home_view", "/academic/course/course_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
         }
@@ -220,7 +220,7 @@ public class CourseController extends HttpServlet {
                 if (courseName == null || courseName.trim().isEmpty()) {
                     request.setAttribute("errorMessage", "Course name is required");
                     request.setAttribute("course", new Course()); // Empty course for form
-                    request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
+                    request.getRequestDispatcher("/academic/course/course_form.jsp").forward(request, response);
                     return;
                 }
                 
@@ -243,12 +243,12 @@ public class CourseController extends HttpServlet {
                     } else {
                         request.setAttribute("errorMessage", "Failed to add course");
                         request.setAttribute("course", newCourse);
-                        request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
+                        request.getRequestDispatcher("/academic/course/course_form.jsp").forward(request, response);
                     }
                 } catch (NumberFormatException e) {
                     request.setAttribute("errorMessage", "Invalid number format for slots or fee");
                     request.setAttribute("course", new Course());
-                    request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
+                    request.getRequestDispatcher("/academic/course/course_form.jsp").forward(request, response);
                 }
                 break;
                 
@@ -297,7 +297,7 @@ public class CourseController extends HttpServlet {
                     if (updCourseName == null || updCourseName.trim().isEmpty()) {
                         request.setAttribute("errorMessage", "Course name is required");
                         request.setAttribute("course", existingCourse);
-                        request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
+                        request.getRequestDispatcher("/academic/course/course_form.jsp").forward(request, response);
                         return;
                     }
                     
@@ -318,7 +318,7 @@ public class CourseController extends HttpServlet {
                     } else {
                         request.setAttribute("errorMessage", "Failed to update course");
                         request.setAttribute("course", existingCourse);
-                        request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
+                        request.getRequestDispatcher("/academic/course/course_form.jsp").forward(request, response);
                     }
                 } catch (NumberFormatException e) {
                     request.setAttribute("errorMessage", "Invalid number format for slots or fee");
@@ -331,7 +331,7 @@ public class CourseController extends HttpServlet {
                             request.setAttribute("course", new Course());
                         }
                     }
-                    request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
+                    request.getRequestDispatcher("/academic/course/course_form.jsp").forward(request, response);
                 }
                 break;
                 

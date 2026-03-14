@@ -166,7 +166,7 @@ public class ScheduleController extends HttpServlet {
                 request.setAttribute("allClasses", allClasses);
                 request.setAttribute("allRooms", allRooms);
                 request.setAttribute("allTeachers", allTeachers);
-                request.setAttribute("home_view", "academic/manageSchedule.jsp");
+                request.setAttribute("home_view", "/academic/schedule/manageSchedule.jsp");
 
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
@@ -237,7 +237,7 @@ public class ScheduleController extends HttpServlet {
                 }
                 break;
 
-            case "createForm":
+            case "create":
                 // Show create schedule form
                 ScheduleDAO scheduleDAO3 = new ScheduleDAO();
                 ClassDAO classDAO2 = new ClassDAO();
@@ -250,11 +250,11 @@ public class ScheduleController extends HttpServlet {
                 request.setAttribute("allClasses", allClasses2);
                 request.setAttribute("allRooms", allRooms2);
                 request.setAttribute("slots", allSlots2);
-                request.setAttribute("home_view", "academic/createSchedule.jsp");
+                request.setAttribute("home_view", "/academic/schedule/createSchedule.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 
-            case "editForm":
+            case "edit":
                 // Show edit schedule form
                 System.out.println("=== EDIT FORM ACTION CALLED ===");
                 try {
@@ -286,7 +286,7 @@ public class ScheduleController extends HttpServlet {
                     request.setAttribute("allClasses", allClasses3);
                     request.setAttribute("allRooms", allRooms3);
                     request.setAttribute("slots", allSlots3);
-                    request.setAttribute("home_view", "academic/editSchedule.jsp");
+                    request.setAttribute("home_view", "/academic/schedule/editSchedule.jsp");
 
                     System.out.println("Forwarding to editSchedule.jsp...");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
@@ -313,7 +313,7 @@ public class ScheduleController extends HttpServlet {
                     }
 
                     request.setAttribute("schedule", viewSchedule);
-                    request.setAttribute("home_view", "academic/viewSchedule.jsp");
+                    request.setAttribute("home_view", "/academic/schedule/viewSchedule.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -353,7 +353,7 @@ public class ScheduleController extends HttpServlet {
                     request.setAttribute("schedule", deleteSchedule);
                     request.setAttribute("relatedCount", relatedCount);
                     request.setAttribute("similarSchedules", similarSchedules);
-                    request.setAttribute("home_view", "academic/deleteSchedule.jsp");
+                    request.setAttribute("home_view", "/academic/schedule/deleteSchedule.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (Exception e) {
                     e.printStackTrace();

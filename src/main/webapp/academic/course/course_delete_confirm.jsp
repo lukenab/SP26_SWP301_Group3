@@ -7,14 +7,14 @@
         <div>
             <h1 class="page-title">Deactivate Course</h1>
         </div>
-        <a href="course?action=all" class="btn-secondary">
+        <a href="?action=all" class="btn-secondary">
             <i class='bx bx-arrow-left'></i> Back to Courses
         </a>
     </div>
     <div aria-label="breadcrumb">
         <ol class="breadcrumb mb-1">
             <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="course">Course Management</a></li>
+            <li class="breadcrumb-item"><a href="">Course Management</a></li>
             <li class="breadcrumb-item active" aria-current="page">Deactivate Course</li>
         </ol>
     </div>
@@ -32,7 +32,7 @@
 
     <c:choose>
         <c:when test="${course.status}">
-            <form action="course" method="post" class="form-body">
+            <form action="" method="post" class="form-body">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="courseId" value="${course.courseId}">
 
@@ -68,7 +68,7 @@
                 </div>
 
                 <div class="form-buttons">
-                    <a href="course?action=all" class="btn btn-cancel">Cancel</a>
+                    <a href="?action=all" class="btn btn-cancel">Cancel</a>
                     <button type="submit" class="btn btn-lock">
                         <i class='bx bx-lock'></i> Inactivate Course
                     </button>
@@ -77,7 +77,7 @@
         </c:when>
 
         <c:otherwise>
-            <form action="course" method="post" class="form-body">
+            <form action="" method="post" class="form-body">
                 <input type="hidden" name="action" value="activate">
                 <input type="hidden" name="courseId" value="${course.courseId}">
 
@@ -113,7 +113,7 @@
                 </div>
 
                 <div class="form-buttons">
-                    <a href="course?action=all" class="btn btn-cancel">Cancel</a>
+                    <a href="?action=all" class="btn btn-cancel">Cancel</a>
                     <button type="submit" class="btn btn-unlock">
                         <i class='bx bx-lock-open'></i> Activate Course
                     </button>

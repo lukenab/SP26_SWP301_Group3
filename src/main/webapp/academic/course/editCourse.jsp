@@ -7,7 +7,7 @@
         <div>
             <h1 class="page-title">Edit Course</h1>
         </div>
-        <a href="course?action=all" class="btn-secondary">
+        <a href="?action=all" class="btn-secondary">
             <i class='bx bx-arrow-left'></i> Back to Courses
         </a>
     </div>
@@ -16,7 +16,7 @@
         <ol class="breadcrumb mb-1">
             <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
             <li class="breadcrumb-item">
-                <a href="course?action=all">Course Management</a>
+                <a href="?action=all">Course Management</a>
             </li>
             <li class="breadcrumb-item active">Edit Course</li>
         </ol>
@@ -69,7 +69,7 @@
 
 <!-- ===== FORM ===== -->
 <div class="form-container">
-    <form id="updateCourseForm" action="course?action=update" method="POST" enctype="multipart/form-data" class="form-body">
+    <form id="updateCourseForm" action="?action=update" method="POST" enctype="multipart/form-data" class="form-body">
 
         <input type="hidden" name="courseId" value="${course.courseId}">
         <input type="hidden" id="uAvatar" name="images" value="${course.images}">
@@ -132,7 +132,7 @@
         </div>
 
         <div class="form-buttons">
-            <a href="course?action=all" class="btn btn-cancel">Cancel</a>
+            <a href="?action=all" class="btn btn-cancel">Cancel</a>
             <button type="submit" class="btn btn-save">
                 <i class='bx bx-save'></i> Update Course
             </button>

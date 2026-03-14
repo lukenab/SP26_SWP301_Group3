@@ -19,7 +19,7 @@
                 <h2 class="page-title">Room Management</h2>
                 <p class="text-muted small mb-0">Manage and organize your rooms</p>
             </div>
-            <a href="room?action=create" class="btn btn-add-new">
+            <a href="?action=create" class="btn btn-add-new">
                 <i class='bx bx-plus-circle'></i> Create New Room
             </a>
         </div>
@@ -59,7 +59,7 @@
                     <div class="text-center py-5">
                         <i class='bx bx-door-open room-empty-icon'></i>
                         <p class="text-muted mt-3">No rooms found.</p>
-                        <a href="room?action=create" class="btn btn-add-new mt-2">
+                        <a href="?action=create" class="btn btn-add-new mt-2">
                             <i class='bx bx-plus-circle'></i> Create Your First Room
                         </a>
                     </div>
@@ -99,23 +99,23 @@
                                         </c:choose>
                                     </td>
                                     <td class="text-end">
-                                        <a href="room?action=detail&id=${r.roomId}" class="action-btn" title="View Details">
+                                        <a href="?action=detail&id=${r.roomId}" class="action-btn" title="View Details">
                                             <i class='bx bx-file-detail'></i>
                                         </a>
                                         <c:if test="${r.status}">
-                                            <a href="room?action=update&id=${r.roomId}" class="action-btn" title="Edit">
+                                            <a href="?action=update&id=${r.roomId}" class="action-btn" title="Edit">
                                                 <i class='bx bx-edit'></i>
                                             </a>
                                             <c:choose>
                                                 <c:when test="${roomUsageMap[r.roomId]}">
                                                     <!-- Room has classes, show Disable button -->
-                                                    <a href="room?action=disable&id=${r.roomId}" class="action-btn room-action-disable" title="Disable Room">
+                                                    <a href="?action=disable&id=${r.roomId}" class="action-btn room-action-disable" title="Disable Room">
                                                         <i class='bx bx-lock'></i>
                                                     </a>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <!-- Room has no classes, show Delete button -->
-                                                    <a href="room?action=delete&id=${r.roomId}" class="action-btn delete" title="Delete">
+                                                    <a href="?action=delete&id=${r.roomId}" class="action-btn delete" title="Delete">
                                                         <i class='bx bx-trash'></i>
                                                     </a>
                                                 </c:otherwise>
@@ -123,7 +123,7 @@
                                         </c:if>
                                         <c:if test="${!r.status}">
                                             <!-- Room is disabled, show Enable button -->
-                                            <a href="room?action=enable&id=${r.roomId}" class="action-btn room-action-enable" title="Enable Room">
+                                            <a href="?action=enable&id=${r.roomId}" class="action-btn room-action-enable" title="Enable Room">
                                                 <i class='bx bx-check-circle'></i>
                                             </a>
                                         </c:if>

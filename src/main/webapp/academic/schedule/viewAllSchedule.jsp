@@ -12,7 +12,7 @@
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="schedule?action=manage">Manage Schedule</a></li>
+                <li class="breadcrumb-item"><a href="?action=manage">Manage Schedule</a></li>
                 <li class="breadcrumb-item active" aria-current="page">All Schedules</li>
             </ol>
         </div>
@@ -21,7 +21,7 @@
                 <h2 class="page-title">All Class Schedules</h2>
                 <p class="text-muted small mb-0">Review schedule distribution by weekday and slot</p>
             </div>
-            <a href="schedule?action=manage" class="btn btn-secondary">
+            <a href="?action=manage" class="btn btn-secondary">
                 <i class='bx bx-arrow-back'></i> Back to Search
             </a>
         </div>

@@ -10,14 +10,14 @@
         <div>
             <h1 class="page-title">Edit Room</h1>
         </div>
-        <a href="room" class="btn-secondary">
+        <a href="" class="btn-secondary">
             <i class='bx bx-arrow-left'></i> Back to Rooms
         </a>
     </div>
     <div aria-label="breadcrumb">
         <ol class="breadcrumb mb-1">
             <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="room">Room Management</a></li>
+            <li class="breadcrumb-item"><a href="">Room Management</a></li>
             <li class="breadcrumb-item active" aria-current="page">Edit Room</li>
         </ol>
     </div>
@@ -63,7 +63,7 @@
 <div class="form-container">
     <c:choose>
         <c:when test="${not empty roomUpdate}">
-            <form action="room" method="post" class="form-body">
+            <form action="" method="post" class="form-body">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="id" value="${roomUpdate.roomId}">
 
@@ -95,7 +95,7 @@
                 </div>
 
                 <div class="form-buttons">
-                    <a href="room" class="btn btn-cancel">Cancel</a>
+                    <a href="" class="btn btn-cancel">Cancel</a>
                     <button type="submit" class="btn btn-save">
                         <i class='bx bx-save'></i> Update Changes
                     </button>
@@ -107,7 +107,7 @@
                 <strong>Error:</strong> Room not found.
             </div>
             <div class="form-buttons">
-                <a href="room" class="btn btn-cancel">Back to Rooms</a>
+                <a href="" class="btn btn-cancel">Back to Rooms</a>
             </div>
         </c:otherwise>
     </c:choose>

@@ -8,7 +8,7 @@
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="course?action=all">Course Management</a></li>
+                <li class="breadcrumb-item"><a href="?action=all">Course Management</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Course Details</li>
             </ol>
         </div>
@@ -19,11 +19,11 @@
                 <p class="text-muted small mb-0">Overview and quick management actions</p>
             </div>
             <div class="detail-header-actions">
-                <a href="course?action=all" class="btn btn-outline-secondary">
+                <a href="?action=all" class="btn btn-outline-secondary">
                     <i class='bx bx-arrow-left'></i> Back
                 </a>
                 <c:if test="${not empty course}">
-                    <a href="course?action=edit&courseId=${course.courseId}" class="btn btn-primary">
+                    <a href="?action=edit&courseId=${course.courseId}" class="btn btn-primary">
                         <i class='bx bx-edit'></i> Edit Course
                     </a>
                 </c:if>
@@ -98,11 +98,11 @@
                         <h5>Quick Actions</h5>
                     </div>
                     <div class="quick-action-list">
-                        <a href="course?action=edit&courseId=${course.courseId}" class="quick-action">
+                        <a href="?action=edit&courseId=${course.courseId}" class="quick-action">
                             <span><i class='bx bx-edit'></i> Update Information</span>
                             <i class='bx bx-chevron-right'></i>
                         </a>
-                        <a href="course?action=all" class="quick-action">
+                        <a href="?action=all" class="quick-action">
                             <span><i class='bx bx-list-ul'></i> Back to Course List</span>
                             <i class='bx bx-chevron-right'></i>
                         </a>

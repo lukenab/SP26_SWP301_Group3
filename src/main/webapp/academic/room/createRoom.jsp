@@ -7,7 +7,7 @@
     <div aria-label="breadcrumb">
         <ol class="breadcrumb mb-1">
             <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="room">Room Management</a></li>
+            <li class="breadcrumb-item"><a href="">Room Management</a></li>
             <li class="breadcrumb-item active" aria-current="page">Create Room</li>
         </ol>
     </div>
@@ -16,7 +16,7 @@
             <h2 class="page-title">Room Management</h2>
             <p class="text-muted small mb-0">Create new room</p>
         </div>
-        <a href="room" class="btn-secondary">
+        <a href="" class="btn-secondary">
             <i class='bx bx-arrow-left'></i> Back to Rooms
         </a>
     </div>
@@ -39,7 +39,7 @@
         <% session.removeAttribute("error"); %>
     </c:if>
 
-    <form action="room" method="post" class="form-body">
+    <form action="" method="post" class="form-body">
         <input type="hidden" name="action" value="create">
 
         <div class="form-row">

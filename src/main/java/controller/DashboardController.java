@@ -5,6 +5,10 @@
 package controller;
 
 import dao.UserDAO;
+import dao.ClassDAO;
+import dao.CourseDAO;
+import dao.RoomDAO;
+import dao.ScheduleDAO;
 import java.io.IOException;
 
 import jakarta.servlet.ServletException;
@@ -13,7 +17,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.time.LocalDate;
 import java.util.List;
+import model.Room;
 import model.User;
 
 /**
@@ -39,6 +45,8 @@ public class DashboardController extends HttpServlet {
         if (action == null) {
             action = "all";
         }
+        HttpSession session = request.getSession();
+        User loggedInUser = (User) session.getAttribute("user");
 
         switch (action) {
             case "all":
@@ -52,9 +60,65 @@ public class DashboardController extends HttpServlet {
                 request.setAttribute("home_view", "/admin/adminDashboard.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
-            case "profile": 
-                HttpSession session = request.getSession();
-                User loggedInUser = (User)session.getAttribute("user");
+            case "academic":
+                if (loggedInUser == null || loggedInUser.getRole() == null || loggedInUser.getRole().getRoleId() != 2) {
+                    response.sendRedirect("dashboard?action=all");
+                    return;
+                }
+
+                RoomDAO roomDAO = new RoomDAO();
+                ClassDAO classDAO = new ClassDAO();
+                CourseDAO courseDAO = new CourseDAO();
+                ScheduleDAO scheduleDAO = new ScheduleDAO();
+
+                List<Room> roomList = roomDAO.getAllRoom();
+                int totalRooms = roomList != null ? roomList.size() : 0;
+                int activeRooms = 0;
+                if (roomList != null) {
+                    for (Room room : roomList) {
+                        if (room.isStatus()) {
+                            activeRooms++;
+                        }
+                    }
+                }
+
+                List<Object[]> classList = classDAO.getClassManagementList();
+                int totalClasses = classList != null ? classList.size() : 0;
+                int activeClasses = 0;
+                if (classList != null) {
+                    for (Object[] row : classList) {
+                        if (row != null && row.length > 6 && row[6] != null
+                                && "Active".equalsIgnoreCase(row[6].toString())) {
+                            activeClasses++;
+                        }
+                    }
+                }
+
+                List<model.Course> courseList = courseDAO.getAllCourse();
+                int totalCourses = courseList != null ? courseList.size() : 0;
+                int activeCourses = 0;
+                if (courseList != null) {
+                    for (model.Course course : courseList) {
+                        if (course.isStatus()) {
+                            activeCourses++;
+                        }
+                    }
+                }
+
+                String today = LocalDate.now().toString();
+                int weeklySchedules = scheduleDAO.getSchedulesForManagement(today, null, null).size();
+
+                request.setAttribute("totalRooms", totalRooms);
+                request.setAttribute("activeRooms", activeRooms);
+                request.setAttribute("totalClasses", totalClasses);
+                request.setAttribute("activeClasses", activeClasses);
+                request.setAttribute("totalCourses", totalCourses);
+                request.setAttribute("activeCourses", activeCourses);
+                request.setAttribute("weeklySchedules", weeklySchedules);
+                request.setAttribute("home_view", "/academic/academicDashboard.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+            case "profile":
                 
                 if(loggedInUser == null){
                     response.sendRedirect("login");

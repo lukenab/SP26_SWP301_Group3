@@ -37,7 +37,7 @@ public class EnrollmentController extends HttpServlet {
             case "classes":
                 List<Object[]> classList = classDAO.getClassManagementList();
                 request.setAttribute("classList", classList);
-                request.setAttribute("home_view", "/academic/class_list.jsp");
+                request.setAttribute("home_view", "/academic/classes/class_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "deleteClass":
@@ -54,7 +54,7 @@ public class EnrollmentController extends HttpServlet {
                         return;
                     }
                     request.setAttribute("classInfo", classInfo);
-                    request.setAttribute("home_view", "/academic/class_delete_confirm.jsp");
+                    request.setAttribute("home_view", "/academic/classes/class_delete_confirm.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (NumberFormatException e) {
                     response.sendRedirect("enrollment?action=classes");
@@ -63,7 +63,7 @@ public class EnrollmentController extends HttpServlet {
             case "createClassForm":
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
-                request.setAttribute("home_view", "/academic/create_class.jsp");
+                request.setAttribute("home_view", "/academic/classes/create_class.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "editClassForm":
@@ -82,7 +82,7 @@ public class EnrollmentController extends HttpServlet {
                     request.setAttribute("classEditInfo", classEditInfo);
                     request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                     request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
-                    request.setAttribute("home_view", "/academic/edit_class.jsp");
+                    request.setAttribute("home_view", "/academic/classes/edit_class.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (NumberFormatException e) {
                     response.sendRedirect("enrollment?action=classes");
@@ -106,7 +106,7 @@ public class EnrollmentController extends HttpServlet {
                     request.setAttribute("classInfo", classInfo);
                     request.setAttribute("studentsInClass", studentsInClass);
                     request.setAttribute("availableStudents", availableStudents);
-                    request.setAttribute("home_view", "/academic/add_student_to_class.jsp");
+                    request.setAttribute("home_view", "/academic/classes/add_student_to_class.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (NumberFormatException e) {
                     response.sendRedirect("enrollment?action=classes");
@@ -140,7 +140,7 @@ public class EnrollmentController extends HttpServlet {
                 request.setAttribute("errorMessage", "Please fill all required fields.");
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
-                request.setAttribute("home_view", "/academic/create_class.jsp");
+                request.setAttribute("home_view", "/academic/classes/create_class.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 return;
             }
@@ -150,7 +150,7 @@ public class EnrollmentController extends HttpServlet {
                 request.setAttribute("errorMessage", "Status must be Active or Inactive.");
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
-                request.setAttribute("home_view", "/academic/create_class.jsp");
+                request.setAttribute("home_view", "/academic/classes/create_class.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 return;
             }
@@ -166,7 +166,7 @@ public class EnrollmentController extends HttpServlet {
                     request.setAttribute("errorMessage", "End date must be after or equal to start date.");
                     request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                     request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
-                    request.setAttribute("home_view", "/academic/create_class.jsp");
+                    request.setAttribute("home_view", "/academic/classes/create_class.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                     return;
                 }
@@ -184,7 +184,7 @@ public class EnrollmentController extends HttpServlet {
                 request.setAttribute("errorMessage", "Invalid input format.");
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
-                request.setAttribute("home_view", "/academic/create_class.jsp");
+                request.setAttribute("home_view", "/academic/classes/create_class.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
             }
         } else if ("updateClass".equals(action)) {

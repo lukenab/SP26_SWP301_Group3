@@ -10,14 +10,14 @@
         <div>
             <h1 class="page-title">Disable Room</h1>
         </div>
-        <a href="room" class="btn-secondary">
+        <a href="" class="btn-secondary">
             <i class='bx bx-arrow-left'></i> Back to Rooms
         </a>
     </div>
     <div aria-label="breadcrumb">
         <ol class="breadcrumb mb-1">
             <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="room">Room Management</a></li>
+            <li class="breadcrumb-item"><a href="">Room Management</a></li>
             <li class="breadcrumb-item active" aria-current="page">Disable Room</li>
         </ol>
     </div>
@@ -78,10 +78,10 @@
                     </div>
                 </c:if>
 
-                <form action="room" method="post" class="form-buttons">
+                <form action="" method="post" class="form-buttons">
                     <input type="hidden" name="action" value="disable">
                     <input type="hidden" name="id" value="${roomDisable.roomId}">
-                    <a href="room" class="btn btn-cancel">Cancel</a>
+                    <a href="" class="btn btn-cancel">Cancel</a>
                     <button type="submit" class="btn btn-lock">
                         <i class='bx bx-lock'></i> Confirm Disable
                     </button>
@@ -93,7 +93,7 @@
                 <strong>Error:</strong> Room not found.
             </div>
             <div class="form-buttons">
-                <a href="room" class="btn btn-cancel">Back to Rooms</a>
+                <a href="" class="btn btn-cancel">Back to Rooms</a>
             </div>
         </c:otherwise>
     </c:choose>

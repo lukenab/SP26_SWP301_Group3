@@ -10,7 +10,7 @@
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="schedule?action=manage">Manage Schedule</a></li>
+                <li class="breadcrumb-item"><a href="?action=manage">Manage Schedule</a></li>
                 <li class="breadcrumb-item active">Schedule Details</li>
             </ol>
         </div>
@@ -19,7 +19,7 @@
                 <h2 class="page-title">Schedule Details</h2>
                 <p class="text-muted small mb-0">View schedule information</p>
             </div>
-            <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
+            <a href="?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
                 <i class='bx bx-arrow-left'></i> Back to Schedule List
             </a>
         </div>
@@ -82,10 +82,10 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
-                <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
+                <a href="?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
                     <i class='bx bx-arrow-left'></i> Back to List
                 </a>
-                <a href="schedule?action=editForm&scheduleId=${schedule.scheduleId}" class="btn btn-primary">
+                <a href="?action=edit&scheduleId=${schedule.scheduleId}" class="btn btn-primary">
                     <i class='bx bx-edit'></i> Edit Schedule
                 </a>
             </div>

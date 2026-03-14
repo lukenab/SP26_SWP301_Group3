@@ -10,7 +10,7 @@
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="schedule?action=manage">Manage Schedule</a></li>
+                <li class="breadcrumb-item"><a href="?action=manage">Manage Schedule</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Delete Schedule</li>
             </ol>
         </div>
@@ -19,7 +19,7 @@
                 <h2 class="page-title">Delete Schedule</h2>
                 <p class="text-muted small mb-0">Review schedule information before deletion</p>
             </div>
-            <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
+            <a href="?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
                 <i class='bx bx-arrow-left'></i> Back to Schedule List
             </a>
         </div>
@@ -32,7 +32,7 @@
                 Are you sure you want to delete this schedule? This action cannot be undone.
             </p>
 
-            <form action="schedule" method="POST">
+            <form action="" method="POST">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="scheduleId" value="${schedule.scheduleId}">
 
@@ -120,7 +120,7 @@
                 </c:if>
 
                 <div class="d-flex justify-content-end gap-2 mt-4">
-                    <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
+                    <a href="?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
                         Cancel
                     </a>
                     <button type="submit" class="btn btn-danger">

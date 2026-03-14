@@ -149,7 +149,7 @@
                 </div>
             </c:if>
             
-            <form action="course" method="post">
+            <form action="" method="post">
                 <input type="hidden" name="action" value="${formAction}">
                 <c:if test="${formAction eq 'update'}">
                     <input type="hidden" name="courseId" value="${course.courseId}">
@@ -211,7 +211,7 @@
                             <c:when test="${formAction eq 'update'}">Update Course</c:when>
                         </c:choose>
                     </button>
-                    <a href="course?action=all" class="btn-cancel">Cancel</a>
+                    <a href="?action=all" class="btn-cancel">Cancel</a>
                 </div>
             </form>
         </div>

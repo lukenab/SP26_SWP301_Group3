@@ -19,7 +19,7 @@
                 <h2 class="page-title">Course Management</h2>
                 <p class="text-muted small mb-0">Manage and organize your courses</p>
             </div>
-            <a href="course?action=add" class="btn btn-add-new">
+            <a href="?action=add" class="btn btn-add-new">
                 <i class='bx bx-user-plus'></i> Add Course
             </a>
         </div>
@@ -178,9 +178,9 @@
                     </td>
 
                     <td>
-                        <a href="course?action=details&courseId=${c.courseId}" class="action-btn"><i class='bx bx-eye'></i></a>
-                        <a href="course?action=edit&courseId=${c.courseId}" class="action-btn"><i class='bx bx-edit'></i></a>
-                        <a href="course?action=delete&courseId=${c.courseId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
+                        <a href="?action=details&courseId=${c.courseId}" class="action-btn"><i class='bx bx-eye'></i></a>
+                        <a href="?action=edit&courseId=${c.courseId}" class="action-btn"><i class='bx bx-edit'></i></a>
+                        <a href="?action=delete&courseId=${c.courseId}" class="action-btn delete"><i class='bx bx-lock'></i></a>
                     </td>
                     </tr>
                 </c:forEach>

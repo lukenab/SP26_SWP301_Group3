@@ -22,14 +22,14 @@
                 <h2 class="page-title mb-1">Schedule Management</h2>
                 <p class="text-muted small mb-0">View and manage all class schedules</p>
             </div>
-            <a href="schedule?action=createForm" class="btn btn-add-new">
+            <a href="?action=create" class="btn btn-add-new">
                 <i class='bx bx-plus-circle'></i> Create New Schedule
             </a>
         </div>
 
         <div class="card user-table-card border-0 bg-white mb-3 section-card">
             <div class="card-body p-3 p-lg-4">
-                <form action="schedule" method="GET" class="row g-3 align-items-end">
+                <form action="" method="GET" class="row g-3 align-items-end">
                     <input type="hidden" name="action" value="manage">
 
                     <div class="col-md-3">
@@ -155,17 +155,17 @@
                                                         </div>
 
                                                         <div class="schedule-actions">
-                                                            <a href="schedule?action=viewDetail&scheduleId=${s.scheduleId}"
+                                                            <a href="?action=viewDetail&scheduleId=${s.scheduleId}"
                                                                class="schedule-action-btn view"
                                                                title="View Details">
                                                                 <i class='bx bx-file-detail'></i> View
                                                             </a>
-                                                            <a href="schedule?action=editForm&scheduleId=${s.scheduleId}"
+                                                            <a href="?action=edit&scheduleId=${s.scheduleId}"
                                                                class="schedule-action-btn edit"
                                                                title="Edit Schedule">
                                                                 <i class='bx bx-edit'></i> Edit
                                                             </a>
-                                                            <a href="schedule?action=delete&scheduleId=${s.scheduleId}"
+                                                            <a href="?action=delete&scheduleId=${s.scheduleId}"
                                                                class="schedule-action-btn delete"
                                                                title="Delete Schedule">
                                                                 <i class='bx bx-trash'></i> Delete
