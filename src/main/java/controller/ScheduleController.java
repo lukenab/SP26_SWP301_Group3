@@ -483,6 +483,56 @@ public class ScheduleController extends HttpServlet {
                         int slotId = Integer.parseInt(request.getParameter("slotId"));
                         String learningDateStr = request.getParameter("learningDate");
                         Date learningDate = Date.valueOf(learningDateStr);
+                        String recurringType = request.getParameter("recurringType");
+                        if (recurringType == null || recurringType.trim().isEmpty()) {
+                            recurringType = "none";
+                        }
+
+                        String endCondition = request.getParameter("endCondition");
+                        if (endCondition == null || endCondition.trim().isEmpty()) {
+                            endCondition = "never";
+                        }
+
+                        String recurringDays = null;
+                        Date endDate = null;
+                        Integer occurrences = null;
+
+                        if ("custom".equals(recurringType)) {
+                            String[] selectedDays = request.getParameterValues("recurringDays");
+                            if (selectedDays == null || selectedDays.length == 0) {
+                                session.setAttribute("message", "Please select at least one day for custom recurring pattern.");
+                                session.setAttribute("messageType", "error");
+                                response.sendRedirect("schedule?action=manage");
+                                return;
+                            }
+                            recurringDays = String.join(",", selectedDays);
+                        }
+
+                        if ("on".equals(endCondition)) {
+                            String endDateRaw = request.getParameter("endDate");
+                            if (endDateRaw == null || endDateRaw.trim().isEmpty()) {
+                                session.setAttribute("message", "End date is required when end condition is 'On Date'.");
+                                session.setAttribute("messageType", "error");
+                                response.sendRedirect("schedule?action=manage");
+                                return;
+                            }
+                            endDate = Date.valueOf(endDateRaw);
+                        } else if ("after".equals(endCondition)) {
+                            String occurrencesRaw = request.getParameter("occurrences");
+                            if (occurrencesRaw == null || occurrencesRaw.trim().isEmpty()) {
+                                session.setAttribute("message", "Number of sessions is required when end condition is 'After Occurrences'.");
+                                session.setAttribute("messageType", "error");
+                                response.sendRedirect("schedule?action=manage");
+                                return;
+                            }
+                            occurrences = Integer.valueOf(occurrencesRaw);
+                            if (occurrences <= 0) {
+                                session.setAttribute("message", "Number of sessions must be greater than 0.");
+                                session.setAttribute("messageType", "error");
+                                response.sendRedirect("schedule?action=manage");
+                                return;
+                            }
+                        }
 
                         // Get teacher ID from class
                         ClassDAO classDAO = new ClassDAO();
@@ -496,7 +546,17 @@ public class ScheduleController extends HttpServlet {
                             return;
                         }
 
-                        // 2. Check room availability
+                        // 2. Check room capacity against class enrollment
+                        if (!scheduleDAO.isRoomCapacityEnoughForClass(classId, roomId)) {
+                            int classSize = scheduleDAO.getClassEnrollmentCount(classId);
+                            int roomCapacity = scheduleDAO.getRoomCapacity(roomId);
+                            session.setAttribute("message", "Room capacity is not enough! Class size: " + classSize + ", room capacity: " + roomCapacity + ".");
+                            session.setAttribute("messageType", "error");
+                            response.sendRedirect("schedule?action=manage");
+                            return;
+                        }
+
+                        // 3. Check room availability
                         if (!scheduleDAO.isRoomAvailable(roomId, slotId, learningDate, 0)) {
                             session.setAttribute("message", "Room is not available for this time slot!");
                             session.setAttribute("messageType", "error");
@@ -504,7 +564,7 @@ public class ScheduleController extends HttpServlet {
                             return;
                         }
 
-                        // 3. Check teacher availability (same slot, same date)
+                        // 4. Check teacher availability (same slot, same date)
                         if (!scheduleDAO.isTeacherAvailable(teacherId, slotId, learningDate, 0)) {
                             session.setAttribute("message", "Teacher is not available at this time slot on this date!");
                             session.setAttribute("messageType", "error");
@@ -512,7 +572,7 @@ public class ScheduleController extends HttpServlet {
                             return;
                         }
 
-                        // 4. Check if teacher exceeds 5 slots per week limit
+                        // 5. Check if teacher exceeds 5 slots per week limit
                         if (scheduleDAO.teacherExceedsWeeklyLimit(teacherId, learningDate, 0)) {
                             int currentSlots = scheduleDAO.getTeacherWeeklySlotCount(teacherId, learningDate, 0);
                             session.setAttribute("message", "Teacher has reached the weekly limit! Current slots: " + currentSlots + "/5");
@@ -521,15 +581,39 @@ public class ScheduleController extends HttpServlet {
                             return;
                         }
 
-                        // Create schedule
-                        boolean success = scheduleDAO.createSchedule(classId, roomId, slotId, learningDate, teacherId, false);
+                        if ("none".equals(recurringType)) {
+                            // Create single schedule
+                            boolean success = scheduleDAO.createSchedule(classId, roomId, slotId, learningDate, teacherId, false);
 
-                        if (success) {
-                            session.setAttribute("message", "Schedule created successfully!");
-                            session.setAttribute("messageType", "success");
+                            if (success) {
+                                session.setAttribute("message", "Schedule created successfully!");
+                                session.setAttribute("messageType", "success");
+                            } else {
+                                session.setAttribute("message", "Failed to create schedule!");
+                                session.setAttribute("messageType", "error");
+                            }
                         } else {
-                            session.setAttribute("message", "Failed to create schedule!");
-                            session.setAttribute("messageType", "error");
+                            // Create recurring schedules in batch
+                            int createdCount = scheduleDAO.createMultipleSchedules(
+                                    classId,
+                                    roomId,
+                                    slotId,
+                                    learningDate,
+                                    teacherId,
+                                    recurringType,
+                                    recurringDays,
+                                    endCondition,
+                                    endDate,
+                                    occurrences
+                            );
+
+                            if (createdCount > 0) {
+                                session.setAttribute("message", "Created " + createdCount + " schedule(s) successfully!");
+                                session.setAttribute("messageType", "success");
+                            } else {
+                                session.setAttribute("message", "Failed to create recurring schedules. Please check recurring options.");
+                                session.setAttribute("messageType", "error");
+                            }
                         }
 
                     } catch (Exception e) {
@@ -593,7 +677,17 @@ public class ScheduleController extends HttpServlet {
                             return;
                         }
 
-                        // 2. Check room availability (exclude current schedule)
+                        // 2. Check room capacity against class enrollment
+                        if (!scheduleDAO.isRoomCapacityEnoughForClass(classId, roomId)) {
+                            int classSize = scheduleDAO.getClassEnrollmentCount(classId);
+                            int roomCapacity = scheduleDAO.getRoomCapacity(roomId);
+                            session.setAttribute("message", "Room capacity is not enough! Class size: " + classSize + ", room capacity: " + roomCapacity + ".");
+                            session.setAttribute("messageType", "error");
+                            response.sendRedirect("schedule?action=manage");
+                            return;
+                        }
+
+                        // 3. Check room availability (exclude current schedule)
                         if (!scheduleDAO.isRoomAvailable(roomId, slotId, learningDate, scheduleId)) {
                             session.setAttribute("message", "Room is not available for this time slot!");
                             session.setAttribute("messageType", "error");
@@ -601,7 +695,7 @@ public class ScheduleController extends HttpServlet {
                             return;
                         }
 
-                        // 3. Check teacher availability (exclude current schedule)
+                        // 4. Check teacher availability (exclude current schedule)
                         if (!scheduleDAO.isTeacherAvailable(teacherId, slotId, learningDate, scheduleId)) {
                             session.setAttribute("message", "Teacher is not available at this time slot on this date!");
                             session.setAttribute("messageType", "error");
@@ -609,7 +703,7 @@ public class ScheduleController extends HttpServlet {
                             return;
                         }
 
-                        // 4. Check if teacher exceeds 5 slots per week limit (exclude current schedule)
+                        // 5. Check if teacher exceeds 5 slots per week limit (exclude current schedule)
                         if (scheduleDAO.teacherExceedsWeeklyLimit(teacherId, learningDate, scheduleId)) {
                             int currentSlots = scheduleDAO.getTeacherWeeklySlotCount(teacherId, learningDate, scheduleId);
                             session.setAttribute("message", "Teacher has reached the weekly limit! Current slots: " + currentSlots + "/5");

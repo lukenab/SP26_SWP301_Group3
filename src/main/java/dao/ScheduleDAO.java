@@ -430,6 +430,50 @@ public class ScheduleDAO extends DBContext {
         return false;
     }
 
+    // Count enrolled students of a class that occupy room capacity
+    public int getClassEnrollmentCount(int classId) {
+        String sql = "SELECT COUNT(*) AS count FROM Enrollment "
+                + "WHERE ClassID = ? AND Status IN ('Active', 'Unpaid')";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to count class enrollment: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    // Get capacity of selected room
+    public int getRoomCapacity(int roomId) {
+        String sql = "SELECT Capacity FROM Room WHERE RoomID = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("Capacity");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get room capacity: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    // Validate class size does not exceed room capacity
+    public boolean isRoomCapacityEnoughForClass(int classId, int roomId) {
+        int classSize = getClassEnrollmentCount(classId);
+        int roomCapacity = getRoomCapacity(roomId);
+        return roomCapacity > 0 && classSize <= roomCapacity;
+    }
+
     // Check if teacher exceeds 5 slots per week
     public boolean teacherExceedsWeeklyLimit(int teacherId, Date learningDate, int excludeScheduleId) {
         // Get the start and end of the week containing learningDate
