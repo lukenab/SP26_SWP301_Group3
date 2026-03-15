@@ -132,11 +132,13 @@ public class EnrollmentController extends HttpServlet {
             String startDateParam = request.getParameter("startDate");
             String endDateParam = request.getParameter("endDate");
             String status = request.getParameter("status");
+            String maxCapacityParam = request.getParameter("maxCapacity");
 
             if (className == null || className.trim().isEmpty()
                     || courseIdParam == null || teacherIdParam == null
                     || startDateParam == null || endDateParam == null
-                    || status == null || status.trim().isEmpty()) {
+                    || status == null || status.trim().isEmpty()
+                    || maxCapacityParam == null || maxCapacityParam.trim().isEmpty()) {
                 request.setAttribute("errorMessage", "Please fill all required fields.");
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
@@ -146,8 +148,10 @@ public class EnrollmentController extends HttpServlet {
             }
 
             String normalizedStatus = status.trim();
-            if (!"Active".equalsIgnoreCase(normalizedStatus) && !"Inactive".equalsIgnoreCase(normalizedStatus)) {
-                request.setAttribute("errorMessage", "Status must be Active or Inactive.");
+            if (!"Pending".equalsIgnoreCase(normalizedStatus)
+                    && !"Active".equalsIgnoreCase(normalizedStatus)
+                    && !"Inactive".equalsIgnoreCase(normalizedStatus)) {
+                request.setAttribute("errorMessage", "Status must be Pending, Active, or Inactive.");
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
                 request.setAttribute("home_view", "/academic/create_class.jsp");
@@ -159,8 +163,18 @@ public class EnrollmentController extends HttpServlet {
             try {
                 int courseId = Integer.parseInt(courseIdParam);
                 int teacherId = Integer.parseInt(teacherIdParam);
+                int maxCapacity = Integer.parseInt(maxCapacityParam);
                 Date startDate = Date.valueOf(startDateParam);
                 Date endDate = Date.valueOf(endDateParam);
+
+                if (maxCapacity <= 0) {
+                    request.setAttribute("errorMessage", "Max capacity must be greater than 0.");
+                    request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
+                    request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
+                    request.setAttribute("home_view", "/academic/create_class.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                    return;
+                }
 
                 if (endDate.before(startDate)) {
                     request.setAttribute("errorMessage", "End date must be after or equal to start date.");
@@ -171,7 +185,7 @@ public class EnrollmentController extends HttpServlet {
                     return;
                 }
 
-                boolean created = classDAO.createClass(className.trim(), courseId, teacherId, startDate, endDate, normalizedStatus);
+                boolean created = classDAO.createClass(className.trim(), courseId, teacherId, startDate, endDate, normalizedStatus, maxCapacity);
                 if (created) {
                     request.getSession().setAttribute("message", "Class created successfully.");
                     request.getSession().setAttribute("messageType", "success");
@@ -194,11 +208,15 @@ public class EnrollmentController extends HttpServlet {
             String teacherIdParam = request.getParameter("teacherId");
             String startDateParam = request.getParameter("startDate");
             String endDateParam = request.getParameter("endDate");
+            String status = request.getParameter("status");
+            String maxCapacityParam = request.getParameter("maxCapacity");
 
             if (classIdParam == null || classIdParam.isEmpty()
                     || className == null || className.trim().isEmpty()
                     || courseIdParam == null || teacherIdParam == null
-                    || startDateParam == null || endDateParam == null) {
+                    || startDateParam == null || endDateParam == null
+                    || status == null || status.trim().isEmpty()
+                    || maxCapacityParam == null || maxCapacityParam.trim().isEmpty()) {
                 request.getSession().setAttribute("message", "Please fill all required fields.");
                 request.getSession().setAttribute("messageType", "error");
                 response.sendRedirect("enrollment?action=classes");
@@ -209,8 +227,29 @@ public class EnrollmentController extends HttpServlet {
                 int classId = Integer.parseInt(classIdParam);
                 int courseId = Integer.parseInt(courseIdParam);
                 int teacherId = Integer.parseInt(teacherIdParam);
+                int maxCapacity = Integer.parseInt(maxCapacityParam);
                 Date startDate = Date.valueOf(startDateParam);
                 Date endDate = Date.valueOf(endDateParam);
+                String normalizedStatus = status.trim();
+
+                if (maxCapacity <= 0) {
+                    request.getSession().setAttribute("message", "Max capacity must be greater than 0.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=editClassForm&classId=" + classId);
+                    return;
+                }
+
+                if (!"Pending".equalsIgnoreCase(normalizedStatus)
+                        && !"Active".equalsIgnoreCase(normalizedStatus)
+                        && !"Inactive".equalsIgnoreCase(normalizedStatus)) {
+                    request.getSession().setAttribute("message", "Status must be Pending, Active, or Inactive.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=editClassForm&classId=" + classId);
+                    return;
+                }
+
+                normalizedStatus = Character.toUpperCase(normalizedStatus.charAt(0))
+                        + normalizedStatus.substring(1).toLowerCase();
 
                 if (endDate.before(startDate)) {
                     request.getSession().setAttribute("message", "End date must be after or equal to start date.");
@@ -219,7 +258,7 @@ public class EnrollmentController extends HttpServlet {
                     return;
                 }
 
-                boolean updated = classDAO.updateClass(classId, className.trim(), courseId, teacherId, startDate, endDate);
+                boolean updated = classDAO.updateClass(classId, className.trim(), courseId, teacherId, startDate, endDate, normalizedStatus, maxCapacity);
                 if (updated) {
                     request.getSession().setAttribute("message", "Class updated successfully.");
                     request.getSession().setAttribute("messageType", "success");
@@ -246,8 +285,10 @@ public class EnrollmentController extends HttpServlet {
             }
 
             String normalizedStatus = status.trim();
-            if (!"Active".equalsIgnoreCase(normalizedStatus) && !"Inactive".equalsIgnoreCase(normalizedStatus)) {
-                request.getSession().setAttribute("message", "Status must be Active or Inactive.");
+            if (!"Pending".equalsIgnoreCase(normalizedStatus)
+                    && !"Active".equalsIgnoreCase(normalizedStatus)
+                    && !"Inactive".equalsIgnoreCase(normalizedStatus)) {
+                request.getSession().setAttribute("message", "Status must be Pending, Active, or Inactive.");
                 request.getSession().setAttribute("messageType", "error");
                 response.sendRedirect("enrollment?action=classes");
                 return;

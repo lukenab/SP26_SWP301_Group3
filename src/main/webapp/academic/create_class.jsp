@@ -47,6 +47,7 @@
                         <label class="form-label fw-semibold">Status</label>
                         <select class="form-select" name="status" required>
                             <option value="">Select status</option>
+                            <option value="Pending" ${param.status == 'Pending' ? 'selected' : ''}>Pending</option>
                             <option value="Active" ${param.status == 'Active' ? 'selected' : ''}>Active</option>
                             <option value="Inactive" ${param.status == 'Inactive' ? 'selected' : ''}>Inactive</option>
                         </select>
@@ -54,10 +55,10 @@
 
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Course</label>
-                        <select class="form-select" name="courseId" required>
+                        <select class="form-select" name="courseId" id="courseId" required>
                             <option value="">Select course</option>
                             <c:forEach items="${courseOptions}" var="co">
-                                <option value="${co[0]}" ${param.courseId == co[0].toString() ? 'selected' : ''}>
+                                <option value="${co[0]}" data-max-capacity="${co[2]}" ${param.courseId == co[0].toString() ? 'selected' : ''}>
                                     ${co[1]}
                                 </option>
                             </c:forEach>
@@ -86,6 +87,16 @@
                         <input type="date" class="form-control" name="endDate" value="${param.endDate}" required>
                     </div>
 
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Max Capacity</label>
+                        <input type="number" class="form-control" id="maxCapacity" name="maxCapacity" value="${param.maxCapacity}" min="1" placeholder="Enter max capacity" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Room (Optional)</label>
+                        <input type="text" class="form-control" value="Assign later in schedule management" readonly>
+                    </div>
+
                 </div>
 
                 <div class="d-flex justify-content-end mt-4">
@@ -97,3 +108,24 @@
         </div>
     </div>
 </div>
+<script>
+    (function () {
+        var courseSelect = document.getElementById('courseId');
+        var maxCapacityInput = document.getElementById('maxCapacity');
+
+        if (!courseSelect || !maxCapacityInput) {
+            return;
+        }
+
+        function updateCapacity() {
+            var selectedOption = courseSelect.options[courseSelect.selectedIndex];
+            var maxCapacity = selectedOption ? selectedOption.getAttribute('data-max-capacity') : '';
+            if (!maxCapacityInput.value && maxCapacity) {
+                maxCapacityInput.value = maxCapacity;
+            }
+        }
+
+        courseSelect.addEventListener('change', updateCapacity);
+        updateCapacity();
+    })();
+</script>

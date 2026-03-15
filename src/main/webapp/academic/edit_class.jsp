@@ -37,16 +37,20 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Current Status</label>
-                        <input type="text" class="form-control" value="${classEditInfo[6]}" readonly>
+                        <label class="form-label fw-semibold">Status</label>
+                        <select class="form-select" name="status" required>
+                            <option value="Pending" ${classEditInfo[6] == 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Active" ${classEditInfo[6] == 'Active' ? 'selected' : ''}>Active</option>
+                            <option value="Inactive" ${classEditInfo[6] == 'Inactive' ? 'selected' : ''}>Inactive</option>
+                        </select>
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Course</label>
-                        <select class="form-select" name="courseId" required>
+                        <select class="form-select" name="courseId" id="courseId" required>
                             <option value="">Select course</option>
                             <c:forEach items="${courseOptions}" var="co">
-                                <option value="${co[0]}" ${classEditInfo[2] == co[0] ? 'selected' : ''}>
+                                <option value="${co[0]}" data-max-capacity="${co[2]}" ${classEditInfo[2] == co[0] ? 'selected' : ''}>
                                     ${co[1]}
                                 </option>
                             </c:forEach>
@@ -76,6 +80,16 @@
                         <fmt:formatDate value="${classEditInfo[5]}" pattern="yyyy-MM-dd" var="endDateValue"/>
                         <input type="date" class="form-control" name="endDate" value="${endDateValue}" required>
                     </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Max Capacity</label>
+                        <input type="number" class="form-control" id="maxCapacity" name="maxCapacity" value="${classEditInfo[7]}" min="1" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Room (Optional)</label>
+                        <input type="text" class="form-control" value="${empty classEditInfo[8] ? 'Not assigned yet' : classEditInfo[8]}" readonly>
+                    </div>
                 </div>
 
                 <div class="d-flex justify-content-end mt-4">
@@ -87,3 +101,24 @@
         </div>
     </div>
 </div>
+<script>
+    (function () {
+        var courseSelect = document.getElementById('courseId');
+        var maxCapacityInput = document.getElementById('maxCapacity');
+
+        if (!courseSelect || !maxCapacityInput) {
+            return;
+        }
+
+        function updateCapacity() {
+            var selectedOption = courseSelect.options[courseSelect.selectedIndex];
+            var maxCapacity = selectedOption ? selectedOption.getAttribute('data-max-capacity') : '';
+            if (!maxCapacityInput.value && maxCapacity) {
+                maxCapacityInput.value = maxCapacity;
+            }
+        }
+
+        courseSelect.addEventListener('change', updateCapacity);
+        updateCapacity();
+    })();
+</script>

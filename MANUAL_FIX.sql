@@ -74,3 +74,19 @@ BEGIN
     (13, 1, N'Advanced Listening Strategies', N'Apply note-taking and distractor-handling for higher band targets.'),
     (15, 1, N'TOEIC Part 1-2 Foundation', N'Build listening reflexes with photo and question-response practice.');
 END
+
+-- ========================================
+-- Class.MaxCapacity (allow per-class capacity changes)
+-- ========================================
+IF COL_LENGTH('dbo.Class', 'MaxCapacity') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Class] ADD [MaxCapacity] [int] NULL;
+
+    UPDATE c
+    SET c.MaxCapacity = co.TotalSlots
+    FROM [dbo].[Class] c
+    LEFT JOIN [dbo].[Course] co ON c.CourseID = co.CourseID
+    WHERE c.MaxCapacity IS NULL;
+
+    ALTER TABLE [dbo].[Class] ALTER COLUMN [MaxCapacity] [int] NOT NULL;
+END
