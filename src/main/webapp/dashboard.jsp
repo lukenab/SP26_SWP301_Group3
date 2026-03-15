@@ -222,7 +222,7 @@
                         <li class="nav-links">
                             <a href="room">
                                 <i class="bxr bx-door-open"></i>
-                                <span class="text nav-text">Room Management</span>
+                                <span class="text nav-text">Room</span>
                             </a>
                         </li>
 
@@ -242,7 +242,7 @@
                         <li class="nav-links">
                             <a href="syllabus?action=manage">
                                 <i class="bxr bx-book-content"></i>
-                                <span class="text nav-text">Manage Syllabus</span>
+                                <span class="text nav-text">Syllabus</span>
                             </a>
                         </li>
 
@@ -250,13 +250,6 @@
                             <a href="schedule?action=manage">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">Schedule</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="#">
-                                <i class="bxr bx-user-check"></i>
-                                <span class="text nav-text">Teacher Assignment</span>
                             </a>
                         </li>
 
@@ -281,7 +274,7 @@
                         <li class="nav-links">
                             <a href="lead?action=all">
                                 <i class="bxr bx-book"></i>
-                                <span class="text nav-text">Manage Lead</span>
+                                <span class="text nav-text">Lead</span>
                             </a>
                         </li>
 
@@ -310,7 +303,7 @@
                             <li class="nav-links">
                                 <a href="voucher?action=all">
                                     <i class="bxr bx-group"></i>
-                                    <span class="text nav-text">Manage Voucher</span>
+                                    <span class="text nav-text">Voucher</span>
                                 </a>
                             </li>
                         </c:if>
@@ -346,6 +339,13 @@
                             <a href="schedule?action=studentView">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">My Schedule</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="class?action=myClasses">
+                                <i class="bxr bx-book"></i>
+                                <span class="text nav-text">My Classes</span>
                             </a>
                         </li>
 

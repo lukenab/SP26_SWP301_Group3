@@ -3,8 +3,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
+<link href="css/scheduleManagement.css" rel="stylesheet" type="text/css"/>
 
-<div class="container-fluid px-4 content-body">
+<div class="container-fluid px-4 content-body schedule-page">
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
@@ -18,41 +19,55 @@
                 <h2 class="page-title">Schedule Details</h2>
                 <p class="text-muted small mb-0">View schedule information</p>
             </div>
+            <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
+                <i class='bx bx-arrow-left'></i> Back to Schedule List
+            </a>
         </div>
     </div>
 
-    <div class="card border-0 bg-white">
+    <div class="card user-table-card border-0 bg-white section-card">
         <div class="card-body p-4">
             <div class="row">
                 <div class="col-md-6 mb-4">
-                    <label class="form-label fw-bold text-muted small">Schedule ID</label>
-                    <p class="fs-5">${schedule.scheduleId}</p>
+                    <div class="summary-card">
+                        <span class="summary-label">Schedule ID</span>
+                        <div class="summary-value">${schedule.scheduleId}</div>
+                    </div>
                 </div>
 
                 <div class="col-md-6 mb-4">
-                    <label class="form-label fw-bold text-muted small">Class</label>
-                    <p class="fs-5">${schedule.classes.className}</p>
+                    <div class="summary-card">
+                        <span class="summary-label">Class</span>
+                        <div class="summary-value">${schedule.classes.className}</div>
+                    </div>
                 </div>
 
                 <div class="col-md-6 mb-4">
-                    <label class="form-label fw-bold text-muted small">Room</label>
-                    <p class="fs-5">${schedule.room.roomName}</p>
+                    <div class="summary-card">
+                        <span class="summary-label">Room</span>
+                        <div class="summary-value">${schedule.room.roomName}</div>
+                    </div>
                 </div>
 
                 <div class="col-md-6 mb-4">
-                    <label class="form-label fw-bold text-muted small">Slot</label>
-                    <p class="fs-5">Slot ${schedule.slot.slotID} (${schedule.slot.startTime} - ${schedule.slot.endTime})</p>
+                    <div class="summary-card">
+                        <span class="summary-label">Slot</span>
+                        <div class="summary-value">Slot ${schedule.slot.slotID} (${schedule.slot.startTime} - ${schedule.slot.endTime})</div>
+                    </div>
                 </div>
 
                 <div class="col-md-6 mb-4">
-                    <label class="form-label fw-bold text-muted small">Learning Date</label>
                     <fmt:formatDate value="${schedule.learningDate}" pattern="EEEE, dd MMMM yyyy" var="formattedDate"/>
-                    <p class="fs-5">${formattedDate}</p>
+                    <div class="summary-card">
+                        <span class="summary-label">Learning Date</span>
+                        <div class="summary-value">${formattedDate}</div>
+                    </div>
                 </div>
 
                 <div class="col-md-6 mb-4">
-                    <label class="form-label fw-bold text-muted small">Attendance Status</label>
-                    <p class="fs-5">
+                    <div class="summary-card">
+                        <span class="summary-label">Attendance Status</span>
+                        <div class="summary-value">
                         <c:choose>
                             <c:when test="${schedule.attendanceStatus}">
                                 <span class="badge bg-success fs-6">Taken</span>
@@ -61,16 +76,17 @@
                                 <span class="badge bg-secondary fs-6">Pending</span>
                             </c:otherwise>
                         </c:choose>
-                    </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="d-flex gap-2 mt-4">
-                <a href="schedule?action=editForm&scheduleId=${schedule.scheduleId}" class="btn btn-warning text-white">
-                    <i class='bx bx-edit'></i> Edit Schedule
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
+                    <i class='bx bx-arrow-left'></i> Back to List
                 </a>
-                <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn btn-secondary">
-                    <i class='bx bx-arrow-back'></i> Back to List
+                <a href="schedule?action=editForm&scheduleId=${schedule.scheduleId}" class="btn btn-primary">
+                    <i class='bx bx-edit'></i> Edit Schedule
                 </a>
             </div>
         </div>

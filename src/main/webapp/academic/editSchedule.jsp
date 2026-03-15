@@ -3,8 +3,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
+<link href="css/scheduleManagement.css" rel="stylesheet" type="text/css"/>
 
-<div class="container-fluid px-4 content-body">
+<div class="container-fluid px-4 content-body schedule-page">
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
@@ -18,6 +19,9 @@
                 <h2 class="page-title">Edit Schedule</h2>
                 <p class="text-muted small mb-0">Update schedule information</p>
             </div>
+            <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
+                <i class='bx bx-arrow-left'></i> Back to Schedule List
+            </a>
         </div>
     </div>
 
@@ -47,7 +51,7 @@
         <c:remove var="messageType" scope="session" />
     </c:if>
 
-    <div class="card border-0 bg-white">
+    <div class="card user-table-card border-0 bg-white section-card">
         <div class="card-body p-4">
             <form action="schedule" method="POST">
                 <input type="hidden" name="action" value="update">
@@ -99,7 +103,7 @@
 
                 <!-- Series Edit Options (if multiple schedules with same pattern) -->
                 <c:if test="${relatedCount > 1}">
-                    <div class="card border-info mb-3">
+                    <div class="card border-info mb-3 series-card">
                         <div class="card-header bg-info text-white">
                             <h6 class="mb-0"><i class='bx bx-info-circle'></i> Detected Schedule Series</h6>
                         </div>
@@ -126,13 +130,13 @@
                     </div>
                 </c:if>
 
-                <div class="d-flex gap-2 mt-4">
-                    <button type="submit" class="btn btn-warning text-white">
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
                         <i class='bx bx-save'></i> Update Schedule
                     </button>
-                    <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn btn-secondary">
-                        <i class='bx bx-x'></i> Cancel
-                    </a>
                 </div>
             </form>
         </div>

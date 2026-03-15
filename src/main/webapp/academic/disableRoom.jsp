@@ -2,7 +2,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <link href="css/createUser.css" rel="stylesheet" type="text/css"/>
+<link href="css/roomManagement.css" rel="stylesheet" type="text/css"/>
 
+<div class="room-page">
 <div class="mb-4">
     <div class="content-header">
         <div>
@@ -26,7 +28,7 @@
 
     <c:choose>
         <c:when test="${not empty roomDisable}">
-            <div class="alert-box info" style="margin-top: 24px; margin-bottom: 24px;">
+            <div class="alert-box info room-alert-spaced">
                 <i class='bx bx-info-circle'></i> <strong>Note:</strong> This room is currently being used by classes. Disabling it will make it unavailable for new assignments.
             </div>
 
@@ -53,21 +55,21 @@
                 <c:if test="${not empty classesUsingRoom}">
                     <div class="form-group full-width">
                         <label>Classes Using This Room</label>
-                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 12px; background: #f9f9f9;">
-                            <table style="width: 100%; font-size: 14px;">
+                        <div class="room-usage-wrap">
+                            <table class="room-usage-table">
                                 <thead>
-                                    <tr style="border-bottom: 2px solid #ddd;">
-                                        <th style="padding: 8px; text-align: left;">Class Name</th>
-                                        <th style="padding: 8px; text-align: left;">Date</th>
-                                        <th style="padding: 8px; text-align: left;">Slot</th>
+                                    <tr>
+                                        <th>Class Name</th>
+                                        <th>Date</th>
+                                        <th>Slot</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <c:forEach var="classInfo" items="${classesUsingRoom}">
-                                        <tr style="border-bottom: 1px solid #eee;">
-                                            <td style="padding: 8px;">${classInfo[0]}</td>
-                                            <td style="padding: 8px;">${classInfo[1]}</td>
-                                            <td style="padding: 8px;">Slot ${classInfo[2]}</td>
+                                        <tr>
+                                            <td>${classInfo[0]}</td>
+                                            <td>${classInfo[1]}</td>
+                                            <td>Slot ${classInfo[2]}</td>
                                         </tr>
                                     </c:forEach>
                                 </tbody>
@@ -95,5 +97,7 @@
             </div>
         </c:otherwise>
     </c:choose>
+</div>
+
 </div>
 

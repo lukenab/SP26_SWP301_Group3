@@ -105,9 +105,9 @@
                         <!-- BUTTON -->
                         <div class="d-flex justify-content-between mt-3">
 
-                            <a href="class?action=viewDetail&classId=${c[0]}"
+                            <a href="class?action=detail&classId=${c[0]}&source=availableClass"
                                class="btn btn-outline-secondary"
-                               style="background-color: #6c757d; color: white; border-color: #6c757d; pointer-events: none; cursor: default;">
+                               style="background-color: #6c757d; color: white; border-color: #6c757d;">
                                 View Details
                             </a>
 

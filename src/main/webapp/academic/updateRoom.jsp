@@ -2,7 +2,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <link href="css/editUser.css" rel="stylesheet" type="text/css"/>
+<link href="css/roomManagement.css" rel="stylesheet" type="text/css"/>
 
+<div class="room-page">
 <div class="mb-4">
     <div class="content-header">
         <div>
@@ -24,8 +26,8 @@
 <div class="profile-header-card">
     <div class="profile-avatar-section">
         <div class="form-row user-img">
-            <div class="info-img" style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                <i class='bx bx-door-open' style="font-size: 4rem; color: white;"></i>
+            <div class="info-img room-avatar">
+                <i class='bx bx-door-open room-avatar-icon'></i>
             </div>
         </div>
     </div>
@@ -38,7 +40,7 @@
                 <span class="profile-active">Active</span>
             </c:when>
             <c:otherwise>
-                <span class="profile-active" style="background-color: #fee2e2; color: #991b1b;">Disabled</span>
+                <span class="profile-active room-profile-disabled">Disabled</span>
             </c:otherwise>
         </c:choose>
         <p>Capacity: ${roomUpdate.capacity} people</p>
@@ -110,3 +112,6 @@
         </c:otherwise>
     </c:choose>
 </div>
+
+</div>
+
