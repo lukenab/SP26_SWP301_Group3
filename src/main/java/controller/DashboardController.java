@@ -5,6 +5,8 @@
 package controller;
 
 import dao.UserDAO;
+import dao.LeadDAO;
+import dao.PaymentDAO;
 import java.io.IOException;
 
 import jakarta.servlet.ServletException;
@@ -15,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import model.User;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -42,6 +45,25 @@ public class DashboardController extends HttpServlet {
 
         switch (action) {
             case "all":
+                HttpSession sessionAll = request.getSession();
+                User currentUser = (User) sessionAll.getAttribute("user");
+                if (currentUser != null && currentUser.getRole() != null) {
+                    int roleId = currentUser.getRole().getRoleId();
+                    if (roleId == 3) {
+                        LeadDAO leadDAO = new LeadDAO();
+                        PaymentDAO paymentDAO = new PaymentDAO();
+                        int totalLeads = leadDAO.countLeadsByFilters(null, "all", null, null, null);
+                        int convertedLeads = leadDAO.countLeadsByFilters(null, "Converted", null, null, null);
+                        int pendingPayments = paymentDAO.getPaymentCountByStatus("Pending");
+                        int approvedPayments = paymentDAO.getPaymentCountByStatus("Approved");
+
+                        request.setAttribute("totalLeads", totalLeads);
+                        request.setAttribute("convertedLeads", convertedLeads);
+                        request.setAttribute("pendingPayments", pendingPayments);
+                        request.setAttribute("approvedPayments", approvedPayments);
+                        request.setAttribute("home_view", "/sale/saleDashboard.jsp");
+                    }
+                }
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "admin":
@@ -50,6 +72,22 @@ public class DashboardController extends HttpServlet {
                 request.setAttribute("totalUsers", totalUsers);
                 request.setAttribute("userList", list);
                 request.setAttribute("home_view", "/admin/adminDashboard.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+            case "sale":
+                LeadDAO leadDAO = new LeadDAO();
+                PaymentDAO paymentDAO = new PaymentDAO();
+
+                int totalLeads = leadDAO.countLeadsByFilters(null, "all", null, null, null);
+                int convertedLeads = leadDAO.countLeadsByFilters(null, "Converted", null, null, null);
+                int pendingPayments = paymentDAO.getPaymentCountByStatus("Pending");
+                int approvedPayments = paymentDAO.getPaymentCountByStatus("Approved");
+
+                request.setAttribute("totalLeads", totalLeads);
+                request.setAttribute("convertedLeads", convertedLeads);
+                request.setAttribute("pendingPayments", pendingPayments);
+                request.setAttribute("approvedPayments", approvedPayments);
+                request.setAttribute("home_view", "/sale/saleDashboard.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "profile": 

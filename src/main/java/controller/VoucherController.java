@@ -108,6 +108,7 @@ public class VoucherController extends HttpServlet {
             String discountValue = request.getParameter("discountValue");
             String discountAmountRaw = request.getParameter("discountAmount");
             String discountPercentRaw = request.getParameter("discountPercent");
+            Integer maxUsage = parsePositiveIntOrNull(request.getParameter("maxUsage"));
             BigDecimal discountAmount;
             double discountPercent;
             Date validUntil = parseSqlDate(request.getParameter("validUntil"));
@@ -125,7 +126,7 @@ public class VoucherController extends HttpServlet {
                 return;
             }
 
-            if (id <= 0 || !isVoucherInputValid(code, discountAmount, discountPercent, session)) {
+            if (id <= 0 || !isVoucherInputValid(code, discountAmount, discountPercent, maxUsage, session)) {
                 response.sendRedirect("voucher?action=all");
                 return;
             }
@@ -136,7 +137,7 @@ public class VoucherController extends HttpServlet {
                 return;
             }
 
-            boolean updated = voucherDAO.updateVoucher(id, code, discountAmount, discountPercent, validUntil, status);
+            boolean updated = voucherDAO.updateVoucher(id, code, discountAmount, discountPercent, validUntil, status, maxUsage);
             setSessionMessage(session, updated ? "Update voucher successfully!" : "Update voucher failed.",
                     updated ? "success" : "error");
             response.sendRedirect("voucher?action=all");
@@ -180,6 +181,7 @@ public class VoucherController extends HttpServlet {
         String discountValue = request.getParameter("discountValue");
         String discountAmountRaw = request.getParameter("discountAmount");
         String discountPercentRaw = request.getParameter("discountPercent");
+        Integer maxUsage = parsePositiveIntOrNull(request.getParameter("maxUsage"));
         BigDecimal discountAmount;
         double discountPercent;
         Date validUntil = parseSqlDate(request.getParameter("validUntil"));
@@ -197,7 +199,7 @@ public class VoucherController extends HttpServlet {
             return;
         }
 
-        if (!isVoucherInputValid(code, discountAmount, discountPercent, session)) {
+        if (!isVoucherInputValid(code, discountAmount, discountPercent, maxUsage, session)) {
             response.sendRedirect("voucher?action=all");
             return;
         }
@@ -214,6 +216,7 @@ public class VoucherController extends HttpServlet {
         voucher.setDiscountPercent(discountPercent);
         voucher.setValidUntil(validUntil);
         voucher.setStatus(status);
+        voucher.setMaxUsage(maxUsage);
         voucherDAO.insertVoucher(voucher);
 
         setSessionMessage(session, "Create voucher successfully!", "success");
@@ -274,9 +277,13 @@ public class VoucherController extends HttpServlet {
         }
     }
 
-    private boolean isVoucherInputValid(String code, BigDecimal discountAmount, double discountPercent, HttpSession session) {
+    private boolean isVoucherInputValid(String code, BigDecimal discountAmount, double discountPercent, Integer maxUsage, HttpSession session) {
         if (code == null || code.isEmpty()) {
             setSessionMessage(session, "Voucher code is required.", "error");
+            return false;
+        }
+        if (maxUsage == null || maxUsage <= 0) {
+            setSessionMessage(session, "Max usage must be greater than 0.", "error");
             return false;
         }
         if (discountAmount == null || discountAmount.compareTo(BigDecimal.ZERO) < 0) {
@@ -298,5 +305,17 @@ public class VoucherController extends HttpServlet {
             return false;
         }
         return true;
+    }
+
+    private Integer parsePositiveIntOrNull(String value) {
+        try {
+            if (value == null || value.trim().isEmpty()) {
+                return null;
+            }
+            int parsed = Integer.parseInt(value.trim());
+            return parsed > 0 ? parsed : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

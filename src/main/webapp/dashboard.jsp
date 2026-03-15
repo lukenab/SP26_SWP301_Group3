@@ -172,7 +172,7 @@
                 <c:if test="${sessionScope.user.role.roleId == 4}">
                     <ul class="menu-links">
                         <li class="nav-links">
-                            <a href="dashboard">
+                            <a href="dashboard?action=sale">
                                 <i class="bxr bx-dashboard"></i>
                                 <span class="text nav-text">Dashboard</span>
                             </a>
@@ -275,6 +275,13 @@
                             <a href="lead?action=all">
                                 <i class="bxr bx-book"></i>
                                 <span class="text nav-text">Lead</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="lead?action=openClasses">
+                                <i class="bxr bx-door-open"></i>
+                                <span class="text nav-text">Open Classes</span>
                             </a>
                         </li>
 

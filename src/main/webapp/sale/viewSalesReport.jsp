@@ -1,7 +1,10 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="css/adminDashboard.css" rel="stylesheet" type="text/css"/>
 <link href="css/viewLeadList.css" rel="stylesheet" type="text/css"/>
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
 
@@ -9,7 +12,7 @@
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="#"><i class="bx bx-home-alt"></i></a></li>
                 <li class="breadcrumb-item active" aria-current="page">Sales Reports</li>
             </ol>
         </div>
@@ -54,15 +57,6 @@
         </div>
         <div class="stat-card">
             <div class="stat-info">
-                <p>Registered Students</p>
-                <h3>${registeredStudents}</h3>
-            </div>
-            <div class="icon-wrapper green">
-                <i class='bx bxs-graduation'></i>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-info">
                 <p>Conversion Rate</p>
                 <h3><fmt:formatNumber value="${conversionRate}" minFractionDigits="2" maxFractionDigits="2"/>%</h3>
             </div>
@@ -72,16 +66,32 @@
         </div>
     </div>
 
+    <div class="chart-section mt-4">
+        <div class="chart-card">
+            <h4 class="chart-title">Sales Performance</h4>
+            <c:choose>
+                <c:when test="${not empty monthlyRows}">
+                    <div class="chart-container">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="text-muted small">No chart data available.</div>
+                </c:otherwise>
+            </c:choose>
+        </div>
+    </div>
+
     <div class="card user-table-card border-0 bg-white">
         <div class="table-responsive">
             <table class="table mb-0 align-middle">
                 <thead>
                     <tr>
-                        <th style="width: 20%">Month</th>
-                        <th style="width: 20%">Leads Created</th>
-                        <th style="width: 20%">Leads Converted</th>
-                        <th style="width: 20%">Students Registered</th>
-                        <th style="width: 20%">Conversion Rate</th>
+                        <th style="width: 18%">Date</th>
+                        <th style="width: 22%">Course</th>
+                        <th style="width: 15%">Leads Created</th>
+                        <th style="width: 15%">Leads Converted</th>
+                        <th style="width: 15%">Conversion Rate</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -93,7 +103,7 @@
                                     <td>${row[1]}</td>
                                     <td>${row[2]}</td>
                                     <td>${row[3]}</td>
-                                    <td><fmt:formatNumber value="${row[4]}" minFractionDigits="2" maxFractionDigits="2"/>%</td>
+                                    <td><fmt:formatNumber value="${row[5]}" minFractionDigits="2" maxFractionDigits="2"/>%</td>
                                 </tr>
                             </c:forEach>
                         </c:when>
@@ -108,3 +118,70 @@
         </div>
     </div>
 </div>
+
+<c:if test="${not empty dailyTotals}">
+    <script>
+        (function () {
+            const labels = [
+            <c:forEach items="${dailyTotals}" var="row" varStatus="loop">
+                "<c:out value='${row[0]}'/>"
+                <c:if test="${!loop.last}">,</c:if>
+            </c:forEach>
+            ];
+
+            const leadsCreated = [
+            <c:forEach items="${dailyTotals}" var="row" varStatus="loop">
+                ${row[1]}<c:if test="${!loop.last}">,</c:if>
+            </c:forEach>
+            ];
+
+            const leadsConverted = [
+            <c:forEach items="${dailyTotals}" var="row" varStatus="loop">
+                ${row[2]}<c:if test="${!loop.last}">,</c:if>
+            </c:forEach>
+            ];
+
+            const ctx = document.getElementById('salesChart');
+            if (!ctx) {
+                return;
+            }
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Leads Created',
+                            data: leadsCreated,
+                            backgroundColor: 'rgba(37, 99, 235, 0.6)',
+                            borderColor: 'rgba(37, 99, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Leads Converted',
+                            data: leadsConverted,
+                            backgroundColor: 'rgba(14, 116, 144, 0.6)',
+                            borderColor: 'rgba(14, 116, 144, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { ticks: { autoSkip: false } },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        })();
+    </script>
+</c:if>

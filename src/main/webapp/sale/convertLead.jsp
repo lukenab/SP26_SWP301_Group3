@@ -31,7 +31,7 @@
 
 <div class="convert-alert">
     Complete missing information, then click confirm to create Student account and mark this lead as Converted.
-    System will auto set default password as <strong>123456</strong> and send it to student email.
+    System will auto generate a random password and send it to student email.
 </div>
 
 <div class="form-container">
@@ -46,7 +46,7 @@
             </div>
             <div class="form-group">
                 <label for="phone">Phone</label>
-                <input type="text" id="phone" name="phone" value="${lead.phone}" required>
+                <input type="text" id="phone" name="phone" value="${lead.phone}">
             </div>
         </div>
 
@@ -64,11 +64,11 @@
         <div class="form-row">
             <div class="form-group">
                 <label for="dob">Date of Birth</label>
-                <input type="date" id="dob" name="dob" required>
+                <input type="date" id="dob" name="dob">
             </div>
             <div class="form-group">
                 <label for="gender">Gender</label>
-                <select name="gender" id="gender" required>
+                <select name="gender" id="gender">
                     <option value="" selected disabled>Select gender</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
@@ -78,12 +78,12 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label for="passwordPreview">Password (Auto)</label>
-                <input type="text" id="passwordPreview" value="123456" readonly disabled>
+                <label for="passwordPreview">Password (Random)</label>
+                <input type="text" id="passwordPreview" value="Auto-generated" readonly disabled>
             </div>
             <div class="form-group">
-                <label for="confirmPasswordPreview">Confirm Password (Auto)</label>
-                <input type="text" id="confirmPasswordPreview" value="123456" readonly disabled>
+                <label for="confirmPasswordPreview">Confirm Password (Random)</label>
+                <input type="text" id="confirmPasswordPreview" value="Auto-generated" readonly disabled>
             </div>
         </div>
 
@@ -91,10 +91,6 @@
             <div class="form-group">
                 <label for="enrollmentDate">Enrollment Date</label>
                 <input type="date" id="enrollmentDate" name="enrollmentDate" value="${today}">
-            </div>
-            <div class="form-group">
-                <label for="avatar">Avatar URL (optional)</label>
-                <input type="text" id="avatar" name="avatar" placeholder="https://...">
             </div>
         </div>
 

@@ -3,7 +3,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
-<link href="css/payment_list.css" rel="stylesheet" type="text/css"/>
+<link href="css/payment_list.css?v=20260311" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body">
 
@@ -140,6 +140,7 @@
                         <th>Class Code</th>
                         <th>Payment Date</th>
                         <th>Amount</th>
+                        <th>Voucher</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -176,9 +177,14 @@
                                         <strong style="color: #2563eb;">
                                             <fmt:formatNumber value="${paymentDisplay.payment.amount}" type="currency" currencySymbol="$" />
                                         </strong>
-                                        <c:if test="${paymentDisplay.payment.voucher != null}">
-                                            <br><small class="text-success"><i class='bx bx-purchase-tag'></i> ${paymentDisplay.payment.voucher.code}</small>
-                                        </c:if>
+                                    </td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${paymentDisplay.payment.voucher != null}">
+                                                ${paymentDisplay.payment.voucher.code}
+                                            </c:when>
+                                            <c:otherwise>-</c:otherwise>
+                                        </c:choose>
                                     </td>
                                     <td>
                                         <c:choose>
@@ -199,19 +205,19 @@
                                             </c:when>
                                         </c:choose>
                                     </td>
-                                    <td>
+                                    <td class="payment-actions">
                                         <c:if test="${paymentDisplay.payment.evidenceImage != null && !paymentDisplay.payment.evidenceImage.isEmpty()}">
-                                            <button type="button" class="action-btn" title="View Evidence"
+                                            <button type="button" class="action-btn action-compact action-evidence" title="View Evidence"
                                                     onclick="viewEvidence('${paymentDisplay.payment.evidenceImage}', '${paymentDisplay.studentName}')">
                                                 <i class='bx bx-image'></i>
                                             </button>
                                         </c:if>
                                         <c:if test="${paymentDisplay.payment.status == 'Pending'}">
-                                            <button type="button" class="action-btn" title="Approve"
+                                            <button type="button" class="action-btn action-compact action-approve" title="Approve"
                                                     onclick="approvePayment(${paymentDisplay.payment.paymentId}, '${paymentDisplay.studentName}')">
-                                                <i class='bx bx-check' style='color: #16a34a;'></i>
+                                                <i class='bx bx-check'></i>
                                             </button>
-                                            <button type="button" class="action-btn delete" title="Reject"
+                                            <button type="button" class="action-btn action-compact delete action-reject" title="Reject"
                                                     onclick="rejectPayment(${paymentDisplay.payment.paymentId}, '${paymentDisplay.studentName}')">
                                                 <i class='bx bx-x'></i>
                                             </button>
@@ -293,4 +299,3 @@
     </div>
 </div>
 <script src="js/payment_list.js" type="text/javascript"></script>
-

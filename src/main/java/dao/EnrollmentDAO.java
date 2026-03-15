@@ -274,6 +274,40 @@ public class EnrollmentDAO extends DBContext {
             System.out.println("Fail to update Enrollment Voucher: " + e.getMessage());
         }
     }
+
+    public Integer getEnrollmentId(int studentId, int classId) {
+        String sql = "SELECT EnrollmentID FROM Enrollment WHERE StudentID = ? AND ClassID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, studentId);
+            ps.setInt(2, classId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("EnrollmentID");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get enrollment id: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public Integer createEnrollment(int studentId, int classId, String status) {
+        String sql = "INSERT INTO Enrollment (StudentID, ClassID, EnrollDate, Status, FinalGrade) VALUES (?, ?, GETDATE(), ?, 0)";
+        try (PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, studentId);
+            ps.setInt(2, classId);
+            ps.setString(3, status);
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to create enrollment: " + e.getMessage());
+        }
+        return null;
+    }
     
     // Hàm cập nhật trạng thái của Enrollment (ví dụ: từ Unpaid -> Active)
     public boolean updateEnrollmentStatus(int enrollmentId, String status) {

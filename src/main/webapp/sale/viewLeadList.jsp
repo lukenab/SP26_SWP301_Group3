@@ -19,9 +19,14 @@
                 <h2 class="page-title">Lead Management</h2>
                 <p class="text-muted small mb-0">Manage and organize your leads</p>
             </div>
-            <a href="lead?action=add" class="btn btn-add-new">
-                <i class='bx bx-user-plus'></i> Add New Lead
-            </a>
+            <div class="d-flex gap-2">
+                <a href="lead?action=add" class="btn btn-add-new">
+                    <i class='bx bx-user-plus'></i> Add New Lead
+                </a>
+                <a href="lead?action=addStudentAtCenter" class="btn btn-add-new">
+                    <i class='bx bx-user-check'></i> Add Walk-in Student
+                </a>
+            </div>
         </div>
     </div>
 
@@ -152,6 +157,7 @@
                         <th style="width: 18%">Lead Name</th>
                         <th style="width: 21%">Email</th>
                         <th style="width: 13%">Phone</th>
+                        <th style="width: 16%">Interested Course</th>
                         <th style="width: 14%">Last Updated</th>
                         <th style="width: 14%">Status</th>
                         <th style="width: 15%">Actions</th>
@@ -165,6 +171,14 @@
                             <td>${l.fullName}</td>
                             <td class="text-secondary">${l.email}</td>
                             <td>${l.phone}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty l.course && not empty l.course.courseName}">
+                                        ${l.course.courseName}
+                                    </c:when>
+                                    <c:otherwise>-</c:otherwise>
+                                </c:choose>
+                            </td>
                             <td>
                                 <c:choose>
                                     <c:when test="${not empty l.lastUpdatedDate}">
