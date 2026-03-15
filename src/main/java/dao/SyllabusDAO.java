@@ -9,6 +9,25 @@ import utils.DBContext;
 
 public class SyllabusDAO extends DBContext {
 
+    public List<Object[]> getCourseOptions() {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT CourseID, CourseName FROM Course WHERE Status = 1 ORDER BY CourseName ASC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] row = new Object[2];
+                row[0] = rs.getInt("CourseID");
+                row[1] = rs.getString("CourseName");
+                list.add(row);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get course options for syllabus: " + e.getMessage());
+        }
+
+        return list;
+    }
+
     public List<Syllabus> getAllSyllabus() {
         List<Syllabus> list = new ArrayList<>();
         String sql = "SELECT s.SyllabusID, s.CourseID, s.[OrderIndex], s.TopicName, s.Description, c.CourseName "
@@ -91,17 +110,45 @@ public class SyllabusDAO extends DBContext {
 
     public boolean updateSyllabus(Syllabus syllabus) {
         String sql = "UPDATE Syllabus "
-                + "SET [OrderIndex] = ?, TopicName = ?, Description = ? "
+                + "SET CourseID = ?, [OrderIndex] = ?, TopicName = ?, Description = ? "
                 + "WHERE SyllabusID = ?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, syllabus.getOrderIndex());
-            ps.setString(2, syllabus.getTopicName());
-            ps.setString(3, syllabus.getDescription());
-            ps.setInt(4, syllabus.getSyllabusId());
+            ps.setInt(1, syllabus.getCourseId());
+            ps.setInt(2, syllabus.getOrderIndex());
+            ps.setString(3, syllabus.getTopicName());
+            ps.setString(4, syllabus.getDescription());
+            ps.setInt(5, syllabus.getSyllabusId());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             System.out.println("Fail to update syllabus: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean createSyllabus(Syllabus syllabus) {
+        String sql = "INSERT INTO Syllabus (CourseID, [OrderIndex], TopicName, Description) VALUES (?, ?, ?, ?)";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, syllabus.getCourseId());
+            ps.setInt(2, syllabus.getOrderIndex());
+            ps.setString(3, syllabus.getTopicName());
+            ps.setString(4, syllabus.getDescription());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("Fail to create syllabus: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean deleteSyllabus(int syllabusId) {
+        String sql = "DELETE FROM Syllabus WHERE SyllabusID = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, syllabusId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("Fail to delete syllabus: " + e.getMessage());
         }
         return false;
     }
