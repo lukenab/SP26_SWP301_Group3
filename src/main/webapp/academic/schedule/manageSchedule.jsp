@@ -113,34 +113,82 @@
                     <div class="table-responsive">
                         <table class="table mb-0 text-center schedule-table">
                             <thead>
+                            <!--
+                                THEAD: Header của bảng lịch
+                                - Cột 1: "Slot" (cột để chứa tên/thời gian slot)
+                                - Cột 2-8: Các ngày trong tuần (Monday - Sunday)
+                                - Mỗi cột sẽ hiện tên thứ + ngày cụ thể (nếu controller set weekDates)
+                            -->
                             <tr>
                                 <th>Slot</th>
+                                <!--
+                                    Lặp qua weekdays: ["Monday", "Tuesday", ..., "Sunday"]
+                                    varStatus="status" dùng để lấy status.index (vị trí 0-6 trong array)
+                                -->
                                 <c:forEach items="${weekdays}" var="day" varStatus="status">
                                     <th>
+                                        <!-- Hiển thị tên thứ (Monday, Tuesday...) -->
                                         <span>${day}</span>
-                                        <c:if test="${not empty weekDates}">
-                                            <span class="day-header-date">${weekDates[status.index]}</span>
-                                        </c:if>
                                     </th>
                                 </c:forEach>
                             </tr>
                         </thead>
                         <tbody>
+                            <!--
+                                TBODY: Nội dung bảng lịch học
+                                Cấu trúc dữ liệu: SLOT x DAY (7 ngày)
+                                    - Mỗi dòng = 1 slot (Slot 1, 2, 3...)
+                                    - Mỗi cột = 1 thứ trong tuần (Monday, Tuesday...)
+                                    - Mỗi ô = chứa 0 hoặc nhiều lịch học
+                            -->
+                            <!--
+                                VÒNG LẶP 1: Duyệt từng slot (tạo dòng)
+                                slots = danh sách tất cả slot trong ngày
+                            -->
                             <c:forEach var="slot" items="${slots}">
                                 <tr>
+                                    <!--
+                                        Cột đầu tiên: tên và thời gian slot
+                                        Ví dụ output: "Slot 1\n08:00 - 10:00"
+                                    -->
                                     <td class="slot-cell align-middle">
                                         Slot ${slot.slotID}<br>
                                         <span class="slot-time">
                                             ${slot.startTime} - ${slot.endTime}
                                         </span>
                                     </td>
+                                    <!--
+                                        VÒNG LẶP 2: Duyệt từng ngày trong tuần (tạo cột)
+                                        weekdays= ["Monday", "Tuesday", ..., "Sunday"]
+                                        Mỗi lần tạo 1 ô trong dòng hiện tại
+                                    -->
                                     <c:forEach var="day" items="${weekdays}">
                                         <td class="schedule-cell">
+                                            <!--
+                                                VÒNG LẶP 3: Quét toàn bộ scheduleList để tìm lịch phù hợp
+                                                scheduleList = tất cả lịch học được lọc
+                                                Mỗi lịch sẽ được kiểm tra xem có thuộc ô (slot+day) hiện tại không
+                                            -->
                                             <c:forEach var="s" items="${scheduleList}">
+                                                <!--
+                                                    Format ngày học thành tên thứ tiếng Anh
+                                                    Ví dụ: 2026-03-17 → "Tuesday"
+                                                -->
                                                 <fmt:setLocale value="en_US" />
                                                 <fmt:formatDate value="${s.learningDate}" pattern="EEEE" var="dayInSql"/>
                                                 <fmt:formatDate value="${s.learningDate}" pattern="yyyy-MM-dd" var="learningDateStr"/>
 
+                                                <!--
+                                                    ĐIỀU KIỆN MATCH: Chỉ render lịch nếu:
+                                                    1. s.slot.slotID == slot.slotID (slot của lịch trùng với dòng hiện tại)
+                                                    2. dayInSql == day (thứ của lịch trùng với cột hiện tại)
+
+                                                    Ví dụ:
+                                                    - Dòng hiện tại: Slot 1
+                                                    - Cột hiện tại: Tuesday
+                                                    - Lịch s: slotID=1, learningDate=2026-03-18 (Tuesday)
+                                                    → MATCH, render lịch này vào ô (Slot1, Tuesday)
+                                                -->
                                                 <c:if test="${s.slot.slotID == slot.slotID && dayInSql == day}">
                                                     <div class="schedule-item text-start">
                                                         <div class="schedule-class-name">${s.classes.className}</div>

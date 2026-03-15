@@ -10,14 +10,14 @@
         <div>
             <h1 class="page-title">Edit Room</h1>
         </div>
-        <a href="" class="btn-secondary">
+        <a href="room" class="btn-secondary">
             <i class='bx bx-arrow-left'></i> Back to Rooms
         </a>
     </div>
     <div aria-label="breadcrumb">
         <ol class="breadcrumb mb-1">
-            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="">Room Management</a></li>
+            <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="room">Room Management</a></li>
             <li class="breadcrumb-item active" aria-current="page">Edit Room</li>
         </ol>
     </div>
@@ -43,7 +43,6 @@
                 <span class="profile-active room-profile-disabled">Disabled</span>
             </c:otherwise>
         </c:choose>
-        <p>Capacity: ${roomUpdate.capacity} people</p>
         <div class="profile-info-content">
             <div class="profile-header-left">
                 <span class="user-email"><i class="bx bx-group"></i>Capacity: ${roomUpdate.capacity}</span>
@@ -95,7 +94,7 @@
                 </div>
 
                 <div class="form-buttons">
-                    <a href="" class="btn btn-cancel">Cancel</a>
+                    <a href="room" class="btn btn-cancel">Cancel</a>
                     <button type="submit" class="btn btn-save">
                         <i class='bx bx-save'></i> Update Changes
                     </button>
@@ -107,7 +106,7 @@
                 <strong>Error:</strong> Room not found.
             </div>
             <div class="form-buttons">
-                <a href="" class="btn btn-cancel">Back to Rooms</a>
+                <a href="room" class="btn btn-cancel">Back to Rooms</a>
             </div>
         </c:otherwise>
     </c:choose>

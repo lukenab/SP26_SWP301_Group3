@@ -66,8 +66,14 @@ public class ScheduleController extends HttpServlet {
         TeacherDAO teacherDAO = new TeacherDAO();
         SlotDAO slotDAO = new SlotDAO();
         String action = request.getParameter("action");
-        if (action == null) {
-            action = "view";
+         if (action == null || action.trim().isEmpty()) {
+            if (roleId == 2) {
+                action = "manage";
+            } else if (roleId == 5) {
+                action = "studentView";
+            } else {
+                action = "view";
+            }
         }
 
         List<Slot> allSlots = slotDAO.getAllSlots();
@@ -101,6 +107,9 @@ public class ScheduleController extends HttpServlet {
 
                 if (classIdParam != null && !classIdParam.isEmpty()) {
                     int classId = Integer.parseInt(classIdParam);
+                    // NOTE: user.getUserId() = TeacherID
+                    // Reason: Employee.EmployeeID is FK to User.UserID, so they're the same value
+                    // When a teacher logs in, their user.getUserId() is also their teacher ID
                     scheduleList = teacherDAO.getScheduleByClassId(classId, user.getUserId(), selectedDate);
 
                     List<Classes> allClass = teacherDAO.getAllClassOfTeacherID(user.getUserId());
@@ -122,24 +131,35 @@ public class ScheduleController extends HttpServlet {
                 break;
 
             case "manage":
-                // For academic staff to manage all schedules
+                // CASE MANAGE: Render bảng lịch học có thể lọc theo class/room/ngày
+                // Sử dụng cho academic staff (roleId == 2)
+                
+                // === BƯỚC 1: Khởi tạo DAO ===
                 ScheduleDAO scheduleDAO = new ScheduleDAO();
                 ClassDAO classDAO = new ClassDAO();
 
+                // === BƯỚC 2: Đọc tham số filter từ request ===
+                // Form gửi: classId, roomId, date (tùy chọn)
+                // Ví dụ URL: /schedule?action=manage&classId=5&roomId=0&date=2026-03-17
                 String filterClassId = request.getParameter("classId");
                 String filterRoomId = request.getParameter("roomId");
                 Integer classFilterId = null;
                 Integer roomFilterId = null;
                 List<Schedule> managementScheduleList = new ArrayList<>();
 
+                // === BƯỚC 3: Parse và validate filter class ===
+                // Nếu classId hợp lệ (không null, không rỗng, không phải "0")
+                // thì parse từ String sang Integer, ngược lại giữ null
                 if (filterClassId != null && !filterClassId.isEmpty() && !filterClassId.equals("0")) {
                     classFilterId = Integer.parseInt(filterClassId);
-                    // Save selected classId to session for later use
+                    // Lưu vào session để form giữ lựa chọn cũ ở lần submit tiếp theo
                     session.setAttribute("selectedClassId", classFilterId);
                 } else {
+                    // Nếu không chọn class cụ thể, set session = 0 (All Classes)
                     session.setAttribute("selectedClassId", 0);
                 }
 
+                // === BƯỚC 4: Parse và validate filter room (logic tương tự class) ===
                 if (filterRoomId != null && !filterRoomId.isEmpty() && !filterRoomId.equals("0")) {
                     roomFilterId = Integer.parseInt(filterRoomId);
                     session.setAttribute("selectedRoomId", roomFilterId);
@@ -147,27 +167,36 @@ public class ScheduleController extends HttpServlet {
                     session.setAttribute("selectedRoomId", 0);
                 }
 
-                // Load schedules using selected filters (class/room/week)
+                // === BƯỚC 5: Query database ===
+                // Lấy danh sách lịch học với filter:
+                // - selectedDate: tuần được chọn
+                // - classFilterId: null = all, hoặc ID lớp cụ thể
+                // - roomFilterId: null = all, hoặc ID phòng cụ thể
                 managementScheduleList = scheduleDAO.getSchedulesForManagement(selectedDate, classFilterId, roomFilterId);
 
-                // Save selected date to session
+                // Lưu selectedDate vào session
                 session.setAttribute("selectedDate", selectedDate);
 
+                // Lấy danh sách tất cả class/room/teacher (dùng cho dropdown filter)
                 List<Object[]> allClasses = classDAO.getClassManagementList();
                 List<Object[]> allRooms = scheduleDAO.getAllRooms();
                 List<Object[]> allTeachers = scheduleDAO.getAllTeachers();
 
-                request.setAttribute("selectedDate", selectedDate);
-                request.setAttribute("classId", classFilterId);
-                request.setAttribute("roomId", roomFilterId);
-                request.setAttribute("weekdays", weekdays);
-                request.setAttribute("slots", allSlots);
-                request.setAttribute("scheduleList", managementScheduleList);
-                request.setAttribute("allClasses", allClasses);
-                request.setAttribute("allRooms", allRooms);
-                request.setAttribute("allTeachers", allTeachers);
+                // === BƯỚC 6: Set attribute gửi sang JSP ===
+                // Dữ liệu này sẽ dùng trong manageSchedule.jsp
+                request.setAttribute("selectedDate", selectedDate);           // Giữ input date
+                request.setAttribute("classId", classFilterId);              // Tô selected dropdown class
+                request.setAttribute("roomId", roomFilterId);                // Tô selected dropdown room
+                request.setAttribute("weekdays", weekdays);                  // Loop header + tbody (Monday-Sunday)
+                request.setAttribute("slots", allSlots);                     // Loop tbody dòng (Slot 1, 2, 3...)
+                request.setAttribute("scheduleList", managementScheduleList);// Data render card lịch vào ô
+                request.setAttribute("allClasses", allClasses);              // Dropdown class filter
+                request.setAttribute("allRooms", allRooms);                  // Dropdown room filter
+                request.setAttribute("allTeachers", allTeachers);            // Dự phòng
                 request.setAttribute("home_view", "/academic/schedule/manageSchedule.jsp");
 
+                // === BƯỚC 7: Forward sang JSP ===
+                // Dashboard import manageSchedule.jsp để render bảng lịch
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 

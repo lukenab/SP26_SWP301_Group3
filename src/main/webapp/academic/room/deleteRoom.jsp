@@ -10,14 +10,14 @@
         <div>
             <h1 class="page-title">Delete Room</h1>
         </div>
-        <a href="" class="btn-secondary">
+        <a href="room" class="btn-secondary">
             <i class='bx bx-arrow-left'></i> Back to Rooms
         </a>
     </div>
     <div aria-label="breadcrumb">
         <ol class="breadcrumb mb-1">
-            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="">Room Management</a></li>
+            <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="room">Room Management</a></li>
             <li class="breadcrumb-item active" aria-current="page">Delete Room</li>
         </ol>
     </div>
@@ -62,7 +62,7 @@
                 <form action="" method="post" class="form-buttons">
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="id" value="${roomDel.roomId}">
-                    <a href="" class="btn btn-cancel">Cancel</a>
+                    <a href="room" class="btn btn-cancel">Cancel</a>
                     <button type="submit" class="btn btn-lock">
                         <i class='bx bx-trash'></i> Confirm Delete
                     </button>
@@ -74,7 +74,7 @@
                 <strong>Error:</strong> Room not found.
             </div>
             <div class="form-buttons">
-                <a href="" class="btn btn-cancel">Back to Rooms</a>
+                <a href="room" class="btn btn-cancel">Back to Rooms</a>
             </div>
         </c:otherwise>
     </c:choose>

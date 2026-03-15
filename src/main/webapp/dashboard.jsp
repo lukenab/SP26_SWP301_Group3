@@ -247,7 +247,7 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="schedule?action=manage">
+                            <a href="schedule">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">Schedule</span>
                             </a>
@@ -343,7 +343,7 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="schedule?action=studentView">
+                            <a href="schedule">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">My Schedule</span>
                             </a>

@@ -51,6 +51,13 @@ public class RoomController extends HttpServlet {
                 int id = Integer.parseInt(idString);
                 Room roomDetail = rdao.getRoomByID(id);
 
+                if (roomDetail == null) {
+                    request.getSession().setAttribute("message", "Room not found.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("room");
+                    return;
+                }
+
                 // Get list of classes using this room
                 List<String[]> classesUsingRoom = rdao.getClassesUsingRoom(id);
 

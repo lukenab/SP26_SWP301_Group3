@@ -9,8 +9,8 @@
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="">Rooms</a></li>
+                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="room">Rooms</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Room Details</li>
             </ol>
         </div>
@@ -19,7 +19,7 @@
                 <h2 class="page-title">Room Detail</h2>
                 <p class="text-muted small mb-0">View room details and assignments</p>
             </div>
-            <a href="" class="btn-secondary">
+            <a href="room" class="btn-secondary">
                 <i class='bx bx-arrow-left'></i> Back to Rooms
             </a>
         </div>
@@ -126,7 +126,7 @@
             </c:if>
 
             <div class="form-buttons room-detail-actions">
-                <a href="" class="btn btn-cancel room-btn-neutral">
+                <a href="room" class="btn btn-cancel room-btn-neutral">
                     <i class='bx bx-arrow-left'></i> Back to List
                 </a>
                 <c:if test="${roomDetail.status}">
