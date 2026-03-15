@@ -70,12 +70,13 @@
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Enrollment Date</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:if test="${empty availableStudents}">
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted py-4">No available students.</td>
+                                        <td colspan="5" class="text-center text-muted py-4">No available students.</td>
                                     </tr>
                                 </c:if>
                                 <c:forEach items="${availableStudents}" var="s">
@@ -89,6 +90,11 @@
                                         <td class="fw-semibold">${s[1]}</td>
                                         <td>${s[2]}</td>
                                         <td><fmt:formatDate value="${s[3]}" pattern="dd/MM/yyyy"/></td>
+                                        <td>
+                                            <span class="badge-status badge-inactive">
+                                                ${s[4]}
+                                            </span>
+                                        </td>
                                     </tr>
                                 </c:forEach>
                             </tbody>
@@ -153,8 +159,8 @@
                                         </td>
                                         <td><fmt:formatDate value="${s[4]}" pattern="dd/MM/yyyy"/></td>
                                         <td>
-                                            <span class="badge-status ${s[5] == 'Paid' || s[5] == 'Active' ? 'badge-active' : 'badge-inactive'}">
-                                                ${s[5] == 'Active' ? 'Paid' : s[5]}
+                                            <span class="badge-status ${s[5] == 'Paid' || s[5] == 'Active' || s[5] == 'Completed' ? 'badge-active' : 'badge-inactive'}">
+                                                ${s[5] == 'Paid' || s[5] == 'Active' || s[5] == 'Completed' ? 'Paid' : 'UnPaid'}
                                             </span>
                                         </td>
                                     </tr>

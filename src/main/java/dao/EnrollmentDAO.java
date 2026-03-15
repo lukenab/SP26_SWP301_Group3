@@ -117,11 +117,12 @@ public class EnrollmentDAO extends DBContext {
             ps.setInt(1, classId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Object[] row = new Object[4];
+                    Object[] row = new Object[5];
                     row[0] = rs.getInt("StudentID");
                     row[1] = rs.getString("FullName");
                     row[2] = rs.getString("Email");
                     row[3] = rs.getDate("EnrollmentDate");
+                    row[4] = "UnPaid";
                     list.add(row);
                 }
             }

@@ -27,13 +27,17 @@
     </div>
 
     <c:set var="activeClass" value="0"/>
+    <c:set var="pendingClass" value="0"/>
     <c:set var="inactiveClass" value="0"/>
 
     <c:forEach items="${classList}" var="c">
         <c:if test="${c[6] == 'Active'}">
             <c:set var="activeClass" value="${activeClass + 1}"/>
         </c:if>
-        <c:if test="${c[6] != 'Active'}">
+        <c:if test="${c[6] == 'Pending'}">
+            <c:set var="pendingClass" value="${pendingClass + 1}"/>
+        </c:if>
+        <c:if test="${c[6] == 'Inactive'}">
             <c:set var="inactiveClass" value="${inactiveClass + 1}"/>
         </c:if>
     </c:forEach>
@@ -55,6 +59,15 @@
             </div>
             <div class="icon-wrapper green">
                 <i class='bx bxs-check-shield'></i>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <p>Pending Class</p>
+                <h3>${pendingClass}</h3>
+            </div>
+            <div class="icon-wrapper orange">
+                <i class='bx bxs-time-five'></i>
             </div>
         </div>
         <div class="stat-card">
@@ -130,15 +143,16 @@
                 <thead>
                     <tr>
                         <th style="width: 5%">#</th>
-                        <th style="width: 25%">Class Info</th>
-                        <th style="width: 20%">Course</th>
-                        <th style="width: 15%">Teacher</th>
-                        <th style="width: 20%">Study Period</th>
-                        <th style="width: 12%">Quantity</th>
-                        <th style="width: 12%">Registration Deadline</th>
-                        <th style="width: 10%">Status</th>
-                        <th style="width: 5%">Students</th>
-                        <th style="width: 10%">Actions</th>
+                        <th style="width: 18%">Class Info</th>
+                        <th style="width: 16%">Course</th>
+                        <th style="width: 12%">Teacher</th>
+                        <th style="width: 16%">Study Period</th>
+                        <th style="width: 8%">Max Capacity</th>
+                        <th style="width: 8%">Quantity</th>
+                        <th style="width: 11%">Registration Deadline</th>
+                        <th style="width: 10%">Room</th>
+                        <th style="width: 8%">Status</th>
+                        <th style="width: 8%">Actions</th>
                     </tr>
                 </thead>
 
@@ -152,7 +166,6 @@
                     <c:forEach items="${classList}" var="c" varStatus="loop">
                         <tr>
                             <c:set var="isActive" value="${c[6] == 'Active'}"/>
-                            <c:set var="displayStatus" value="${isActive ? 'Active' : 'Inactive'}"/>
                             <td>${loop.count}</td>
 
                             <td>
@@ -175,6 +188,9 @@
                                 </div>
                             </td>
                             <td>
+                                <span class="text-secondary">${c[8]}</span>
+                            </td>
+                            <td>
                                 <span class="text-secondary">${c[7]}/${c[8]}</span>
                             </td>
                             <td>
@@ -189,37 +205,36 @@
                             </td>
 
                             <td>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" disabled ${isActive ? 'checked' : ''}>
-                                    <label class="form-check-label ms-2 text-secondary small">
-                                        ${displayStatus}
-                                    </label>
+                                <span class="text-secondary">${empty c[10] ? 'Not assigned' : c[10]}</span>
+                            </td>
+
+                            <td>
+                                <span class="class-status-badge ${c[6] == 'Active' ? 'active' : (c[6] == 'Pending' ? 'pending' : 'inactive')}">
+                                    ${c[6]}
+                                </span>
+                            </td>
+
+                            <td class="actions-cell">
+                                <div class="table-actions">
+                                    <a href="enrollment?action=editClassForm&classId=${c[0]}" class="action-btn" title="Edit Class">
+                                        <i class='bx bx-edit'></i>
+                                    </a>
+                                    <a href="enrollment?action=addStudentForm&classId=${c[0]}" class="action-btn" title="Add Student">
+                                        <i class='bx bx-user-plus'></i>
+                                    </a>
+                                    <c:choose>
+                                        <c:when test="${isActive}">
+                                            <a href="enrollment?action=deleteClass&classId=${c[0]}" class="action-btn delete" title="Set Inactive">
+                                                <i class='bx bx-lock'></i>
+                                            </a>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <a href="enrollment?action=deleteClass&classId=${c[0]}" class="action-btn" title="Set Active">
+                                                <i class='bx bx-lock-open'></i>
+                                            </a>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
-                            </td>
-
-                            <td>
-                                <span class="text-secondary">${c[7]}</span>
-                            </td>
-
-                            <td>
-                                <a href="enrollment?action=editClassForm&classId=${c[0]}" class="action-btn" title="Edit Class">
-                                    <i class='bx bx-edit'></i>
-                                </a>
-                                <a href="enrollment?action=addStudentForm&classId=${c[0]}" class="action-btn" title="Add Student">
-                                    <i class='bx bx-user-plus'></i>
-                                </a>
-                                <c:choose>
-                                    <c:when test="${isActive}">
-                                        <a href="enrollment?action=deleteClass&classId=${c[0]}" class="action-btn delete" title="Set Inactive">
-                                            <i class='bx bx-lock'></i>
-                                        </a>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <a href="enrollment?action=deleteClass&classId=${c[0]}" class="action-btn" title="Set Active">
-                                            <i class='bx bx-lock-open'></i>
-                                        </a>
-                                    </c:otherwise>
-                                </c:choose>
                             </td>
                         </tr>
                     </c:forEach>
