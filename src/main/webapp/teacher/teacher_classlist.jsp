@@ -1,14 +1,14 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
+<!--<link href="css/manageUser.css" rel="stylesheet" type="text/css"/>-->
 
 <div class="container-fluid px-4 content-body">
 
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="dashboard?action=teacher">Dashboard</a></li>
                 <li class="breadcrumb-item active" aria-current="page">My Classes</li>
             </ol>
         </div>
@@ -138,6 +138,14 @@
                                 </a>
                                 <a href="student?action=viewByClass&classId=${c.classid}" class="action-btn" title="Student List">
                                     <i class='bx bx-group'></i>
+                                </a>
+
+                                <a href="attendance?action=report&classId=${c.classid}" class="action-btn" title="Attendance Report">
+                                    <i class='bx bx-receipt'></i>
+                                </a>
+
+                                <a href="grade?action=report&classId=${c.classid}" class="action-btn" title="Grade Report">
+                                    <i class='bx bx-bar-chart-square'></i>
                                 </a>
 
                                 <a href="feedback?action=viewAll&classId=${c.className}&from=myClasses" class="action-btn btn-feedback" title="View Feedbacks">

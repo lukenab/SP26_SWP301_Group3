@@ -22,6 +22,7 @@ import model.Grade;
 import model.Student;
 import model.User;
 import dao.CourseDAO;
+import model.Assessment;
 import model.Course;
 
 /**
@@ -81,25 +82,36 @@ public class GradeController extends HttpServlet {
         User currentUser = (User) session.getAttribute("user");
         switch (action) {
             case "enter":
+                try {
 
-                int studentIdEnter
-                        = Integer.parseInt(request.getParameter("studentId"));
+                    int studentIdEnter = Integer.parseInt(request.getParameter("studentId"));
+                    int classIdEnter = Integer.parseInt(request.getParameter("classId"));
 
-                int classIdEnter
-                        = Integer.parseInt(request.getParameter("classId"));
+                    User student = studentDAO.getUserById(studentIdEnter);
+                    String className = classDAO.getClassNameById(classIdEnter);
 
-                User student = studentDAO.getUserById(studentIdEnter);
-                String className = classDAO.getClassNameById(classIdEnter);
+                    List<Assessment> assessmentList = dao.getAssessmentsByClass(classIdEnter);
 
-                request.setAttribute("studentName", student.getFullName());
-                request.setAttribute("className", className);
-                request.setAttribute("studentId", studentIdEnter);
-                request.setAttribute("classId", classIdEnter);
-                request.setAttribute("home_view",
-                        "teacher/enter_grade.jsp");
+                    Integer enrollmentId = dao.getEnrollmentId(studentIdEnter, classIdEnter);
+                    if (enrollmentId != null) {
+                        Map<String, Double> scoreMap = dao.getAllScores(enrollmentId);
+                        Double average = dao.calculateAverage(enrollmentId);
+                        request.setAttribute("scoreMap", scoreMap);
+                        request.setAttribute("average", average);
+                    }
 
-                request.getRequestDispatcher("dashboard.jsp")
-                        .forward(request, response);
+                    request.setAttribute("studentName", student.getFullName());
+                    request.setAttribute("className", className);
+                    request.setAttribute("studentId", studentIdEnter);
+                    request.setAttribute("classId", classIdEnter);
+                    request.setAttribute("assessmentList", assessmentList);
+
+                    request.setAttribute("home_view", "teacher/enter_grade.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    response.sendRedirect("class");
+                }
                 break;
 
             case "edit":
@@ -118,6 +130,9 @@ public class GradeController extends HttpServlet {
                             "student?action=viewByClass&classId=" + classIdEdit);
                     return;
                 }
+
+                List<Assessment> assessmentListEdit = dao.getAssessmentsByClass(classIdEdit);
+                request.setAttribute("assessmentList", assessmentListEdit);
 
                 User estudent = studentDAO.getUserById(studentIdEdit);
                 String eclassName = classDAO.getClassNameById(classIdEdit);
@@ -215,6 +230,32 @@ public class GradeController extends HttpServlet {
                 request.getRequestDispatcher("dashboard.jsp")
                         .forward(request, response);
                 break;
+
+            case "report":
+                try {
+                    int classId = Integer.parseInt(request.getParameter("classId"));
+
+                    List<Assessment> assessmentList = dao.getAssessmentsByClass(classId);
+
+                    List<Map<String, Object>> gradeAllList = dao.getFullGradeReport(classId);
+
+                    Map<Integer, Double> avgMap = dao.getAverageByClassId(classId);
+
+                    String currentClassName = classDAO.getClassNameById(classId);
+
+                    request.setAttribute("className", currentClassName);
+                    request.setAttribute("classId", classId);
+                    request.setAttribute("assessmentList", assessmentList);
+                    request.setAttribute("gradeList", gradeAllList);
+                    request.setAttribute("avgMap", avgMap);
+
+                    request.setAttribute("home_view", "teacher/gradeReport.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    response.sendRedirect("class");
+                }
+                break;
         }
     }
 
@@ -235,51 +276,37 @@ public class GradeController extends HttpServlet {
         switch (action) {
 
             case "save":
-                int studentId = Integer.parseInt(request.getParameter("studentId"));
-                int classId = Integer.parseInt(request.getParameter("classId"));
+                try {
+                    int studentId = Integer.parseInt(request.getParameter("studentId"));
+                    int classId = Integer.parseInt(request.getParameter("classId"));
+                    Integer enrollmentId = dao.getEnrollmentId(studentId, classId);
 
-                Integer enrollmentId = dao.getEnrollmentId(studentId, classId);
+                    if (enrollmentId != null) {
 
-                if (enrollmentId == null) {
-                    session.setAttribute("message", "Enrollment not found!");
-                    session.setAttribute("messageType", "error");
-                    response.sendRedirect("student?action=viewByClass&classId=" + classId);
-                    return;
-                }
+                        java.util.Enumeration<String> paramNames = request.getParameterNames();
+                        while (paramNames.hasMoreElements()) {
+                            String paramName = paramNames.nextElement();
 
-                Integer courseId = dao.getCourseIdByClassId(classId);
+                            if (paramName.startsWith("score_")) {
+                                int assessmentId = Integer.parseInt(paramName.split("_")[1]);
+                                String scoreVal = request.getParameter(paramName);
 
-                Integer readingId = dao.getAssessmentIdByName(courseId, "Reading");
-                Integer writingId = dao.getAssessmentIdByName(courseId, "Writing");
-                Integer speakingId = dao.getAssessmentIdByName(courseId, "Speaking");
-                Integer listeningId = dao.getAssessmentIdByName(courseId, "Listening");
-
-                // Kiểm tra NULL trước khi thực hiện parse điểm để tránh lỗi nullValue()
-                if (readingId != null && writingId != null && speakingId != null && listeningId != null) {
-                    try {
-                        double reading = Double.parseDouble(request.getParameter("reading"));
-                        double writing = Double.parseDouble(request.getParameter("writing"));
-                        double speaking = Double.parseDouble(request.getParameter("speaking"));
-                        double listening = Double.parseDouble(request.getParameter("listening"));
-
-                        dao.saveOrUpdate(enrollmentId, readingId, reading);
-                        dao.saveOrUpdate(enrollmentId, writingId, writing);
-                        dao.saveOrUpdate(enrollmentId, speakingId, speaking);
-                        dao.saveOrUpdate(enrollmentId, listeningId, listening);
-
-                        session.setAttribute("message", "Grade saved successfully!");
+                                if (scoreVal != null && !scoreVal.isEmpty()) {
+                                    double score = Double.parseDouble(scoreVal);
+                                    dao.saveOrUpdate(enrollmentId, assessmentId, score);
+                                }
+                            }
+                        }
+                        session.setAttribute("message", "Grades updated successfully!");
                         session.setAttribute("messageType", "success");
-                    } catch (NumberFormatException e) {
-                        session.setAttribute("message", "Invalid score format!");
-                        session.setAttribute("messageType", "error");
                     }
-                } else {
-                    // Thông báo lỗi nếu thiếu cấu hình Assessment trong DB
-                    session.setAttribute("message", "Error: Assessments (Reading, Writing...) not configured for this course!");
+                } catch (Exception e) {
+                    session.setAttribute("message", "Error saving grades!");
                     session.setAttribute("messageType", "error");
                 }
 
-                response.sendRedirect("student?action=viewByClass&classId=" + classId);
+                String cid = request.getParameter("classId");
+                response.sendRedirect("student?action=viewByClass&classId=" + cid);
                 break;
 
             case "delete":

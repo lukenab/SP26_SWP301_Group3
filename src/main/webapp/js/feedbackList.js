@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const feedbackItems = document.querySelectorAll('.feedback-item');
     const noDataMessage = document.getElementById('noDataMessage');
 
-
     function applyFilters() {
         const selectedClass = classFilter.value;
         const activeBtn = document.querySelector('#ratingFilter .btn-primary');
@@ -20,12 +19,14 @@ document.addEventListener('DOMContentLoaded', function () {
             const matchRating = (selectedRating === 'all' || itemRating === selectedRating);
 
             if (matchClass && matchRating) {
-                item.style.display = 'block';
+                // SỬA TẠI ĐÂY: Dùng rỗng để hàng bảng (tr) hiện đúng cấu trúc cột
+                item.style.display = ''; 
                 hasVisibleItem = true;
             } else {
                 item.style.display = 'none';
             }
         });
+
         if (hasVisibleItem) {
             noDataMessage.classList.add('d-none');
         } else {
@@ -33,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Phần Click và Lắng nghe sự kiện (GIỮ NGUYÊN)
     classFilter.addEventListener('change', applyFilters);
 
     ratingButtons.forEach(btn => {
