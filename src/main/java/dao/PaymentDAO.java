@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import model.Classes;
 import model.Course;
@@ -47,8 +48,7 @@ public class PaymentDAO extends DBContext {
                 + "LEFT JOIN Voucher v ON p.VoucherID = v.VoucherID "
                 + "ORDER BY p.PaymentDate DESC, p.PaymentID DESC";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Payment payment = mapPayment(rs);
                 String studentName = rs.getString("StudentName");
@@ -74,19 +74,19 @@ public class PaymentDAO extends DBContext {
         List<PaymentDisplay> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT p.PaymentID, p.EnrollmentID, p.Amount, p.PaymentDate, p.PaymentMethod, ")
-           .append("p.EvidenceImage, p.Status, p.VoucherID, ")
-           .append("s.StudentID, u.FullName AS StudentName, u.Email, ")
-           .append("c.ClassID, c.ClassName, ")
-           .append("co.CourseID, co.CourseName, ")
-           .append("v.VoucherID, v.Code AS VoucherCode, v.DiscountAmount, v.DiscountPercent ")
-           .append("FROM Payment p ")
-           .append("INNER JOIN Enrollment e ON p.EnrollmentID = e.EnrollmentID ")
-           .append("INNER JOIN Student s ON e.StudentID = s.StudentID ")
-           .append("INNER JOIN [User] u ON s.StudentID = u.UserID ")
-           .append("INNER JOIN Class c ON e.ClassID = c.ClassID ")
-           .append("INNER JOIN Course co ON c.CourseID = co.CourseID ")
-           .append("LEFT JOIN Voucher v ON p.VoucherID = v.VoucherID ")
-           .append("WHERE 1=1 ");
+                .append("p.EvidenceImage, p.Status, p.VoucherID, ")
+                .append("s.StudentID, u.FullName AS StudentName, u.Email, ")
+                .append("c.ClassID, c.ClassName, ")
+                .append("co.CourseID, co.CourseName, ")
+                .append("v.VoucherID, v.Code AS VoucherCode, v.DiscountAmount, v.DiscountPercent ")
+                .append("FROM Payment p ")
+                .append("INNER JOIN Enrollment e ON p.EnrollmentID = e.EnrollmentID ")
+                .append("INNER JOIN Student s ON e.StudentID = s.StudentID ")
+                .append("INNER JOIN [User] u ON s.StudentID = u.UserID ")
+                .append("INNER JOIN Class c ON e.ClassID = c.ClassID ")
+                .append("INNER JOIN Course co ON c.CourseID = co.CourseID ")
+                .append("LEFT JOIN Voucher v ON p.VoucherID = v.VoucherID ")
+                .append("WHERE 1=1 ");
 
         if (courseId != null && courseId > 0) {
             sql.append("AND co.CourseID = ? ");
@@ -243,8 +243,9 @@ public class PaymentDAO extends DBContext {
     }
 
     /**
-     * Map ResultSet to Payment object with custom fields for display
-     * Note: We store student name and email as separate fields since Student model doesn't have User reference
+     * Map ResultSet to Payment object with custom fields for display Note: We
+     * store student name and email as separate fields since Student model
+     * doesn't have User reference
      */
     private Payment mapPayment(ResultSet rs) throws SQLException {
         Payment payment = new Payment();
@@ -299,6 +300,7 @@ public class PaymentDAO extends DBContext {
 
     // Helper class to hold payment display data
     public static class PaymentDisplay {
+
         private Payment payment;
         private String studentName;
         private String studentEmail;
@@ -309,27 +311,35 @@ public class PaymentDAO extends DBContext {
             this.studentEmail = studentEmail;
         }
 
-        public Payment getPayment() { return payment; }
-        public String getStudentName() { return studentName; }
-        public String getStudentEmail() { return studentEmail; }
+        public Payment getPayment() {
+            return payment;
+        }
+
+        public String getStudentName() {
+            return studentName;
+        }
+
+        public String getStudentEmail() {
+            return studentEmail;
+        }
     }
-    
-   public boolean confirmQRPayment(int enrollmentId, double amount, Integer voucherId) {
+
+    public boolean confirmQRPayment(int enrollmentId, double amount, Integer voucherId) {
         // Bổ sung thêm cột VoucherID vào lệnh INSERT
         String sql = "INSERT INTO Payment (EnrollmentID, Amount, PaymentDate, PaymentMethod, EvidenceImage, Status, VoucherID) "
-                     + "VALUES (?, ?, GETDATE(), 'QR Transfer', '', 'Pending', ?)";
+                + "VALUES (?, ?, GETDATE(), 'QR Transfer', '', 'Pending', ?)";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, enrollmentId);
             ps.setDouble(2, amount);
-            
+
             // Nếu có dùng voucher thì insert ID, không có thì để NULL
             if (voucherId != null) {
                 ps.setInt(3, voucherId);
             } else {
                 ps.setNull(3, java.sql.Types.INTEGER);
             }
-            
+
             int rowAffected = ps.executeUpdate();
             return rowAffected > 0;
         } catch (Exception e) {
@@ -337,22 +347,57 @@ public class PaymentDAO extends DBContext {
         }
         return false;
     }
-    
+
     // Hàm chuyên tạo URL ảnh VietQR
     public String generateVietQRUrl(long amountToPay, String rawAddInfo) {
         String bankId = "MB";
         String accountNo = "0907625043";
         String accountName = "LMCS Center";
-        
+
         // Xử lý mã hóa khoảng trắng cho URL
         String addInfo = rawAddInfo.replaceAll(" ", "%20");
         String urlAccountName = accountName.replaceAll(" ", "%20");
-        
+
         return "https://img.vietqr.io/image/" + bankId + "-" + accountNo + "-compact2.png"
                 + "?amount=" + amountToPay
                 + "&addInfo=" + addInfo
                 + "&accountName=" + urlAccountName;
     }
-    
-    
+
+    public List<Double> getMonthlyRevenue(int year) {
+        List<Double> revenueList = new ArrayList<>(Collections.nCopies(12, 0.0));
+        String sql = "SELECT MONTH(PaymentDate) as month, SUM(Amount) as total "
+                + "From Payment "
+                + "WHERE YEAR(PaymentDate) = ? AND Status = 'Paid' "
+                + "GROUP BY MONTH(PaymentDate)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, year);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int month = rs.getInt("month");
+                double total = rs.getDouble("total");
+                revenueList.set(month - 1, total);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get monthly revenue: " + e.getMessage());
+        }
+        return revenueList;
+    }
+
+    public double getTotalRevenue() {
+        double total = 0;
+        String sql = "SELECT SUM(Amount) as total FROM Payment WHERE status = 'Approved'";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                total = rs.getDouble("total");
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get total Revenue: " + e.getMessage());
+        }
+        return total;
+    }
+
 }

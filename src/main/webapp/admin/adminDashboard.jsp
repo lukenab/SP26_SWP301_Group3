@@ -1,6 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="css/adminDashboard.css" rel="stylesheet" type="text/css"/>
@@ -32,7 +33,9 @@
     <div class="stat-card">
         <div class="stat-info">              
             <p>Total Revenue</p>
-            <h3>$45,234.89</h3>
+            <h3>
+                <fmt:formatNumber value="${totalRevenue}" type="currency" currencySymbol="VND" maxFractionDigits="2"/>
+            </h3>
         </div>
         <div class="icon-wrapper green">
             <i class='bx bxs-dollar'></i>
@@ -49,32 +52,159 @@
     </div>
     <div class="stat-card">
         <div class="stat-info">
-            <p>Total Orders</p>
-            <h3>1,745</h3>
+            <p>Total Enrollments</p>
+            <h3>${totalEnrollments}</h3>
         </div>
         <div class="icon-wrapper red">
-            <i class='bx bx-cart'></i>
+            <i class='bx bx-book-bookmark'></i>
         </div>
     </div>  
     <div class="stat-card">         
         <div class="stat-info">
             <p>Conversions Rate</p>
-            <h3>3,42%</h3>
+            <h3>${conversionRate}</h3>
         </div>
         <div class="icon-wrapper cyan">
             <i class='bx bx-trending-up'></i>
         </div>
     </div>  
 </div>
-<div class="chart-section mt-4">
-    <div class="chart-card">
-        <h4 class="chart-title">Revenue Analytics</h4>
-        <div class="chart-container">
-            <canvas id="revenueChart"></canvas>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title fw-bold">Revenue Overview</h5>
+                <div class="chart-container" style="position: relative; height:300px; width:100%">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title fw-bold">Profit vs Expenses</h5>
+                <div class="chart-container" style="position: relative; height:300px; width:100%">
+                    <canvas id="profitExpenseChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<script src="js/adminDashboard.js" type="text/javascript"></script>
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        // 1. REVENUE OVERVIEW (Line Chart)
+        const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(ctxRevenue, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                        label: 'Revenue',
+                        // Dữ liệu động từ Servlet truyền sang thông qua EL
+                        data: [${revenueData}],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        tension: 0.4,
+                        fill: true
+                    }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {display: false}
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 60000, // Nhớ chỉnh max cho phù hợp với số liệu thật của bạn (ví dụ 60000 thay vì 6000)
+                        ticks: {
+                            stepSize: 15000,
+                            color: '#94a3b8'
+                        },
+                        grid: {
+                            color: '#f1f5f9',
+                            borderDash: [5, 5]
+                        },
+                        border: {display: false}
+                    },
+                    x: {
+                        ticks: {color: '#94a3b8'},
+                        grid: {display: false},
+                        border: {color: '#e2e8f0'}
+                    }
+                }
+            }
+        });
+
+        // 2. PROFIT VS EXPENSES (Bar Chart)
+        const ctxProfit = document.getElementById('profitExpenseChart').getContext('2d');
+        const profitExpenseChart = new Chart(ctxProfit, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [
+                    {
+                        label: 'Expenses',
+                        data: [1500, 1500, 700, 1100, 1200, 1500, 1700, 1900, 2100, 2300, 2500, 2600],
+                        backgroundColor: '#64748b',
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    },
+                    {
+                        label: 'Profit',
+                        data: [2300, 1300, 10000, 3800, 4700, 3600, 4200, 5100, 4000, 5400, 6100, 7000],
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 10000,
+                        ticks: {
+                            stepSize: 2500,
+                            color: '#94a3b8'
+                        },
+                        grid: {
+                            color: '#f1f5f9',
+                            borderDash: [5, 5]
+                        },
+                        border: {display: false}
+                    },
+                    x: {
+                        ticks: {color: '#94a3b8'},
+                        grid: {display: false},
+                        border: {color: '#e2e8f0'}
+                    }
+                }
+            }
+        });
+    });
+</script>
 
 
