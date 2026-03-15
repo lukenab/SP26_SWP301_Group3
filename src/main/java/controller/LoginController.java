@@ -32,8 +32,8 @@ public class LoginController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         UserDAO userDAO = new UserDAO();
-        SettingDAO settingDAO = new SettingDAO(); 
-        
+        SettingDAO settingDAO = new SettingDAO();
+
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
@@ -41,21 +41,27 @@ public class LoginController extends HttpServlet {
 
         int maxAttempts = 5;
         int timeoutMinutes = 30;
-        
+
         String maxAttemptsStr = settingDAO.getSettingValue("MAX_LOGIN_ATTEMPTS");
         if (maxAttemptsStr != null) {
-            try { maxAttempts = Integer.parseInt(maxAttemptsStr); } 
-            catch (NumberFormatException e) { System.out.println("Fail parse MAX_LOGIN_ATTEMPTS"); }
+            try {
+                maxAttempts = Integer.parseInt(maxAttemptsStr);
+            } catch (NumberFormatException e) {
+                System.out.println("Fail parse MAX_LOGIN_ATTEMPTS");
+            }
         }
-        
+
         String timeoutStr = settingDAO.getSettingValue("SESSION_TIMEOUT_MINUTES");
         if (timeoutStr != null) {
-            try { timeoutMinutes = Integer.parseInt(timeoutStr); } 
-            catch (NumberFormatException e) { System.out.println("Fail parse SESSION_TIMEOUT_MINUTES"); }
+            try {
+                timeoutMinutes = Integer.parseInt(timeoutStr);
+            } catch (NumberFormatException e) {
+                System.out.println("Fail parse SESSION_TIMEOUT_MINUTES");
+            }
         }
 
         User userByEmail = userDAO.getUserByEmail(email);
-        
+
         if (userByEmail == null) {
             loginSession.setAttribute("loginMessage", "Invalid email or password!");
             response.sendRedirect("login");
@@ -75,31 +81,46 @@ public class LoginController extends HttpServlet {
         }
 
         String hashPassword = userDAO.hashMD5(password);
-        
+
         if (userByEmail.getPassword().equals(hashPassword)) {
             userDAO.updateFailLoginAttempts(userByEmail.getUserId(), 0);
             loginSession.setAttribute("user", userByEmail);
-            
+
             loginSession.setMaxInactiveInterval(timeoutMinutes * 60);
 
             int roleId = userByEmail.getRole().getRoleId();
-            if (roleId == 1) {
-                response.sendRedirect("dashboard?action=admin");
-            } else if (roleId == 2 || roleId == 3 || roleId == 4) {
-                response.sendRedirect("dashboard?action=all");
-            } else {
-                response.sendRedirect("dashboard");
+            String redirectUrl;
+
+            switch (roleId) {
+                case 1:
+                    redirectUrl = "dashboard?action=admin";
+                    break;
+                case 2:
+                    redirectUrl = "dashboard?action=academic";
+                    break;
+                case 3:
+                    redirectUrl = "dashboard?action=sale";
+                    break;
+                case 4:
+                    redirectUrl = "dashboard?action=teacher";
+                    break;
+                case 5:
+                    redirectUrl = "dashboard?action=student";
+                    break;
+                default:
+                    redirectUrl = "dashboard?action=all";
+                    break;
             }
-        }
-        else {
+
+            response.sendRedirect(redirectUrl);
+        } else {
             int attempts = userByEmail.getFailedLoginAttempts() + 1;
             userDAO.updateFailLoginAttempts(userByEmail.getUserId(), attempts);
-            
-            if(attempts >= maxAttempts){
+
+            if (attempts >= maxAttempts) {
                 userDAO.toggleLockUser(userByEmail.getUserId(), true);
                 loginSession.setAttribute("loginMessage", "You have entered the wrong password " + maxAttempts + " times. Your account is LOCKED.");
-            }
-            else{
+            } else {
                 int remainingAttempts = maxAttempts - attempts;
                 loginSession.setAttribute("loginMessage", "Invalid password! You have " + remainingAttempts + " attempts left.");
             }

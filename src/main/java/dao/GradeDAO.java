@@ -337,52 +337,73 @@ public class GradeDAO extends DBContext {
         return list;
     }
 
-    public static void main(String[] args) {
+    public List<Map<String, Object>> getFullGradeReport(int classId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        // Lấy thông tin sinh viên và điểm số tương ứng của họ
+        String sql = "SELECT u.UserID, u.FullName, u.Avatar, a.AssessmentName, g.Score "
+                + "FROM Enrollment e "
+                + "JOIN [User] u ON e.StudentID = u.UserID "
+                + "LEFT JOIN Grade g ON e.EnrollmentID = g.EnrollmentID "
+                + "LEFT JOIN Assessment a ON g.AssessmentID = a.AssessmentID "
+                + "WHERE e.ClassID = ? "
+                + "ORDER BY u.UserID, a.AssessmentID";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, classId);
+            ResultSet rs = st.executeQuery();
 
-        GradeDAO dao = new GradeDAO();
+            Map<Integer, Map<String, Object>> studentMap = new HashMap<>();
 
-        int studentId = 14;
-        int classId = 2;
+            while (rs.next()) {
+                int userId = rs.getInt("UserID");
+                if (!studentMap.containsKey(userId)) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("userId", userId);
+                    row.put("fullName", rs.getString("FullName"));
+                    row.put("avatar", rs.getString("Avatar"));
+                    // Map để chứa các loại điểm (Reading, Writing...)
+                    row.put("scores", new HashMap<String, Double>());
+                    studentMap.put(userId, row);
+                    list.add(row);
+                }
 
-        System.out.println("=== TEST GRADE DAO ===");
-
-        Integer enrollmentId = dao.getEnrollmentId(studentId, classId);
-        if (enrollmentId == null) {
-            System.out.println("Enrollment not found!");
-            return;
+                String assName = rs.getString("AssessmentName");
+                if (assName != null) {
+                    Map<String, Double> scores = (Map<String, Double>) studentMap.get(userId).get("scores");
+                    scores.put(assName, rs.getDouble("Score"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        Integer courseId = dao.getCourseIdByClassId(classId);
-        if (courseId == null) {
-            System.out.println("Course not found!");
-            return;
-        }
-
-        System.out.println("EnrollmentID: " + enrollmentId);
-
-        Integer readingId = dao.getAssessmentIdByName(courseId, "Reading");
-        Integer writingId = dao.getAssessmentIdByName(courseId, "Writing");
-        Integer speakingId = dao.getAssessmentIdByName(courseId, "Speaking");
-        Integer listeningId = dao.getAssessmentIdByName(courseId, "Listening");
-
-        if (readingId == null) {
-            System.out.println("Assessment not found!");
-            return;
-        }
-
-        dao.saveOrUpdate(enrollmentId, readingId, 7);
-        dao.saveOrUpdate(enrollmentId, writingId, 8);
-        dao.saveOrUpdate(enrollmentId, speakingId, 6);
-        dao.saveOrUpdate(enrollmentId, listeningId, 9);
-
-        Map<String, Double> scores = dao.getAllScores(enrollmentId);
-
-        System.out.println("=== Scores ===");
-        for (Map.Entry<String, Double> entry : scores.entrySet()) {
-            System.out.println(entry.getKey() + ": " + entry.getValue());
-        }
-
-        Double avg = dao.calculateAverage(enrollmentId);
-        System.out.println("Average: " + avg);
+        return list;
     }
+
+    public List<Assessment> getAssessmentsByClass(int classId) {
+        List<Assessment> list = new ArrayList<>();
+
+        String sql = "SELECT a.AssessmentID, a.AssessmentName, a.Weight, a.CourseID "
+                + "FROM Assessment a "
+                + "JOIN Class c ON a.CourseID = c.CourseID "
+                + "WHERE c.ClassID = ? "
+                + "ORDER BY a.AssessmentID";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, classId);
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()) {
+                Assessment a = new Assessment();
+
+                a.setAssessmentId(rs.getInt("AssessmentID"));
+                a.setAssessmentName(rs.getString("AssessmentName"));
+                a.setWeight(rs.getDouble("Weight"));
+
+                list.add(a);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
 }

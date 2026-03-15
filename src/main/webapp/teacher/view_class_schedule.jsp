@@ -10,7 +10,7 @@
     <div class="mb-4 mt-3">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="dashboard?action=teacher">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="class">Class Management</a></li>
                 <li class="breadcrumb-item active">Class Schedule</li>
             </ol>
@@ -74,7 +74,7 @@
             <table class="table table-bordered mb-0 text-center">
                 <thead class="text-white" style="background-color: #f8f9fc; color: #5a5c69 !important;">
                     <tr>
-                        <th style="width: 10%;">Slot</th>
+                        <th style="width: 11%;">Slot</th>
                             <c:forEach items="${weekdays}" var="day" varStatus="loop">
                             <th style="width: 12.8%;">
                                 <div class="fw-bold">${day}</div>
@@ -88,9 +88,9 @@
                 <tbody>
                     <c:forEach var="sl" items="${slots}">
                         <tr>
-                            <td class="align-middle bg-light fw-bold small">
+                            <td class="align-middle bg-light fw-bold small" style="white-space: nowrap; padding: 10px 5px !important;">
                                 Slot ${sl.slotID}<br>
-                                <span class="text-muted fw-normal" style="font-size: 0.7rem;">
+                                <span class="text-muted fw-normal" style="font-size: 0.7rem; display: inline-block; white-space: nowrap;">
                                     ${sl.startTime} - ${sl.endTime}
                                 </span>
                             </td>

@@ -172,7 +172,7 @@
                 <c:if test="${sessionScope.user.role.roleId == 4}">
                     <ul class="menu-links">
                         <li class="nav-links">
-                            <a href="dashboard">
+                            <a href="dashboard?action=teacher">
                                 <i class="bxr bx-dashboard"></i>
                                 <span class="text nav-text">Dashboard</span>
                             </a>

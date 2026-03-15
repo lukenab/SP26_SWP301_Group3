@@ -29,7 +29,7 @@ public class TeacherDAO extends DBContext {
 
     public List<Schedule> getTeachingSchedule(int teacherId, String selectedDate) {
         List<Schedule> list = new ArrayList<>();
-        // Sửa: Cột thực tế trong DB là SlotID
+
         String sql = "SET DATEFIRST 1; "
                 + "SELECT s.*, c.ClassName, r.RoomName "
                 + "FROM Schedule s "
@@ -55,7 +55,6 @@ public class TeacherDAO extends DBContext {
                 Schedule s = new Schedule();
                 s.setScheduleId(rs.getInt("ScheduleID"));
 
-                // Get Slot object from SlotDAO
                 int slotId = rs.getInt("SlotID");
                 Slot slot = slotDAO.getSlotByID(slotId);
                 s.setSlot(slot);
@@ -110,7 +109,6 @@ public class TeacherDAO extends DBContext {
                 s.setScheduleId(rs.getInt("ScheduleID"));
                 s.setLearningDate(rs.getDate("LearningDate"));
 
-                // Get Slot object from SlotDAO
                 int slotId = rs.getInt("SlotID");
                 Slot slot = slotDAO.getSlotByID(slotId);
                 s.setSlot(slot);
@@ -222,7 +220,7 @@ public class TeacherDAO extends DBContext {
                 f.setEnrollment(e);
 
                 feedbackList.add(f);
-         
+
                 studentNameMap.put(fId, rs.getString("StudentName"));
             }
         } catch (Exception e) {
@@ -232,6 +230,76 @@ public class TeacherDAO extends DBContext {
         result.put("feedbackList", feedbackList);
         result.put("studentNameMap", studentNameMap);
         return result;
+    }
+
+   
+    public int getTotalStudentsByTeacher(int teacherId) {
+        String sql = "SELECT COUNT(DISTINCT e.StudentID) FROM Enrollment e "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "WHERE c.TeacherID = ?";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, teacherId);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+
+    public int getClassProgress(int classId) {
+        String sql = "SELECT "
+                + "(SELECT COUNT(*) FROM Schedule WHERE ClassID = ? AND AttendanceStatus = 1) * 100 / "
+                + "NULLIF((SELECT COUNT(*) FROM Schedule WHERE ClassID = ?), 0)";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, classId);
+            st.setInt(2, classId);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public double getAverageRating(int teacherId) {
+        String sql = "SELECT AVG(CAST(f.Rating AS DECIMAL(10,2))) "
+                + "FROM Feedback f "
+                + "JOIN Enrollment e ON f.EnrollmentID = e.EnrollmentID "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "WHERE c.TeacherID = ?";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, teacherId);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
+
+    public int getTotalSlotsTaught(int teacherId) {
+        String sql = "SELECT COUNT(*) FROM Schedule s "
+                + "JOIN Class c ON s.ClassID = c.ClassID "
+                + "WHERE c.TeacherID = ? AND s.AttendanceStatus = 1";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, teacherId);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     public static void main(String[] args) {
@@ -278,7 +346,7 @@ public class TeacherDAO extends DBContext {
         System.out.println("--- KET QUA TEST FEEDBACK ---");
         if (list != null && !list.isEmpty()) {
             for (Feedback f : flist) {
-               
+
                 System.out.println("ID: " + f.getFeedbackId()
                         + " | Student: " + names.get(f.getFeedbackId())
                         + " | Comment: " + f.getComment());
@@ -288,5 +356,4 @@ public class TeacherDAO extends DBContext {
         }
     }
 
-   
 }
