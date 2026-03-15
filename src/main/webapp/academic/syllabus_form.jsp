@@ -5,20 +5,21 @@
 <link href="css/syllabus_management.css" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body syllabus-page">
+    <c:set var="isEdit" value="${formMode == 'edit'}"/>
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="syllabus?action=manage">Manage Syllabus</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Update Syllabus</li>
+                <li class="breadcrumb-item active" aria-current="page">${isEdit ? 'Update Syllabus' : 'Create Syllabus'}</li>
             </ol>
         </div>
         <div class="content-header">
             <div>
-                <h2 class="page-title">Update Syllabus / Learning Path</h2>
-                <p class="text-muted small mb-0">Adjust session order, topic name, and lesson details.</p>
+                <h2 class="page-title">${isEdit ? 'Update Syllabus / Learning Path' : 'Create Syllabus / Learning Path'}</h2>
+                <p class="text-muted small mb-0">${isEdit ? 'Adjust session order, topic name, and lesson details.' : 'Create a new learning path item for a course.'}</p>
             </div>
-            <a href="syllabus?action=manage" class="btn btn-back">
+            <a href="syllabus?action=manage" class="btn syllabus-btn-back">
                 <i class='bx bx-left-arrow-alt'></i> Back to Syllabus List
             </a>
         </div>
@@ -27,13 +28,20 @@
     <div class="card user-table-card border-0 bg-white">
         <div class="card-body p-4">
             <form action="syllabus" method="post">
-                <input type="hidden" name="action" value="update"/>
-                <input type="hidden" name="syllabusId" value="${syllabus.syllabusId}"/>
+                <input type="hidden" name="action" value="${isEdit ? 'update' : 'create'}"/>
+                <c:if test="${isEdit}">
+                    <input type="hidden" name="syllabusId" value="${syllabus.syllabusId}"/>
+                </c:if>
 
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Course</label>
-                        <input type="text" class="form-control" value="${syllabus.courseName}" readonly>
+                        <select class="form-select" name="courseId" required>
+                            <option value="">Select course</option>
+                            <c:forEach items="${courseOptions}" var="course">
+                                <option value="${course[0]}" ${syllabus.courseId == course[0] ? 'selected' : ''}>${course[1]}</option>
+                            </c:forEach>
+                        </select>
                     </div>
 
                     <div class="col-md-3">
@@ -42,8 +50,8 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label class="form-label fw-semibold">Syllabus ID</label>
-                        <input type="text" class="form-control" value="${syllabus.syllabusId}" readonly>
+                        <label class="form-label fw-semibold">${isEdit ? 'Syllabus ID' : 'Mode'}</label>
+                        <input type="text" class="form-control" value="${isEdit ? syllabus.syllabusId : 'Create New'}" readonly>
                     </div>
 
                     <div class="col-md-12">
@@ -59,7 +67,7 @@
 
                 <div class="d-flex justify-content-end mt-4">
                     <button type="submit" class="btn btn-add-new">
-                        <i class='bx bx-save'></i> Update Syllabus
+                        <i class='bx bx-save'></i> ${isEdit ? 'Update Syllabus' : 'Create Syllabus'}
                     </button>
                 </div>
             </form>
