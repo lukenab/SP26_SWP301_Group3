@@ -135,7 +135,7 @@
 
                         <li class="nav-links">
                             <a href="role">
-                                <i class="bxr bx-gear"></i>
+                                <i class="bxr bx-shield"></i>
                                 <span class="text nav-text">Role & Permission</span></a>
                         </li>
 
@@ -149,14 +149,14 @@
                         <li class="nav-links">
                             <a href="#">
                                 <i class="bxr bx-file-report"></i>
-                                <span class="text nav-text">Report</span>
+                                <span class="text nav-text">Reports</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
                             <a href="setting">
                                 <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Setting</span>
+                                <span class="text nav-text">Settings</span>
                             </a>
                         </li>
 
