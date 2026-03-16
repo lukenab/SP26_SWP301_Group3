@@ -348,13 +348,11 @@ public class PaymentDAO extends DBContext {
         return false;
     }
 
-    // Hàm chuyên tạo URL ảnh VietQR
     public String generateVietQRUrl(long amountToPay, String rawAddInfo) {
         String bankId = "MB";
         String accountNo = "0907625043";
         String accountName = "LMCS Center";
 
-        // Xử lý mã hóa khoảng trắng cho URL
         String addInfo = rawAddInfo.replaceAll(" ", "%20");
         String urlAccountName = accountName.replaceAll(" ", "%20");
 
