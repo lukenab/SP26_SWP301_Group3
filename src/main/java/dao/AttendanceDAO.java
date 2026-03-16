@@ -11,6 +11,7 @@ import java.util.Map;
 import model.User;
 
 public class AttendanceDAO extends DBContext {
+
     private Attendance getOrCreateAttendance(int scheduleId, int enrollmentId) {
         String checkSql = "SELECT * FROM Attendance WHERE ScheduleID = ? AND EnrollmentID = ?";
         try {
@@ -123,6 +124,50 @@ public class AttendanceDAO extends DBContext {
         result.put("attendanceMap", attendanceMap);
 
         return result;
+    }
+
+  
+    public List<model.Schedule> getSchedulesByClass(int classId) {
+        List<model.Schedule> list = new ArrayList<>();
+        String sql = "SELECT * FROM Schedule WHERE ClassID = ? ORDER BY LearningDate, SlotID";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, classId);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                model.Schedule s = new model.Schedule();
+                s.setScheduleId(rs.getInt("ScheduleID"));
+                s.setLearningDate(rs.getDate("LearningDate"));
+
+                model.Slot slot = new model.Slot();
+                slot.setSlotID(rs.getInt("SlotID"));
+                s.setSlot(slot);
+
+                list.add(s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+
+    public Map<String, String> getAttendanceReportMap(int classId) {
+        Map<String, String> map = new HashMap<>();
+        String sql = "SELECT e.StudentID, a.ScheduleID, a.Status "
+                + "FROM Attendance a "
+                + "JOIN Enrollment e ON a.EnrollmentID = e.EnrollmentID "
+                + "WHERE e.ClassID = ?";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, classId);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                String key = rs.getInt("StudentID") + "_" + rs.getInt("ScheduleID");
+                map.put(key, rs.getString("Status"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
     }
 
 }

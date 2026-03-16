@@ -31,6 +31,12 @@ public class SyllabusController extends HttpServlet {
                 request.setAttribute("home_view", "/academic/syllabus_management.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
+            case "add":
+                request.setAttribute("courseOptions", syllabusDAO.getCourseOptions());
+                request.setAttribute("formMode", "create");
+                request.setAttribute("home_view", "/academic/syllabus_form.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
             case "edit":
                 String syllabusIdParam = request.getParameter("syllabusId");
                 if (syllabusIdParam == null || syllabusIdParam.isEmpty()) {
@@ -45,6 +51,8 @@ public class SyllabusController extends HttpServlet {
                         return;
                     }
                     request.setAttribute("syllabus", syllabus);
+                    request.setAttribute("courseOptions", syllabusDAO.getCourseOptions());
+                    request.setAttribute("formMode", "edit");
                     request.setAttribute("home_view", "/academic/syllabus_form.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (NumberFormatException e) {
@@ -62,13 +70,16 @@ public class SyllabusController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         SyllabusDAO syllabusDAO = new SyllabusDAO();
-        if ("update".equals(action)) {
+        if ("create".equals(action) || "update".equals(action)) {
+            boolean isUpdate = "update".equals(action);
+            String courseIdParam = request.getParameter("courseId");
             String syllabusIdParam = request.getParameter("syllabusId");
             String orderIndexParam = request.getParameter("orderIndex");
             String topicName = request.getParameter("topicName");
             String description = request.getParameter("description");
 
-            if (syllabusIdParam == null || syllabusIdParam.isEmpty()
+            if ((isUpdate && (syllabusIdParam == null || syllabusIdParam.isEmpty()))
+                    || courseIdParam == null || courseIdParam.isEmpty()
                     || orderIndexParam == null || orderIndexParam.isEmpty()
                     || topicName == null || topicName.trim().isEmpty()
                     || description == null || description.trim().isEmpty()) {
@@ -81,18 +92,27 @@ public class SyllabusController extends HttpServlet {
 
             try {
                 Syllabus syllabus = new Syllabus();
-                syllabus.setSyllabusId(Integer.parseInt(syllabusIdParam));
+                syllabus.setCourseId(Integer.parseInt(courseIdParam));
+                if (isUpdate) {
+                    syllabus.setSyllabusId(Integer.parseInt(syllabusIdParam));
+                }
                 syllabus.setOrderIndex(Integer.parseInt(orderIndexParam));
                 syllabus.setTopicName(topicName.trim());
                 syllabus.setDescription(description.trim());
 
-                boolean updated = syllabusDAO.updateSyllabus(syllabus);
+                boolean success = isUpdate
+                        ? syllabusDAO.updateSyllabus(syllabus)
+                        : syllabusDAO.createSyllabus(syllabus);
                 HttpSession session = request.getSession();
-                if (updated) {
-                    session.setAttribute("message", "Syllabus updated successfully.");
+                if (success) {
+                    session.setAttribute("message", isUpdate
+                            ? "Syllabus updated successfully."
+                            : "Syllabus created successfully.");
                     session.setAttribute("messageType", "success");
                 } else {
-                    session.setAttribute("message", "Failed to update syllabus.");
+                    session.setAttribute("message", isUpdate
+                            ? "Failed to update syllabus."
+                            : "Failed to create syllabus.");
                     session.setAttribute("messageType", "error");
                 }
             } catch (NumberFormatException e) {
@@ -104,6 +124,37 @@ public class SyllabusController extends HttpServlet {
             response.sendRedirect("syllabus?action=manage");
             return;
         }
+
+        if ("delete".equals(action)) {
+            HttpSession session = request.getSession();
+            String syllabusIdParam = request.getParameter("syllabusId");
+
+            if (syllabusIdParam == null || syllabusIdParam.isEmpty()) {
+                session.setAttribute("message", "Invalid syllabus delete request.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("syllabus?action=manage");
+                return;
+            }
+
+            try {
+                int syllabusId = Integer.parseInt(syllabusIdParam);
+                boolean deleted = syllabusDAO.deleteSyllabus(syllabusId);
+                if (deleted) {
+                    session.setAttribute("message", "Syllabus deleted successfully.");
+                    session.setAttribute("messageType", "success");
+                } else {
+                    session.setAttribute("message", "Failed to delete syllabus.");
+                    session.setAttribute("messageType", "error");
+                }
+            } catch (NumberFormatException e) {
+                session.setAttribute("message", "Invalid syllabus ID.");
+                session.setAttribute("messageType", "error");
+            }
+
+            response.sendRedirect("syllabus?action=manage");
+            return;
+        }
+
         response.sendRedirect("syllabus?action=manage");
     }
 }

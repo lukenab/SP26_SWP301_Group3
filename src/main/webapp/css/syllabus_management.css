@@ -42,3 +42,30 @@
     resize: vertical;
     line-height: 1.6;
 }
+
+.syllabus-page .syllabus-btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid #dbe4f0;
+    background: #ffffff;
+    color: #1f3f7a;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    transition: all 0.2s ease;
+}
+
+.syllabus-page .syllabus-btn-back:hover {
+    background: #f8fbff;
+    border-color: #bfd3f5;
+    color: #163567;
+}
+
+.syllabus-page .action-btn-plain {
+    background: transparent;
+    border: 0;
+    padding: 0;
+}

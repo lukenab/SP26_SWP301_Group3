@@ -11,7 +11,7 @@
     <div class="mb-4 mt-3">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="dashboard?action=teacher">Dashboard</a></li>
                 <li class="breadcrumb-item active">My Schedule</li>
             </ol>
         </div>
@@ -73,7 +73,7 @@
             <table class="table table-bordered mb-0 text-center">
                 <thead class="text-white" style="background-color: #f8f9fc; color: #5a5c69 !important;">
                     <tr>
-                        <th style="width: 10%;">Slot</th>
+                        <th style="width: 11%;">Slot</th>
                             <c:forEach items="${weekdays}" var="day" varStatus="loop">
                             <th style="width: 12.8%;">
                                 <div class="fw-bold">${day}</div>

@@ -17,9 +17,14 @@
                 <h2 class="page-title">Manage Syllabus</h2>
                 <p class="text-muted small mb-0">Manage session order, topic, and lesson description by course.</p>
             </div>
-            <a href="course?action=all" class="btn btn-add-new">
-                <i class='bx bx-book-content'></i> Back to Courses
-            </a>
+            <div class="d-flex gap-2">
+                <a href="syllabus?action=add" class="btn btn-add-new">
+                    <i class='bx bx-plus'></i> Add Syllabus
+                </a>
+                <a href="course?action=all" class="btn syllabus-btn-back">
+                    <i class='bx bx-book-content'></i> Back to Courses
+                </a>
+            </div>
         </div>
     </div>
 
@@ -57,7 +62,7 @@
                         <th style="width: 10%">Session No.</th>
                         <th style="width: 22%">Topic Name</th>
                         <th style="width: 32%">Description</th>
-                        <th style="width: 5%">Action</th>
+                        <th style="width: 8%">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -74,10 +79,19 @@
                             <td><span class="badge-soft">Session ${s.orderIndex}</span></td>
                             <td>${s.topicName}</td>
                             <td><div class="learning-path-preview">${s.description}</div></td>
-                            <td>
-                                <a href="syllabus?action=edit&syllabusId=${s.syllabusId}" class="action-btn" title="Update Syllabus">
-                                    <i class='bx bx-edit'></i>
-                                </a>
+                            <td class="actions-cell">
+                                <div class="table-actions">
+                                    <a href="syllabus?action=edit&syllabusId=${s.syllabusId}" class="action-btn" title="Update Syllabus">
+                                        <i class='bx bx-edit'></i>
+                                    </a>
+                                    <form action="syllabus" method="post" class="d-inline" onsubmit="return confirm('Delete this syllabus item?');">
+                                        <input type="hidden" name="action" value="delete"/>
+                                        <input type="hidden" name="syllabusId" value="${s.syllabusId}"/>
+                                        <button type="submit" class="action-btn action-btn-plain delete" title="Delete Syllabus">
+                                            <i class='bx bx-trash'></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>

@@ -95,8 +95,8 @@
 
         <div class="form-row">
             <div class="form-group" style="width:100%">
-                <label for="studentCount">Student Count</label>
-                <input type="text" id="studentCount" value="${classInfo[7]}" readonly>
+                <label for="roomName">Room (Optional)</label>
+                <input type="text" id="roomName" value="${empty classInfo[10] ? 'Not assigned yet' : classInfo[10]}" readonly>
             </div>
         </div>
 

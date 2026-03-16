@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
+
 <link href="css/student_list_of_class.css" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body">
@@ -10,7 +10,7 @@
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="dashboard?action=teacher">Dashboard</a></li>
                 <li class="breadcrumb-item">
                     <a href="class">Class Management</a>
                 </li>
@@ -81,6 +81,7 @@
                     <tr>
                         <th class="text-center" style="width:60px">#</th>
                         <th>Student Info</th>
+                        <th>Email</th>
                         <th class="text-center">Phone</th>
                         <th class="text-center">Final Score</th>
                         <th class="text-center" style="width:180px">Actions</th>
@@ -96,7 +97,7 @@
                                 <div class="d-flex align-items-center">
                                     <div class="avatar-container me-3">
                                         <c:choose>
-                                            <%-- Trường hợp có ảnh: Dùng contextPath và onerror để dự phòng --%>
+                                          
                                             <c:when test="${not empty s.avatar}">
                                                 <img src="${pageContext.request.contextPath}/${s.avatar}" 
                                                      class="avatar-img" 
@@ -108,7 +109,6 @@
                                                 </div>
                                             </c:when>
 
-                                            <%-- Trường hợp không có ảnh --%>
                                             <c:otherwise>
                                                 <div class="avatar-placeholder">
                                                     <i class='bx bx-user'></i>
@@ -119,11 +119,11 @@
 
                                     <div>
                                         <div class="fw-bold text-dark student-name">${s.fullName}</div>
-                                        <div class="small text-muted student-email">${s.email}</div>
+                                        
                                     </div>
                                 </div>
                             </td>
-                            
+                            <td class="small text-muted student-email">${s.email}</td>
                             <td class="text-center text-muted small">${s.phone}</td>
 
                             <td class="text-center">
@@ -141,7 +141,7 @@
 
                             <td class="text-center">
                                 <div class="d-flex justify-content-center align-items-center gap-1">
-                                    <a href="#" class="btn-icon-minimal" title="View Detail"><i class='bx bx-eye'></i></a>
+                                    
 
                                     <c:choose>
                                         <c:when test="${avg == null}">

@@ -686,6 +686,39 @@ public class LeadDAO extends DBContext {
         return value == null || value.trim().isEmpty();
     }
 
+    public double getConversionRate() {
+        int totalLeads = 0;
+        int totalStudents = 0;
+        double conversionRate = 0.0;
+
+        try {
+            String sqlLeads = "SELECT COUNT(*) AS total FROM Lead";
+            PreparedStatement ps = conn.prepareStatement(sqlLeads);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                totalLeads = rs.getInt("total");
+            }
+            
+            String sqlStudents = "SELECT COUNT(*) AS total FROM Student";
+            ps = conn.prepareStatement(sqlStudents);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                totalStudents = rs.getInt("total");
+            }
+            
+            int totalProspective = totalLeads + totalStudents;
+
+            if (totalProspective > 0) {
+                conversionRate = ((double) totalStudents / totalProspective) * 100;
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail to get conversion rate: " +e.getMessage());
+        }
+
+        return conversionRate;
+    }
+
     public static void main(String[] args) {
         LeadDAO dao = new LeadDAO();
         List<Lead> list = dao.getAllLeads();

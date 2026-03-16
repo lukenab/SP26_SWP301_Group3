@@ -88,7 +88,7 @@ public class PaymentController extends HttpServlet {
                         Voucher voucher = voucherDAO.getVoucherByCode(voucherCode);
 
                         if (voucher != null && voucher.isStatus()) {
-                            // --- THÊM ĐOẠN KIỂM TRA NÀY ---
+
                             boolean hasUsed = voucherDAO.hasUserUsedVoucher(currentUser.getUserId(), voucher.getVoucherId());
 
                             if (hasUsed) {
@@ -98,7 +98,6 @@ public class PaymentController extends HttpServlet {
                                 voucherMessage = "This voucher has reached its usage limit.";
                                 request.setAttribute("voucherType", "error");
                             } else {
-                                // Nếu chưa dùng thì mới tính toán giảm giá
                                 if (voucher.getDiscountAmount() != null && voucher.getDiscountAmount().doubleValue() > 0) {
                                     discountAmount = voucher.getDiscountAmount().doubleValue();
                                 } else if (voucher.getDiscountPercent() > 0) {
@@ -200,10 +199,8 @@ public class PaymentController extends HttpServlet {
                 }
                 break;
 
-            // ĐOẠN CODE SAU KHI ĐƯỢC REFACTOR (Rút gọn)
             case "checkout":
                 try {
-                    // 1. Nhận dữ liệu
                     int classId = Integer.parseInt(request.getParameter("classId"));
                     String className = request.getParameter("className");
                     String voucherCode = request.getParameter("voucherCode");
@@ -216,7 +213,6 @@ public class PaymentController extends HttpServlet {
                     dao.ClassDAO clsDAO = new dao.ClassDAO();
                     dao.VoucherDAO vchDAO = new dao.VoucherDAO();
 
-                    // 2. Chặn đăng ký trùng
                     String currentStatus = enrollmentDAO.checkEnrollmentStatus(currentU.getUserId(), classId);
                     if ("Active".equals(currentStatus)) {
                         sessionCheckout.setAttribute("message", "You have already paid and are enrolled in this class.");
@@ -232,7 +228,6 @@ public class PaymentController extends HttpServlet {
 
                     int enrollmentId = enrollmentDAO.getOrCreateEnrollment(currentU.getUserId(), classId);
 
-                    // 3. Tính tiền (Rất Clean!)
                     double originalPrice = clsDAO.getClassPrice(classId);
                     double discountAmount = 0;
                     Integer voucherId = null;
@@ -262,27 +257,11 @@ public class PaymentController extends HttpServlet {
                         serverFinalAmount = 0;
                     }
 
-                    if ("cash".equalsIgnoreCase(paymentMethod)) {
-                        boolean created = paymentDAO.createPendingPayment(enrollmentId, serverFinalAmount, voucherId, "Cash");
-                        if (created) {
-                            sessionCheckout.setAttribute("message", "Cash payment request submitted. Please pay at the center for approval.");
-                            sessionCheckout.setAttribute("messageType", "success");
-                        } else {
-                            sessionCheckout.setAttribute("message", "Failed to create cash payment request. Please try again.");
-                            sessionCheckout.setAttribute("messageType", "error");
-                        }
-                        response.sendRedirect("class?action=availableClass");
-                        return;
-                    }
-
-                    // 4. Sinh QR (Rất Clean!)
                     String rawAddInfo = "LMCS " + enrollmentId + " " + className;
                     long amountToPay = (long) serverFinalAmount;
 
-                    // DÙNG HÀM MỚI Ở ĐÂY
                     String qrUrl = paymentDAO.generateVietQRUrl(amountToPay, rawAddInfo);
 
-                    // 5. Đẩy sang JSP
                     request.setAttribute("qrUrl", qrUrl);
                     request.setAttribute("amount", amountToPay);
                     request.setAttribute("addInfo", rawAddInfo);
@@ -292,7 +271,7 @@ public class PaymentController extends HttpServlet {
                     request.getRequestDispatcher("payment.jsp").forward(request, response);
 
                 } catch (Exception e) {
-                    System.out.println("Lỗi checkout: " + e.getMessage());
+                    System.out.println("Fail to checkout: " + e.getMessage());
                     response.sendRedirect("dashboard");
                 }
                 break;
@@ -416,15 +395,12 @@ public class PaymentController extends HttpServlet {
         try {
             int paymentId = Integer.parseInt(paymentIdParam);
 
-            // 1. Lấy thông tin Payment ra trước để biết hóa đơn này thuộc về EnrollmentID nào
             Payment payment = paymentDAO.getPaymentById(paymentId);
 
             if (payment != null) {
-                // 2. Cập nhật bảng Payment thành "Approved"
                 boolean isPaymentApproved = paymentDAO.updatePaymentStatus(paymentId, "Approved");
 
                 if (isPaymentApproved) {
-                    // 3. NẾU DUYỆT TIỀN THÀNH CÔNG -> CẬP NHẬT BẢNG ENROLLMENT THÀNH "ACTIVE"
                     int enrollmentId = payment.getEnrollment().getEnrollmentId();
                     dao.EnrollmentDAO enrollmentDAO = new dao.EnrollmentDAO();
                     enrollmentDAO.updateEnrollmentStatus(enrollmentId, "Active");

@@ -168,13 +168,9 @@
                         <td><fmt:formatNumber type="currency" value="${c.tuitionFee}" /> </td>
 
                     <td>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" disabled 
-                                   ${c.status ? 'checked' : ''}>
-                            <label class="form-check-label ms-2 text-secondary small">
-                                ${c.status ? 'Active' : 'Inactive'}
-                            </label>
-                        </div>
+                        <span class="class-status-badge ${c.status ? 'active' : 'inactive'}">
+                            ${c.status ? 'Active' : 'Inactive'}
+                        </span>
                     </td>
 
                     <td>
