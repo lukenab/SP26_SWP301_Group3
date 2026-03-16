@@ -143,30 +143,26 @@
                 <thead>
                     <tr>
                         <th style="width: 5%">#</th>
-                        <th style="width: 18%">Class Info</th>
-                        <th style="width: 16%">Course</th>
-                        <th style="width: 12%">Teacher</th>
-                        <th style="width: 16%">Study Period</th>
-                        <th style="width: 8%">Max Capacity</th>
-                        <th style="width: 8%">Quantity</th>
-                        <th style="width: 11%">Registration Deadline</th>
-                        <th style="width: 10%">Room</th>
-                        <th style="width: 8%">Status</th>
-                        <th style="width: 8%">Actions</th>
+                        <th style="width: 24%">Class Info</th>
+                        <th style="width: 22%">Course</th>
+                        <th style="width: 16%">Teacher</th>
+                        <th style="width: 12%">Quantity</th>
+                        <th style="width: 11%">Status</th>
+                        <th style="width: 10%">Actions</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     <c:if test="${empty classList}">
                         <tr>
-                            <td colspan="10" class="text-center text-muted py-4">No classes found.</td>
+                            <td colspan="6" class="text-center text-muted py-4">No classes found.</td>
                         </tr>
                     </c:if>
 
                     <c:forEach items="${classList}" var="c" varStatus="loop">
                         <tr>
                             <c:set var="isActive" value="${c[6] == 'Active'}"/>
-                            <td>${loop.count}</td>
+                            <td>${startItem + loop.index}</td>
 
                             <td>
                                 <div class="user-item">
@@ -182,30 +178,7 @@
                             <td>${c[2]}</td>
                             <td>${empty c[3] ? 'N/A' : c[3]}</td>
                             <td>
-                                <div class="d-flex flex-column small">
-                                    <span><strong>Start:</strong> <fmt:formatDate value="${c[4]}" pattern="dd MMM yyyy"/></span>
-                                    <span><strong>End:</strong> <fmt:formatDate value="${c[5]}" pattern="dd MMM yyyy"/></span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="text-secondary">${c[8]}</span>
-                            </td>
-                            <td>
                                 <span class="text-secondary">${c[7]}/${c[8]}</span>
-                            </td>
-                            <td>
-                                <c:choose>
-                                    <c:when test="${not empty c[9]}">
-                                        <fmt:formatDate value="${c[9]}" pattern="dd MMM yyyy"/>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="text-secondary">N/A</span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </td>
-
-                            <td>
-                                <span class="text-secondary">${empty c[10] ? 'Not assigned' : c[10]}</span>
                             </td>
 
                             <td>
@@ -216,6 +189,11 @@
 
                             <td class="actions-cell">
                                 <div class="table-actions">
+                                    <a href="enrollment?action=classDetails&classId=${c[0]}"
+                                       class="action-btn"
+                                       title="View Details">
+                                        <i class='bx bx-eye'></i>
+                                    </a>
                                     <a href="enrollment?action=editClassForm&classId=${c[0]}" class="action-btn" title="Edit Class">
                                         <i class='bx bx-edit'></i>
                                     </a>
@@ -243,7 +221,26 @@
         </div>
 
         <div class="d-flex justify-content-between align-items-center p-3 border-top">
-            <div class="text-muted small">Showing ${classList.size()} classes</div>
+            <div class="text-muted small">Showing ${startItem}-${endItem} of ${totalItems} classes</div>
+            <div>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="enrollment?action=classes&page=${currentPage - 1}">
+                            <i class='bx bx-chevron-left'></i> Previous
+                        </a>
+                    </li>
+                    <c:forEach begin="1" end="${totalPages}" var="pageNumber">
+                        <li class="page-item ${pageNumber == currentPage ? 'active' : ''}">
+                            <a class="page-link" href="enrollment?action=classes&page=${pageNumber}">${pageNumber}</a>
+                        </li>
+                    </c:forEach>
+                    <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="enrollment?action=classes&page=${currentPage + 1}">
+                            Next <i class='bx bx-chevron-right'></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>

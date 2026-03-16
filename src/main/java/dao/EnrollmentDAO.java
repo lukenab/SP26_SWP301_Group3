@@ -47,6 +47,88 @@ public class EnrollmentDAO extends DBContext {
         }
         return list;
     }
+
+    public List<Object[]> getGradeEnrollmentReport() {
+        return getGradeEnrollmentReport(0);
+    }
+
+    public List<Object[]> getGradeEnrollmentReport(int classId) {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT e.EnrollmentID, c.ClassName, co.CourseName, u.FullName AS StudentName, "
+                + "e.EnrollDate, e.Status, e.FinalGrade, c.ClassID "
+                + "FROM Enrollment e "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "JOIN [User] u ON e.StudentID = u.UserID ";
+
+        if (classId > 0) {
+            sql += "WHERE c.ClassID = ? ";
+        }
+
+        sql += "ORDER BY co.CourseName ASC, c.ClassName ASC, u.FullName ASC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (classId > 0) {
+                ps.setInt(1, classId);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Object[] row = new Object[8];
+                    row[0] = rs.getInt("EnrollmentID");
+                    row[1] = rs.getString("ClassName");
+                    row[2] = rs.getString("CourseName");
+                    row[3] = rs.getString("StudentName");
+                    row[4] = rs.getDate("EnrollDate");
+                    row[5] = rs.getString("Status");
+                    row[6] = rs.getDouble("FinalGrade");
+                    row[7] = rs.getInt("ClassID");
+                    list.add(row);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get grade/enrollment report: " + e.getMessage());
+        }
+
+        return list;
+    }
+
+    public List<Object[]> getGradeEnrollmentSummaryByClass() {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, "
+                + "COUNT(e.EnrollmentID) AS TotalEnrollments, "
+                + "SUM(CASE WHEN e.Status IN ('Paid', 'Active', 'Completed') THEN 1 ELSE 0 END) AS PaidCount, "
+                + "SUM(CASE WHEN e.EnrollmentID IS NOT NULL AND (e.Status NOT IN ('Paid', 'Active', 'Completed') OR e.Status IS NULL) THEN 1 ELSE 0 END) AS UnpaidCount, "
+                + "AVG(CASE WHEN e.FinalGrade > 0 THEN CAST(e.FinalGrade AS FLOAT) END) AS AverageGrade, "
+                + "SUM(CASE WHEN e.FinalGrade > 0 THEN 1 ELSE 0 END) AS GradedCount, "
+                + "SUM(CASE WHEN e.FinalGrade >= 5 THEN 1 ELSE 0 END) AS PassCount "
+                + "FROM Class c "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
+                + "GROUP BY c.ClassID, c.ClassName, co.CourseName "
+                + "ORDER BY co.CourseName ASC, c.ClassName ASC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] row = new Object[9];
+                row[0] = rs.getInt("ClassID");
+                row[1] = rs.getString("ClassName");
+                row[2] = rs.getString("CourseName");
+                row[3] = rs.getInt("TotalEnrollments");
+                row[4] = rs.getInt("PaidCount");
+                row[5] = rs.getInt("UnpaidCount");
+                row[6] = rs.getDouble("AverageGrade");
+                row[7] = rs.getInt("GradedCount");
+                row[8] = rs.getInt("PassCount");
+                list.add(row);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get grade/enrollment summary by class: " + e.getMessage());
+        }
+
+        return list;
+    }
     
     public Enrollment getEnrollmentById(int id){
         String sql = "SELECT * FROM Enrollment WHERE EnrollmentID = ?";

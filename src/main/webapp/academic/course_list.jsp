@@ -2,6 +2,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setLocale value="vi_VN"/>
 
 <link href="css/course_list.css" rel="stylesheet" type="text/css"/>
 
@@ -149,7 +150,7 @@
 
                 <c:forEach items="${courseList}" var="c" varStatus="loop">
                     <tr>
-                        <td>${loop.count}</td>
+                        <td>${startItem + loop.index}</td>
 
                         <td>
                             <div class="user-item">                            
@@ -165,7 +166,7 @@
 
                         <td class="text-secondary">${c.totalSlots}</td>
 
-                        <td><fmt:formatNumber type="currency" value="${c.tuitionFee}" /> </td>
+                        <td><fmt:formatNumber value="${c.tuitionFee}" type="number" maxFractionDigits="0"/> VND</td>
 
                     <td>
                         <span class="class-status-badge ${c.status ? 'active' : 'inactive'}">
@@ -184,14 +185,24 @@
         </div>
 
         <div class="d-flex justify-content-between align-items-center p-3 border-top">
-            <div class="text-muted small">Showing 1-10 of ${courseList.size()} courses</div>
+            <div class="text-muted small">Showing ${startItem}-${endItem} of ${totalItems} courses</div>
             <div>
                 <ul class="pagination pagination-sm mb-0">
-                    <li class="page-item disabled"><a class="page-link" href="#"><i class='bx bx-chevron-left'></i> Previous</a></li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link" href="#">Next <i class='bx bx-chevron-right'></i></a></li>
+                    <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="course?action=${empty paginationAction ? 'all' : paginationAction}${paginationQuery}&page=${currentPage - 1}">
+                            <i class='bx bx-chevron-left'></i> Previous
+                        </a>
+                    </li>
+                    <c:forEach begin="1" end="${totalPages}" var="pageNumber">
+                        <li class="page-item ${pageNumber == currentPage ? 'active' : ''}">
+                            <a class="page-link" href="course?action=${empty paginationAction ? 'all' : paginationAction}${paginationQuery}&page=${pageNumber}">${pageNumber}</a>
+                        </li>
+                    </c:forEach>
+                    <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="course?action=${empty paginationAction ? 'all' : paginationAction}${paginationQuery}&page=${currentPage + 1}">
+                            Next <i class='bx bx-chevron-right'></i>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

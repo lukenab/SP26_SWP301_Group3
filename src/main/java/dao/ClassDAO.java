@@ -79,6 +79,46 @@ public class ClassDAO extends DBContext {
         return list;
     }
 
+    public List<Object[]> getClassFillRateReport() {
+        List<Object[]> list = new ArrayList<>();
+        boolean hasMaxCapacity = hasClassMaxCapacityColumn();
+        String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, u.FullName AS TeacherName, "
+                + "c.Status, COUNT(e.EnrollmentID) AS StudentCount, "
+                + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " AS MaxCapacity, "
+                + "CASE "
+                + "    WHEN " + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " IS NULL "
+                + "         OR " + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " = 0 THEN 0 "
+                + "    ELSE CAST(COUNT(e.EnrollmentID) * 100.0 / " + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " AS DECIMAL(5,2)) "
+                + "END AS FillRate "
+                + "FROM Class c "
+                + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
+                + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
+                + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
+                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.Status, "
+                + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " "
+                + "ORDER BY FillRate DESC, c.ClassName ASC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] row = new Object[8];
+                row[0] = rs.getInt("ClassID");
+                row[1] = rs.getString("ClassName");
+                row[2] = rs.getString("CourseName");
+                row[3] = rs.getString("TeacherName");
+                row[4] = rs.getString("Status");
+                row[5] = rs.getInt("StudentCount");
+                row[6] = rs.getInt("MaxCapacity");
+                row[7] = rs.getBigDecimal("FillRate");
+                list.add(row);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get class fill rate report: " + e.getMessage());
+        }
+
+        return list;
+    }
+
     public Classes getClassByID(int id) {
         String sql = "SELECT * FROM Class WHERE ClassID = ?";
         try {

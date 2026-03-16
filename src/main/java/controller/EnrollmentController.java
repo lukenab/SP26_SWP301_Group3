@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.sql.Date;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -21,6 +22,47 @@ import java.util.List;
  */
 @WebServlet(name = "EnrollmentController", urlPatterns = {"/enrollment"})
 public class EnrollmentController extends HttpServlet {
+
+    private static final int DEFAULT_PAGE_SIZE = 10;
+
+    private int parsePage(HttpServletRequest request) {
+        String pageParam = request.getParameter("page");
+        if (pageParam == null || pageParam.trim().isEmpty()) {
+            return 1;
+        }
+        try {
+            return Math.max(1, Integer.parseInt(pageParam));
+        } catch (NumberFormatException e) {
+            return 1;
+        }
+    }
+
+    private List<Object[]> paginateClassList(List<Object[]> source, int page, int pageSize, HttpServletRequest request) {
+        if (source == null || source.isEmpty()) {
+            request.setAttribute("currentPage", 1);
+            request.setAttribute("pageSize", pageSize);
+            request.setAttribute("totalItems", 0);
+            request.setAttribute("totalPages", 1);
+            request.setAttribute("startItem", 0);
+            request.setAttribute("endItem", 0);
+            return Collections.emptyList();
+        }
+
+        int totalItems = source.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        int currentPage = Math.min(page, totalPages);
+        int fromIndex = (currentPage - 1) * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, totalItems);
+
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalItems", totalItems);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("startItem", fromIndex + 1);
+        request.setAttribute("endItem", toIndex);
+
+        return source.subList(fromIndex, toIndex);
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -36,7 +78,8 @@ public class EnrollmentController extends HttpServlet {
         switch (action) {
             case "classes":
                 List<Object[]> classList = classDAO.getClassManagementList();
-                request.setAttribute("classList", classList);
+                List<Object[]> pagedClassList = paginateClassList(classList, parsePage(request), DEFAULT_PAGE_SIZE, request);
+                request.setAttribute("classList", pagedClassList);
                 request.setAttribute("home_view", "/academic/class_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
@@ -103,10 +146,36 @@ public class EnrollmentController extends HttpServlet {
                     }
                     List<Object[]> studentsInClass = enrollmentDAO.getStudentsInClass(classId);
                     List<Object[]> availableStudents = enrollmentDAO.getStudentsNotInClass(classId);
+                    int maxCapacity = classInfo[8] == null ? 0 : ((Number) classInfo[8]).intValue();
+                    int currentStudents = classInfo[7] == null ? 0 : ((Number) classInfo[7]).intValue();
+                    int remainingSlots = Math.max(0, maxCapacity - currentStudents);
                     request.setAttribute("classInfo", classInfo);
                     request.setAttribute("studentsInClass", studentsInClass);
                     request.setAttribute("availableStudents", availableStudents);
+                    request.setAttribute("remainingSlots", remainingSlots);
                     request.setAttribute("home_view", "/academic/add_student_to_class.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                } catch (NumberFormatException e) {
+                    response.sendRedirect("enrollment?action=classes");
+                }
+                break;
+            case "classDetails":
+                String detailClassIdParam = request.getParameter("classId");
+                if (detailClassIdParam == null || detailClassIdParam.isEmpty()) {
+                    response.sendRedirect("enrollment?action=classes");
+                    return;
+                }
+                try {
+                    int classId = Integer.parseInt(detailClassIdParam);
+                    Object[] classInfo = classDAO.getClassById(classId);
+                    if (classInfo == null) {
+                        response.sendRedirect("enrollment?action=classes");
+                        return;
+                    }
+                    List<Object[]> studentsInClass = enrollmentDAO.getStudentsInClass(classId);
+                    request.setAttribute("classInfo", classInfo);
+                    request.setAttribute("studentsInClass", studentsInClass);
+                    request.setAttribute("home_view", "/academic/class_details.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (NumberFormatException e) {
                     response.sendRedirect("enrollment?action=classes");
@@ -349,6 +418,13 @@ public class EnrollmentController extends HttpServlet {
                 int classId = Integer.parseInt(classIdParam);
                 String[] selectedStudentIds = request.getParameterValues("studentIds");
                 String enrollmentStatus = request.getParameter("enrollmentStatus");
+                Object[] classInfo = classDAO.getClassById(classId);
+                if (classInfo == null) {
+                    request.getSession().setAttribute("message", "Class not found.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=classes");
+                    return;
+                }
                 if (selectedStudentIds == null || selectedStudentIds.length == 0) {
                     request.getSession().setAttribute("message", "Please choose at least one student.");
                     request.getSession().setAttribute("messageType", "error");
@@ -369,6 +445,24 @@ public class EnrollmentController extends HttpServlet {
                     return;
                 }
                 normalizedStatus = "Paid".equalsIgnoreCase(normalizedStatus) ? "Paid" : "UnPaid";
+
+                int currentStudents = classInfo[7] == null ? 0 : ((Number) classInfo[7]).intValue();
+                int maxCapacity = classInfo[8] == null ? 0 : ((Number) classInfo[8]).intValue();
+                int remainingSlots = Math.max(0, maxCapacity - currentStudents);
+
+                if (remainingSlots <= 0) {
+                    request.getSession().setAttribute("message", "This class is already full. You cannot add more students.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=addStudentForm&classId=" + classId);
+                    return;
+                }
+
+                if (selectedStudentIds.length > remainingSlots) {
+                    request.getSession().setAttribute("message", "You can only add " + remainingSlots + " more student(s) to this class.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=addStudentForm&classId=" + classId);
+                    return;
+                }
 
                 int[] studentIds = new int[selectedStudentIds.length];
                 for (int i = 0; i < selectedStudentIds.length; i++) {

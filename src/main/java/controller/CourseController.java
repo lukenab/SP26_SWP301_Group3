@@ -19,6 +19,7 @@ import jakarta.servlet.http.Part;
 import java.util.List;
 import java.math.BigDecimal;
 import java.io.File;
+import java.util.Collections;
 import model.Employee;
 import model.Course;
 import model.Syllabus;
@@ -35,6 +36,47 @@ import model.User;
         maxRequestSize = 1024 * 1024 * 50
 )
 public class CourseController extends HttpServlet {
+
+    private static final int DEFAULT_PAGE_SIZE = 10;
+
+    private int parsePage(HttpServletRequest request) {
+        String pageParam = request.getParameter("page");
+        if (pageParam == null || pageParam.trim().isEmpty()) {
+            return 1;
+        }
+        try {
+            return Math.max(1, Integer.parseInt(pageParam));
+        } catch (NumberFormatException e) {
+            return 1;
+        }
+    }
+
+    private List<Course> paginateCourseList(List<Course> source, int page, int pageSize, HttpServletRequest request) {
+        if (source == null || source.isEmpty()) {
+            request.setAttribute("currentPage", 1);
+            request.setAttribute("pageSize", pageSize);
+            request.setAttribute("totalItems", 0);
+            request.setAttribute("totalPages", 1);
+            request.setAttribute("startItem", 0);
+            request.setAttribute("endItem", 0);
+            return Collections.emptyList();
+        }
+
+        int totalItems = source.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        int currentPage = Math.min(page, totalPages);
+        int fromIndex = (currentPage - 1) * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, totalItems);
+
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalItems", totalItems);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("startItem", fromIndex + 1);
+        request.setAttribute("endItem", toIndex);
+
+        return source.subList(fromIndex, toIndex);
+    }
 
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -57,14 +99,20 @@ public class CourseController extends HttpServlet {
             case "all":
                 List<Course> list = courseDAO.getAllCourse();
                 int totalCourse = list.size();
+                List<Course> pagedList = paginateCourseList(list, parsePage(request), DEFAULT_PAGE_SIZE, request);
                 request.setAttribute("totalCourse", totalCourse);
-                request.setAttribute("courseList", list);
+                request.setAttribute("courseList", pagedList);
+                request.setAttribute("paginationAction", "all");
+                request.setAttribute("paginationQuery", "");
                 request.setAttribute("home_view", "/academic/course_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "active":
                 List<Course> activeList = courseDAO.getActiveCourses();
-                request.setAttribute("courseList", activeList);
+                request.setAttribute("courseList", paginateCourseList(activeList, parsePage(request), DEFAULT_PAGE_SIZE, request));
+                request.setAttribute("paginationAction", "active");
+                request.setAttribute("paginationQuery", "");
+                request.setAttribute("totalCourse", activeList.size());
                 request.setAttribute("home_view", "/academic/course_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
@@ -196,14 +244,20 @@ public class CourseController extends HttpServlet {
                 } else {
                     searchResults = courseDAO.getAllCourse();
                 }
-                request.setAttribute("courseList", searchResults);
+                request.setAttribute("courseList", paginateCourseList(searchResults, parsePage(request), DEFAULT_PAGE_SIZE, request));
+                request.setAttribute("totalCourse", searchResults.size());
                 request.setAttribute("searchKeyword", keyword);
+                request.setAttribute("paginationAction", "search");
+                request.setAttribute("paginationQuery", keyword != null && !keyword.trim().isEmpty() ? "&keyword=" + keyword.trim() : "");
                 request.setAttribute("home_view", "/academic/course_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             default:
                 List<Course> defaultList = courseDAO.getAllCourse();
-                request.setAttribute("courseList", defaultList);
+                request.setAttribute("courseList", paginateCourseList(defaultList, parsePage(request), DEFAULT_PAGE_SIZE, request));
+                request.setAttribute("totalCourse", defaultList.size());
+                request.setAttribute("paginationAction", "all");
+                request.setAttribute("paginationQuery", "");
                 request.setAttribute("home_view", "/academic/course_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
