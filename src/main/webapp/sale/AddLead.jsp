@@ -87,7 +87,6 @@
                 <select id="status" name="status">
                     <option value="New">New</option>
                     <option value="Contacted">Contacted</option>
-                    <option value="Converted">Converted</option>
                 </select>
             </div>
             <div class="form-group">
@@ -105,4 +104,5 @@
     </form>
 </div>
 
+<script src="js/manageUser.js" type="text/javascript"></script>
 <script src="js/manageUser.js" type="text/javascript"></script>

@@ -49,6 +49,10 @@
 
         <div class="form-row">
             <div class="form-group">
+                <label for="maxUsage">Max Usage <span class="text-danger">*</span></label>
+                <input type="number" id="maxUsage" name="maxUsage" min="1" step="1" value="1" required>
+            </div>
+            <div class="form-group">
                 <label for="status">Status</label>
                 <select id="status" name="status">
                     <option value="1">Active</option>

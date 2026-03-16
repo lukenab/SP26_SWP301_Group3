@@ -58,7 +58,7 @@ public class EmailController {
         String content = "Hi " + fullName + ",\n\n"
                 + "Your lead profile has been converted to a student account.\n\n"
                 + "Login email: " + toEmail + "\n"
-                + "Default password: " + defaultPassword + "\n\n"
+                + "Temporary password: " + defaultPassword + "\n\n"
                 + "Please log in and change your password as soon as possible.\n\n"
                 + "Best regards,\nLMCS Support Team";
         return sendPlainTextEmail(toEmail, subject, content);

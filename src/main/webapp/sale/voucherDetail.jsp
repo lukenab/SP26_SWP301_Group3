@@ -70,6 +70,10 @@
                         <span><fmt:formatDate value="${voucher.validUntil}" pattern="dd/MM/yyyy"/></span>
                     </div> 
                     <div class="info-item">
+                        <p>Max Usage</p>
+                        <span>${voucher.maxUsage}</span>
+                    </div>
+                    <div class="info-item">
                         <p>Status</p>
                         <span>${voucher.status ? 'Active' : 'Inactive'}</span>
                     </div> 

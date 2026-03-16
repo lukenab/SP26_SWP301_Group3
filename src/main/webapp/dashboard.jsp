@@ -279,6 +279,13 @@
                         </li>
 
                         <li class="nav-links">
+                            <a href="lead?action=openClasses">
+                                <i class="bxr bx-door-open"></i>
+                                <span class="text nav-text">Open Classes</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
                             <a href="lead?action=salesReport">
                                 <i class="bxr bx-file-report"></i>
                                 <span class="text nav-text">Sales Reports</span>
