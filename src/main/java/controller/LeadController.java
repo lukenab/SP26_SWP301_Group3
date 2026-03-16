@@ -19,6 +19,7 @@ import model.Consultation;
 import model.Course;
 import model.Lead;
 import model.User;
+import model.Voucher;
 
 @WebServlet(name = "LeadController", urlPatterns = {"/lead"})
 public class LeadController extends HttpServlet {
@@ -60,9 +61,23 @@ public class LeadController extends HttpServlet {
 
                 List<Lead> leadList = leadDAO.searchAndFilterLeadsPaged(searchQuery, status, interestCourseId, fromDate, toDate, page, pageSize);
                 List<Course> interestCourseList = courseDAO.getAllCourse();
+
+                int newLeadCount = 0;
+                int convertedLeadCount = 0;
+                if ("all".equalsIgnoreCase(status)) {
+                    newLeadCount = leadDAO.countLeadsByFilters(searchQuery, "New", interestCourseId, fromDate, toDate);
+                    convertedLeadCount = leadDAO.countLeadsByFilters(searchQuery, "Converted", interestCourseId, fromDate, toDate);
+                } else if ("New".equalsIgnoreCase(status)) {
+                    newLeadCount = totalLeads;
+                } else if ("Converted".equalsIgnoreCase(status)) {
+                    convertedLeadCount = totalLeads;
+                }
+
                 request.setAttribute("leadList", leadList);
                 request.setAttribute("interestCourseList", interestCourseList);
                 request.setAttribute("totalLeads", totalLeads);
+                request.setAttribute("newLead", newLeadCount);
+                request.setAttribute("convertedLead", convertedLeadCount);
                 request.setAttribute("currentPage", page);
                 request.setAttribute("totalPages", totalPages);
                 request.setAttribute("pageSize", pageSize);
@@ -76,9 +91,31 @@ public class LeadController extends HttpServlet {
                 break;
 
             case "add":
+                dao.ClassDAO classDAOForLead = new dao.ClassDAO();
+                List<Object[]> openCourseList = classDAOForLead.getOpenCoursesForSales();
+                request.setAttribute("openCourseList", openCourseList);
                 List<Course> courseList = courseDAO.getActiveCourses();
                 request.setAttribute("courseList", courseList);
                 request.setAttribute("home_view", "/sale/AddLead.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+            case "openClasses":
+                dao.ClassDAO salesClassDAO = new dao.ClassDAO();
+                List<Object[]> openClassList = salesClassDAO.getOpenClassListForSales();
+                request.setAttribute("openClassList", openClassList);
+                request.setAttribute("home_view", "/sale/openClassList.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+            case "validateVoucher":
+                handleValidateVoucher(request, response);
+                return;
+            case "addStudentAtCenter":
+                dao.ClassDAO classDAO = new dao.ClassDAO();
+                List<Object[]> classList = classDAO.getClassOptionsForWalkIn();
+                List<Object[]> openCourseListForWalkin = classDAO.getOpenCoursesForSales();
+                request.setAttribute("classList", classList);
+                request.setAttribute("openCourseList", openCourseListForWalkin);
+                request.setAttribute("home_view", "/sale/addStudentAtCenter.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 
@@ -198,14 +235,47 @@ public class LeadController extends HttpServlet {
                     toDateReport = temp.plusMonths(1);
                 }
 
-                Object[] summary = salesDAO.getSalesSummary(fromDateReport, toDateReport);
-                List<Object[]> monthlyRows = salesDAO.getMonthlySalesReport(fromDateReport, toDateReport);
+                Object[] summary = salesDAO.getSalesSummary(fromDateReport, toDateReport, null);
+                List<Object[]> monthlyRows = salesDAO.getMonthlySalesReport(fromDateReport, toDateReport, null);
+
+                java.util.List<Object[]> filteredRows = new java.util.ArrayList<>();
+                for (Object[] row : monthlyRows) {
+                    int total = row[2] == null ? 0 : ((Number) row[2]).intValue();
+                    int converted = row[3] == null ? 0 : ((Number) row[3]).intValue();
+                    if (total > 0 || converted > 0) {
+                        filteredRows.add(row);
+                    }
+                }
+
+                java.util.LinkedHashMap<String, int[]> dailyTotalsMap = new java.util.LinkedHashMap<>();
+                for (Object[] row : filteredRows) {
+                    String dayLabel = String.valueOf(row[0]);
+                    int total = row[2] == null ? 0 : ((Number) row[2]).intValue();
+                    int converted = row[3] == null ? 0 : ((Number) row[3]).intValue();
+                    int[] totals = dailyTotalsMap.get(dayLabel);
+                    if (totals == null) {
+                        totals = new int[]{0, 0};
+                        dailyTotalsMap.put(dayLabel, totals);
+                    }
+                    totals[0] += total;
+                    totals[1] += converted;
+                }
+
+                java.util.List<Object[]> dailyTotals = new java.util.ArrayList<>();
+                for (java.util.Map.Entry<String, int[]> entry : dailyTotalsMap.entrySet()) {
+                    String day = entry.getKey();
+                    int total = entry.getValue()[0];
+                    int converted = entry.getValue()[1];
+                    double rate = total == 0 ? 0.0 : (converted * 100.0) / total;
+                    dailyTotals.add(new Object[]{day, total, converted, rate});
+                }
 
                 request.setAttribute("totalLeads", summary[0]);
                 request.setAttribute("convertedLeads", summary[1]);
                 request.setAttribute("registeredStudents", summary[2]);
                 request.setAttribute("conversionRate", summary[3]);
-                request.setAttribute("monthlyRows", monthlyRows);
+                request.setAttribute("monthlyRows", filteredRows);
+                request.setAttribute("dailyTotals", dailyTotals);
                 request.setAttribute("fromDate", fromDateReport.toLocalDate().toString());
                 request.setAttribute("toDate", toDateReport.toLocalDate().toString());
                 request.setAttribute("home_view", "/sale/viewSalesReport.jsp");
@@ -262,6 +332,11 @@ public class LeadController extends HttpServlet {
         UserDAO userDAO = new UserDAO();
         HttpSession session = request.getSession();
 
+        if ("validateVoucher".equals(action)) {
+            handleValidateVoucher(request, response);
+            return;
+        }
+
         if ("create".equals(action)) {
             String fullName = request.getParameter("fullName");
             String email = request.getParameter("email");
@@ -309,6 +384,159 @@ public class LeadController extends HttpServlet {
 
             session.setAttribute("message", "Add new lead successfully!");
             session.setAttribute("messageType", "success");
+            response.sendRedirect("lead?action=all");
+            return;
+        }
+
+        if ("createStudentAtCenter".equals(action)) {
+            String fullName = request.getParameter("fullName");
+            String email = request.getParameter("email");
+            String phone = request.getParameter("phone");
+            String genderRaw = request.getParameter("gender");
+            String dobRaw = request.getParameter("dob");
+            String classIdRaw = request.getParameter("classId");
+            String voucherCode = request.getParameter("voucherCode");
+
+            if (isBlank(fullName) || isBlank(email) || isBlank(phone) || isBlank(genderRaw) || isBlank(dobRaw) || isBlank(classIdRaw)) {
+                session.setAttribute("message", "Please fill in all required fields.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=addStudentAtCenter");
+                return;
+            }
+
+            String normalizedEmail = email.trim();
+            String normalizedPhone = phone.trim();
+            if (userDAO.isFieldExists("email", normalizedEmail) || leadDAO.isEmailExists(normalizedEmail)) {
+                session.setAttribute("message", "Email already exists. Please use another email.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=addStudentAtCenter");
+                return;
+            }
+            if (userDAO.isFieldExists("phone", normalizedPhone) || leadDAO.isPhoneExists(normalizedPhone)) {
+                session.setAttribute("message", "Phone already exists. Please use another phone number.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=addStudentAtCenter");
+                return;
+            }
+
+            Boolean gender = null;
+            if ("female".equalsIgnoreCase(genderRaw)) {
+                gender = true;
+            } else if ("male".equalsIgnoreCase(genderRaw)) {
+                gender = false;
+            }
+
+            Date dob = parseSqlDate(dobRaw);
+            if (dob == null) {
+                session.setAttribute("message", "Invalid date of birth.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=addStudentAtCenter");
+                return;
+            }
+
+            int classId = parsePositiveIntOrDefault(classIdRaw, 0);
+            if (classId <= 0) {
+                session.setAttribute("message", "Please select a class.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=addStudentAtCenter");
+                return;
+            }
+
+            String password = EmailController.generateRandomPassword();
+            String defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            Date enrollmentDate = new Date(System.currentTimeMillis());
+
+            boolean created = userDAO.addNewUserFull(
+                    fullName.trim(),
+                    normalizedEmail,
+                    password,
+                    normalizedPhone,
+                    null,
+                    gender,
+                    dob,
+                    defaultAvatar,
+                    true,
+                    5,
+                    null,
+                    null,
+                    null,
+                    enrollmentDate
+            );
+
+            if (!created) {
+                session.setAttribute("message", "Failed to create student account.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=addStudentAtCenter");
+                return;
+            }
+
+            User newUser = userDAO.getUserByEmail(normalizedEmail);
+            if (newUser == null) {
+                session.setAttribute("message", "Failed to fetch new student account.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=addStudentAtCenter");
+                return;
+            }
+
+            dao.EnrollmentDAO enrollmentDAO = new dao.EnrollmentDAO();
+            Integer enrollmentId = enrollmentDAO.getEnrollmentId(newUser.getUserId(), classId);
+            if (enrollmentId == null) {
+                enrollmentId = enrollmentDAO.createEnrollment(newUser.getUserId(), classId, "Active");
+            }
+            if (enrollmentId == null) {
+                session.setAttribute("message", "Failed to enroll student into class.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=addStudentAtCenter");
+                return;
+            }
+
+            dao.ClassDAO classDAO = new dao.ClassDAO();
+            double amount = classDAO.getClassPrice(classId);
+            double discountAmount = 0;
+            Integer voucherId = null;
+            if (!isBlank(voucherCode)) {
+                dao.VoucherDAO voucherDAO = new dao.VoucherDAO();
+                Voucher voucher = voucherDAO.getVoucherByCode(voucherCode.trim());
+                if (voucher == null || !voucher.isStatus()) {
+                    session.setAttribute("message", "Invalid or expired voucher code.");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("lead?action=addStudentAtCenter");
+                    return;
+                }
+                if (!voucherDAO.isVoucherUsageAvailable(voucher.getVoucherId())) {
+                    session.setAttribute("message", "This voucher has reached its usage limit.");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("lead?action=addStudentAtCenter");
+                    return;
+                }
+                discountAmount = voucherDAO.calculateDiscountAmount(voucher, amount);
+                if (discountAmount < 0) {
+                    discountAmount = 0;
+                }
+                voucherId = voucher.getVoucherId();
+                enrollmentDAO.updateEnrollmentVoucher(enrollmentId, voucherId);
+            }
+            double finalAmount = amount - discountAmount;
+            if (finalAmount < 0) {
+                finalAmount = 0;
+            }
+            dao.PaymentDAO paymentDAO = new dao.PaymentDAO();
+            boolean paymentCreated = paymentDAO.createPayment(enrollmentId, finalAmount, voucherId, "Cash", "Approved");
+            if (!paymentCreated) {
+                session.setAttribute("message", "Student created, but failed to record payment.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=addStudentAtCenter");
+                return;
+            }
+
+            boolean emailSent = EmailController.sendLeadConversionEmail(normalizedEmail, fullName.trim(), password);
+            if (emailSent) {
+                session.setAttribute("message", "Student created, enrolled, and payment approved. Temporary password has been sent to the email.");
+                session.setAttribute("messageType", "success");
+            } else {
+                session.setAttribute("message", "Student created and enrolled, but failed to send password email. Please inform the student manually.");
+                session.setAttribute("messageType", "error");
+            }
             response.sendRedirect("lead?action=all");
             return;
         }
@@ -442,13 +670,12 @@ public class LeadController extends HttpServlet {
             String address = request.getParameter("address");
             String dobRaw = request.getParameter("dob");
             String genderRaw = request.getParameter("gender");
-            String defaultPassword = "123456";
+            String defaultPassword = EmailController.generateRandomPassword();
             String enrollmentDateRaw = request.getParameter("enrollmentDate");
-            String avatar = request.getParameter("avatar");
             String convertNote = request.getParameter("convertNote");
 
-            if (isBlank(fullName) || isBlank(email) || isBlank(dobRaw) || isBlank(genderRaw)) {
-                session.setAttribute("message", "Please fill all required information for conversion.");
+            if (isBlank(fullName) || isBlank(email)) {
+                session.setAttribute("message", "Full name and email are required for conversion.");
                 session.setAttribute("messageType", "error");
                 response.sendRedirect("lead?action=convertForm&id=" + leadId);
                 return;
@@ -462,18 +689,23 @@ public class LeadController extends HttpServlet {
             }
 
             Date dob = parseSqlDate(dobRaw);
-            Date enrollmentDate = parseSqlDate(enrollmentDateRaw);
-            if (dob == null) {
+            if (!isBlank(dobRaw) && dob == null) {
                 session.setAttribute("message", "Invalid DOB format.");
                 session.setAttribute("messageType", "error");
                 response.sendRedirect("lead?action=convertForm&id=" + leadId);
                 return;
             }
+            Date enrollmentDate = parseSqlDate(enrollmentDateRaw);
             if (enrollmentDate == null) {
                 enrollmentDate = new Date(System.currentTimeMillis());
             }
 
-            boolean isFemale = "female".equalsIgnoreCase(genderRaw);
+            Boolean gender = null;
+            if ("female".equalsIgnoreCase(genderRaw)) {
+                gender = true;
+            } else if ("male".equalsIgnoreCase(genderRaw)) {
+                gender = false;
+            }
             String defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
             boolean created = userDAO.addNewUserFull(
@@ -482,9 +714,9 @@ public class LeadController extends HttpServlet {
                     defaultPassword,
                     isBlank(phone) ? null : phone.trim(),
                     isBlank(address) ? null : address.trim(),
-                    isFemale,
+                    gender,
                     dob,
-                    isBlank(avatar) ? defaultAvatar : avatar.trim(),
+                    defaultAvatar,
                     true,
                     5,
                     null,
@@ -507,10 +739,10 @@ public class LeadController extends HttpServlet {
 
             boolean emailSent = EmailController.sendLeadConversionEmail(email.trim(), fullName.trim(), defaultPassword);
             if (emailSent) {
-                session.setAttribute("message", "Convert successful. Default password 123456 has been sent to student email.");
+                session.setAttribute("message", "Convert successful. A temporary password has been sent to the student email.");
                 session.setAttribute("messageType", "success");
             } else {
-                session.setAttribute("message", "Convert successful, but failed to send default password email. Please send credentials manually.");
+                session.setAttribute("message", "Convert successful, but failed to send password email. Please send credentials manually.");
                 session.setAttribute("messageType", "error");
             }
             response.sendRedirect("lead?action=all");
@@ -655,6 +887,54 @@ public class LeadController extends HttpServlet {
             return newNote.trim();
         }
         return currentNote.trim() + "\n[Convert Note] " + newNote.trim();
+    }
+
+    private void handleValidateVoucher(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.setHeader("Cache-Control", "no-store");
+
+        try {
+            String classIdRaw = request.getParameter("classId");
+            String voucherCode = request.getParameter("voucherCode");
+
+            int classId = parsePositiveIntOrDefault(classIdRaw, 0);
+            if (classId <= 0 || isBlank(voucherCode)) {
+                response.getWriter().write("{\"valid\":false,\"message\":\"Invalid request.\"}");
+                return;
+            }
+
+            dao.ClassDAO classDAO = new dao.ClassDAO();
+            double amount = classDAO.getClassPrice(classId);
+
+            dao.VoucherDAO voucherDAO = new dao.VoucherDAO();
+            String normalizedCode = voucherCode.trim().toUpperCase();
+            Voucher voucher = voucherDAO.getVoucherByCode(normalizedCode);
+            if (voucher == null || !voucher.isStatus()) {
+                response.getWriter().write("{\"valid\":false,\"message\":\"Invalid or expired voucher code.\"}");
+                return;
+            }
+            if (!voucherDAO.isVoucherUsageAvailable(voucher.getVoucherId())) {
+                response.getWriter().write("{\"valid\":false,\"message\":\"This voucher has reached its usage limit.\"}");
+                return;
+            }
+
+            double discountAmount = voucherDAO.calculateDiscountAmount(voucher, amount);
+            if (discountAmount < 0) {
+                discountAmount = 0;
+            }
+            double finalAmount = amount - discountAmount;
+            if (finalAmount < 0) {
+                finalAmount = 0;
+            }
+
+            String json = String.format(java.util.Locale.US,
+                    "{\"valid\":true,\"message\":\"Voucher applied.\",\"discountAmount\":%.2f,\"finalAmount\":%.2f}",
+                    discountAmount, finalAmount);
+            response.getWriter().write(json);
+        } catch (Exception ex) {
+            response.getWriter().write("{\"valid\":false,\"message\":\"Failed to apply voucher.\"}");
+        }
     }
 
 }

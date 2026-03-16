@@ -12,7 +12,7 @@ public class VoucherDAO extends DBContext {
 
     public List<Voucher> getAllVoucher() {
         List<Voucher> list = new ArrayList<>();
-        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status "
+        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, MaxUsage "
                 + "FROM Voucher ORDER BY VoucherID DESC";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -28,8 +28,9 @@ public class VoucherDAO extends DBContext {
 
     public List<Voucher> searchAndFilterVouchers(String searchQuery, String status) {
         List<Voucher> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status "
-                + "FROM Voucher WHERE 1=1 ");
+        StringBuilder sql = new StringBuilder("SELECT v.VoucherID, v.Code, v.DiscountAmount, v.DiscountPercent, v.ValidUntil, v.Status, v.MaxUsage, "
+                + "ISNULL((SELECT COUNT(*) FROM Payment p WHERE p.VoucherID = v.VoucherID AND p.Status <> 'Rejected'), 0) AS UsedCount "
+                + "FROM Voucher v WHERE 1=1 ");
 
         boolean hasSearch = searchQuery != null && !searchQuery.trim().isEmpty();
         boolean hasStatus = status != null && !status.trim().isEmpty() && !"all".equalsIgnoreCase(status.trim());
@@ -40,7 +41,7 @@ public class VoucherDAO extends DBContext {
         if (hasStatus) {
             sql.append("AND Status = ? ");
         }
-        sql.append("ORDER BY VoucherID DESC");
+            sql.append("ORDER BY v.VoucherID DESC");
 
         try {
             PreparedStatement ps = conn.prepareStatement(sql.toString());
@@ -64,7 +65,7 @@ public class VoucherDAO extends DBContext {
 
     public List<Voucher> getActiveVoucher() {
         List<Voucher> list = new ArrayList<>();
-        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status "
+        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, MaxUsage "
                 + "FROM Voucher WHERE Status = 1 ORDER BY ValidUntil ASC";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -79,7 +80,7 @@ public class VoucherDAO extends DBContext {
     }
 
     public Voucher getVoucherByID(int id) {
-        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status "
+        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, MaxUsage "
                 + "FROM Voucher WHERE VoucherID = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -95,7 +96,7 @@ public class VoucherDAO extends DBContext {
     }
 
     public Voucher getVoucherByCode(String code) {
-        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status "
+        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, MaxUsage "
                 + "FROM Voucher WHERE Code = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -111,7 +112,7 @@ public class VoucherDAO extends DBContext {
     }
 
     public void insertVoucher(Voucher v) {
-        String sql = "INSERT INTO Voucher (Code, DiscountAmount, DiscountPercent, ValidUntil, Status) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Voucher (Code, DiscountAmount, DiscountPercent, ValidUntil, Status, MaxUsage) VALUES (?, ?, ?, ?, ?, ?)";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, v.getCode());
@@ -123,14 +124,19 @@ public class VoucherDAO extends DBContext {
                 ps.setDate(4, new Date(v.getValidUntil().getTime()));
             }
             ps.setBoolean(5, v.isStatus());
+            if (v.getMaxUsage() == null) {
+                ps.setNull(6, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(6, v.getMaxUsage());
+            }
             ps.executeUpdate();
         } catch (Exception e) {
             System.out.println("Fail to insert voucher: " + e.getMessage());
         }
     }
 
-    public boolean updateVoucher(int id, String code, java.math.BigDecimal discountAmount, double discountPercent, Date validUntil, boolean status) {
-        String sql = "UPDATE Voucher SET Code = ?, DiscountAmount = ?, DiscountPercent = ?, ValidUntil = ?, Status = ? "
+    public boolean updateVoucher(int id, String code, java.math.BigDecimal discountAmount, double discountPercent, Date validUntil, boolean status, Integer maxUsage) {
+        String sql = "UPDATE Voucher SET Code = ?, DiscountAmount = ?, DiscountPercent = ?, ValidUntil = ?, Status = ?, MaxUsage = ? "
                 + "WHERE VoucherID = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -139,7 +145,12 @@ public class VoucherDAO extends DBContext {
             ps.setDouble(3, discountPercent);
             ps.setDate(4, validUntil);
             ps.setBoolean(5, status);
-            ps.setInt(6, id);
+            if (maxUsage == null) {
+                ps.setNull(6, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(6, maxUsage);
+            }
+            ps.setInt(7, id);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             System.out.println("Fail to update voucher: " + e.getMessage());
@@ -208,6 +219,20 @@ public class VoucherDAO extends DBContext {
         voucher.setDiscountPercent(rs.getDouble("DiscountPercent"));
         voucher.setValidUntil(rs.getDate("ValidUntil"));
         voucher.setStatus(rs.getBoolean("Status"));
+        int maxUsage = rs.getInt("MaxUsage");
+        voucher.setMaxUsage(rs.wasNull() ? 0 : maxUsage);
+        int usedCount = 0;
+        try {
+            usedCount = rs.getInt("UsedCount");
+            if (rs.wasNull()) {
+                usedCount = 0;
+            }
+        } catch (Exception ignored) {
+            usedCount = 0;
+        }
+        voucher.setUsedCount(usedCount);
+        int remaining = Math.max((voucher.getMaxUsage() != null ? voucher.getMaxUsage() : 0) - usedCount, 0);
+        voucher.setRemainingCount(remaining);
         return voucher;
     }
 
@@ -247,5 +272,30 @@ public class VoucherDAO extends DBContext {
         }
 
         return discountAmount;
+    }
+
+    public int getVoucherRemainingUsage(int voucherId) {
+        String sql = "SELECT COALESCE(v.MaxUsage, 1) AS MaxUsage, "
+                + "ISNULL((SELECT COUNT(*) FROM Payment p "
+                + "        WHERE p.VoucherID = v.VoucherID "
+                + "          AND p.Status <> 'Rejected'), 0) AS UsedCount "
+                + "FROM Voucher v WHERE v.VoucherID = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, voucherId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int maxUsage = rs.getInt("MaxUsage");
+                int used = rs.getInt("UsedCount");
+                return Math.max(maxUsage - used, 0);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get voucher remaining usage: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public boolean isVoucherUsageAvailable(int voucherId) {
+        return getVoucherRemainingUsage(voucherId) > 0;
     }
 }

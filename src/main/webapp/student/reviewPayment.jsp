@@ -55,14 +55,22 @@
                 <div class="card shadow-sm">
                     <div class="card-body p-4">
                         <h5 class="card-title mb-3">Select Payment Method</h5>
-                        <div class="method-box active">
-                            <input type="radio" checked class="me-3">
+                        <label class="method-box active" for="payment_qr">
+                            <input type="radio" id="payment_qr" name="paymentMethod" value="qr" checked class="me-3" form="checkoutForm">
                             <i class="fa-solid fa-qrcode me-2 text-primary"></i>
                             <div>
                                 <strong>Instant Transfer via VietQR</strong>
                                 <div class="small text-muted">Scan QR code for automatic verification</div>
                             </div>
-                        </div>
+                        </label>
+                        <label class="method-box mt-3" for="payment_cash">
+                            <input type="radio" id="payment_cash" name="paymentMethod" value="cash" class="me-3" form="checkoutForm">
+                            <i class="fa-solid fa-money-bill-wave me-2 text-success"></i>
+                            <div>
+                                <strong>Cash Payment at Center</strong>
+                                <div class="small text-muted">Submit request and pay directly at the center</div>
+                            </div>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -91,7 +99,7 @@
                             </span>
                         </div>
 
-                        <form action="payment" method="POST">
+                        <form action="payment" method="POST" id="checkoutForm">
                             <input type="hidden" name="action" value="checkout">
                             <input type="hidden" name="classId" value="${classId}">
                             <input type="hidden" name="className" value="${className}">
