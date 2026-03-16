@@ -479,16 +479,16 @@ public class LeadController extends HttpServlet {
             }
 
             dao.EnrollmentDAO enrollmentDAO = new dao.EnrollmentDAO();
-            Integer enrollmentId = enrollmentDAO.getEnrollmentId(newUser.getUserId(), classId);
-            if (enrollmentId == null) {
-                enrollmentId = enrollmentDAO.createEnrollment(newUser.getUserId(), classId, "Active");
-            }
-            if (enrollmentId == null) {
-                session.setAttribute("message", "Failed to enroll student into class.");
-                session.setAttribute("messageType", "error");
-                response.sendRedirect("lead?action=addStudentAtCenter");
-                return;
-            }
+//            Integer enrollmentId = enrollmentDAO.getEnrollmentId(newUser.getUserId(), classId);
+//            if (enrollmentId == null) {
+//                enrollmentId = enrollmentDAO.createEnrollment(newUser.getUserId(), classId, "Active");
+//            }
+//            if (enrollmentId == null) {
+//                session.setAttribute("message", "Failed to enroll student into class.");
+//                session.setAttribute("messageType", "error");
+//                response.sendRedirect("lead?action=addStudentAtCenter");
+//                return;
+//            }
 
             dao.ClassDAO classDAO = new dao.ClassDAO();
             double amount = classDAO.getClassPrice(classId);
@@ -513,21 +513,21 @@ public class LeadController extends HttpServlet {
                 if (discountAmount < 0) {
                     discountAmount = 0;
                 }
-                voucherId = voucher.getVoucherId();
-                enrollmentDAO.updateEnrollmentVoucher(enrollmentId, voucherId);
+//                voucherId = voucher.getVoucherId();
+//                enrollmentDAO.updateEnrollmentVoucher(enrollmentId, voucherId);
             }
             double finalAmount = amount - discountAmount;
             if (finalAmount < 0) {
                 finalAmount = 0;
             }
             dao.PaymentDAO paymentDAO = new dao.PaymentDAO();
-            boolean paymentCreated = paymentDAO.createPayment(enrollmentId, finalAmount, voucherId, "Cash", "Approved");
-            if (!paymentCreated) {
-                session.setAttribute("message", "Student created, but failed to record payment.");
-                session.setAttribute("messageType", "error");
-                response.sendRedirect("lead?action=addStudentAtCenter");
-                return;
-            }
+//            boolean paymentCreated = paymentDAO.createPayment(enrollmentId, finalAmount, voucherId, "Cash", "Approved");
+//            if (!paymentCreated) {
+//                session.setAttribute("message", "Student created, but failed to record payment.");
+//                session.setAttribute("messageType", "error");
+//                response.sendRedirect("lead?action=addStudentAtCenter");
+//                return;
+//            }
 
             boolean emailSent = EmailController.sendLeadConversionEmail(normalizedEmail, fullName.trim(), password);
             if (emailSent) {

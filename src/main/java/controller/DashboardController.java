@@ -57,8 +57,6 @@ public class DashboardController extends HttpServlet {
                 if (currentUser != null && currentUser.getRole() != null) {
                     int roleId = currentUser.getRole().getRoleId();
                     if (roleId == 3) {
-                        LeadDAO leadDAO = new LeadDAO();
-                        PaymentDAO paymentDAO = new PaymentDAO();
                         int totalLeads = leadDAO.countLeadsByFilters(null, "all", null, null, null);
                         int convertedLeads = leadDAO.countLeadsByFilters(null, "Converted", null, null, null);
                         int pendingPayments = paymentDAO.getPaymentCountByStatus("Pending");
