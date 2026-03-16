@@ -61,9 +61,23 @@ public class LeadController extends HttpServlet {
 
                 List<Lead> leadList = leadDAO.searchAndFilterLeadsPaged(searchQuery, status, interestCourseId, fromDate, toDate, page, pageSize);
                 List<Course> interestCourseList = courseDAO.getAllCourse();
+
+                int newLeadCount = 0;
+                int convertedLeadCount = 0;
+                if ("all".equalsIgnoreCase(status)) {
+                    newLeadCount = leadDAO.countLeadsByFilters(searchQuery, "New", interestCourseId, fromDate, toDate);
+                    convertedLeadCount = leadDAO.countLeadsByFilters(searchQuery, "Converted", interestCourseId, fromDate, toDate);
+                } else if ("New".equalsIgnoreCase(status)) {
+                    newLeadCount = totalLeads;
+                } else if ("Converted".equalsIgnoreCase(status)) {
+                    convertedLeadCount = totalLeads;
+                }
+
                 request.setAttribute("leadList", leadList);
                 request.setAttribute("interestCourseList", interestCourseList);
                 request.setAttribute("totalLeads", totalLeads);
+                request.setAttribute("newLead", newLeadCount);
+                request.setAttribute("convertedLead", convertedLeadCount);
                 request.setAttribute("currentPage", page);
                 request.setAttribute("totalPages", totalPages);
                 request.setAttribute("pageSize", pageSize);

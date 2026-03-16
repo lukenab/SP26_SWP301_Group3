@@ -57,18 +57,6 @@
         <c:remove var="messageType" scope="session" />
     </c:if>
 
-    <c:set var="newLead" value="0"/>
-    <c:set var="convertedLead" value="0"/>
-
-    <c:forEach items="${leadList}" var="l">
-        <c:if test="${l.status == 'New'}">
-            <c:set var="newLead" value="${newLead + 1}"/>
-        </c:if>
-        <c:if test="${l.status == 'Converted'}">
-            <c:set var="convertedLead" value="${convertedLead + 1}"/>
-        </c:if>
-    </c:forEach>
-
     <div class="stat-card-grid">
         <div class="stat-card">
             <div class="stat-info">
@@ -102,8 +90,8 @@
                 <p>Converted Rate</p>
                 <h3>
                     <c:choose>
-                        <c:when test="${fn:length(leadList) > 0}">
-                            <fmt:formatNumber value="${(convertedLead * 100.0) / fn:length(leadList)}"
+                        <c:when test="${totalLeads > 0}">
+                            <fmt:formatNumber value="${(convertedLead * 100.0) / totalLeads}"
                                               minFractionDigits="2"
                                               maxFractionDigits="2"/>%
                         </c:when>
