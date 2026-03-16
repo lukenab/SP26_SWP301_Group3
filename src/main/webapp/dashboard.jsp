@@ -11,6 +11,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
         <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
         <link href="css/dashboard.css" rel="stylesheet" type="text/css"/>
@@ -20,7 +21,8 @@
         <link href="css/form.css" rel="stylesheet" type="text/css"/>
         <title>Admin Page</title>
     </head>
-    <body>
+<body>
+        <c:set var="currentAction" value="${param.action}" />
         <nav class="active">
             <div class="custom-navbar">
                 <div class="navbar-left">
@@ -220,41 +222,55 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="room">
+                            <a href="room" class="${pageContext.request.servletPath == '/room' ? 'active' : ''}">
                                 <i class="bxr bx-door-open"></i>
                                 <span class="text nav-text">Room</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
-                            <a href="enrollment?action=classes">
+                            <a href="enrollment?action=classes" class="${pageContext.request.servletPath == '/enrollment' ? 'active' : ''}">
                                 <i class="bxr bx-door"></i>
                                 <span class="text nav-text">Classes</span>
                             </a>
                         </li>
                         <li class="nav-links">
-                            <a href="course">
+                            <a href="course" class="${pageContext.request.servletPath == '/course' ? 'active' : ''}">
                                 <i class="bxr bx-book"></i>
                                 <span class="text nav-text">Courses</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
-                            <a href="syllabus?action=manage">
+                            <a href="syllabus?action=manage" class="${pageContext.request.servletPath == '/syllabus' ? 'active' : ''}">
                                 <i class="bxr bx-book-content"></i>
                                 <span class="text nav-text">Syllabus</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
-                            <a href="schedule?action=manage">
+                            <a href="schedule?action=manage" class="${pageContext.request.servletPath == '/schedule' ? 'active' : ''}">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">Schedule</span>
                             </a>
                         </li>
 
                         <li class="nav-links">
-                            <a href="dashboard?action=profile">
+                            <a href="dashboard?action=academicFillRateReport" class="${currentAction == 'academicFillRateReport' ? 'active' : ''}">
+                                <i class="bxr bx-file-report"></i>
+                                <span class="text nav-text">Class Fill Report</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="dashboard?action=academicGradeEnrollmentReport" class="${currentAction == 'academicGradeEnrollmentReport' ? 'active' : ''}">
+                                <i class="bx bx-article" /></i>
+                                <span class="text nav-text">Grade Report</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="dashboard?action=profile" class="${currentAction == 'profile' ? 'active' : ''}">
                                 <i class="bxr bx-user"></i>
                                 <span class="text nav-text">Profile</span>
                             </a>

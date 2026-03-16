@@ -214,6 +214,256 @@
     border-left: 5px solid #dc2626;
 }
 
+.class-management-page .fill-rate-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.class-management-page .fill-rate-bar {
+    width: 120px;
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.class-management-page .fill-rate-value {
+    height: 100%;
+    border-radius: 999px;
+}
+
+.class-management-page .fill-rate-value.high {
+    background: #16a34a;
+}
+
+.class-management-page .fill-rate-value.medium {
+    background: #f59e0b;
+}
+
+.class-management-page .fill-rate-value.low {
+    background: #dc2626;
+}
+
+.class-management-page .fill-rate-text {
+    min-width: 48px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cm-text-primary);
+}
+
+.class-management-page .report-filter-bar,
+.class-management-page .report-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+}
+
+.class-management-page .report-filter-form {
+    margin: 0;
+}
+
+.class-management-page .report-filter-select {
+    min-width: 280px;
+    border: 1px solid var(--cm-border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    background: #fff;
+    color: var(--cm-text-primary);
+    outline: none;
+}
+
+.class-management-page .selected-report-row {
+    background: #eff6ff;
+}
+
+.class-management-page .badge-neutral {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.class-management-page .report-badge-average {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.class-management-page .report-badge-ungraded {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.class-management-page .class-detail-page-body {
+    padding: 22px;
+}
+
+.class-management-page .class-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.class-management-page .class-detail-item {
+    background: #f8fafc;
+    border: 1px solid var(--cm-border);
+    border-radius: 12px;
+    padding: 16px 18px;
+}
+
+.class-management-page .class-detail-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--cm-text-secondary);
+}
+
+.class-management-page .class-detail-value {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cm-text-primary);
+    line-height: 1.5;
+}
+
+.class-management-page .class-details-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    padding: 28px 30px;
+    border: 1px solid var(--cm-border);
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 28%),
+        linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.class-management-page .class-details-hero-main {
+    max-width: 700px;
+}
+
+.class-management-page .class-details-kicker {
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--cm-blue);
+}
+
+.class-management-page .class-details-title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--cm-text-primary);
+}
+
+.class-management-page .class-details-subtitle {
+    margin: 8px 0 0;
+    font-size: 1rem;
+    color: var(--cm-text-secondary);
+}
+
+.class-management-page .class-details-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.class-management-page .class-details-meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.class-management-page .class-details-hero-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.class-management-page .class-detail-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.class-management-page .class-detail-summary-card {
+    padding: 18px 20px;
+    border-radius: 16px;
+    border: 1px solid var(--cm-border);
+    background: #ffffff;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+}
+
+.class-management-page .class-detail-summary-card.emphasis {
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    border-color: #bfdbfe;
+}
+
+.class-management-page .class-student-card {
+    overflow: hidden;
+}
+
+.class-management-page .class-student-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 22px 14px;
+    border-bottom: 1px solid var(--cm-border);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.class-management-page .class-details-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.class-management-page .class-student-avatar {
+    width: 42px;
+    height: 42px;
+    margin-right: 0;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.18);
+}
+
+.class-management-page .class-detail-date {
+    font-weight: 600;
+    color: var(--cm-text-primary);
+}
+
+.class-management-page .class-student-contact {
+    color: var(--cm-blue);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.class-management-page .class-student-contact:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
 .class-management-page .toast-icon i {
     font-size: 24px;
 }
@@ -230,6 +480,40 @@
 
 @media (max-width: 768px) {
     .class-management-page .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .class-management-page .report-filter-bar,
+    .class-management-page .report-detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .class-management-page .report-filter-select {
+        min-width: 100%;
+        width: 100%;
+    }
+
+    .class-management-page .class-details-hero {
+        flex-direction: column;
+        padding: 22px;
+    }
+
+    .class-management-page .class-details-hero-actions {
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .class-management-page .class-detail-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .class-management-page .class-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .class-management-page .class-student-header {
         flex-direction: column;
         align-items: flex-start;
     }
