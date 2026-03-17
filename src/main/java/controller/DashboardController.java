@@ -46,14 +46,20 @@ public class DashboardController extends HttpServlet {
         LeadDAO leadDAO = new LeadDAO();
         PaymentDAO paymentDAO = new PaymentDAO();
         EnrollmentDAO enrollDAO = new EnrollmentDAO();
+
+        User currentUser = (User) request.getSession().getAttribute("user");
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        // Default dashboard view when no action is provided
         if (action == null) {
             action = "all";
         }
 
         switch (action) {
             case "all":
-                HttpSession sessionAll = request.getSession();
-                User currentUser = (User) sessionAll.getAttribute("user");
                 if (currentUser != null && currentUser.getRole() != null) {
                     int roleId = currentUser.getRole().getRoleId();
                     if (roleId == 3) {
@@ -71,8 +77,8 @@ public class DashboardController extends HttpServlet {
                         response.sendRedirect("dashboard?action=admin");
                         return;
                     } else if (roleId == 2) {
-                        response.sendRedirect("dashboard?action=academic");
-                        return;
+                        // Academic users see their own dashboard page
+                        request.setAttribute("home_view", "/academic/academicDashboard.jsp");
                     } else if (roleId == 4) {
                         response.sendRedirect("dashboard?action=teacher");
                         return;
