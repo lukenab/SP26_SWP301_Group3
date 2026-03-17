@@ -6,6 +6,23 @@
 <link href="css/class_management.css" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body class-management-page">
+    <c:set var="currentStudents" value="${classInfo[7] == null ? 0 : classInfo[7]}" />
+    <c:set var="maxCapacity" value="${classInfo[8] == null ? 0 : classInfo[8]}" />
+    <c:set var="fillRate" value="${maxCapacity > 0 ? (currentStudents * 100.0 / maxCapacity) : 0}" />
+    <c:set var="fillRateBar" value="${fillRate > 100 ? 100 : fillRate}" />
+    <c:set var="paidCount" value="0" />
+    <c:set var="unpaidCount" value="0" />
+    <c:forEach items="${studentsInClass}" var="s">
+        <c:choose>
+            <c:when test="${s[5] == 'Paid'}">
+                <c:set var="paidCount" value="${paidCount + 1}" />
+            </c:when>
+            <c:when test="${s[5] == 'UnPaid' || s[5] == 'Unpaid'}">
+                <c:set var="unpaidCount" value="${unpaidCount + 1}" />
+            </c:when>
+        </c:choose>
+    </c:forEach>
+
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-2">
@@ -73,13 +90,53 @@
         </div>
     </div>
 
+    <div class="class-metric-grid mb-4">
+        <div class="class-metric-card primary">
+            <div class="class-metric-label">Fill Rate</div>
+            <div class="class-metric-value">
+                <fmt:formatNumber value="${fillRate}" maxFractionDigits="0"/>%
+            </div>
+            <div class="class-metric-sub">${currentStudents}/${maxCapacity} enrolled</div>
+            <div class="class-metric-bar">
+                <span style="width: ${fillRateBar}%;"></span>
+            </div>
+        </div>
+        <div class="class-metric-card">
+            <div class="class-metric-label">Payment Status</div>
+            <div class="class-metric-value">${paidCount}</div>
+            <div class="class-metric-sub">${unpaidCount} unpaid</div>
+            <div class="class-metric-icon success">
+                <i class='bx bx-check-circle'></i>
+            </div>
+        </div>
+        <div class="class-metric-card">
+            <div class="class-metric-label">Average Grade</div>
+            <div class="class-metric-value">N/A</div>
+            <div class="class-metric-sub">No grade data yet</div>
+            <div class="class-metric-icon info">
+                <i class='bx bx-line-chart'></i>
+            </div>
+        </div>
+        <div class="class-metric-card">
+            <div class="class-metric-label">Pass Rate</div>
+            <div class="class-metric-value">N/A</div>
+            <div class="class-metric-sub">Students passing</div>
+            <div class="class-metric-icon warning">
+                <i class='bx bx-award'></i>
+            </div>
+        </div>
+    </div>
+
     <div class="card user-table-card border-0 bg-white class-student-card">
         <div class="class-student-header">
             <div>
                 <h5 class="mb-1">Students In Class</h5>
                 <p class="text-muted small mb-0">Current students enrolled in this class.</p>
             </div>
-            <span class="class-details-count">${studentsInClass.size()} students</span>
+            <div class="class-student-actions">
+                <span class="class-details-count">${studentsInClass.size()} students</span>
+                <a href="#" class="btn btn-outline-secondary btn-export-report">Export Report</a>
+            </div>
         </div>
         <div class="table-responsive">
             <table class="table mb-0 align-middle">
