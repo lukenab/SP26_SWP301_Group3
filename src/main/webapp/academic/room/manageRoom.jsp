@@ -56,8 +56,7 @@
         <div class="table-responsive">
             <c:choose>
                 <c:when test="${empty allRooms}">
-                    <div class="text-center py-5">
-                        <i class='bx bx-door-open room-empty-icon'></i>
+-3                        <i class='bx bx-door-open room-empty-icon'></i>
                         <p class="text-muted mt-3">No rooms found.</p>
                         <a href="?action=create" class="btn btn-add-new mt-2">
                             <i class='bx bx-plus-circle'></i> Create Your First Room
