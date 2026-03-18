@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.AssessmentDAO;
 import dao.ClassDAO;
 import dao.GradeDAO;
 import dao.StudentDAO;
@@ -17,7 +18,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
-import model.Classes;
 import model.Grade;
 import model.Student;
 import model.User;
@@ -78,6 +78,7 @@ public class GradeController extends HttpServlet {
         GradeDAO dao = new GradeDAO();
         StudentDAO studentDAO = new StudentDAO();
         ClassDAO classDAO = new ClassDAO();
+        AssessmentDAO assessmentDAO = new AssessmentDAO();
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
         switch (action) {
@@ -90,7 +91,7 @@ public class GradeController extends HttpServlet {
                     User student = studentDAO.getUserById(studentIdEnter);
                     String className = classDAO.getClassNameById(classIdEnter);
 
-                    List<Assessment> assessmentList = dao.getAssessmentsByClass(classIdEnter);
+                    List<Assessment> assessmentList = assessmentDAO.getAssessmentsByClass(classIdEnter);
 
                     Integer enrollmentId = dao.getEnrollmentId(studentIdEnter, classIdEnter);
                     if (enrollmentId != null) {
@@ -131,7 +132,7 @@ public class GradeController extends HttpServlet {
                     return;
                 }
 
-                List<Assessment> assessmentListEdit = dao.getAssessmentsByClass(classIdEdit);
+                List<Assessment> assessmentListEdit = assessmentDAO.getAssessmentsByClass(classIdEdit);
                 request.setAttribute("assessmentList", assessmentListEdit);
 
                 User estudent = studentDAO.getUserById(studentIdEdit);
@@ -235,10 +236,11 @@ public class GradeController extends HttpServlet {
                 try {
                     int classId = Integer.parseInt(request.getParameter("classId"));
 
-                    List<Assessment> assessmentList = dao.getAssessmentsByClass(classId);
+                    List<Assessment> assessmentList = assessmentDAO.getAssessmentsByClass(classId);
 
                     List<Map<String, Object>> gradeAllList = dao.getFullGradeReport(classId);
-
+                   
+                    
                     Map<Integer, Double> avgMap = dao.getAverageByClassId(classId);
 
                     String currentClassName = classDAO.getClassNameById(classId);
@@ -272,6 +274,7 @@ public class GradeController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         GradeDAO dao = new GradeDAO();
+        AssessmentDAO assessmentDAO = new AssessmentDAO();
         HttpSession session = request.getSession();
         switch (action) {
 
@@ -279,27 +282,29 @@ public class GradeController extends HttpServlet {
                 try {
                     int studentId = Integer.parseInt(request.getParameter("studentId"));
                     int classId = Integer.parseInt(request.getParameter("classId"));
+
                     Integer enrollmentId = dao.getEnrollmentId(studentId, classId);
 
                     if (enrollmentId != null) {
 
-                        java.util.Enumeration<String> paramNames = request.getParameterNames();
-                        while (paramNames.hasMoreElements()) {
-                            String paramName = paramNames.nextElement();
+                        List<Assessment> assessmentList = assessmentDAO.getAssessmentsByClass(classId);
 
-                            if (paramName.startsWith("score_")) {
-                                int assessmentId = Integer.parseInt(paramName.split("_")[1]);
-                                String scoreVal = request.getParameter(paramName);
+                        for (Assessment a : assessmentList) {
 
-                                if (scoreVal != null && !scoreVal.isEmpty()) {
-                                    double score = Double.parseDouble(scoreVal);
-                                    dao.saveOrUpdate(enrollmentId, assessmentId, score);
-                                }
+                            String scoreVal = request.getParameter("score_" + a.getAssessmentId());
+
+                            if (scoreVal != null && !scoreVal.isEmpty()) {
+
+                                double score = Double.parseDouble(scoreVal);
+
+                                dao.saveOrUpdate(enrollmentId, a.getAssessmentId(), score);
                             }
                         }
+
                         session.setAttribute("message", "Grades updated successfully!");
                         session.setAttribute("messageType", "success");
                     }
+
                 } catch (Exception e) {
                     session.setAttribute("message", "Error saving grades!");
                     session.setAttribute("messageType", "error");

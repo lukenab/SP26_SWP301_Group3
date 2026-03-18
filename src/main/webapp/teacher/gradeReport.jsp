@@ -44,7 +44,7 @@
                                 <th style="min-width: 120px;">
                                     <div class="fw-bold">${ass.assessmentName}</div>
                                     <span class="text-muted d-block" style="font-size: 0.65rem; font-weight: normal;">
-                                        Weight: ${ass.weight * 100}%
+                                        Weight: ${ass.weight}%
                                     </span>
                                 </th>
                             </c:forEach>
@@ -102,7 +102,7 @@
 
                                 <c:set var="finalAvg" value="${avgMap[g.userId]}" />
                                 <td class="fw-bold text-primary">
-                                    <fmt:formatNumber value="${finalAvg}" maxFractionDigits="1"/>
+                                    <fmt:formatNumber value="${finalAvg}" maxFractionDigits="2"/>
                                 </td>
 
                                 <td>

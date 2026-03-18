@@ -71,7 +71,7 @@
                     </c:if>
                     <c:forEach var="ass" items="${assessmentList}">
                         <div class="col-md-3">
-                            <label class="form-label fw-semibold">${ass.assessmentName} (${ass.weight * 100}%)</label>
+                            <label class="form-label fw-semibold">${ass.assessmentName} (${ass.weight}%)</label>
                             <input type="number" 
                                    name="score_${ass.assessmentId}" 
                                    class="form-control"
