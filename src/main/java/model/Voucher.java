@@ -18,17 +18,21 @@ public class Voucher {
     private double discountPercent;
     private Date validUntil;
     private boolean status;
+    private Integer maxUsage;
+    private int usedCount;
+    private int remainingCount;
 
     public Voucher() {
     }
 
-    public Voucher(int voucherId, String code, BigDecimal discountAmount, double discountPercent, Date validUntil, boolean status) {
+    public Voucher(int voucherId, String code, BigDecimal discountAmount, double discountPercent, Date validUntil, boolean status, Integer maxUsage) {
         this.voucherId = voucherId;
         this.code = code;
         this.discountAmount = discountAmount;
         this.discountPercent = discountPercent;
         this.validUntil = validUntil;
         this.status = status;
+        this.maxUsage = maxUsage;
     }
 
     public boolean isStatus() {
@@ -37,6 +41,30 @@ public class Voucher {
 
     public void setStatus(boolean status) {
         this.status = status;
+    }
+
+    public Integer getMaxUsage() {
+        return maxUsage;
+    }
+
+    public void setMaxUsage(Integer maxUsage) {
+        this.maxUsage = maxUsage;
+    }
+
+    public int getUsedCount() {
+        return usedCount;
+    }
+
+    public void setUsedCount(int usedCount) {
+        this.usedCount = usedCount;
+    }
+
+    public int getRemainingCount() {
+        return remainingCount;
+    }
+
+    public void setRemainingCount(int remainingCount) {
+        this.remainingCount = remainingCount;
     }
 
     public int getVoucherId() {
@@ -81,7 +109,7 @@ public class Voucher {
 
     @Override
     public String toString() {
-        return "Voucher{" + "voucherId=" + voucherId + ", code=" + code + ", discountAmount=" + discountAmount + ", discountPercent=" + discountPercent + ", validUntil=" + validUntil + ", status=" + status + '}';
+        return "Voucher{" + "voucherId=" + voucherId + ", code=" + code + ", discountAmount=" + discountAmount + ", discountPercent=" + discountPercent + ", validUntil=" + validUntil + ", status=" + status + ", maxUsage=" + maxUsage + ", usedCount=" + usedCount + ", remainingCount=" + remainingCount + '}';
     }
     
 }

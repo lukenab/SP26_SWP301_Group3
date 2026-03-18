@@ -79,43 +79,88 @@ public class ClassDAO extends DBContext {
         return list;
     }
 
-    public List<Object[]> getClassFillRateReport() {
+    public List<Object[]> getOpenClassListForSales() {
         List<Object[]> list = new ArrayList<>();
-        boolean hasMaxCapacity = hasClassMaxCapacityColumn();
         String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, u.FullName AS TeacherName, "
-                + "c.Status, COUNT(e.EnrollmentID) AS StudentCount, "
-                + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " AS MaxCapacity, "
-                + "CASE "
-                + "    WHEN " + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " IS NULL "
-                + "         OR " + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " = 0 THEN 0 "
-                + "    ELSE CAST(COUNT(e.EnrollmentID) * 100.0 / " + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " AS DECIMAL(5,2)) "
-                + "END AS FillRate "
+                + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount, "
+                + "co.TotalSlots, DATEADD(DAY, -5, c.StartDate) AS RegistrationDeadline "
                 + "FROM Class c "
                 + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
                 + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
                 + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
-                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.Status, "
-                + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " "
-                + "ORDER BY FillRate DESC, c.ClassName ASC";
-
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+                + "WHERE (c.Status = 'Active' OR c.Status = 'Pending' OR c.Status = 1) "
+                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status, co.TotalSlots "
+                + "HAVING COUNT(e.EnrollmentID) < co.TotalSlots "
+                + "ORDER BY c.StartDate ASC, c.ClassID ASC";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Object[] row = new Object[8];
+                Object[] row = new Object[10];
                 row[0] = rs.getInt("ClassID");
                 row[1] = rs.getString("ClassName");
                 row[2] = rs.getString("CourseName");
                 row[3] = rs.getString("TeacherName");
-                row[4] = rs.getString("Status");
-                row[5] = rs.getInt("StudentCount");
-                row[6] = rs.getInt("MaxCapacity");
-                row[7] = rs.getBigDecimal("FillRate");
+                row[4] = rs.getDate("StartDate");
+                row[5] = rs.getDate("EndDate");
+                row[6] = rs.getString("Status");
+                row[7] = rs.getInt("StudentCount");
+                row[8] = rs.getInt("TotalSlots");
+                row[9] = rs.getDate("RegistrationDeadline");
                 list.add(row);
             }
         } catch (Exception e) {
-            System.out.println("Fail to get class fill rate report: " + e.getMessage());
+            System.out.println("Fail to get open class list for sales: " + e.getMessage());
         }
+        return list;
+    }
 
+    public List<Object[]> getOpenCoursesForSales() {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "WITH open_class AS ( "
+                + "    SELECT c.ClassID, c.CourseID "
+                + "    FROM Class c "
+                + "    JOIN Course co ON c.CourseID = co.CourseID "
+                + "    LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
+                + "    WHERE (c.Status = 'Active' OR c.Status = 'Pending' OR c.Status = 1) "
+                + "    GROUP BY c.ClassID, c.CourseID, co.TotalSlots "
+                + "    HAVING COUNT(e.EnrollmentID) < co.TotalSlots "
+                + ") "
+                + "SELECT DISTINCT co.CourseID, co.CourseName, co.TuitionFee "
+                + "FROM open_class oc "
+                + "JOIN Course co ON oc.CourseID = co.CourseID "
+                + "ORDER BY co.CourseName";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] row = new Object[3];
+                row[0] = rs.getInt("CourseID");
+                row[1] = rs.getString("CourseName");
+                row[2] = rs.getBigDecimal("TuitionFee");
+                list.add(row);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get open courses for sales: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public List<Object[]> getClassOptionsForWalkIn() {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT c.ClassID, c.ClassName, co.CourseID, co.CourseName, co.TuitionFee "
+                + "FROM Class c "
+                + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
+                + "ORDER BY co.CourseName, c.ClassName";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] row = new Object[5];
+                row[0] = rs.getInt("ClassID");
+                row[1] = rs.getString("ClassName");
+                row[2] = rs.getInt("CourseID");
+                row[3] = rs.getString("CourseName");
+                row[4] = rs.getBigDecimal("TuitionFee");
+                list.add(row);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get class options for walk-in: " + e.getMessage());
+        }
         return list;
     }
 

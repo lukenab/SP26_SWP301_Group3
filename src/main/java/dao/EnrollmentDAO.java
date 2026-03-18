@@ -20,139 +20,57 @@ import utils.DBContext;
  * @author Legion
  */
 public class EnrollmentDAO extends DBContext {
-    
-    public List<Enrollment> getAllEnrollment(){
+
+    public List<Enrollment> getAllEnrollment() {
         List<Enrollment> list = new ArrayList<>();
         String sql = "SELECT * FROM Enrollment";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
-            while(rs.next()){
+            while (rs.next()) {
                 int enrollmentId = rs.getInt("EnrollmentID");
-                
+
                 StudentDAO studentDAO = new StudentDAO();
                 Student student = studentDAO.getStudentById(rs.getInt("StudentID"));
-                
+
                 ClassDAO classDAO = new ClassDAO();
                 Classes cl = classDAO.getClassByID(rs.getInt("ClassID"));
                 Date enrollDate = rs.getDate("EnrollDate");
                 String status = rs.getString("Status");
                 Double finalGrade = rs.getDouble("FinalGrade");
-                
+
                 Enrollment enrollment = new Enrollment(enrollmentId, student, cl, enrollDate, status, finalGrade);
                 list.add(enrollment);
             }
         } catch (Exception e) {
-            System.out.println("Fail to get all enrollment: " +e.getMessage());
+            System.out.println("Fail to get all enrollment: " + e.getMessage());
         }
         return list;
     }
 
-    public List<Object[]> getGradeEnrollmentReport() {
-        return getGradeEnrollmentReport(0);
-    }
-
-    public List<Object[]> getGradeEnrollmentReport(int classId) {
-        List<Object[]> list = new ArrayList<>();
-        String sql = "SELECT e.EnrollmentID, c.ClassName, co.CourseName, u.FullName AS StudentName, "
-                + "e.EnrollDate, e.Status, e.FinalGrade, c.ClassID "
-                + "FROM Enrollment e "
-                + "JOIN Class c ON e.ClassID = c.ClassID "
-                + "JOIN Course co ON c.CourseID = co.CourseID "
-                + "JOIN [User] u ON e.StudentID = u.UserID ";
-
-        if (classId > 0) {
-            sql += "WHERE c.ClassID = ? ";
-        }
-
-        sql += "ORDER BY co.CourseName ASC, c.ClassName ASC, u.FullName ASC";
-
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            if (classId > 0) {
-                ps.setInt(1, classId);
-            }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Object[] row = new Object[8];
-                    row[0] = rs.getInt("EnrollmentID");
-                    row[1] = rs.getString("ClassName");
-                    row[2] = rs.getString("CourseName");
-                    row[3] = rs.getString("StudentName");
-                    row[4] = rs.getDate("EnrollDate");
-                    row[5] = rs.getString("Status");
-                    row[6] = rs.getDouble("FinalGrade");
-                    row[7] = rs.getInt("ClassID");
-                    list.add(row);
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Fail to get grade/enrollment report: " + e.getMessage());
-        }
-
-        return list;
-    }
-
-    public List<Object[]> getGradeEnrollmentSummaryByClass() {
-        List<Object[]> list = new ArrayList<>();
-        String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, "
-                + "COUNT(e.EnrollmentID) AS TotalEnrollments, "
-                + "SUM(CASE WHEN e.Status IN ('Paid', 'Active', 'Completed') THEN 1 ELSE 0 END) AS PaidCount, "
-                + "SUM(CASE WHEN e.EnrollmentID IS NOT NULL AND (e.Status NOT IN ('Paid', 'Active', 'Completed') OR e.Status IS NULL) THEN 1 ELSE 0 END) AS UnpaidCount, "
-                + "AVG(CASE WHEN e.FinalGrade > 0 THEN CAST(e.FinalGrade AS FLOAT) END) AS AverageGrade, "
-                + "SUM(CASE WHEN e.FinalGrade > 0 THEN 1 ELSE 0 END) AS GradedCount, "
-                + "SUM(CASE WHEN e.FinalGrade >= 5 THEN 1 ELSE 0 END) AS PassCount "
-                + "FROM Class c "
-                + "JOIN Course co ON c.CourseID = co.CourseID "
-                + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
-                + "GROUP BY c.ClassID, c.ClassName, co.CourseName "
-                + "ORDER BY co.CourseName ASC, c.ClassName ASC";
-
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Object[] row = new Object[9];
-                row[0] = rs.getInt("ClassID");
-                row[1] = rs.getString("ClassName");
-                row[2] = rs.getString("CourseName");
-                row[3] = rs.getInt("TotalEnrollments");
-                row[4] = rs.getInt("PaidCount");
-                row[5] = rs.getInt("UnpaidCount");
-                row[6] = rs.getDouble("AverageGrade");
-                row[7] = rs.getInt("GradedCount");
-                row[8] = rs.getInt("PassCount");
-                list.add(row);
-            }
-        } catch (Exception e) {
-            System.out.println("Fail to get grade/enrollment summary by class: " + e.getMessage());
-        }
-
-        return list;
-    }
-    
-    public Enrollment getEnrollmentById(int id){
+    public Enrollment getEnrollmentById(int id) {
         String sql = "SELECT * FROM Enrollment WHERE EnrollmentID = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
-            while(rs.next()){
+            while (rs.next()) {
                 int enrollmentId = rs.getInt("EnrollmentID");
-                
+
                 StudentDAO studentDAO = new StudentDAO();
                 Student student = studentDAO.getStudentById(rs.getInt("StudentID"));
-                
+
                 ClassDAO classDAO = new ClassDAO();
                 Classes cl = classDAO.getClassByID(rs.getInt("ClassID"));
                 Date enrollDate = rs.getDate("EnrollDate");
                 String status = rs.getString("Status");
                 Double finalGrade = rs.getDouble("FinalGrade");
-                
+
                 Enrollment enrollment = new Enrollment(enrollmentId, student, cl, enrollDate, status, finalGrade);
                 return enrollment;
             }
         } catch (Exception e) {
-            System.out.println("Fail to get enrollment by ID: " +e.getMessage());
+            System.out.println("Fail to get enrollment by ID: " + e.getMessage());
         }
         return null;
     }
@@ -287,8 +205,8 @@ public class EnrollmentDAO extends DBContext {
         }
         return 0;
     }
-    
-   public int getOrCreateEnrollment(int studentId, int classId) {
+
+    public int getOrCreateEnrollment(int studentId, int classId) {
         int enrollmentId = -1;
         try {
             // BƯỚC CỨU CÁNH: Tự động thêm User vào bảng Student nếu chưa có (Tránh lỗi Khóa Ngoại)
@@ -307,7 +225,7 @@ public class EnrollmentDAO extends DBContext {
             psCheck.setInt(1, studentId);
             psCheck.setInt(2, classId);
             ResultSet rs = psCheck.executeQuery();
-            
+
             if (rs.next()) {
                 return rs.getInt("EnrollmentID"); // Trả về ID cũ nếu đã từng bấm đăng ký
             }
@@ -321,14 +239,14 @@ public class EnrollmentDAO extends DBContext {
 
             ResultSet generatedKeys = psInsert.getGeneratedKeys();
             if (generatedKeys.next()) {
-                enrollmentId = generatedKeys.getInt(1); 
+                enrollmentId = generatedKeys.getInt(1);
             }
         } catch (Exception e) {
             System.out.println("Error at getOrCreateEnrollment: " + e.getMessage());
         }
         return enrollmentId;
     }
-   
+
     public String checkEnrollmentStatus(int studentId, int classId) {
         String status = null;
         String sql = "SELECT Status FROM Enrollment WHERE StudentID = ? AND ClassID = ?";
@@ -338,7 +256,7 @@ public class EnrollmentDAO extends DBContext {
             ps.setInt(2, classId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                status = rs.getString("Status"); 
+                status = rs.getString("Status");
             }
         } catch (Exception e) {
             System.out.println("Fail to check Enrollment Status: " + e.getMessage());
@@ -357,7 +275,7 @@ public class EnrollmentDAO extends DBContext {
             System.out.println("Fail to update Enrollment Voucher: " + e.getMessage());
         }
     }
-    
+
     // Hàm cập nhật trạng thái của Enrollment (ví dụ: từ Unpaid -> Active)
     public boolean updateEnrollmentStatus(int enrollmentId, String status) {
         String sql = "UPDATE Enrollment SET Status = ? WHERE EnrollmentID = ?";
@@ -371,8 +289,24 @@ public class EnrollmentDAO extends DBContext {
         }
         return false;
     }
-    
-    
+
+    public int getTotalEnrollments() {
+        int total = 0;
+        String sql = "SELECT COUNT(*) as total FROM Enrollment";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                total = rs.getInt("total");
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get total enrollment: " + e.getMessage());
+        }
+        return total;
+    }
+
     public static void main(String[] args) {
         EnrollmentDAO dao = new EnrollmentDAO();
 //        System.out.println(dao.getEnrollmentById(0));

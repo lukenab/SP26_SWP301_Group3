@@ -5,6 +5,7 @@
 package controller;
 
 import dao.AttendanceDAO;
+import dao.TeacherDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -13,7 +14,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
 import java.util.Map;
+import model.Classes;
+import model.User;
 
 /**
  *
@@ -100,6 +104,44 @@ public class AttendanceController extends HttpServlet {
                 } catch (Exception e) {
                     e.printStackTrace();
                     response.sendRedirect("schedule?action=view");
+                }
+                break;
+
+            case "report":
+                try {
+                    int classId = Integer.parseInt(request.getParameter("classId").trim());
+
+                    HttpSession session = request.getSession();
+                    model.User user = (model.User) session.getAttribute("user");
+
+                    Map<String, Object> data = dao.getAttendanceData(0, classId);
+                    List<User> studentList = (List<User>) data.get("studentList");
+                    List<model.Schedule> scheduleList = dao.getSchedulesByClass(classId);
+                    Map<String, String> reportMap = dao.getAttendanceReportMap(classId);
+
+                    dao.TeacherDAO teacherDAO = new dao.TeacherDAO();
+                    List<model.Classes> classesOfTeacher = teacherDAO.getAllClassOfTeacherID(user.getUserId());
+                    String currentClassName = "";
+                    for (model.Classes c : classesOfTeacher) {
+
+                        if (c.getClassid() == classId) {
+                            currentClassName = c.getClassName();
+                            break;
+                        }
+                    }
+
+                    request.setAttribute("classId", classId);
+                    request.setAttribute("className", currentClassName);
+                    request.setAttribute("studentList", studentList);
+                    request.setAttribute("scheduleList", scheduleList);
+                    request.setAttribute("reportMap", reportMap);
+
+                    request.setAttribute("home_view", "teacher/attendanceReport.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    response.sendRedirect("dashboard?action=teacher");
                 }
                 break;
         }
