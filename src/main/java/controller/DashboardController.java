@@ -4,7 +4,7 @@
  */
 package controller;
 
-import dao.AttendanceDAO;
+import dao.ClassDAO;
 import dao.EnrollmentDAO;
 import dao.LeadDAO;
 import dao.PaymentDAO;
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import model.User;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -46,12 +47,47 @@ public class DashboardController extends HttpServlet {
         LeadDAO leadDAO = new LeadDAO();
         PaymentDAO paymentDAO = new PaymentDAO();
         EnrollmentDAO enrollDAO = new EnrollmentDAO();
+
+        User currentUser = (User) request.getSession().getAttribute("user");
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        // Default dashboard view when no action is provided
         if (action == null) {
             action = "all";
         }
 
         switch (action) {
             case "all":
+                if (currentUser != null && currentUser.getRole() != null) {
+                    int roleId = currentUser.getRole().getRoleId();
+                    if (roleId == 3) {
+                        int totalLeads = leadDAO.countLeadsByFilters(null, "all", null, null, null);
+                        int convertedLeads = leadDAO.countLeadsByFilters(null, "Converted", null, null, null);
+                        int pendingPayments = paymentDAO.getPaymentCountByStatus("Pending");
+                        int approvedPayments = paymentDAO.getPaymentCountByStatus("Approved");
+
+                        request.setAttribute("totalLeads", totalLeads);
+                        request.setAttribute("convertedLeads", convertedLeads);
+                        request.setAttribute("pendingPayments", pendingPayments);
+                        request.setAttribute("approvedPayments", approvedPayments);
+                        request.setAttribute("home_view", "/sale/saleDashboard.jsp");
+                    } else if (roleId == 1) {
+                        response.sendRedirect("dashboard?action=admin");
+                        return;
+                    } else if (roleId == 2) {
+                        // Academic users see their own dashboard page
+                        request.setAttribute("home_view", "/academic/academicDashboard.jsp");
+                    } else if (roleId == 4) {
+                        response.sendRedirect("dashboard?action=teacher");
+                        return;
+                    } else if (roleId == 5) {
+                        response.sendRedirect("dashboard?action=profile");
+                        return;
+                    }
+                }
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "admin":
@@ -98,6 +134,39 @@ public class DashboardController extends HttpServlet {
                 }
 
                 request.setAttribute("home_view", "profile.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
+            case "academic":
+            case "academicFillRateReport":
+                ClassDAO classDAO = new ClassDAO();
+                List<Object[]> classFillRateList = classDAO.getClassFillRateReport();
+                request.setAttribute("classFillRateList", classFillRateList != null ? classFillRateList : new ArrayList<>());
+                request.setAttribute("home_view", "/academic/class_fill_rate_report.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
+            case "academicGradeEnrollmentReport":
+                ClassDAO classDAO2 = new ClassDAO();
+                List<Object[]> gradeEnrollmentSummaryList = classDAO2.getGradeEnrollmentSummary();
+                int selectedClassId = 0;
+                try {
+                    String classIdParam = request.getParameter("classId");
+                    if (classIdParam != null && !classIdParam.isEmpty()) {
+                        selectedClassId = Integer.parseInt(classIdParam);
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+
+                List<Object[]> gradeEnrollmentList = new ArrayList<>();
+                if (selectedClassId > 0) {
+                    gradeEnrollmentList = classDAO2.getGradeEnrollmentDetails(selectedClassId);
+                }
+
+                request.setAttribute("selectedClassId", selectedClassId);
+                request.setAttribute("gradeEnrollmentSummaryList", gradeEnrollmentSummaryList != null ? gradeEnrollmentSummaryList : new ArrayList<>());
+                request.setAttribute("gradeEnrollmentList", gradeEnrollmentList != null ? gradeEnrollmentList : new ArrayList<>());
+                request.setAttribute("home_view", "/academic/grade_enrollment_report.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 

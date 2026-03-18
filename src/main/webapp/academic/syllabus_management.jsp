@@ -74,10 +74,10 @@
 
                     <c:forEach items="${syllabusList}" var="s" varStatus="loop">
                         <tr>
-                            <td>${loop.count}</td>
-                            <td>${s.courseName}</td>
+                            <td>${startItem + loop.index}</td>
+                            <td class="course-cell">${s.courseName}</td>
                             <td><span class="badge-soft">Session ${s.orderIndex}</span></td>
-                            <td>${s.topicName}</td>
+                            <td class="topic-cell">${s.topicName}</td>
                             <td><div class="learning-path-preview">${s.description}</div></td>
                             <td class="actions-cell">
                                 <div class="table-actions">
@@ -99,7 +99,26 @@
             </table>
         </div>
         <div class="d-flex justify-content-between align-items-center p-3 border-top">
-            <div class="text-muted small">Showing ${syllabusList.size()} syllabus records</div>
+            <div class="text-muted small">Showing ${startItem}-${endItem} of ${totalItems} syllabus records</div>
+            <div>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="syllabus?action=manage&page=${currentPage - 1}">
+                            <i class='bx bx-chevron-left'></i> Previous
+                        </a>
+                    </li>
+                    <c:forEach begin="1" end="${totalPages}" var="pageNumber">
+                        <li class="page-item ${pageNumber == currentPage ? 'active' : ''}">
+                            <a class="page-link" href="syllabus?action=manage&page=${pageNumber}">${pageNumber}</a>
+                        </li>
+                    </c:forEach>
+                    <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="syllabus?action=manage&page=${currentPage + 1}">
+                            Next <i class='bx bx-chevron-right'></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>

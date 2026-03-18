@@ -8,11 +8,53 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import model.Syllabus;
 
 @WebServlet(name = "SyllabusController", urlPatterns = {"/syllabus"})
 public class SyllabusController extends HttpServlet {
+
+    private static final int DEFAULT_PAGE_SIZE = 10;
+
+    private int parsePage(HttpServletRequest request) {
+        String pageParam = request.getParameter("page");
+        if (pageParam == null || pageParam.trim().isEmpty()) {
+            return 1;
+        }
+        try {
+            return Math.max(1, Integer.parseInt(pageParam));
+        } catch (NumberFormatException e) {
+            return 1;
+        }
+    }
+
+    private List<Syllabus> paginateSyllabusList(List<Syllabus> source, int page, int pageSize, HttpServletRequest request) {
+        if (source == null || source.isEmpty()) {
+            request.setAttribute("currentPage", 1);
+            request.setAttribute("pageSize", pageSize);
+            request.setAttribute("totalItems", 0);
+            request.setAttribute("totalPages", 1);
+            request.setAttribute("startItem", 0);
+            request.setAttribute("endItem", 0);
+            return Collections.emptyList();
+        }
+
+        int totalItems = source.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        int currentPage = Math.min(page, totalPages);
+        int fromIndex = (currentPage - 1) * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, totalItems);
+
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalItems", totalItems);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("startItem", fromIndex + 1);
+        request.setAttribute("endItem", toIndex);
+
+        return source.subList(fromIndex, toIndex);
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -27,7 +69,7 @@ public class SyllabusController extends HttpServlet {
         switch (action) {
             case "manage":
                 List<Syllabus> syllabusList = syllabusDAO.getAllSyllabus();
-                request.setAttribute("syllabusList", syllabusList);
+                request.setAttribute("syllabusList", paginateSyllabusList(syllabusList, parsePage(request), DEFAULT_PAGE_SIZE, request));
                 request.setAttribute("home_view", "/academic/syllabus_management.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;

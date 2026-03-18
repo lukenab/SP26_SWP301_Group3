@@ -139,11 +139,14 @@
                 <thead>
                     <tr>
                         <th style="width: 5%">#</th>
-                        <th style="width: 22%">Code</th>
-                        <th style="width: 22%">Discount</th>
-                        <th style="width: 20%">Valid Until</th>
-                        <th style="width: 11%">Status</th>
-                        <th style="width: 20%">Actions</th>
+                        <th style="width: 16%">Code</th>
+                        <th style="width: 14%">Discount</th>
+                        <th style="width: 10%">Issued</th>
+                        <th style="width: 10%">Used</th>
+                        <th style="width: 10%">Remaining</th>
+                        <th style="width: 15%">Valid Until</th>
+                        <th style="width: 10%">Status</th>
+                        <th style="width: 15%">Actions</th>
                     </tr>
                 </thead>
 
@@ -162,6 +165,9 @@
                                     </c:otherwise>
                                 </c:choose>
                             </td>
+                            <td>${v.maxUsage}</td>
+                            <td>${v.usedCount}</td>
+                            <td>${v.remainingCount}</td>
                             <td><fmt:formatDate value="${v.validUntil}" pattern="dd/MM/yyyy"/></td>
 
                             <td>

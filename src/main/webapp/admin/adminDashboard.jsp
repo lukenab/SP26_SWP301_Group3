@@ -62,7 +62,7 @@
     <div class="stat-card">         
         <div class="stat-info">
             <p>Conversions Rate</p>
-            <h3>${conversionRate}</h3>
+            <h3><fmt:formatNumber value="${conversionRate}" type="number" maxFractionDigits="2"/>%</h3>
         </div>
         <div class="icon-wrapper cyan">
             <i class='bx bx-trending-up'></i>

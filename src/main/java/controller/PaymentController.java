@@ -94,6 +94,9 @@ public class PaymentController extends HttpServlet {
                             if (hasUsed) {
                                 voucherMessage = "You have already used or are currently applying this voucher for another class!";
                                 request.setAttribute("voucherType", "error");
+                            } else if (!voucherDAO.isVoucherUsageAvailable(voucher.getVoucherId())) {
+                                voucherMessage = "This voucher has reached its usage limit.";
+                                request.setAttribute("voucherType", "error");
                             } else {
                                 if (voucher.getDiscountAmount() != null && voucher.getDiscountAmount().doubleValue() > 0) {
                                     discountAmount = voucher.getDiscountAmount().doubleValue();
@@ -172,7 +175,14 @@ public class PaymentController extends HttpServlet {
                     boolean isSuccess = paymentDAO.confirmQRPayment(enrollmentId, amount, voucherId);
 
                     if (isSuccess) {
-                        session.setAttribute("message", "Confirmation successful! Please wait while the center verifies the transaction.");
+                        Integer paymentId = paymentDAO.getLatestPaymentIdByEnrollment(enrollmentId);
+                        if (paymentId != null) {
+                            paymentDAO.updatePaymentStatus(paymentId, "Approved");
+                        }
+                        dao.EnrollmentDAO enrollmentDAO = new dao.EnrollmentDAO();
+                        enrollmentDAO.updateEnrollmentStatus(enrollmentId, "Active");
+
+                        session.setAttribute("message", "Payment confirmed. You have been enrolled in the class.");
                         session.setAttribute("messageType", "success");
                     } else {
                         session.setAttribute("message", "An error occurred while confirming the payment. Please try again.");
@@ -194,6 +204,7 @@ public class PaymentController extends HttpServlet {
                     int classId = Integer.parseInt(request.getParameter("classId"));
                     String className = request.getParameter("className");
                     String voucherCode = request.getParameter("voucherCode");
+                    String paymentMethod = request.getParameter("paymentMethod");
 
                     HttpSession sessionCheckout = request.getSession();
                     User currentU = (User) sessionCheckout.getAttribute("user");
@@ -219,19 +230,24 @@ public class PaymentController extends HttpServlet {
 
                     double originalPrice = clsDAO.getClassPrice(classId);
                     double discountAmount = 0;
+                    Integer voucherId = null;
 
                     if (voucherCode != null && !voucherCode.isEmpty()) {
                         Voucher voucher = vchDAO.getVoucherByCode(voucherCode);
                         if (voucher != null && voucher.isStatus()) {
                             boolean hasUsed = vchDAO.hasUserUsedVoucher(currentU.getUserId(), voucher.getVoucherId());
-                            if (!hasUsed) {
+                            if (hasUsed) {
+                                sessionCheckout.setAttribute("message", "This discount code has already been used.");
+                                sessionCheckout.setAttribute("messageType", "error");
+                            } else if (!vchDAO.isVoucherUsageAvailable(voucher.getVoucherId())) {
+                                sessionCheckout.setAttribute("message", "This discount code has reached its usage limit.");
+                                sessionCheckout.setAttribute("messageType", "error");
+                            } else {
                                 // DÙNG HÀM MỚI Ở ĐÂY
                                 discountAmount = vchDAO.calculateDiscountAmount(voucher, originalPrice);
                                 enrollmentDAO.updateEnrollmentVoucher(enrollmentId, voucher.getVoucherId());
-                                request.setAttribute("voucherId", voucher.getVoucherId());
-                            } else {
-                                sessionCheckout.setAttribute("message", "This discount code has already been used.");
-                                sessionCheckout.setAttribute("messageType", "error");
+                                voucherId = voucher.getVoucherId();
+                                request.setAttribute("voucherId", voucherId);
                             }
                         }
                     }
@@ -389,19 +405,19 @@ public class PaymentController extends HttpServlet {
                     dao.EnrollmentDAO enrollmentDAO = new dao.EnrollmentDAO();
                     enrollmentDAO.updateEnrollmentStatus(enrollmentId, "Active");
 
-                    request.getSession().setAttribute("message", "Đã duyệt thanh toán & Cập nhật học viên vào lớp thành công!");
+                    request.getSession().setAttribute("message", "Payment approved and student enrolled successfully.");
                     request.getSession().setAttribute("messageType", "success");
                 } else {
-                    request.getSession().setAttribute("message", "Lỗi: Không thể duyệt hóa đơn này.");
+                    request.getSession().setAttribute("message", "Failed to approve this payment.");
                     request.getSession().setAttribute("messageType", "error");
                 }
             } else {
-                request.getSession().setAttribute("message", "Không tìm thấy hóa đơn.");
+                request.getSession().setAttribute("message", "Payment not found.");
                 request.getSession().setAttribute("messageType", "error");
             }
 
         } catch (NumberFormatException e) {
-            request.getSession().setAttribute("message", "ID Hóa đơn không hợp lệ.");
+            request.getSession().setAttribute("message", "Invalid payment ID.");
             request.getSession().setAttribute("messageType", "error");
         }
 
@@ -429,7 +445,7 @@ public class PaymentController extends HttpServlet {
                 request.getSession().setAttribute("message", "Payment rejected successfully.");
                 request.getSession().setAttribute("messageType", "success");
             } else {
-                request.getSession().setAttribute("message", "Failed to reject payment.");
+                request.getSession().setAttribute("message", "Failed to reject this payment.");
                 request.getSession().setAttribute("messageType", "error");
             }
         } catch (NumberFormatException e) {
@@ -440,3 +456,5 @@ public class PaymentController extends HttpServlet {
         response.sendRedirect("payment?action=list");
     }
 }
+
+

@@ -85,6 +85,11 @@
 
         <div class="form-row">
             <div class="form-group">
+                <label for="maxUsage">Max Usage</label>
+                <input type="number" id="maxUsage" name="maxUsage" min="1" step="1"
+                       value="${voucher.maxUsage != null ? voucher.maxUsage : 1}" required>
+            </div>
+            <div class="form-group">
                 <label for="status">Status</label>
                 <select name="status" id="status" required>
                     <option value="1" ${voucher.status ? 'selected' : ''}>Active</option>
