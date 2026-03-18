@@ -255,20 +255,9 @@
                             </a>
                         </li>
 
-                        <li class="nav-links">
-                            <a href="dashboard?action=academicFillRateReport" class="${currentAction == 'academicFillRateReport' ? 'active' : ''}">
-                                <i class="bxr bx-file-report"></i>
-                                <span class="text nav-text">Class Fill Report</span>
-                            </a>
-                        </li>
+                       
 
-                        <li class="nav-links">
-                            <a href="dashboard?action=academicGradeEnrollmentReport" class="${currentAction == 'academicGradeEnrollmentReport' ? 'active' : ''}">
-                                <i class="bx bx-article" /></i>
-                                <span class="text nav-text">Grade Report</span>
-                            </a>
-                        </li>
-
+                        
                         <li class="nav-links">
                             <a href="dashboard?action=profile" class="${currentAction == 'profile' ? 'active' : ''}">
                                 <i class="bxr bx-user"></i>
