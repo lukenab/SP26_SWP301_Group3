@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -184,6 +185,45 @@ public class PaymentDAO extends DBContext {
         return false;
     }
 
+    public boolean createPendingPayment(int enrollmentId, double amount, Integer voucherId, String paymentMethod) {
+        String sql = "INSERT INTO Payment (EnrollmentID, Amount, PaymentDate, PaymentMethod, EvidenceImage, Status, VoucherID) "
+                + "VALUES (?, ?, GETDATE(), ?, '', 'Pending', ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, enrollmentId);
+            ps.setDouble(2, amount);
+            ps.setString(3, paymentMethod);
+            if (voucherId != null) {
+                ps.setInt(4, voucherId);
+            } else {
+                ps.setNull(4, java.sql.Types.INTEGER);
+            }
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("Error at createPendingPayment: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean createPayment(int enrollmentId, double amount, Integer voucherId, String paymentMethod, String status) {
+        String sql = "INSERT INTO Payment (EnrollmentID, Amount, PaymentDate, PaymentMethod, EvidenceImage, Status, VoucherID) "
+                + "VALUES (?, ?, GETDATE(), ?, '', ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, enrollmentId);
+            ps.setDouble(2, amount);
+            ps.setString(3, paymentMethod);
+            ps.setString(4, status);
+            if (voucherId != null) {
+                ps.setInt(5, voucherId);
+            } else {
+                ps.setNull(5, java.sql.Types.INTEGER);
+            }
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("Error at createPayment: " + e.getMessage());
+        }
+        return false;
+    }
+
     /**
      * Get total count of payments by status
      *
@@ -211,6 +251,21 @@ public class PaymentDAO extends DBContext {
             System.out.println("Fail to get payment count: " + e.getMessage());
         }
         return 0;
+    }
+
+    public Integer getLatestPaymentIdByEnrollment(int enrollmentId) {
+        String sql = "SELECT TOP 1 PaymentID FROM Payment WHERE EnrollmentID = ? ORDER BY PaymentDate DESC, PaymentID DESC";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, enrollmentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("PaymentID");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get latest payment by enrollment: " + e.getMessage());
+        }
+        return null;
     }
 
     /**
@@ -348,13 +403,11 @@ public class PaymentDAO extends DBContext {
         return false;
     }
 
-    // Hàm chuyên tạo URL ảnh VietQR
     public String generateVietQRUrl(long amountToPay, String rawAddInfo) {
         String bankId = "MB";
         String accountNo = "0907625043";
         String accountName = "LMCS Center";
 
-        // Xử lý mã hóa khoảng trắng cho URL
         String addInfo = rawAddInfo.replaceAll(" ", "%20");
         String urlAccountName = accountName.replaceAll(" ", "%20");
 

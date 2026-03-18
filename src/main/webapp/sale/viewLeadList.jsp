@@ -19,9 +19,14 @@
                 <h2 class="page-title">Lead Management</h2>
                 <p class="text-muted small mb-0">Manage and organize your leads</p>
             </div>
-            <a href="lead?action=add" class="btn btn-add-new">
-                <i class='bx bx-user-plus'></i> Add New Lead
-            </a>
+            <div class="d-flex gap-2">
+                <a href="lead?action=add" class="btn btn-add-new">
+                    <i class='bx bx-user-plus'></i> Add New Lead
+                </a>
+                <a href="lead?action=addStudentAtCenter" class="btn btn-add-new">
+                    <i class='bx bx-user-check'></i> Add Walk-in Student
+                </a>
+            </div>
         </div>
     </div>
 
@@ -51,18 +56,6 @@
         <c:remove var="message" scope="session" />
         <c:remove var="messageType" scope="session" />
     </c:if>
-
-    <c:set var="newLead" value="0"/>
-    <c:set var="convertedLead" value="0"/>
-
-    <c:forEach items="${leadList}" var="l">
-        <c:if test="${l.status == 'New'}">
-            <c:set var="newLead" value="${newLead + 1}"/>
-        </c:if>
-        <c:if test="${l.status == 'Converted'}">
-            <c:set var="convertedLead" value="${convertedLead + 1}"/>
-        </c:if>
-    </c:forEach>
 
     <div class="stat-card-grid">
         <div class="stat-card">
@@ -97,8 +90,8 @@
                 <p>Converted Rate</p>
                 <h3>
                     <c:choose>
-                        <c:when test="${fn:length(leadList) > 0}">
-                            <fmt:formatNumber value="${(convertedLead * 100.0) / fn:length(leadList)}"
+                        <c:when test="${totalLeads > 0}">
+                            <fmt:formatNumber value="${(convertedLead * 100.0) / totalLeads}"
                                               minFractionDigits="2"
                                               maxFractionDigits="2"/>%
                         </c:when>
@@ -152,6 +145,7 @@
                         <th style="width: 18%">Lead Name</th>
                         <th style="width: 21%">Email</th>
                         <th style="width: 13%">Phone</th>
+                        <th style="width: 16%">Interested Course</th>
                         <th style="width: 14%">Last Updated</th>
                         <th style="width: 14%">Status</th>
                         <th style="width: 15%">Actions</th>
@@ -165,6 +159,14 @@
                             <td>${l.fullName}</td>
                             <td class="text-secondary">${l.email}</td>
                             <td>${l.phone}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty l.course && not empty l.course.courseName}">
+                                        ${l.course.courseName}
+                                    </c:when>
+                                    <c:otherwise>-</c:otherwise>
+                                </c:choose>
+                            </td>
                             <td>
                                 <c:choose>
                                     <c:when test="${not empty l.lastUpdatedDate}">
@@ -192,52 +194,54 @@
                                 </c:choose>
                             </td>
 
-                            <td>
-                                <c:choose>
-                                    <c:when test="${l.status == 'Inactive'}">
-                                        <span class="action-btn action-disabled"><i class='bx bx-eye'></i></span>
-                                        <span class="action-btn action-disabled"><i class='bx bx-edit'></i></span>
-                                        <span class="action-btn action-disabled" title="Cannot log for inactive lead">
-                                            <i class='bx bx-edit-alt'></i>
-                                        </span>
-                                        <a href="lead?action=delete&id=${l.leadId}" class="action-btn">
-                                            <i class='bx bx-lock-open'></i>
-                                        </a>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <a href="lead?action=detail&id=${l.leadId}" class="action-btn"><i class='bx bx-eye'></i></a>
-                                        <c:choose>
-                                            <c:when test="${l.status == 'Converted'}">
-                                                <span class="action-btn action-disabled" title="Converted lead cannot be edited">
-                                                    <i class='bx bx-edit'></i>
-                                                </span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <a href="lead?action=edit&id=${l.leadId}" class="action-btn"><i class='bx bx-edit'></i></a>
-                                            </c:otherwise>
-                                        </c:choose>
-                                        <c:choose>
-                                            <c:when test="${l.status == 'Converted'}">
-                                                <span class="action-btn action-disabled" title="Converted lead cannot be logged">
-                                                    <i class='bx bx-edit-alt'></i>
-                                                </span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <a href="lead?action=logForm&id=${l.leadId}" class="action-btn" title="Log Consultation">
-                                                    <i class='bx bx-edit-alt'></i>
-                                                </a>
-                                            </c:otherwise>
-                                        </c:choose>
-                                        <c:if test="${l.status != 'Converted'}">
-                                            <a href="lead?action=convertForm&id=${l.leadId}" class="action-btn" title="Convert to Student">
-                                                <i class='bx bx-user-check'></i>
+                            <td class="actions-cell">
+                                <div class="lead-actions">
+                                    <c:choose>
+                                        <c:when test="${l.status == 'Inactive'}">
+                                            <span class="action-btn action-disabled"><i class='bx bx-eye'></i></span>
+                                            <span class="action-btn action-disabled"><i class='bx bx-edit'></i></span>
+                                            <span class="action-btn action-disabled" title="Cannot log for inactive lead">
+                                                <i class='bx bx-edit-alt'></i>
+                                            </span>
+                                            <a href="lead?action=delete&id=${l.leadId}" class="action-btn">
+                                                <i class='bx bx-lock-open'></i>
                                             </a>
-                                        </c:if>
-                                        <a href="lead?action=delete&id=${l.leadId}" class="action-btn delete">
-                                            <i class='bx bx-lock'></i>
-                                        </a>
-                                    </c:otherwise>
-                                </c:choose>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <a href="lead?action=detail&id=${l.leadId}" class="action-btn"><i class='bx bx-eye'></i></a>
+                                            <c:choose>
+                                                <c:when test="${l.status == 'Converted'}">
+                                                    <span class="action-btn action-disabled" title="Converted lead cannot be edited">
+                                                        <i class='bx bx-edit'></i>
+                                                    </span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <a href="lead?action=edit&id=${l.leadId}" class="action-btn"><i class='bx bx-edit'></i></a>
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <c:choose>
+                                                <c:when test="${l.status == 'Converted'}">
+                                                    <span class="action-btn action-disabled" title="Converted lead cannot be logged">
+                                                        <i class='bx bx-edit-alt'></i>
+                                                    </span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <a href="lead?action=logForm&id=${l.leadId}" class="action-btn" title="Log Consultation">
+                                                        <i class='bx bx-edit-alt'></i>
+                                                    </a>
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <c:if test="${l.status != 'Converted'}">
+                                                <a href="lead?action=convertForm&id=${l.leadId}" class="action-btn" title="Convert to Student">
+                                                    <i class='bx bx-user-check'></i>
+                                                </a>
+                                            </c:if>
+                                            <a href="lead?action=delete&id=${l.leadId}" class="action-btn delete">
+                                                <i class='bx bx-lock'></i>
+                                            </a>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>

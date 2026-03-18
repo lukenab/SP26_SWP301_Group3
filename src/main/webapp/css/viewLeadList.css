@@ -224,6 +224,24 @@
     margin-left: 10px;
     transition: color 0.2s;
 }
+.actions-cell {
+    white-space: nowrap;
+}
+
+.lead-actions {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 10px;
+}
+
+.lead-actions .action-btn {
+    margin-left: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .action-btn:hover {
     color: var(--primary-blue);
 }

@@ -96,16 +96,16 @@ public class LoginController extends HttpServlet {
                     redirectUrl = "dashboard?action=admin";
                     break;
                 case 2:
-                    redirectUrl = "dashboard?action=academic";
+                    redirectUrl = "dashboard";
                     break;
                 case 3:
-                    redirectUrl = "dashboard?action=sale";
+                    redirectUrl = "dashboard";
                     break;
                 case 4:
                     redirectUrl = "dashboard?action=teacher";
                     break;
                 case 5:
-                    redirectUrl = "dashboard?action=student";
+                    redirectUrl = "dashboard";
                     break;
                 default:
                     redirectUrl = "dashboard?action=all";

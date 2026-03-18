@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import model.User;
@@ -136,8 +137,16 @@ public class UserDAO extends DBContext {
             psUser.setString(3, hashMD5(password));
             psUser.setString(4, phone);
             psUser.setString(5, address);
-            psUser.setBoolean(6, gender);
-            psUser.setDate(7, dob);
+            if (gender == null) {
+                psUser.setNull(6, Types.BIT);
+            } else {
+                psUser.setBoolean(6, gender);
+            }
+            if (dob == null) {
+                psUser.setNull(7, Types.DATE);
+            } else {
+                psUser.setDate(7, dob);
+            }
             psUser.setString(8, avatar);
             psUser.setBoolean(9, status);
             psUser.setInt(10, roleId);

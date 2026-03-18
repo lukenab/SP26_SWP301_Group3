@@ -1,6 +1,6 @@
 .custom-toast {
     position: fixed;
-    top: 20px;
+    top: 80px;
     right: 20px;
     z-index: 9999;
     display: none;
@@ -75,4 +75,82 @@
 
 .toast-close:hover {
     color: #64748b;
+}
+
+.payment-actions {
+    white-space: nowrap;
+}
+
+.payment-actions .action-btn,
+.action-btn.action-compact {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    color: #64748b;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.payment-actions .action-btn:first-child,
+.action-btn.action-compact:first-child {
+    margin-left: 0;
+}
+
+.payment-actions .action-btn:hover,
+.action-btn.action-compact:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+    border-color: #cbd5f5;
+}
+
+.payment-actions .action-btn:focus-visible,
+.action-btn.action-compact:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    border-color: #93c5fd;
+}
+
+.payment-actions .action-btn.action-approve,
+.action-btn.action-compact.action-approve {
+    color: #16a34a;
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.payment-actions .action-btn.action-approve:hover,
+.action-btn.action-compact.action-approve:hover {
+    background: #dcfce7;
+    border-color: #86efac;
+}
+
+.payment-actions .action-btn.action-reject,
+.action-btn.action-compact.action-reject {
+    color: #dc2626;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.payment-actions .action-btn.action-reject:hover,
+.action-btn.action-compact.action-reject:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
+
+.payment-actions .action-btn.action-evidence,
+.action-btn.action-compact.action-evidence {
+    color: #2563eb;
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.payment-actions .action-btn.action-evidence:hover,
+.action-btn.action-compact.action-evidence:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
 }

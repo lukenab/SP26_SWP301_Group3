@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.ClassDAO;
 import dao.EnrollmentDAO;
 import dao.LeadDAO;
 import dao.PaymentDAO;
@@ -16,9 +17,12 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import model.User;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -43,12 +47,47 @@ public class DashboardController extends HttpServlet {
         LeadDAO leadDAO = new LeadDAO();
         PaymentDAO paymentDAO = new PaymentDAO();
         EnrollmentDAO enrollDAO = new EnrollmentDAO();
+
+        User currentUser = (User) request.getSession().getAttribute("user");
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        // Default dashboard view when no action is provided
         if (action == null) {
             action = "all";
         }
 
         switch (action) {
             case "all":
+                if (currentUser != null && currentUser.getRole() != null) {
+                    int roleId = currentUser.getRole().getRoleId();
+                    if (roleId == 3) {
+                        int totalLeads = leadDAO.countLeadsByFilters(null, "all", null, null, null);
+                        int convertedLeads = leadDAO.countLeadsByFilters(null, "Converted", null, null, null);
+                        int pendingPayments = paymentDAO.getPaymentCountByStatus("Pending");
+                        int approvedPayments = paymentDAO.getPaymentCountByStatus("Approved");
+
+                        request.setAttribute("totalLeads", totalLeads);
+                        request.setAttribute("convertedLeads", convertedLeads);
+                        request.setAttribute("pendingPayments", pendingPayments);
+                        request.setAttribute("approvedPayments", approvedPayments);
+                        request.setAttribute("home_view", "/sale/saleDashboard.jsp");
+                    } else if (roleId == 1) {
+                        response.sendRedirect("dashboard?action=admin");
+                        return;
+                    } else if (roleId == 2) {
+                        // Academic users see their own dashboard page
+                        request.setAttribute("home_view", "/academic/academicDashboard.jsp");
+                    } else if (roleId == 4) {
+                        response.sendRedirect("dashboard?action=teacher");
+                        return;
+                    } else if (roleId == 5) {
+                        response.sendRedirect("dashboard?action=profile");
+                        return;
+                    }
+                }
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "admin":
@@ -57,12 +96,12 @@ public class DashboardController extends HttpServlet {
                 double totalRevenue = paymentDAO.getTotalRevenue();
                 int totalEnrollments = enrollDAO.getTotalEnrollments();
                 double conversionRate = leadDAO.getConversionRate();
-                
+
                 List<Double> monthlyRevenue = paymentDAO.getMonthlyRevenue(2026);
                 String revenueDataString = monthlyRevenue.stream()
                         .map(String::valueOf)
                         .collect(Collectors.joining(","));
-                
+
                 request.setAttribute("conversionRate", conversionRate);
                 request.setAttribute("totalEnrollments", totalEnrollments);
                 request.setAttribute("totalRevenue", totalRevenue);
@@ -95,6 +134,39 @@ public class DashboardController extends HttpServlet {
                 }
 
                 request.setAttribute("home_view", "profile.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
+            case "academic":
+            case "academicFillRateReport":
+                ClassDAO classDAO = new ClassDAO();
+                List<Object[]> classFillRateList = classDAO.getClassFillRateReport();
+                request.setAttribute("classFillRateList", classFillRateList != null ? classFillRateList : new ArrayList<>());
+                request.setAttribute("home_view", "/academic/class_fill_rate_report.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
+            case "academicGradeEnrollmentReport":
+                ClassDAO classDAO2 = new ClassDAO();
+                List<Object[]> gradeEnrollmentSummaryList = classDAO2.getGradeEnrollmentSummary();
+                int selectedClassId = 0;
+                try {
+                    String classIdParam = request.getParameter("classId");
+                    if (classIdParam != null && !classIdParam.isEmpty()) {
+                        selectedClassId = Integer.parseInt(classIdParam);
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+
+                List<Object[]> gradeEnrollmentList = new ArrayList<>();
+                if (selectedClassId > 0) {
+                    gradeEnrollmentList = classDAO2.getGradeEnrollmentDetails(selectedClassId);
+                }
+
+                request.setAttribute("selectedClassId", selectedClassId);
+                request.setAttribute("gradeEnrollmentSummaryList", gradeEnrollmentSummaryList != null ? gradeEnrollmentSummaryList : new ArrayList<>());
+                request.setAttribute("gradeEnrollmentList", gradeEnrollmentList != null ? gradeEnrollmentList : new ArrayList<>());
+                request.setAttribute("home_view", "/academic/grade_enrollment_report.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 
@@ -141,6 +213,53 @@ public class DashboardController extends HttpServlet {
 
                 request.setAttribute("home_view", "teacher/teacherDashboard.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
+            case "student":
+
+                User sUser = (User) request.getSession().getAttribute("user");
+                if (sUser == null) {
+                    response.sendRedirect("login");
+                    return;
+                }
+
+                int studentId = sUser.getUserId();
+
+                dao.ClassDAO classDAO = new dao.ClassDAO();
+                dao.ScheduleDAO scheduleDAO = new dao.ScheduleDAO();
+                AttendanceDAO attendanceDAO = new AttendanceDAO();
+
+                // ===== Classes của student =====
+                List<Object[]> studentClasses = classDAO.getStudentClasses(studentId);
+
+                // ===== Schedule tuần này =====
+                java.time.LocalDate todayDate = java.time.LocalDate.now();
+                java.time.LocalDate startOfWeek = todayDate.with(java.time.DayOfWeek.MONDAY);
+                java.time.LocalDate endOfWeek = todayDate.with(java.time.DayOfWeek.SUNDAY);
+
+//                List<model.Schedule> weeklySchedule = scheduleDAO.getScheduleByStudentWeek(
+//                        studentId,
+//                        startOfWeek.toString(),
+//                        endOfWeek.toString()
+//                );
+                // ===== Schedule hôm nay =====
+                List<model.Schedule> todaySchedule = scheduleDAO.getTodayScheduleByStudent(
+                        studentId,
+                        todayDate.toString()
+                );
+                Map<String, Integer> summary = attendanceDAO.getAttendanceSummaryByStudent(studentId);
+                // ===== Tổng số lớp =====
+                int totalClasses = studentClasses.size();
+
+                request.setAttribute("totalClasses", totalClasses);
+                request.setAttribute("studentClasses", studentClasses);
+//                request.setAttribute("weeklySchedule", weeklySchedule);
+                request.setAttribute("todaySchedule", todaySchedule);
+                request.setAttribute("summary", summary);
+
+                request.setAttribute("home_view", "student/studentDashboard.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+
                 break;
         }
     }

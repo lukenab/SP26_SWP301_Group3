@@ -56,28 +56,27 @@
         <ol class="breadcrumb mb-1">
 
             <li class="breadcrumb-item">
-                <a href="dashboard">
-                    <i class="bx bx-home-alt"></i>
-                </a>
+                <a href="dashboard?action=student">Dashboard</a>
             </li>
 
-            <li class="breadcrumb-item">
-                <a href="class?action=${sourcePage}">
-                    <c:choose>
-                        <c:when test="${sourcePage == 'myClasses'}">
-                            My Classes
-                        </c:when>
-                        <c:otherwise>
-                            Register Class
-                        </c:otherwise>
-                    </c:choose>
-                </a>
-            </li>
+            <c:if test="${sourcePage != 'studentDashboard'}">
+                <li class="breadcrumb-item">
+                    <a href="class?action=${sourcePage}">
+                        <c:choose>
+                            <c:when test="${sourcePage == 'myClasses'}">
+                                My Classes
+                            </c:when>
+                            <c:otherwise>
+                                Register Class
+                            </c:otherwise>
+                        </c:choose>
+                    </a>
+                </li>
+            </c:if>
 
             <li class="breadcrumb-item active">
-                Class Details
+                Class Detail
             </li>
-
         </ol>
 
         <h2 class="fw-bold mb-1">Class Details</h2>

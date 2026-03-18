@@ -126,7 +126,6 @@ public class AttendanceDAO extends DBContext {
         return result;
     }
 
-  
     public List<model.Schedule> getSchedulesByClass(int classId) {
         List<model.Schedule> list = new ArrayList<>();
         String sql = "SELECT * FROM Schedule WHERE ClassID = ? ORDER BY LearningDate, SlotID";
@@ -150,7 +149,6 @@ public class AttendanceDAO extends DBContext {
         return list;
     }
 
-
     public Map<String, String> getAttendanceReportMap(int classId) {
         Map<String, String> map = new HashMap<>();
         String sql = "SELECT e.StudentID, a.ScheduleID, a.Status "
@@ -170,4 +168,91 @@ public class AttendanceDAO extends DBContext {
         return map;
     }
 
+    public List<Object[]> getAttendanceReportByStudent(int studentId) {
+        List<Object[]> list = new ArrayList<>();
+
+        String sql = "SELECT "
+                + "c.ClassID, "
+                + "co.CourseName, "
+                + "c.ClassName, "
+                + "c.StartDate, "
+                + "c.EndDate, "
+                + "COUNT(s.ScheduleID) AS TotalSlots, "
+                + "SUM(CASE WHEN a.Status IN ('Present','Late') THEN 1 ELSE 0 END) AS AttendedSlots, "
+                + "ROUND(100.0 * "
+                + "SUM(CASE WHEN a.Status IN ('Present','Late') THEN 1 ELSE 0 END) "
+                + "/ COUNT(s.ScheduleID),0) AS AttendanceRate "
+                + "FROM Enrollment e "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "JOIN Schedule s ON c.ClassID = s.ClassID "
+                + "LEFT JOIN Attendance a ON s.ScheduleID = a.ScheduleID "
+                + "AND a.EnrollmentID = e.EnrollmentID "
+                + "WHERE e.StudentID = ? "
+                + "GROUP BY c.ClassID, co.CourseName, c.ClassName, c.StartDate, c.EndDate";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, studentId);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                Object[] row = new Object[]{
+                    rs.getInt("ClassID"),
+                    rs.getString("CourseName"),
+                    rs.getString("ClassName"),
+                    rs.getDate("StartDate"),
+                    rs.getDate("EndDate"),
+                    rs.getInt("TotalSlots"),
+                    rs.getInt("AttendedSlots"),
+                    rs.getInt("AttendanceRate")
+                };
+
+                list.add(row);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public Map<String, Integer> getAttendanceSummaryByStudent(int studentId) {
+
+        Map<String, Integer> map = new HashMap<>();
+
+        String sql = "SELECT "
+                + "COUNT(s.ScheduleID) AS TotalClasses, "
+                + "ISNULL(SUM(CASE WHEN a.Status='Present' THEN 1 ELSE 0 END),0) AS PresentCount, "
+                + "ISNULL(SUM(CASE WHEN a.Status='Absent' THEN 1 ELSE 0 END),0) AS AbsentCount, "
+                + "ISNULL(SUM(CASE WHEN a.Status='Late' THEN 1 ELSE 0 END),0) AS LateCount "
+                + "FROM Enrollment e "
+                + "JOIN Schedule s ON e.ClassID = s.ClassID "
+                + "LEFT JOIN Attendance a "
+                + "ON a.ScheduleID = s.ScheduleID "
+                + "AND a.EnrollmentID = e.EnrollmentID "
+                + "WHERE e.StudentID = ?";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, studentId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                map.put("total", rs.getInt("TotalClasses"));
+                map.put("present", rs.getInt("PresentCount"));
+                map.put("absent", rs.getInt("AbsentCount"));
+                map.put("late", rs.getInt("LateCount"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return map;
+    }
 }

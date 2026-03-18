@@ -79,6 +79,91 @@ public class ClassDAO extends DBContext {
         return list;
     }
 
+    public List<Object[]> getOpenClassListForSales() {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, u.FullName AS TeacherName, "
+                + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount, "
+                + "co.TotalSlots, DATEADD(DAY, -5, c.StartDate) AS RegistrationDeadline "
+                + "FROM Class c "
+                + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
+                + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
+                + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
+                + "WHERE (c.Status = 'Active' OR c.Status = 'Pending' OR c.Status = 1) "
+                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status, co.TotalSlots "
+                + "HAVING COUNT(e.EnrollmentID) < co.TotalSlots "
+                + "ORDER BY c.StartDate ASC, c.ClassID ASC";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] row = new Object[10];
+                row[0] = rs.getInt("ClassID");
+                row[1] = rs.getString("ClassName");
+                row[2] = rs.getString("CourseName");
+                row[3] = rs.getString("TeacherName");
+                row[4] = rs.getDate("StartDate");
+                row[5] = rs.getDate("EndDate");
+                row[6] = rs.getString("Status");
+                row[7] = rs.getInt("StudentCount");
+                row[8] = rs.getInt("TotalSlots");
+                row[9] = rs.getDate("RegistrationDeadline");
+                list.add(row);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get open class list for sales: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public List<Object[]> getOpenCoursesForSales() {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "WITH open_class AS ( "
+                + "    SELECT c.ClassID, c.CourseID "
+                + "    FROM Class c "
+                + "    JOIN Course co ON c.CourseID = co.CourseID "
+                + "    LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
+                + "    WHERE (c.Status = 'Active' OR c.Status = 'Pending' OR c.Status = 1) "
+                + "    GROUP BY c.ClassID, c.CourseID, co.TotalSlots "
+                + "    HAVING COUNT(e.EnrollmentID) < co.TotalSlots "
+                + ") "
+                + "SELECT DISTINCT co.CourseID, co.CourseName, co.TuitionFee "
+                + "FROM open_class oc "
+                + "JOIN Course co ON oc.CourseID = co.CourseID "
+                + "ORDER BY co.CourseName";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] row = new Object[3];
+                row[0] = rs.getInt("CourseID");
+                row[1] = rs.getString("CourseName");
+                row[2] = rs.getBigDecimal("TuitionFee");
+                list.add(row);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get open courses for sales: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public List<Object[]> getClassOptionsForWalkIn() {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT c.ClassID, c.ClassName, co.CourseID, co.CourseName, co.TuitionFee "
+                + "FROM Class c "
+                + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
+                + "ORDER BY co.CourseName, c.ClassName";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] row = new Object[5];
+                row[0] = rs.getInt("ClassID");
+                row[1] = rs.getString("ClassName");
+                row[2] = rs.getInt("CourseID");
+                row[3] = rs.getString("CourseName");
+                row[4] = rs.getBigDecimal("TuitionFee");
+                list.add(row);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get class options for walk-in: " + e.getMessage());
+        }
+        return list;
+    }
+
     public Classes getClassByID(int id) {
         String sql = "SELECT * FROM Class WHERE ClassID = ?";
         try {
@@ -170,6 +255,104 @@ public class ClassDAO extends DBContext {
             }
         } catch (Exception e) {
             System.out.println("Fail to get active courses for class form: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public List<Object[]> getClassFillRateReport() {
+        List<Object[]> list = new ArrayList<>();
+        boolean hasMaxCapacity = hasClassMaxCapacityColumn();
+        String maxCapacityField = hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots";
+        String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, u.FullName AS TeacherName, c.Status, "
+                + "COUNT(e.EnrollmentID) AS Enrolled, "
+                + maxCapacityField + " AS MaxCapacity, "
+                + "CASE WHEN " + maxCapacityField + " > 0 THEN (COUNT(e.EnrollmentID) * 100.0) / " + maxCapacityField + " ELSE 0 END AS FillRate "
+                + "FROM Class c "
+                + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
+                + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
+                + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
+                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.Status, "
+                + maxCapacityField + " "
+                + "ORDER BY c.ClassName";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] row = new Object[8];
+                row[0] = rs.getInt("ClassID");
+                row[1] = rs.getString("ClassName");
+                row[2] = rs.getString("CourseName");
+                row[3] = rs.getString("TeacherName");
+                row[4] = rs.getString("Status");
+                row[5] = rs.getInt("Enrolled");
+                row[6] = rs.getInt("MaxCapacity");
+                row[7] = rs.getDouble("FillRate");
+                list.add(row);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get class fill rate report: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public List<Object[]> getGradeEnrollmentSummary() {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, "
+                + "COUNT(e.EnrollmentID) AS TotalEnrollments, "
+                + "SUM(CASE WHEN e.Status IN ('Paid','Active','Completed') THEN 1 ELSE 0 END) AS PaidCount, "
+                + "SUM(CASE WHEN e.Status NOT IN ('Paid','Active','Completed') THEN 1 ELSE 0 END) AS UnpaidCount, "
+                + "SUM(CASE WHEN e.FinalGrade IS NOT NULL AND e.FinalGrade > 0 THEN 1 ELSE 0 END) AS GradedCount, "
+                + "SUM(CASE WHEN e.FinalGrade >= 5 THEN 1 ELSE 0 END) AS PassCount "
+                + "FROM Class c "
+                + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
+                + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
+                + "GROUP BY c.ClassID, c.ClassName, co.CourseName "
+                + "ORDER BY c.ClassName";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] row = new Object[9];
+                row[0] = rs.getInt("ClassID");
+                row[1] = rs.getString("ClassName");
+                row[2] = rs.getString("CourseName");
+                row[3] = rs.getInt("TotalEnrollments");
+                row[4] = rs.getInt("PaidCount");
+                row[5] = rs.getInt("UnpaidCount");
+                row[6] = rs.getInt("GradedCount");
+                row[7] = rs.getInt("GradedCount");
+                row[8] = rs.getInt("PassCount");
+                list.add(row);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get grade enrollment summary: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public List<Object[]> getGradeEnrollmentDetails(int classId) {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT e.EnrollmentID, c.ClassName, co.CourseName, u.FullName AS StudentName, e.EnrollDate, e.Status, e.FinalGrade "
+                + "FROM Enrollment e "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
+                + "JOIN Student s ON e.StudentID = s.StudentID "
+                + "JOIN [User] u ON s.StudentID = u.UserID "
+                + "WHERE c.ClassID = ? "
+                + "ORDER BY u.FullName";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Object[] row = new Object[7];
+                    row[0] = rs.getInt("EnrollmentID");
+                    row[1] = rs.getString("ClassName");
+                    row[2] = rs.getString("CourseName");
+                    row[3] = rs.getString("StudentName");
+                    row[4] = rs.getDate("EnrollDate");
+                    row[5] = rs.getString("Status");
+                    row[6] = rs.getDouble("FinalGrade");
+                    list.add(row);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get grade enrollment details: " + e.getMessage());
         }
         return list;
     }

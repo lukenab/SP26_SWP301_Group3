@@ -4,16 +4,24 @@
     overflow: hidden;
     text-overflow: ellipsis;
     color: #3b4a65;
+    line-height: 1.5;
 }
 
 .syllabus-page .badge-soft {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 92px;
     background: #eef4ff;
     color: #1f3f7a;
     border: 1px solid #d8e5ff;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 600;
-    padding: 4px 10px;
+    padding: 6px 12px;
+    white-space: nowrap;
+    line-height: 1;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .syllabus-page .status-chip {
@@ -68,4 +76,33 @@
     background: transparent;
     border: 0;
     padding: 0;
+}
+
+.syllabus-page .table tbody td {
+    vertical-align: middle;
+}
+
+.syllabus-page .table-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: nowrap;
+}
+
+.syllabus-page .actions-cell {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.syllabus-page .course-cell,
+.syllabus-page .topic-cell {
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+@media (max-width: 1200px) {
+    .syllabus-page .learning-path-preview {
+        max-width: 360px;
+    }
 }

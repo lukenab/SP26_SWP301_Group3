@@ -18,7 +18,7 @@
             <div>
                 <h2 class="page-title">Add Student to Class</h2>
                 <p class="text-muted small mb-0">
-                    Class: <strong>${classInfo[1]}</strong> | Course: ${classInfo[2]} | Current Students: ${classInfo[7]}
+                    Class: <strong>${classInfo[1]}</strong> | Course: ${classInfo[2]} | Current Students: ${classInfo[7]} / ${classInfo[8]} | Remaining Slots: ${remainingSlots}
                 </p>
             </div>
             <a href="enrollment?action=classes" class="btn btn-back">
@@ -55,6 +55,16 @@
             <div class="card user-table-card border-0 bg-white h-100">
                 <div class="card-header bg-white border-bottom-0 pt-3 px-3">
                     <h5 class="mb-0">Available Students</h5>
+                    <p class="text-muted small mb-0 mt-2">
+                        <c:choose>
+                            <c:when test="${remainingSlots > 0}">
+                                You can add up to <strong>${remainingSlots}</strong> more student(s) to this class.
+                            </c:when>
+                            <c:otherwise>
+                                This class has reached maximum capacity.
+                            </c:otherwise>
+                        </c:choose>
+                    </p>
                 </div>
                 <div class="table-responsive">
                     <form action="enrollment" method="post">
@@ -85,7 +95,8 @@
                                             <input class="form-check-input student-checkbox"
                                                    type="checkbox"
                                                    name="studentIds"
-                                                   value="${s[0]}"/>
+                                                   value="${s[0]}"
+                                                   ${remainingSlots <= 0 ? 'disabled' : ''}/>
                                         </td>
                                         <td class="fw-semibold">${s[1]}</td>
                                         <td>${s[2]}</td>
@@ -108,7 +119,7 @@
                                 <input type="radio" id="statusUnpaid" name="enrollmentStatus" value="UnPaid" checked>
                                 <label for="statusUnpaid">UnPaid</label>
                             </div>
-                            <button type="submit" class="btn btn-add-new">
+                            <button type="submit" class="btn btn-add-new" ${remainingSlots <= 0 ? 'disabled' : ''}>
                                 <i class='bx bx-user-plus'></i> Add Selected Students
                             </button>
                         </div>
@@ -184,11 +195,51 @@
 
 <script>
     (function () {
+        const remainingSlots = ${remainingSlots};
         const selectAllAvailable = document.getElementById('selectAllAvailable');
         const availableCheckboxes = document.querySelectorAll('.student-checkbox');
+        const addForm = document.querySelector('form[action="enrollment"] input[name="action"][value="addStudents"]')?.closest('form');
+
+        function syncAvailableSelection() {
+            const checkedCount = Array.from(availableCheckboxes).filter(cb => cb.checked).length;
+            availableCheckboxes.forEach(cb => {
+                if (!cb.checked) {
+                    cb.disabled = remainingSlots <= 0 || checkedCount >= remainingSlots;
+                }
+            });
+            if (selectAllAvailable) {
+                const enabledCheckboxes = Array.from(availableCheckboxes).filter(cb => !cb.disabled);
+                selectAllAvailable.checked = availableCheckboxes.length > 0 && checkedCount === availableCheckboxes.length;
+                selectAllAvailable.disabled = remainingSlots <= 0 || enabledCheckboxes.length === 0;
+            }
+        }
+
         if (selectAllAvailable) {
             selectAllAvailable.addEventListener('change', function () {
-                availableCheckboxes.forEach(cb => cb.checked = selectAllAvailable.checked);
+                let selected = 0;
+                availableCheckboxes.forEach(cb => {
+                    if (selectAllAvailable.checked && selected < remainingSlots && !cb.disabled) {
+                        cb.checked = true;
+                        selected++;
+                    } else {
+                        cb.checked = false;
+                    }
+                });
+                syncAvailableSelection();
+            });
+        }
+
+        availableCheckboxes.forEach(cb => {
+            cb.addEventListener('change', syncAvailableSelection);
+        });
+
+        if (addForm) {
+            addForm.addEventListener('submit', function (event) {
+                const checkedCount = Array.from(availableCheckboxes).filter(cb => cb.checked).length;
+                if (checkedCount > remainingSlots) {
+                    event.preventDefault();
+                    alert('You can only add up to ' + remainingSlots + ' student(s) to this class.');
+                }
             });
         }
 
@@ -199,5 +250,7 @@
                 inClassCheckboxes.forEach(cb => cb.checked = selectAllInClass.checked);
             });
         }
+
+        syncAvailableSelection();
     })();
 </script>

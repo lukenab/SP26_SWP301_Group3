@@ -406,6 +406,7 @@ CREATE TABLE [dbo].[Voucher](
 	[DiscountPercent] [float] NULL,
 	[ValidUntil] [date] NULL,
 	[Status] [bit] NULL,
+	[MaxUsage] [int] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[VoucherID] ASC
@@ -597,6 +598,8 @@ GO
 ALTER TABLE [dbo].[User] ADD  DEFAULT ((1)) FOR [Status]
 GO
 ALTER TABLE [dbo].[Voucher] ADD  DEFAULT ((1)) FOR [Status]
+GO
+ALTER TABLE [dbo].[Voucher] ADD  DEFAULT ((1)) FOR [MaxUsage]
 GO
 ALTER TABLE [dbo].[Assessment]  WITH CHECK ADD FOREIGN KEY([CourseID])
 REFERENCES [dbo].[Course] ([CourseID])

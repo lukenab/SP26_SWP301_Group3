@@ -161,19 +161,19 @@ public class ScheduleDAO extends DBContext {
 
     // Create multiple schedules at once (batch operation) - NO DATABASE CHANGES NEEDED!
     public int createMultipleSchedules(int classId, int roomId, int slotId, Date startDate, int teacherId,
-                                        String recurringType, String recurringDays, String endCondition,
-                                        Date endDate, Integer occurrences) {
+            String recurringType, String recurringDays, String endCondition,
+            Date endDate, Integer occurrences) {
         try {
             List<Date> scheduleDates = generateScheduleDates(startDate, recurringType, recurringDays,
-                                                             endCondition, endDate, occurrences);
+                    endCondition, endDate, occurrences);
 
             if (scheduleDates.isEmpty()) {
                 System.out.println("No dates generated for recurring schedule");
                 return 0;
             }
 
-            String sql = "INSERT INTO Schedule (ClassID, RoomID, SlotID, LearningDate, TeacherID, AttendanceStatus) " +
-                        "VALUES (?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO Schedule (ClassID, RoomID, SlotID, LearningDate, TeacherID, AttendanceStatus) "
+                    + "VALUES (?, ?, ?, ?, ?, ?)";
 
             conn.setAutoCommit(false);
             int createdCount = 0;
@@ -194,7 +194,9 @@ public class ScheduleDAO extends DBContext {
 
                 // Count successful inserts
                 for (int result : results) {
-                    if (result > 0) createdCount++;
+                    if (result > 0) {
+                        createdCount++;
+                    }
                 }
 
                 return createdCount;
@@ -213,7 +215,7 @@ public class ScheduleDAO extends DBContext {
 
     // Generate list of dates based on recurring pattern
     private List<Date> generateScheduleDates(Date startDate, String recurringType, String recurringDays,
-                                             String endCondition, Date endDate, Integer occurrences) {
+            String endCondition, Date endDate, Integer occurrences) {
         List<Date> dates = new ArrayList<>();
         java.util.Calendar cal = java.util.Calendar.getInstance();
         cal.setTime(startDate);
@@ -250,8 +252,8 @@ public class ScheduleDAO extends DBContext {
                     break;
                 case "weekdays":
                     int dayOfWeek = cal.get(java.util.Calendar.DAY_OF_WEEK);
-                    shouldAdd = (dayOfWeek >= java.util.Calendar.MONDAY &&
-                               dayOfWeek <= java.util.Calendar.FRIDAY);
+                    shouldAdd = (dayOfWeek >= java.util.Calendar.MONDAY
+                            && dayOfWeek <= java.util.Calendar.FRIDAY);
                     break;
                 case "custom":
                     if (recurringDays != null && !recurringDays.isEmpty()) {
@@ -286,15 +288,15 @@ public class ScheduleDAO extends DBContext {
     // Find related schedules (same class, slot, room) - for series identification
     public List<Schedule> findRelatedSchedules(int scheduleId) {
         List<Schedule> schedules = new ArrayList<>();
-        String sql = "SELECT s2.ScheduleID, s2.ClassID, s2.RoomID, s2.SlotID, s2.LearningDate, " +
-                    "s2.TeacherID, s2.AttendanceStatus " +
-                    "FROM Schedule s1 " +
-                    "INNER JOIN Schedule s2 ON s1.ClassID = s2.ClassID " +
-                    "    AND s1.RoomID = s2.RoomID " +
-                    "    AND s1.SlotID = s2.SlotID " +
-                    "    AND s1.TeacherID = s2.TeacherID " +
-                    "WHERE s1.ScheduleID = ? " +
-                    "ORDER BY s2.LearningDate";
+        String sql = "SELECT s2.ScheduleID, s2.ClassID, s2.RoomID, s2.SlotID, s2.LearningDate, "
+                + "s2.TeacherID, s2.AttendanceStatus "
+                + "FROM Schedule s1 "
+                + "INNER JOIN Schedule s2 ON s1.ClassID = s2.ClassID "
+                + "    AND s1.RoomID = s2.RoomID "
+                + "    AND s1.SlotID = s2.SlotID "
+                + "    AND s1.TeacherID = s2.TeacherID "
+                + "WHERE s1.ScheduleID = ? "
+                + "ORDER BY s2.LearningDate";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, scheduleId);
@@ -344,9 +346,9 @@ public class ScheduleDAO extends DBContext {
 
     // Update multiple schedules by pattern
     public int updateSchedulesByPattern(int oldClassId, int oldRoomId, int oldSlotId, int oldTeacherId,
-                                        int newClassId, int newRoomId, int newSlotId, int newTeacherId) {
-        String sql = "UPDATE Schedule SET ClassID = ?, RoomID = ?, SlotID = ?, TeacherID = ? " +
-                    "WHERE ClassID = ? AND RoomID = ? AND SlotID = ? AND TeacherID = ? AND AttendanceStatus = 0";
+            int newClassId, int newRoomId, int newSlotId, int newTeacherId) {
+        String sql = "UPDATE Schedule SET ClassID = ?, RoomID = ?, SlotID = ?, TeacherID = ? "
+                + "WHERE ClassID = ? AND RoomID = ? AND SlotID = ? AND TeacherID = ? AND AttendanceStatus = 0";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, newClassId);
@@ -780,7 +782,6 @@ public class ScheduleDAO extends DBContext {
 
         return list;
     }
-    
 
     // Main method for testing
     public static void main(String[] args) {
@@ -825,8 +826,8 @@ public class ScheduleDAO extends DBContext {
     }
 
     /**
-     * Find similar schedules based on Class, Slot, and Room
-     * Used for bulk delete/edit operations
+     * Find similar schedules based on Class, Slot, and Room Used for bulk
+     * delete/edit operations
      */
     public List<Schedule> getSimilarSchedules(int scheduleId) {
         List<Schedule> similarSchedules = new ArrayList<>();
@@ -895,8 +896,8 @@ public class ScheduleDAO extends DBContext {
     }
 
     /**
-     * Delete similar schedules (only non-attended ones)
-     * Returns number of deleted schedules
+     * Delete similar schedules (only non-attended ones) Returns number of
+     * deleted schedules
      */
     public int deleteSimilarSchedules(int scheduleId) {
         List<Schedule> similarSchedules = getSimilarSchedules(scheduleId);
@@ -920,5 +921,57 @@ public class ScheduleDAO extends DBContext {
         }
 
         return deletedCount;
+    }
+
+    public List<Schedule> getTodayScheduleByStudent(int studentId, String today) {
+
+        List<model.Schedule> list = new ArrayList<>();
+
+        String sql = "SELECT s.*, c.ClassName, r.RoomName, sl.StartTime, sl.EndTime "
+                + "FROM Schedule s "
+                + "JOIN [Class] c ON s.ClassID = c.ClassID "
+                + "JOIN Enrollment e ON e.ClassID = c.ClassID "
+                + "LEFT JOIN Room r ON s.RoomID = r.RoomID "
+                + "LEFT JOIN Slot sl ON s.SlotID = sl.SlotID "
+                + "WHERE e.StudentID = ? "
+                + "AND s.LearningDate = ? "
+                + "AND e.Status = 'Active'";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, studentId);
+            ps.setString(2, today);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                model.Schedule sc = new model.Schedule();
+
+                model.Classes cl = new model.Classes();
+                cl.setClassid(rs.getInt("ClassID"));
+                cl.setClassName(rs.getString("ClassName"));
+
+                model.Room room = new model.Room();
+                room.setRoomName(rs.getString("RoomName"));
+
+                model.Slot slot = new model.Slot();
+
+                slot.setStartTime(rs.getTime("StartTime").toLocalTime());
+                slot.setEndTime(rs.getTime("EndTime").toLocalTime());
+
+                sc.setClasses(cl);
+                sc.setRoom(room);
+                sc.setSlot(slot);
+                sc.setLearningDate(rs.getDate("LearningDate"));
+
+                list.add(sc);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail get today schedule: " + e.getMessage());
+        }
+
+        return list;
     }
 }
