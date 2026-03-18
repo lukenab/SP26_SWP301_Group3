@@ -206,12 +206,6 @@
                                         </c:choose>
                                     </td>
                                     <td class="payment-actions">
-                                        <c:if test="${paymentDisplay.payment.evidenceImage != null && !paymentDisplay.payment.evidenceImage.isEmpty()}">
-                                            <button type="button" class="action-btn action-compact action-evidence" title="View Evidence"
-                                                    onclick="viewEvidence('${paymentDisplay.payment.evidenceImage}', '${paymentDisplay.studentName}')">
-                                                <i class='bx bx-image'></i>
-                                            </button>
-                                        </c:if>
                                         <c:if test="${paymentDisplay.payment.status == 'Pending'}">
                                             <button type="button" class="action-btn action-compact action-approve" title="Approve"
                                                     onclick="approvePayment(${paymentDisplay.payment.paymentId}, '${paymentDisplay.studentName}')">
