@@ -130,7 +130,7 @@
                                 <c:choose>
                                     <c:when test="${avg != null}">
                                         <span class="badge rounded-pill px-3 ${avg < 5 ? 'bg-danger' : 'bg-success'} shadow-sm final-score-value">
-                                            <fmt:formatNumber value="${avg}" maxFractionDigits="1" type="number" />
+                                            <fmt:formatNumber value="${avg}" maxFractionDigits="2" type="number" />
                                         </span>
                                     </c:when>
                                     <c:otherwise>

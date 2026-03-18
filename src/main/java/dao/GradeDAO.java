@@ -201,7 +201,7 @@ public class GradeDAO extends DBContext {
 
     public Double calculateAverage(int enrollmentId) {
 
-        String sql = "SELECT SUM(g.Score * a.Weight) AS FinalScore "
+         String sql = "SELECT SUM(g.Score * a.Weight) / SUM(a.Weight) AS FinalScore "
                 + "FROM Grade g "
                 + "JOIN Assessment a "
                 + "ON g.AssessmentID = a.AssessmentID "
@@ -213,7 +213,8 @@ public class GradeDAO extends DBContext {
             ResultSet rs = st.executeQuery();
 
             if (rs.next()) {
-                return rs.getDouble("FinalScore");
+                double score = rs.getDouble("FinalScore");
+                return rs.wasNull() ? null : score;
             }
 
         } catch (Exception e) {
@@ -228,7 +229,7 @@ public class GradeDAO extends DBContext {
         Map<Integer, Double> map = new HashMap<>();
 
         String sql
-                = "SELECT e.StudentID, SUM(g.Score * a.Weight) AS FinalScore "
+                = "SELECT e.StudentID, SUM(g.Score * a.Weight) / NULLIF(SUM(a.Weight), 0) AS FinalScore "
                 + "FROM Enrollment e "
                 + "LEFT JOIN Grade g ON e.EnrollmentID = g.EnrollmentID "
                 + "LEFT JOIN Assessment a ON g.AssessmentID = a.AssessmentID "
@@ -241,9 +242,10 @@ public class GradeDAO extends DBContext {
             ResultSet rs = st.executeQuery();
 
             while (rs.next()) {
+                 double score = rs.getDouble("FinalScore");
                 map.put(
                         rs.getInt("StudentID"),
-                        rs.getDouble("FinalScore")
+                        rs.wasNull() ? null : score
                 );
             }
 
@@ -339,7 +341,7 @@ public class GradeDAO extends DBContext {
 
     public List<Map<String, Object>> getFullGradeReport(int classId) {
         List<Map<String, Object>> list = new ArrayList<>();
-        // Lấy thông tin sinh viên và điểm số tương ứng của họ
+
         String sql = "SELECT u.UserID, u.FullName, u.Avatar, a.AssessmentName, g.Score "
                 + "FROM Enrollment e "
                 + "JOIN [User] u ON e.StudentID = u.UserID "
@@ -360,7 +362,7 @@ public class GradeDAO extends DBContext {
                     row.put("userId", userId);
                     row.put("fullName", rs.getString("FullName"));
                     row.put("avatar", rs.getString("Avatar"));
-                    // Map để chứa các loại điểm (Reading, Writing...)
+
                     row.put("scores", new HashMap<String, Double>());
                     studentMap.put(userId, row);
                     list.add(row);
@@ -371,34 +373,6 @@ public class GradeDAO extends DBContext {
                     Map<String, Double> scores = (Map<String, Double>) studentMap.get(userId).get("scores");
                     scores.put(assName, rs.getDouble("Score"));
                 }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
-    public List<Assessment> getAssessmentsByClass(int classId) {
-        List<Assessment> list = new ArrayList<>();
-
-        String sql = "SELECT a.AssessmentID, a.AssessmentName, a.Weight, a.CourseID "
-                + "FROM Assessment a "
-                + "JOIN Class c ON a.CourseID = c.CourseID "
-                + "WHERE c.ClassID = ? "
-                + "ORDER BY a.AssessmentID";
-
-        try (PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setInt(1, classId);
-            ResultSet rs = st.executeQuery();
-
-            while (rs.next()) {
-                Assessment a = new Assessment();
-
-                a.setAssessmentId(rs.getInt("AssessmentID"));
-                a.setAssessmentName(rs.getString("AssessmentName"));
-                a.setWeight(rs.getDouble("Weight"));
-
-                list.add(a);
             }
         } catch (Exception e) {
             e.printStackTrace();

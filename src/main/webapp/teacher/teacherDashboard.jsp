@@ -242,9 +242,9 @@
                                 <span class="fw-bold small text-dark">${studentNameMap[f.feedbackId]}</span>
                                 <div class="text-warning small" style="font-size: 0.65rem;">
                                     <c:forEach begin="1" end="${f.rating}"><i class='bx bxs-star'></i></c:forEach>
-                                    </div>
                                 </div>
-                                <p class="small text-muted mb-0 fst-italic" style="line-height: 1.4;">"${f.comment}"</p>
+                            </div>
+                            <p class="small text-muted mb-0 fst-italic" style="line-height: 1.4;">"${f.comment}"</p>
                         </div>
                     </c:forEach>
                 </div>
