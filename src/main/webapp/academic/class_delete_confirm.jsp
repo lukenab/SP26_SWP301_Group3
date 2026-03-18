@@ -29,7 +29,7 @@
     </div>
     <div aria-label="breadcrumb">
         <ol class="breadcrumb mb-1">
-            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="enrollment?action=classes">Class Management</a></li>
             <li class="breadcrumb-item active" aria-current="page">${isActive ? 'Deactivate Class' : 'Activate Class'}</li>
         </ol>
