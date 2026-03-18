@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.AttendanceDAO;
 import dao.ClassDAO;
 import dao.EnrollmentDAO;
 import dao.LeadDAO;
@@ -46,6 +47,7 @@ public class DashboardController extends HttpServlet {
         UserDAO userDAO = new UserDAO();
         LeadDAO leadDAO = new LeadDAO();
         PaymentDAO paymentDAO = new PaymentDAO();
+        ClassDAO classDAO = new ClassDAO();
         EnrollmentDAO enrollDAO = new EnrollmentDAO();
 
         User currentUser = (User) request.getSession().getAttribute("user");
@@ -139,7 +141,7 @@ public class DashboardController extends HttpServlet {
 
             case "academic":
             case "academicFillRateReport":
-                ClassDAO classDAO = new ClassDAO();
+
                 List<Object[]> classFillRateList = classDAO.getClassFillRateReport();
                 request.setAttribute("classFillRateList", classFillRateList != null ? classFillRateList : new ArrayList<>());
                 request.setAttribute("home_view", "/academic/class_fill_rate_report.jsp");
@@ -225,7 +227,6 @@ public class DashboardController extends HttpServlet {
 
                 int studentId = sUser.getUserId();
 
-                dao.ClassDAO classDAO = new dao.ClassDAO();
                 dao.ScheduleDAO scheduleDAO = new dao.ScheduleDAO();
                 AttendanceDAO attendanceDAO = new AttendanceDAO();
 
