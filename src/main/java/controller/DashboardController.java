@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.AttendanceDAO;
 import dao.EnrollmentDAO;
 import dao.LeadDAO;
 import dao.PaymentDAO;
@@ -16,7 +17,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import model.User;
 
@@ -57,12 +60,12 @@ public class DashboardController extends HttpServlet {
                 double totalRevenue = paymentDAO.getTotalRevenue();
                 int totalEnrollments = enrollDAO.getTotalEnrollments();
                 double conversionRate = leadDAO.getConversionRate();
-                
+
                 List<Double> monthlyRevenue = paymentDAO.getMonthlyRevenue(2026);
                 String revenueDataString = monthlyRevenue.stream()
                         .map(String::valueOf)
                         .collect(Collectors.joining(","));
-                
+
                 request.setAttribute("conversionRate", conversionRate);
                 request.setAttribute("totalEnrollments", totalEnrollments);
                 request.setAttribute("totalRevenue", totalRevenue);
@@ -141,6 +144,53 @@ public class DashboardController extends HttpServlet {
 
                 request.setAttribute("home_view", "teacher/teacherDashboard.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+
+            case "student":
+
+                User sUser = (User) request.getSession().getAttribute("user");
+                if (sUser == null) {
+                    response.sendRedirect("login");
+                    return;
+                }
+
+                int studentId = sUser.getUserId();
+
+                dao.ClassDAO classDAO = new dao.ClassDAO();
+                dao.ScheduleDAO scheduleDAO = new dao.ScheduleDAO();
+                AttendanceDAO attendanceDAO = new AttendanceDAO();
+
+                // ===== Classes của student =====
+                List<Object[]> studentClasses = classDAO.getStudentClasses(studentId);
+
+                // ===== Schedule tuần này =====
+                java.time.LocalDate todayDate = java.time.LocalDate.now();
+                java.time.LocalDate startOfWeek = todayDate.with(java.time.DayOfWeek.MONDAY);
+                java.time.LocalDate endOfWeek = todayDate.with(java.time.DayOfWeek.SUNDAY);
+
+//                List<model.Schedule> weeklySchedule = scheduleDAO.getScheduleByStudentWeek(
+//                        studentId,
+//                        startOfWeek.toString(),
+//                        endOfWeek.toString()
+//                );
+                // ===== Schedule hôm nay =====
+                List<model.Schedule> todaySchedule = scheduleDAO.getTodayScheduleByStudent(
+                        studentId,
+                        todayDate.toString()
+                );
+                Map<String, Integer> summary = attendanceDAO.getAttendanceSummaryByStudent(studentId);
+                // ===== Tổng số lớp =====
+                int totalClasses = studentClasses.size();
+
+                request.setAttribute("totalClasses", totalClasses);
+                request.setAttribute("studentClasses", studentClasses);
+//                request.setAttribute("weeklySchedule", weeklySchedule);
+                request.setAttribute("todaySchedule", todaySchedule);
+                request.setAttribute("summary", summary);
+
+                request.setAttribute("home_view", "student/studentDashboard.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+
                 break;
         }
     }
