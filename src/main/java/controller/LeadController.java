@@ -479,16 +479,13 @@ public class LeadController extends HttpServlet {
             }
 
             dao.EnrollmentDAO enrollmentDAO = new dao.EnrollmentDAO();
-//            Integer enrollmentId = enrollmentDAO.getEnrollmentId(newUser.getUserId(), classId);
-//            if (enrollmentId == null) {
-//                enrollmentId = enrollmentDAO.createEnrollment(newUser.getUserId(), classId, "Active");
-//            }
-//            if (enrollmentId == null) {
-//                session.setAttribute("message", "Failed to enroll student into class.");
-//                session.setAttribute("messageType", "error");
-//                response.sendRedirect("lead?action=addStudentAtCenter");
-//                return;
-//            }
+            int enrollmentId = enrollmentDAO.getOrCreateEnrollment(newUser.getUserId(), classId);
+            if (enrollmentId <= 0) {
+                session.setAttribute("message", "Failed to enroll student into class.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("lead?action=addStudentAtCenter");
+                return;
+            }
 
             dao.ClassDAO classDAO = new dao.ClassDAO();
             double amount = classDAO.getClassPrice(classId);
