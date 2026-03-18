@@ -144,6 +144,39 @@ public class AttendanceController extends HttpServlet {
                     response.sendRedirect("dashboard?action=teacher");
                 }
                 break;
+
+            case "studentReport":
+                try {
+
+                    HttpSession session = request.getSession();
+                    User user = (User) session.getAttribute("user");
+
+                    if (user == null) {
+                        response.sendRedirect("login.jsp");
+                        return;
+                    }
+
+                    int studentId = user.getUserId();
+
+                    AttendanceDAO daoAttendance = new AttendanceDAO();
+
+                    List<Object[]> reportList = daoAttendance.getAttendanceReportByStudent(studentId);
+
+                    Map<String, Integer> summary = daoAttendance.getAttendanceSummaryByStudent(studentId);
+
+                    request.setAttribute("attendanceReport", reportList);
+
+                    request.setAttribute("summary", summary);
+
+                    request.setAttribute("home_view", "student/attendanceReport.jsp");
+
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    response.sendRedirect("dashboard?action=student");
+                }
+                break;
         }
     }
 

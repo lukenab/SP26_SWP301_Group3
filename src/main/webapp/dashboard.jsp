@@ -334,7 +334,7 @@
                     <ul class="menu-links">
 
                         <li class="nav-links">
-                            <a href="dashboard">
+                            <a href="dashboard?action=student">
                                 <i class="bxr bx-dashboard"></i>
                                 <span class="text nav-text">Dashboard</span>
                             </a>
@@ -358,6 +358,13 @@
                             <a href="class?action=myClasses">
                                 <i class="bxr bx-book"></i>
                                 <span class="text nav-text">My Classes</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-links">
+                            <a href="attendance?action=studentReport">
+                                <i class="bxr bx-check-square"></i>
+                                <span class="text nav-text">Attendance Report</span>
                             </a>
                         </li>
 
