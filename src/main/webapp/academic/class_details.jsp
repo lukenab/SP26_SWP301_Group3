@@ -26,7 +26,7 @@
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-2">
-                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="enrollment?action=classes">Class Management</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Class Details</li>
             </ol>
