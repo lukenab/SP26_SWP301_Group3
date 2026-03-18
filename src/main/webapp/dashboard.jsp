@@ -313,6 +313,12 @@
 
                         <c:if test="${sessionScope.user.role.manageFinance}">
                             <li class="nav-links">
+                                <a href="voucher?action=report">
+                                    <i class="bx bx-report"></i>
+                                    <span class="text nav-text">Voucher Report</span>
+                                </a>
+                            </li>
+                            <li class="nav-links">
                                 <a href="voucher?action=all">
                                     <i class="bxr bx-group"></i>
                                     <span class="text nav-text">Voucher</span>

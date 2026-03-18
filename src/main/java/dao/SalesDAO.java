@@ -84,45 +84,47 @@ public class SalesDAO extends DBContext {
         String leadCourseFilter = hasCourse ? " AND l.InterestedCourseID = ? " : "";
         String enrollCourseFilter = hasCourse ? " AND c.CourseID = ? " : "";
 
-        String sql = "WITH lead_agg AS ( "
-                + "    SELECT CAST(l.CreateDate AS DATE) AS DayValue, "
-                + "           l.InterestedCourseID AS CourseID, "
+        String sql = "WITH month_cte AS ( "
+                + "    SELECT CAST(DATEFROMPARTS(YEAR(?), MONTH(?), 1) AS DATETIME) AS MonthStart "
+                + "    UNION ALL "
+                + "    SELECT DATEADD(MONTH, 1, MonthStart) "
+                + "    FROM month_cte "
+                + "    WHERE DATEADD(MONTH, 1, MonthStart) <= DATEFROMPARTS(YEAR(?), MONTH(?), 1) "
+                + "), lead_agg AS ( "
+                + "    SELECT DATEFROMPARTS(YEAR(l.CreateDate), MONTH(l.CreateDate), 1) AS MonthStart, "
                 + "           COUNT(*) AS TotalLeads, "
                 + "           SUM(CASE WHEN l.Status = 'Converted' THEN 1 ELSE 0 END) AS ConvertedLeads "
                 + "    FROM Lead l "
                 + "    WHERE l.CreateDate >= ? AND l.CreateDate <= ? "
                 + leadCourseFilter
-                + "    GROUP BY CAST(l.CreateDate AS DATE), l.InterestedCourseID "
+                + "    GROUP BY DATEFROMPARTS(YEAR(l.CreateDate), MONTH(l.CreateDate), 1) "
                 + "), enroll_agg AS ( "
-                + "    SELECT CAST(e.EnrollDate AS DATE) AS DayValue, "
-                + "           c.CourseID AS CourseID, "
+                + "    SELECT DATEFROMPARTS(YEAR(e.EnrollDate), MONTH(e.EnrollDate), 1) AS MonthStart, "
                 + "           COUNT(DISTINCT e.StudentID) AS RegisteredStudents "
                 + "    FROM Enrollment e "
                 + "    JOIN Class c ON e.ClassID = c.ClassID "
                 + "    WHERE e.EnrollDate >= ? AND e.EnrollDate <= ? "
                 + enrollCourseFilter
-                + "    GROUP BY CAST(e.EnrollDate AS DATE), c.CourseID "
+                + "    GROUP BY DATEFROMPARTS(YEAR(e.EnrollDate), MONTH(e.EnrollDate), 1) "
                 + ") "
-                + "SELECT FORMAT(x.DayValue, 'dd/MM/yyyy') AS DayLabel, "
-                + "       COALESCE(co.CourseName, 'Unknown') AS CourseName, "
-                + "       SUM(x.TotalLeads) AS TotalLeads, "
-                + "       SUM(x.ConvertedLeads) AS ConvertedLeads, "
-                + "       SUM(x.RegisteredStudents) AS RegisteredStudents "
-                + "FROM ( "
-                + "    SELECT DayValue, CourseID, TotalLeads, ConvertedLeads, 0 AS RegisteredStudents "
-                + "    FROM lead_agg "
-                + "    UNION ALL "
-                + "    SELECT DayValue, CourseID, 0, 0, RegisteredStudents "
-                + "    FROM enroll_agg "
-                + ") x "
-                + "LEFT JOIN Course co ON co.CourseID = x.CourseID "
-                + "GROUP BY x.DayValue, co.CourseName "
-                + "ORDER BY x.DayValue, co.CourseName";
+                + "SELECT FORMAT(m.MonthStart, 'MM/yyyy') AS MonthLabel, "
+                + "       ISNULL(l.TotalLeads, 0) AS TotalLeads, "
+                + "       ISNULL(l.ConvertedLeads, 0) AS ConvertedLeads, "
+                + "       ISNULL(e.RegisteredStudents, 0) AS RegisteredStudents "
+                + "FROM month_cte m "
+                + "LEFT JOIN lead_agg l ON l.MonthStart = m.MonthStart "
+                + "LEFT JOIN enroll_agg e ON e.MonthStart = m.MonthStart "
+                + "ORDER BY m.MonthStart "
+                + "OPTION (MAXRECURSION 120)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             Timestamp fromTs = Timestamp.valueOf(fromDate);
             Timestamp toTs = Timestamp.valueOf(toDate);
             int idx = 1;
+            ps.setTimestamp(idx++, fromTs);
+            ps.setTimestamp(idx++, fromTs);
+            ps.setTimestamp(idx++, toTs);
+            ps.setTimestamp(idx++, toTs);
             ps.setTimestamp(idx++, fromTs);
             ps.setTimestamp(idx++, toTs);
             if (hasCourse) {
@@ -140,7 +142,7 @@ public class SalesDAO extends DBContext {
                     int converted = rs.getInt("ConvertedLeads");
                     int students = rs.getInt("RegisteredStudents");
                     double rate = total == 0 ? 0.0 : (converted * 100.0) / total;
-                    rows.add(new Object[]{rs.getString("DayLabel"), rs.getString("CourseName"), total, converted, students, rate});
+                    rows.add(new Object[]{rs.getString("MonthLabel"), total, converted, students, rate});
                 }
             }
         } catch (SQLException e) {
