@@ -215,7 +215,7 @@
                     <!--                    Merge this-->
                     <ul class="menu-links">
                         <li class="nav-links">
-                            <a href="dashboard">
+                            <a href="dashboard?action=academic" class="${currentAction == 'academic' ? 'active' : ''}">
                                 <i class="bxr bx-dashboard"></i>
                                 <span class="text nav-text">Dashboard</span>
                             </a>
