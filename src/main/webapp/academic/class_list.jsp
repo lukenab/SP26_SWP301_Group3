@@ -30,7 +30,7 @@
     <c:set var="pendingClass" value="0"/>
     <c:set var="inactiveClass" value="0"/>
 
-    <c:forEach items="${classList}" var="c">
+    <c:forEach items="${filteredClassList}" var="c">
         <c:if test="${c[6] == 'Active'}">
             <c:set var="activeClass" value="${activeClass + 1}"/>
         </c:if>
@@ -46,7 +46,7 @@
         <div class="stat-card">
             <div class="stat-info">
                 <p>Total Classes</p>
-                <h3>${classList.size()}</h3>
+                <h3>${totalItems}</h3>
             </div>
             <div class="icon-wrapper blue">
                 <i class='bx bxs-school'></i>
@@ -109,29 +109,117 @@
     </c:if>
 
     <div class="filter-container flex-wrap">
-        <div class="custom-search-bar">
+        <form action="enrollment" method="get" class="custom-search-bar" id="classSearchForm">
+            <input type="hidden" name="action" value="classes">
+            <input type="hidden" name="month" value="${empty monthFilter ? 'all' : monthFilter}">
+            <input type="hidden" name="status" value="${empty statusFilter ? 'all' : statusFilter}">
             <i class='bx bx-search text-muted fs-5'></i>
-            <input type="text" placeholder="Search by class name or teacher...">
-        </div>
+            <input type="text"
+                   id="classSearchInput"
+                   name="searchQuery"
+                   value="${fn:escapeXml(searchQuery)}"
+                   placeholder="Search by class name..."
+                   aria-label="Search classes">
+        </form>
 
         <div class="d-flex gap-3">
             <div class="dropdown">
                 <button class="custom-select-filter" type="button" data-bs-toggle="dropdown">
-                    <i class='bx bx-filter-alt'></i> All Classes <i class='bx bx-chevron-down ms-1'></i>
+                    <i class='bx bx-filter-alt'></i>
+                    <c:choose>
+                        <c:when test="${monthFilter == '1'}">January</c:when>
+                        <c:when test="${monthFilter == '2'}">February</c:when>
+                        <c:when test="${monthFilter == '3'}">March</c:when>
+                        <c:when test="${monthFilter == '4'}">April</c:when>
+                        <c:when test="${monthFilter == '5'}">May</c:when>
+                        <c:when test="${monthFilter == '6'}">June</c:when>
+                        <c:when test="${monthFilter == '7'}">July</c:when>
+                        <c:when test="${monthFilter == '8'}">August</c:when>
+                        <c:when test="${monthFilter == '9'}">September</c:when>
+                        <c:when test="${monthFilter == '10'}">October</c:when>
+                        <c:when test="${monthFilter == '11'}">November</c:when>
+                        <c:when test="${monthFilter == '12'}">December</c:when>
+                        <c:otherwise>All Classes</c:otherwise>
+                    </c:choose>
+                    <i class='bx bx-chevron-down ms-1'></i>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Newest</a></li>
-                    <li><a class="dropdown-item" href="#">Oldest</a></li>
+                    <c:url var="allMonthUrl" value="enrollment">
+                        <c:param name="action" value="classes"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                        <c:param name="month" value="all"/>
+                    </c:url>
+                    <li><a class="dropdown-item" href="${allMonthUrl}">All Classes</a></li>
+                    <c:forEach begin="1" end="12" var="month">
+                        <c:url var="monthUrl" value="enrollment">
+                            <c:param name="action" value="classes"/>
+                            <c:param name="searchQuery" value="${searchQuery}"/>
+                            <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                            <c:param name="month" value="${month}"/>
+                        </c:url>
+                        <li>
+                            <a class="dropdown-item" href="${monthUrl}">
+                                <c:choose>
+                                    <c:when test="${month == 1}">January</c:when>
+                                    <c:when test="${month == 2}">February</c:when>
+                                    <c:when test="${month == 3}">March</c:when>
+                                    <c:when test="${month == 4}">April</c:when>
+                                    <c:when test="${month == 5}">May</c:when>
+                                    <c:when test="${month == 6}">June</c:when>
+                                    <c:when test="${month == 7}">July</c:when>
+                                    <c:when test="${month == 8}">August</c:when>
+                                    <c:when test="${month == 9}">September</c:when>
+                                    <c:when test="${month == 10}">October</c:when>
+                                    <c:when test="${month == 11}">November</c:when>
+                                    <c:otherwise>December</c:otherwise>
+                                </c:choose>
+                            </a>
+                        </li>
+                    </c:forEach>
                 </ul>
             </div>
 
             <div class="dropdown">
                 <button class="custom-select-filter d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
-                    <i class='bx bx-slider-alt'></i> All Status <i class='bx bx-chevron-down ms-1'></i>
+                    <i class='bx bx-slider-alt'></i>
+                    <c:choose>
+                        <c:when test="${statusFilter == 'Active'}">Active</c:when>
+                        <c:when test="${statusFilter == 'Pending'}">Pending</c:when>
+                        <c:when test="${statusFilter == 'Inactive'}">Inactive</c:when>
+                        <c:otherwise>All Status</c:otherwise>
+                    </c:choose>
+                    <i class='bx bx-chevron-down ms-1'></i>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Active</a></li>
-                    <li><a class="dropdown-item" href="#">Inactive</a></li>
+                    <c:url var="allClassStatusUrl" value="enrollment">
+                        <c:param name="action" value="classes"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
+                        <c:param name="status" value="all"/>
+                    </c:url>
+                    <c:url var="activeClassStatusUrl" value="enrollment">
+                        <c:param name="action" value="classes"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
+                        <c:param name="status" value="Active"/>
+                    </c:url>
+                    <c:url var="pendingClassStatusUrl" value="enrollment">
+                        <c:param name="action" value="classes"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
+                        <c:param name="status" value="Pending"/>
+                    </c:url>
+                    <c:url var="inactiveClassStatusUrl" value="enrollment">
+                        <c:param name="action" value="classes"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
+                        <c:param name="status" value="Inactive"/>
+                    </c:url>
+                    <li><a class="dropdown-item" href="${allClassStatusUrl}">All Status</a></li>
+                    <li><a class="dropdown-item" href="${activeClassStatusUrl}">Active</a></li>
+                    <li><a class="dropdown-item" href="${pendingClassStatusUrl}">Pending</a></li>
+                    <li><a class="dropdown-item" href="${inactiveClassStatusUrl}">Inactive</a></li>
                 </ul>
             </div>
         </div>
@@ -155,7 +243,7 @@
                 <tbody>
                     <c:if test="${empty classList}">
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">No classes found.</td>
+                            <td colspan="7" class="text-center text-muted py-4">No classes found.</td>
                         </tr>
                     </c:if>
 
@@ -222,26 +310,67 @@
 
         <div class="d-flex justify-content-between align-items-center p-3 border-top">
             <div class="text-muted small">Showing ${startItem}-${endItem} of ${totalItems} classes</div>
-            <div>
+            <c:if test="${not showAllFilteredResults}">
+                <div>
                 <ul class="pagination pagination-sm mb-0">
+                    <c:url var="prevPageUrl" value="enrollment">
+                        <c:param name="action" value="classes"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
+                        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                        <c:param name="page" value="${currentPage - 1}"/>
+                    </c:url>
                     <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
-                        <a class="page-link" href="enrollment?action=classes&page=${currentPage - 1}">
+                        <a class="page-link" href="${prevPageUrl}">
                             <i class='bx bx-chevron-left'></i> Previous
                         </a>
                     </li>
                     <c:forEach begin="1" end="${totalPages}" var="pageNumber">
+                        <c:url var="pageUrl" value="enrollment">
+                            <c:param name="action" value="classes"/>
+                            <c:param name="searchQuery" value="${searchQuery}"/>
+                            <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
+                            <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                            <c:param name="page" value="${pageNumber}"/>
+                        </c:url>
                         <li class="page-item ${pageNumber == currentPage ? 'active' : ''}">
-                            <a class="page-link" href="enrollment?action=classes&page=${pageNumber}">${pageNumber}</a>
+                            <a class="page-link" href="${pageUrl}">${pageNumber}</a>
                         </li>
                     </c:forEach>
+                    <c:url var="nextPageUrl" value="enrollment">
+                        <c:param name="action" value="classes"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
+                        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                        <c:param name="page" value="${currentPage + 1}"/>
+                    </c:url>
                     <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
-                        <a class="page-link" href="enrollment?action=classes&page=${currentPage + 1}">
+                        <a class="page-link" href="${nextPageUrl}">
                             Next <i class='bx bx-chevron-right'></i>
                         </a>
                     </li>
                 </ul>
-            </div>
+                </div>
+            </c:if>
         </div>
     </div>
 </div>
 <script src="js/manageUser.js" type="text/javascript"></script>
+<script>
+    (function () {
+        const searchInput = document.getElementById('classSearchInput');
+        const searchForm = document.getElementById('classSearchForm');
+        let debounceTimer;
+
+        if (!searchInput || !searchForm) {
+            return;
+        }
+
+        searchInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function () {
+                searchForm.submit();
+            }, 400);
+        });
+    })();
+</script>

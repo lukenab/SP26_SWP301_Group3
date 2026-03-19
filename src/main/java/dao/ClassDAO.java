@@ -33,18 +33,32 @@ public class ClassDAO extends DBContext {
         return false;
     }
 
+    private boolean hasClassRoomIdColumn() {
+        String sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS "
+                + "WHERE TABLE_NAME = 'Class' AND COLUMN_NAME = 'RoomID'";
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            return rs.next();
+        } catch (Exception e) {
+            System.out.println("Fail to detect Class.RoomID column: " + e.getMessage());
+        }
+        return false;
+    }
+
     public List<Object[]> getClassManagementList() {
         List<Object[]> list = new ArrayList<>();
         boolean hasMaxCapacity = hasClassMaxCapacityColumn();
+        boolean hasRoomId = hasClassRoomIdColumn();
         String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, u.FullName AS TeacherName, "
                 + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount, "
                 + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " AS MaxCapacity, "
                 + "DATEADD(DAY, -5, c.StartDate) AS RegistrationDeadline, "
-                + "rm.RoomName "
+                + (hasRoomId ? "COALESCE(cr.RoomName, rm.RoomName)" : "rm.RoomName") + " AS RoomName "
                 + "FROM Class c "
                 + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
                 + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
                 + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
+                + (hasRoomId ? "LEFT JOIN Room cr ON c.RoomID = cr.RoomID " : "")
                 + "LEFT JOIN ( "
                 + "   SELECT ClassID, STRING_AGG(RoomName, ', ') AS RoomName "
                 + "   FROM ( "
@@ -55,7 +69,9 @@ public class ClassDAO extends DBContext {
                 + "   GROUP BY ClassID "
                 + ") rm ON rm.ClassID = c.ClassID "
                 + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status, "
-                + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + ", rm.RoomName "
+                + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + ", "
+                + (hasRoomId ? "cr.RoomName, " : "")
+                + "rm.RoomName "
                 + "ORDER BY c.StartDate DESC, c.ClassID DESC";
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -196,15 +212,17 @@ public class ClassDAO extends DBContext {
 
     public Object[] getClassById(int classId) {
         boolean hasMaxCapacity = hasClassMaxCapacityColumn();
+        boolean hasRoomId = hasClassRoomIdColumn();
         String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, u.FullName AS TeacherName, "
                 + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount, "
                 + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " AS MaxCapacity, "
                 + "DATEADD(DAY, -5, c.StartDate) AS RegistrationDeadline, "
-                + "rm.RoomName "
+                + (hasRoomId ? "COALESCE(cr.RoomName, rm.RoomName)" : "rm.RoomName") + " AS RoomName "
                 + "FROM Class c "
                 + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
                 + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
                 + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
+                + (hasRoomId ? "LEFT JOIN Room cr ON c.RoomID = cr.RoomID " : "")
                 + "LEFT JOIN ( "
                 + "   SELECT ClassID, STRING_AGG(RoomName, ', ') AS RoomName "
                 + "   FROM ( "
@@ -216,7 +234,9 @@ public class ClassDAO extends DBContext {
                 + ") rm ON rm.ClassID = c.ClassID "
                 + "WHERE c.ClassID = ? "
                 + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status, "
-                + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + ", rm.RoomName";
+                + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + ", "
+                + (hasRoomId ? "cr.RoomName, " : "")
+                + "rm.RoomName";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, classId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -377,11 +397,19 @@ public class ClassDAO extends DBContext {
         return list;
     }
 
-    public boolean createClass(String className, int courseId, int teacherId, Date startDate, Date endDate, String status, int maxCapacity) {
+    public boolean createClass(String className, int courseId, int teacherId, Date startDate, Date endDate, String status, int maxCapacity, Integer roomId) {
         boolean hasMaxCapacity = hasClassMaxCapacityColumn();
-        String sql = hasMaxCapacity
-                ? "INSERT INTO Class (ClassName, CourseID, TeacherID, StartDate, EndDate, Status, MaxCapacity) VALUES (?, ?, ?, ?, ?, ?, ?)"
-                : "INSERT INTO Class (ClassName, CourseID, TeacherID, StartDate, EndDate, Status) VALUES (?, ?, ?, ?, ?, ?)";
+        boolean hasRoomId = hasClassRoomIdColumn();
+        String sql;
+        if (hasMaxCapacity && hasRoomId) {
+            sql = "INSERT INTO Class (ClassName, CourseID, TeacherID, StartDate, EndDate, Status, MaxCapacity, RoomID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        } else if (hasMaxCapacity) {
+            sql = "INSERT INTO Class (ClassName, CourseID, TeacherID, StartDate, EndDate, Status, MaxCapacity) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        } else if (hasRoomId) {
+            sql = "INSERT INTO Class (ClassName, CourseID, TeacherID, StartDate, EndDate, Status, RoomID) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        } else {
+            sql = "INSERT INTO Class (ClassName, CourseID, TeacherID, StartDate, EndDate, Status) VALUES (?, ?, ?, ?, ?, ?)";
+        }
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, className);
             ps.setInt(2, courseId);
@@ -389,8 +417,16 @@ public class ClassDAO extends DBContext {
             ps.setDate(4, startDate);
             ps.setDate(5, endDate);
             ps.setString(6, status);
+            int parameterIndex = 7;
             if (hasMaxCapacity) {
-                ps.setInt(7, maxCapacity);
+                ps.setInt(parameterIndex++, maxCapacity);
+            }
+            if (hasRoomId) {
+                if (roomId != null && roomId > 0) {
+                    ps.setInt(parameterIndex, roomId);
+                } else {
+                    ps.setNull(parameterIndex, java.sql.Types.INTEGER);
+                }
             }
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -401,10 +437,14 @@ public class ClassDAO extends DBContext {
 
     public Object[] getClassForEdit(int classId) {
         boolean hasMaxCapacity = hasClassMaxCapacityColumn();
+        boolean hasRoomId = hasClassRoomIdColumn();
         String sql = "SELECT c.ClassID, c.ClassName, c.CourseID, c.TeacherID, c.StartDate, c.EndDate, c.Status, "
-                + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " AS MaxCapacity, rm.RoomName "
+                + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " AS MaxCapacity, "
+                + (hasRoomId ? "c.RoomID" : "NULL") + " AS RoomID, "
+                + (hasRoomId ? "COALESCE(cr.RoomName, rm.RoomName)" : "rm.RoomName") + " AS RoomName "
                 + "FROM Class c "
                 + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
+                + (hasRoomId ? "LEFT JOIN Room cr ON c.RoomID = cr.RoomID " : "")
                 + "LEFT JOIN ( "
                 + "   SELECT ClassID, STRING_AGG(RoomName, ', ') AS RoomName "
                 + "   FROM ( "
@@ -419,7 +459,7 @@ public class ClassDAO extends DBContext {
             ps.setInt(1, classId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Object[] row = new Object[9];
+                    Object[] row = new Object[10];
                     row[0] = rs.getInt("ClassID");
                     row[1] = rs.getString("ClassName");
                     row[2] = rs.getInt("CourseID");
@@ -428,7 +468,8 @@ public class ClassDAO extends DBContext {
                     row[5] = rs.getDate("EndDate");
                     row[6] = rs.getString("Status");
                     row[7] = rs.getInt("MaxCapacity");
-                    row[8] = rs.getString("RoomName");
+                    row[8] = rs.getObject("RoomID");
+                    row[9] = rs.getString("RoomName");
                     return row;
                 }
             }
@@ -438,11 +479,19 @@ public class ClassDAO extends DBContext {
         return null;
     }
 
-    public boolean updateClass(int classId, String className, int courseId, int teacherId, Date startDate, Date endDate, String status, int maxCapacity) {
+    public boolean updateClass(int classId, String className, int courseId, int teacherId, Date startDate, Date endDate, String status, int maxCapacity, Integer roomId) {
         boolean hasMaxCapacity = hasClassMaxCapacityColumn();
-        String sql = hasMaxCapacity
-                ? "UPDATE Class SET ClassName = ?, CourseID = ?, TeacherID = ?, StartDate = ?, EndDate = ?, Status = ?, MaxCapacity = ? WHERE ClassID = ?"
-                : "UPDATE Class SET ClassName = ?, CourseID = ?, TeacherID = ?, StartDate = ?, EndDate = ?, Status = ? WHERE ClassID = ?";
+        boolean hasRoomId = hasClassRoomIdColumn();
+        String sql;
+        if (hasMaxCapacity && hasRoomId) {
+            sql = "UPDATE Class SET ClassName = ?, CourseID = ?, TeacherID = ?, StartDate = ?, EndDate = ?, Status = ?, MaxCapacity = ?, RoomID = ? WHERE ClassID = ?";
+        } else if (hasMaxCapacity) {
+            sql = "UPDATE Class SET ClassName = ?, CourseID = ?, TeacherID = ?, StartDate = ?, EndDate = ?, Status = ?, MaxCapacity = ? WHERE ClassID = ?";
+        } else if (hasRoomId) {
+            sql = "UPDATE Class SET ClassName = ?, CourseID = ?, TeacherID = ?, StartDate = ?, EndDate = ?, Status = ?, RoomID = ? WHERE ClassID = ?";
+        } else {
+            sql = "UPDATE Class SET ClassName = ?, CourseID = ?, TeacherID = ?, StartDate = ?, EndDate = ?, Status = ? WHERE ClassID = ?";
+        }
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, className);
             ps.setInt(2, courseId);
@@ -450,12 +499,18 @@ public class ClassDAO extends DBContext {
             ps.setDate(4, startDate);
             ps.setDate(5, endDate);
             ps.setString(6, status);
+            int parameterIndex = 7;
             if (hasMaxCapacity) {
-                ps.setInt(7, maxCapacity);
-                ps.setInt(8, classId);
-            } else {
-                ps.setInt(7, classId);
+                ps.setInt(parameterIndex++, maxCapacity);
             }
+            if (hasRoomId) {
+                if (roomId != null && roomId > 0) {
+                    ps.setInt(parameterIndex++, roomId);
+                } else {
+                    ps.setNull(parameterIndex++, java.sql.Types.INTEGER);
+                }
+            }
+            ps.setInt(parameterIndex, classId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             System.out.println("Fail to update class: " + e.getMessage());
