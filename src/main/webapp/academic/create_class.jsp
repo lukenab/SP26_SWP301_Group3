@@ -94,7 +94,14 @@
 
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Room (Optional)</label>
-                        <input type="text" class="form-control" value="Assign later in schedule management" readonly>
+                        <select class="form-select" name="roomId">
+                            <option value="">Select room later</option>
+                            <c:forEach items="${roomOptions}" var="room">
+                                <option value="${room.roomId}" ${param.roomId == room.roomId.toString() ? 'selected' : ''}>
+                                    ${room.roomName} - Capacity ${room.capacity}
+                                </option>
+                            </c:forEach>
+                        </select>
                     </div>
 
                 </div>
