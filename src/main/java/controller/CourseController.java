@@ -7,6 +7,7 @@ package controller;
 import dao.CourseDAO;
 import dao.FeedbackDAO;
 import dao.SyllabusDAO;
+import dao.AssessmentDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -226,6 +227,90 @@ public class CourseController extends HttpServlet {
                             request.setAttribute("course", course);
                             request.setAttribute("home_view", "/academic/course_delete_confirm.jsp");
                             request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                        } else {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        }
+                    } catch(NumberFormatException e) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                } else {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                }
+                break;
+            case "assessment":
+                String assessmentCourseIdParam = request.getParameter("courseId");
+                if(assessmentCourseIdParam != null && !assessmentCourseIdParam.isEmpty()){
+                    try {
+                        int courseId = Integer.parseInt(assessmentCourseIdParam);
+                        Course course = courseDAO.getCourseById(courseId);
+                        if(course != null){
+                            AssessmentDAO assessmentDAO = new AssessmentDAO();
+                            List<model.Assessment> assessments = assessmentDAO.getAssessmentsByCourse(courseId);
+                            double totalWeight = assessmentDAO.getTotalWeightByCourse(courseId);
+                            
+                            request.setAttribute("course", course);
+                            request.setAttribute("assessments", assessments);
+                            request.setAttribute("totalWeight", totalWeight);
+                            request.setAttribute("home_view", "/academic/assessment_management.jsp");
+                            request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                        } else {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        }
+                    } catch(NumberFormatException e) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                } else {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                }
+                break;
+            case "deleteAssessment":
+                String delAssessmentIdParam = request.getParameter("assessmentId");
+                String delCourseIdParam = request.getParameter("courseId");
+                if(delAssessmentIdParam != null && delCourseIdParam != null){
+                    try {
+                        int assessmentId = Integer.parseInt(delAssessmentIdParam);
+                        int courseId = Integer.parseInt(delCourseIdParam);
+                        Course course = courseDAO.getCourseById(courseId);
+                        if(course != null){
+                            AssessmentDAO assessmentDAO = new AssessmentDAO();
+                            model.Assessment assessment = assessmentDAO.getAssessmentById(assessmentId);
+                            if(assessment != null){
+                                request.setAttribute("course", course);
+                                request.setAttribute("assessment", assessment);
+                                request.setAttribute("home_view", "/academic/assessment_delete_confirm.jsp");
+                                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                            } else {
+                                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                            }
+                        } else {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        }
+                    } catch(NumberFormatException e) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                } else {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                }
+                break;
+            case "editAssessment":
+                String editAsmtIdParam = request.getParameter("assessmentId");
+                String editAsmtCourseIdParam = request.getParameter("courseId");
+                if(editAsmtIdParam != null && editAsmtCourseIdParam != null){
+                    try {
+                        int assessmentId = Integer.parseInt(editAsmtIdParam);
+                        int courseId = Integer.parseInt(editAsmtCourseIdParam);
+                        Course course = courseDAO.getCourseById(courseId);
+                        if(course != null){
+                            AssessmentDAO assessmentDAO = new AssessmentDAO();
+                            model.Assessment assessment = assessmentDAO.getAssessmentById(assessmentId);
+                            if(assessment != null){
+                                request.setAttribute("course", course);
+                                request.setAttribute("assessment", assessment);
+                                request.setAttribute("home_view", "/academic/assessment_edit_confirm.jsp");
+                                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                            } else {
+                                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                            }
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         }
