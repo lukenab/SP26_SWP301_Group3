@@ -98,13 +98,68 @@ public class CourseController extends HttpServlet {
         
         switch(action){
             case "all":
-                List<Course> list = courseDAO.getAllCourse();
+                String searchQuery = request.getParameter("searchQuery");
+                String statusFilter = request.getParameter("status");
+                String categoryFilter = request.getParameter("category");
+                String normalizedSearchQuery = searchQuery == null ? "" : searchQuery.trim();
+                String normalizedStatusFilter = statusFilter == null ? "all" : statusFilter.trim().toLowerCase();
+                String normalizedCategoryFilter = categoryFilter == null ? "all" : categoryFilter.trim().toLowerCase();
+
+                List<Course> list = normalizedSearchQuery.isEmpty()
+                        ? courseDAO.getAllCourse()
+                        : courseDAO.searchCourses(normalizedSearchQuery);
+
+                if (!"all".equals(normalizedCategoryFilter)) {
+                    list.removeIf(course -> {
+                        String courseName = course.getCourseName();
+                        if (courseName == null) {
+                            return true;
+                        }
+                        return !courseName.trim().toLowerCase().startsWith(normalizedCategoryFilter);
+                    });
+                }
+
+                if ("active".equals(normalizedStatusFilter)) {
+                    list.removeIf(course -> !course.isStatus());
+                } else if ("inactive".equals(normalizedStatusFilter)) {
+                    list.removeIf(Course::isStatus);
+                }
+
                 int totalCourse = list.size();
-                List<Course> pagedList = paginateCourseList(list, parsePage(request), DEFAULT_PAGE_SIZE, request);
+                List<Course> pagedList;
+                boolean shouldShowAllResults = !normalizedSearchQuery.isEmpty()
+                        || !"all".equals(normalizedStatusFilter)
+                        || !"all".equals(normalizedCategoryFilter);
+                if (shouldShowAllResults) {
+                    pagedList = list;
+                    request.setAttribute("currentPage", 1);
+                    request.setAttribute("pageSize", totalCourse == 0 ? DEFAULT_PAGE_SIZE : totalCourse);
+                    request.setAttribute("totalItems", totalCourse);
+                    request.setAttribute("totalPages", 1);
+                    request.setAttribute("startItem", totalCourse == 0 ? 0 : 1);
+                    request.setAttribute("endItem", totalCourse);
+                } else {
+                    pagedList = paginateCourseList(list, parsePage(request), DEFAULT_PAGE_SIZE, request);
+                }
                 request.setAttribute("totalCourse", totalCourse);
                 request.setAttribute("courseList", pagedList);
+                request.setAttribute("filteredCourseList", list);
+                request.setAttribute("searchQuery", normalizedSearchQuery);
+                request.setAttribute("statusFilter", normalizedStatusFilter);
+                request.setAttribute("categoryFilter", normalizedCategoryFilter);
+                request.setAttribute("showAllFilteredResults", shouldShowAllResults);
                 request.setAttribute("paginationAction", "all");
-                request.setAttribute("paginationQuery", "");
+                StringBuilder paginationQuery = new StringBuilder();
+                if (!normalizedSearchQuery.isEmpty()) {
+                    paginationQuery.append("&searchQuery=").append(normalizedSearchQuery);
+                }
+                if (!normalizedStatusFilter.isEmpty()) {
+                    paginationQuery.append("&status=").append(normalizedStatusFilter);
+                }
+                if (!normalizedCategoryFilter.isEmpty()) {
+                    paginationQuery.append("&category=").append(normalizedCategoryFilter);
+                }
+                request.setAttribute("paginationQuery", paginationQuery.toString());
                 request.setAttribute("home_view", "/academic/course_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;

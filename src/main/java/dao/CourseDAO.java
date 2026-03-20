@@ -268,12 +268,15 @@ public class CourseDAO extends DBContext {
 
     public List<Course> searchCourses(String keyword) {
         List<Course> list = new ArrayList<>();
-        String sql = "SELECT * FROM Course WHERE CourseName LIKE ? OR Description LIKE ?";
+        String sql = "SELECT * FROM Course WHERE (? IS NULL OR LTRIM(RTRIM(?)) = '' OR CourseName LIKE ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            String searchKeyword = "%" + keyword + "%";
-            ps.setString(1, searchKeyword);
-            ps.setString(2, searchKeyword);
+            String normalizedKeyword = keyword == null ? null : keyword.trim();
+            String searchKeyword = normalizedKeyword == null || normalizedKeyword.isEmpty()
+                    ? null : normalizedKeyword + "%";
+            ps.setString(1, normalizedKeyword);
+            ps.setString(2, normalizedKeyword);
+            ps.setString(3, searchKeyword);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {

@@ -152,6 +152,13 @@ public class RoomController extends HttpServlet {
                 String idDelString = request.getParameter("id");
                 int idDel = Integer.parseInt(idDelString);
 
+                if (rdao.isRoomInUse(idDel)) {
+                    request.getSession().setAttribute("message", "Cannot delete room because it is assigned to a class or schedule.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("room");
+                    break;
+                }
+
                 // Delete room (only for rooms not in use)
                 int deleted = rdao.deleteRoombyID(idDel);
 
@@ -167,6 +174,13 @@ public class RoomController extends HttpServlet {
             case "disable":
                 String idDisableString = request.getParameter("id");
                 int idDisable = Integer.parseInt(idDisableString);
+
+                if (rdao.isRoomInUse(idDisable)) {
+                    request.getSession().setAttribute("message", "Cannot disable room because it is assigned to a class or schedule.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("room");
+                    break;
+                }
 
                 // Disable room
                 int disabled = rdao.disableRoom(idDisable);

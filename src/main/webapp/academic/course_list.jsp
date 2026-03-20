@@ -29,7 +29,7 @@
     <c:set var="activeCourse" value="0"/>
     <c:set var="inactiveCourse" value="0"/>
 
-    <c:forEach items="${courseList}" var="c" >
+    <c:forEach items="${empty filteredCourseList ? courseList : filteredCourseList}" var="c" >
         <c:if test="${c.status == true}">
             <c:set var="activeCourse" value="${activeCourse + 1}"/>
         </c:if>
@@ -105,30 +105,111 @@
     </c:if>
 
     <div class="filter-container flex-wrap">
-        <div class="custom-search-bar">
+        <form action="course" method="get" class="custom-search-bar" id="courseSearchForm">
+            <input type="hidden" name="action" value="all">
+            <input type="hidden" name="status" value="${empty statusFilter ? 'all' : statusFilter}">
+            <input type="hidden" name="category" value="${empty categoryFilter ? 'all' : categoryFilter}">
             <i class='bx bx-search text-muted fs-5'></i>
-            <input type="text" placeholder="Search by name or email...">
-        </div>
+            <input type="text"
+                   id="courseSearchInput"
+                   name="searchQuery"
+                   value="${fn:escapeXml(searchQuery)}"
+                   placeholder="Search by course name..."
+                   aria-label="Search courses">
+        </form>
 
         <div class="d-flex gap-3">
             <div class="dropdown">
                 <button class="custom-select-filter" type="button" data-bs-toggle="dropdown">
-                    <i class='bx bx-filter-alt'></i> All Courses <i class='bx bx-chevron-down ms-1'></i>
+                    <i class='bx bx-filter-alt'></i>
+                    <c:choose>
+                        <c:when test="${categoryFilter == 'ielts'}">IELTS</c:when>
+                        <c:when test="${categoryFilter == 'toeic'}">TOEIC</c:when>
+                        <c:when test="${categoryFilter == 'english'}">English</c:when>
+                        <c:when test="${categoryFilter == 'academic'}">Academic</c:when>
+                        <c:when test="${categoryFilter == 'business'}">Business</c:when>
+                        <c:otherwise>All Courses</c:otherwise>
+                    </c:choose>
+                    <i class='bx bx-chevron-down ms-1'></i>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Admin</a></li>
-                    <li><a class="dropdown-item" href="#">Teacher</a></li>
-                    <li><a class="dropdown-item" href="#">Student</a></li>
+                    <c:url var="allCategoryUrl" value="course">
+                        <c:param name="action" value="all"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                        <c:param name="category" value="all"/>
+                    </c:url>
+                    <c:url var="ieltsCategoryUrl" value="course">
+                        <c:param name="action" value="all"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                        <c:param name="category" value="ielts"/>
+                    </c:url>
+                    <c:url var="toeicCategoryUrl" value="course">
+                        <c:param name="action" value="all"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                        <c:param name="category" value="toeic"/>
+                    </c:url>
+                    <c:url var="englishCategoryUrl" value="course">
+                        <c:param name="action" value="all"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                        <c:param name="category" value="english"/>
+                    </c:url>
+                    <c:url var="academicCategoryUrl" value="course">
+                        <c:param name="action" value="all"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                        <c:param name="category" value="academic"/>
+                    </c:url>
+                    <c:url var="businessCategoryUrl" value="course">
+                        <c:param name="action" value="all"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                        <c:param name="category" value="business"/>
+                    </c:url>
+                    <li><a class="dropdown-item" href="${allCategoryUrl}">All Courses</a></li>
+                    <li><a class="dropdown-item" href="${ieltsCategoryUrl}">IELTS</a></li>
+                    <li><a class="dropdown-item" href="${toeicCategoryUrl}">TOEIC</a></li>
+                    <li><a class="dropdown-item" href="${englishCategoryUrl}">English</a></li>
+                    <li><a class="dropdown-item" href="${academicCategoryUrl}">Academic</a></li>
+                    <li><a class="dropdown-item" href="${businessCategoryUrl}">Business</a></li>
                 </ul>
             </div>
 
             <div class="dropdown">
                 <button class="custom-select-filter d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
-                    <i class='bx bx-slider-alt'></i> All Status <i class='bx bx-chevron-down ms-1'></i>
+                    <i class='bx bx-slider-alt'></i>
+                    <c:choose>
+                        <c:when test="${statusFilter == 'active'}">Active</c:when>
+                        <c:when test="${statusFilter == 'inactive'}">Inactive</c:when>
+                        <c:otherwise>All Status</c:otherwise>
+                    </c:choose>
+                    <i class='bx bx-chevron-down ms-1'></i>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Active</a></li>
-                    <li><a class="dropdown-item" href="#">Inactive</a></li>
+                    <c:url var="allStatusUrl" value="course">
+                        <c:param name="action" value="all"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="status" value="all"/>
+                        <c:param name="category" value="${empty categoryFilter ? 'all' : categoryFilter}"/>
+                    </c:url>
+                    <c:url var="activeStatusUrl" value="course">
+                        <c:param name="action" value="all"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="status" value="active"/>
+                        <c:param name="category" value="${empty categoryFilter ? 'all' : categoryFilter}"/>
+                    </c:url>
+                    <c:url var="inactiveStatusUrl" value="course">
+                        <c:param name="action" value="all"/>
+                        <c:param name="searchQuery" value="${searchQuery}"/>
+                        <c:param name="status" value="inactive"/>
+                        <c:param name="category" value="${empty categoryFilter ? 'all' : categoryFilter}"/>
+                    </c:url>
+                    <li><a class="dropdown-item" href="${allStatusUrl}">All Status</a></li>
+                    <li><a class="dropdown-item" href="${activeStatusUrl}">Active</a></li>
+                    <li><a class="dropdown-item" href="${inactiveStatusUrl}">Inactive</a></li>
                 </ul>
             </div>
         </div>
@@ -147,6 +228,12 @@
                         <th style="width: 20%">Actions</th>
                     </tr>
                 </thead>
+
+                <c:if test="${empty courseList}">
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No courses found.</td>
+                    </tr>
+                </c:if>
 
                 <c:forEach items="${courseList}" var="c" varStatus="loop">
                     <tr>
@@ -187,7 +274,8 @@
 
         <div class="d-flex justify-content-between align-items-center p-3 border-top">
             <div class="text-muted small">Showing ${startItem}-${endItem} of ${totalItems} courses</div>
-            <div>
+            <c:if test="${not showAllFilteredResults}">
+                <div>
                 <ul class="pagination pagination-sm mb-0">
                     <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
                         <a class="page-link" href="course?action=${empty paginationAction ? 'all' : paginationAction}${paginationQuery}&page=${currentPage - 1}">
@@ -205,8 +293,27 @@
                         </a>
                     </li>
                 </ul>
-            </div>
+                </div>
+            </c:if>
         </div>
     </div>
 </div>
 <script src="js/manageUser.js" type="text/javascript"></script>
+<script>
+    (function () {
+        const searchInput = document.getElementById('courseSearchInput');
+        const searchForm = document.getElementById('courseSearchForm');
+        let debounceTimer;
+
+        if (!searchInput || !searchForm) {
+            return;
+        }
+
+        searchInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function () {
+                searchForm.submit();
+            }, 400);
+        });
+    })();
+</script>
