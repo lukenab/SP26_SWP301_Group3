@@ -17,6 +17,19 @@ import utils.DBContext;
  */
 public class RoomDAO extends DBContext {
 
+    private boolean hasClassRoomIdColumn() {
+        try {
+            String query = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS "
+                    + "WHERE TABLE_NAME = 'Class' AND COLUMN_NAME = 'RoomID'";
+            PreparedStatement p = conn.prepareStatement(query);
+            ResultSet rs = p.executeQuery();
+            return rs.next();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     //READ
     public List<Room> getAllRoom() {
         try {
@@ -33,6 +46,27 @@ public class RoomDAO extends DBContext {
                 allRoom.add(new Room(roomId, roomName, capacity, type, status));
             }
             return allRoom;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<Room> getActiveRooms() {
+        try {
+            List<Room> activeRooms = new ArrayList<>();
+            String query = "SELECT * FROM Room WHERE Status = 1 ORDER BY RoomName";
+            PreparedStatement p = conn.prepareStatement(query);
+            ResultSet rs = p.executeQuery();
+            while (rs.next()) {
+                int roomId = rs.getInt("RoomID");
+                String roomName = rs.getString("RoomName");
+                int capacity = rs.getInt("Capacity");
+                String type = rs.getString("Type");
+                boolean status = rs.getBoolean("Status");
+                activeRooms.add(new Room(roomId, roomName, capacity, type, status));
+            }
+            return activeRooms;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -80,9 +114,19 @@ public class RoomDAO extends DBContext {
     //CHECK if Room is being used in Schedule
     public boolean isRoomInUse(int roomId) {
         try {
-            String query = "SELECT COUNT(*) as count FROM Schedule WHERE RoomID = ?";
+            String query;
+            if (hasClassRoomIdColumn()) {
+                query = "SELECT "
+                        + "(SELECT COUNT(*) FROM Schedule WHERE RoomID = ?) + "
+                        + "(SELECT COUNT(*) FROM Class WHERE RoomID = ?) as count";
+            } else {
+                query = "SELECT COUNT(*) as count FROM Schedule WHERE RoomID = ?";
+            }
             PreparedStatement p = conn.prepareStatement(query);
             p.setInt(1, roomId);
+            if (hasClassRoomIdColumn()) {
+                p.setInt(2, roomId);
+            }
             ResultSet rs = p.executeQuery();
             if (rs.next()) {
                 int count = rs.getInt("count");
@@ -98,19 +142,38 @@ public class RoomDAO extends DBContext {
     public List<String[]> getClassesUsingRoom(int roomId) {
         List<String[]> classList = new ArrayList<>();
         try {
-            String query = "SELECT DISTINCT c.ClassID, c.ClassName, c.Status, " +
-                          "co.CourseName, u.FullName as TeacherName, " +
-                          "COUNT(s.ScheduleID) as TotalSchedules " +
-                          "FROM Schedule s " +
-                          "INNER JOIN Class c ON s.ClassID = c.ClassID " +
-                          "INNER JOIN Course co ON c.CourseID = co.CourseID " +
-                          "LEFT JOIN Employee e ON c.TeacherID = e.EmployeeID " +
-                          "LEFT JOIN [User] u ON e.EmployeeID = u.UserID " +
-                          "WHERE s.RoomID = ? " +
-                          "GROUP BY c.ClassID, c.ClassName, c.Status, co.CourseName, u.FullName " +
-                          "ORDER BY c.ClassID DESC";
+            String query;
+            if (hasClassRoomIdColumn()) {
+                query = "SELECT c.ClassID, c.ClassName, c.Status, "
+                        + "co.CourseName, u.FullName as TeacherName, "
+                        + "COUNT(s.ScheduleID) as TotalSchedules "
+                        + "FROM Class c "
+                        + "INNER JOIN Course co ON c.CourseID = co.CourseID "
+                        + "LEFT JOIN Employee e ON c.TeacherID = e.EmployeeID "
+                        + "LEFT JOIN [User] u ON e.EmployeeID = u.UserID "
+                        + "LEFT JOIN Schedule s ON s.ClassID = c.ClassID AND s.RoomID = ? "
+                        + "WHERE c.RoomID = ? OR s.RoomID = ? "
+                        + "GROUP BY c.ClassID, c.ClassName, c.Status, co.CourseName, u.FullName "
+                        + "ORDER BY c.ClassID DESC";
+            } else {
+                query = "SELECT DISTINCT c.ClassID, c.ClassName, c.Status, "
+                        + "co.CourseName, u.FullName as TeacherName, "
+                        + "COUNT(s.ScheduleID) as TotalSchedules "
+                        + "FROM Schedule s "
+                        + "INNER JOIN Class c ON s.ClassID = c.ClassID "
+                        + "INNER JOIN Course co ON c.CourseID = co.CourseID "
+                        + "LEFT JOIN Employee e ON c.TeacherID = e.EmployeeID "
+                        + "LEFT JOIN [User] u ON e.EmployeeID = u.UserID "
+                        + "WHERE s.RoomID = ? "
+                        + "GROUP BY c.ClassID, c.ClassName, c.Status, co.CourseName, u.FullName "
+                        + "ORDER BY c.ClassID DESC";
+            }
             PreparedStatement p = conn.prepareStatement(query);
             p.setInt(1, roomId);
+            if (hasClassRoomIdColumn()) {
+                p.setInt(2, roomId);
+                p.setInt(3, roomId);
+            }
             ResultSet rs = p.executeQuery();
             while (rs.next()) {
                 String[] classInfo = new String[6];

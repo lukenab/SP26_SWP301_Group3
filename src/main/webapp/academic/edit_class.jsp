@@ -88,7 +88,17 @@
 
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Room (Optional)</label>
-                        <input type="text" class="form-control" value="${empty classEditInfo[8] ? 'Not assigned yet' : classEditInfo[8]}" readonly>
+                        <select class="form-select" name="roomId">
+                            <option value="">Select room later</option>
+                            <c:forEach items="${roomOptions}" var="room">
+                                <option value="${room.roomId}" ${classEditInfo[8] == room.roomId ? 'selected' : ''}>
+                                    ${room.roomName} - Capacity ${room.capacity}
+                                </option>
+                            </c:forEach>
+                        </select>
+                        <c:if test="${not empty classEditInfo[9]}">
+                            <small class="text-muted">Current room: ${classEditInfo[9]}</small>
+                        </c:if>
                     </div>
                 </div>
 
