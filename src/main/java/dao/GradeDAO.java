@@ -268,6 +268,7 @@ public class GradeDAO extends DBContext {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     public List<Grade> getGradesByStudentId(int userId) {

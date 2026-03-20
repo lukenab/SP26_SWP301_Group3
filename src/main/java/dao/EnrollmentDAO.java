@@ -77,10 +77,17 @@ public class EnrollmentDAO extends DBContext {
 
     public List<Object[]> getStudentsInClass(int classId) {
         List<Object[]> list = new ArrayList<>();
-        String sql = "SELECT e.EnrollmentID, s.StudentID, u.FullName, u.Email, e.EnrollDate, e.Status, e.FinalGrade "
+        String sql = "SELECT e.EnrollmentID, s.StudentID, u.FullName, u.Email, e.EnrollDate, e.Status, grade_summary.FinalGrade "
                 + "FROM Enrollment e "
                 + "JOIN Student s ON e.StudentID = s.StudentID "
                 + "JOIN [User] u ON s.StudentID = u.UserID "
+                + "LEFT JOIN ( "
+                + "    SELECT g.EnrollmentID, "
+                + "           SUM(g.Score * a.Weight) / NULLIF(SUM(a.Weight), 0) AS FinalGrade "
+                + "    FROM Grade g "
+                + "    JOIN Assessment a ON g.AssessmentID = a.AssessmentID "
+                + "    GROUP BY g.EnrollmentID "
+                + ") grade_summary ON e.EnrollmentID = grade_summary.EnrollmentID "
                 + "WHERE e.ClassID = ? "
                 + "ORDER BY u.FullName ASC";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -398,6 +405,98 @@ public class EnrollmentDAO extends DBContext {
         } catch (Exception e) {
             System.out.println("Fail to get total enrollment: " + e.getMessage());
         }
+        return total;
+    }
+
+    public List<Object[]> getEnrollmentManagementList(Integer courseId, Integer classId, String statusFilter) {
+        List<Object[]> list = new ArrayList<>();
+        String normalizedStatus = statusFilter == null ? "" : statusFilter.trim();
+
+        String sql = "SELECT e.EnrollmentID, u.UserID AS StudentID, u.FullName, u.Email, "
+                + "c.ClassID, c.ClassName, co.CourseID, co.CourseName, "
+                + "e.EnrollDate, e.Status, p.Status AS PaymentStatus "
+                + "FROM Enrollment e "
+                + "JOIN Student s ON e.StudentID = s.StudentID "
+                + "JOIN [User] u ON s.StudentID = u.UserID "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "OUTER APPLY ( "
+                + "    SELECT TOP 1 Status "
+                + "    FROM Payment p "
+                + "    WHERE p.EnrollmentID = e.EnrollmentID "
+                + "    ORDER BY p.PaymentDate DESC, p.PaymentID DESC "
+                + ") p "
+                + "WHERE (? IS NULL OR co.CourseID = ?) "
+                + "AND (? IS NULL OR c.ClassID = ?) "
+                + "AND ("
+                + "    ? = '' "
+                + "    OR (? = 'Pending' AND e.Status IN ('Pending', 'UnPaid', 'Unpaid')) "
+                + "    OR (? = 'Active' AND e.Status = 'Active') "
+                + "    OR (? = 'Rejected' AND e.Status = 'Rejected') "
+                + ") "
+                + "ORDER BY e.EnrollDate DESC, e.EnrollmentID DESC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setObject(1, courseId);
+            ps.setObject(2, courseId);
+            ps.setObject(3, classId);
+            ps.setObject(4, classId);
+            ps.setString(5, normalizedStatus);
+            ps.setString(6, normalizedStatus);
+            ps.setString(7, normalizedStatus);
+            ps.setString(8, normalizedStatus);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Object[] row = new Object[11];
+                    row[0] = rs.getInt("EnrollmentID");
+                    row[1] = rs.getInt("StudentID");
+                    row[2] = rs.getString("FullName");
+                    row[3] = rs.getString("Email");
+                    row[4] = rs.getInt("ClassID");
+                    row[5] = rs.getString("ClassName");
+                    row[6] = rs.getInt("CourseID");
+                    row[7] = rs.getString("CourseName");
+                    row[8] = rs.getDate("EnrollDate");
+                    row[9] = rs.getString("Status");
+                    row[10] = rs.getString("PaymentStatus");
+                    list.add(row);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get enrollment management list: " + e.getMessage());
+        }
+
+        return list;
+    }
+
+    public int countEnrollmentsByStatus(String statusFilter) {
+        int total = 0;
+        String normalizedStatus = statusFilter == null ? "" : statusFilter.trim();
+        String sql = "SELECT COUNT(*) AS Total "
+                + "FROM Enrollment e "
+                + "WHERE ("
+                + "    ? = '' "
+                + "    OR (? = 'Pending' AND e.Status IN ('Pending', 'UnPaid', 'Unpaid')) "
+                + "    OR (? = 'Active' AND e.Status = 'Active') "
+                + "    OR (? = 'Rejected' AND e.Status = 'Rejected') "
+                + ")";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, normalizedStatus);
+            ps.setString(2, normalizedStatus);
+            ps.setString(3, normalizedStatus);
+            ps.setString(4, normalizedStatus);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    total = rs.getInt("Total");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to count enrollments by status: " + e.getMessage());
+        }
+
         return total;
     }
 
