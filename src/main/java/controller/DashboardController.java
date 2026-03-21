@@ -10,6 +10,7 @@ import dao.EnrollmentDAO;
 import dao.LeadDAO;
 import dao.PaymentDAO;
 import dao.UserDAO;
+import dao.VoucherDAO;
 import java.io.IOException;
 
 import jakarta.servlet.ServletException;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import model.User;
+import model.Voucher;
 import java.time.LocalDateTime;
 
 /**
@@ -47,6 +49,7 @@ public class DashboardController extends HttpServlet {
         UserDAO userDAO = new UserDAO();
         LeadDAO leadDAO = new LeadDAO();
         PaymentDAO paymentDAO = new PaymentDAO();
+        VoucherDAO voucherDAO = new VoucherDAO();
         ClassDAO classDAO = new ClassDAO();
         EnrollmentDAO enrollDAO = new EnrollmentDAO();
 
@@ -70,11 +73,19 @@ public class DashboardController extends HttpServlet {
                         int convertedLeads = leadDAO.countLeadsByFilters(null, "Converted", null, null, null);
                         int pendingPayments = paymentDAO.getPaymentCountByStatus("Pending");
                         int approvedPayments = paymentDAO.getPaymentCountByStatus("Approved");
+                        List<model.Lead> latestNewLeads = leadDAO.searchAndFilterLeadsPaged(null, "New", null, null, null, 1, 6);
+                        List<Voucher> activeVouchers = voucherDAO.getActiveVoucher();
+                        List<Voucher> voucherPreview = activeVouchers.size() > 6 ? activeVouchers.subList(0, 6) : activeVouchers;
+                        List<Object[]> openClassList = classDAO.getOpenClassListForSales();
+                        List<Object[]> openClassPreview = openClassList.size() > 6 ? openClassList.subList(0, 6) : openClassList;
 
                         request.setAttribute("totalLeads", totalLeads);
                         request.setAttribute("convertedLeads", convertedLeads);
                         request.setAttribute("pendingPayments", pendingPayments);
                         request.setAttribute("approvedPayments", approvedPayments);
+                        request.setAttribute("latestNewLeads", latestNewLeads);
+                        request.setAttribute("activeVouchers", voucherPreview);
+                        request.setAttribute("openClassPreview", openClassPreview);
                         request.setAttribute("home_view", "/sale/saleDashboard.jsp");
                     } else if (roleId == 1) {
                         response.sendRedirect("dashboard?action=admin");
