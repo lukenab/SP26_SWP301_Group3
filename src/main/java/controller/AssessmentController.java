@@ -5,6 +5,7 @@
 package controller;
 
 import dao.AssessmentDAO;
+import dao.SystemLogDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import model.User;
 
 /**
  *
@@ -26,25 +28,33 @@ public class AssessmentController extends HttpServlet {
         String action = request.getParameter("action");
         AssessmentDAO assessmentDAO = new AssessmentDAO();
         HttpSession session = request.getSession();
-        
+
         if (action == null) {
             action = "list";
         }
-        
+
         switch (action) {
             case "delete":
                 try {
                     int assessmentId = Integer.parseInt(request.getParameter("assessmentId"));
                     int courseId = Integer.parseInt(request.getParameter("courseId"));
-                    
+
                     if (assessmentDAO.deleteAssessment(assessmentId)) {
+
+                        SystemLogDAO logDAO = new SystemLogDAO();
+                        User logUser = (User) request.getSession().getAttribute("user");
+
+                        String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                        String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                        logDAO.insertLog(actorName, actorRole, "DELETE_ASSESSMENT", "Deleted Assessment ID: " + assessmentId + " (Course ID: " + courseId + ")");
+
                         session.setAttribute("message", "Assessment deleted successfully");
                         session.setAttribute("messageType", "success");
                     } else {
                         session.setAttribute("message", "Failed to delete assessment");
                         session.setAttribute("messageType", "error");
                     }
-                    
+
                     response.sendRedirect(request.getContextPath() + "/course?action=assessment&courseId=" + courseId);
                 } catch (NumberFormatException e) {
                     session.setAttribute("message", "Invalid ID");
@@ -64,18 +74,18 @@ public class AssessmentController extends HttpServlet {
         String action = request.getParameter("action");
         AssessmentDAO assessmentDAO = new AssessmentDAO();
         HttpSession session = request.getSession();
-        
+
         if (action == null) {
             action = "list";
         }
-        
+
         switch (action) {
             case "add":
                 try {
                     int courseId = Integer.parseInt(request.getParameter("courseId"));
                     String assessmentName = request.getParameter("assessmentName").trim();
                     double weight = Double.parseDouble(request.getParameter("weight"));
-                    
+
                     // Validation
                     if (assessmentName.isEmpty()) {
                         session.setAttribute("message", "Assessment name cannot be empty");
@@ -91,13 +101,21 @@ public class AssessmentController extends HttpServlet {
                         session.setAttribute("message", "Total weight cannot exceed 100%. Current: " + assessmentDAO.getTotalWeightByCourse(courseId) + "% + New: " + weight + "% = " + total + "%");
                         session.setAttribute("messageType", "error");
                     } else if (assessmentDAO.addAssessment(courseId, assessmentName, weight)) {
+
+                        SystemLogDAO logDAO = new SystemLogDAO();
+                        User logUser = (User) request.getSession().getAttribute("user");
+
+                        String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                        String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                        logDAO.insertLog(actorName, actorRole, "CREATE_ASSESSMENT", "Created new assessment: " + assessmentName + " (Weight: " + weight + "%) for Course ID: " + courseId);
+
                         session.setAttribute("message", "Assessment added successfully");
                         session.setAttribute("messageType", "success");
                     } else {
                         session.setAttribute("message", "Failed to add assessment");
                         session.setAttribute("messageType", "error");
                     }
-                    
+
                     response.sendRedirect(request.getContextPath() + "/course?action=assessment&courseId=" + courseId);
                 } catch (NumberFormatException e) {
                     session.setAttribute("message", "Invalid input");
@@ -105,14 +123,14 @@ public class AssessmentController extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/course?action=all");
                 }
                 break;
-                
+
             case "update":
                 try {
                     int assessmentId = Integer.parseInt(request.getParameter("assessmentId"));
                     int courseId = Integer.parseInt(request.getParameter("courseId"));
                     String assessmentName = request.getParameter("assessmentName").trim();
                     double weight = Double.parseDouble(request.getParameter("weight"));
-                    
+
                     // Validation
                     if (assessmentName.isEmpty()) {
                         session.setAttribute("message", "Assessment name cannot be empty");
@@ -130,11 +148,19 @@ public class AssessmentController extends HttpServlet {
                         } else {
                             double currentTotal = dao.getTotalWeightByCourse(courseId);
                             double newTotal = currentTotal - oldAssessment.getWeight() + weight;
-                            
+
                             if (newTotal > 100) {
                                 session.setAttribute("message", "Total weight cannot exceed 100%. New total would be: " + newTotal + "%");
                                 session.setAttribute("messageType", "error");
                             } else if (dao.updateAssessment(assessmentId, assessmentName, weight)) {
+
+                                SystemLogDAO logDAO = new SystemLogDAO();
+                                User logUser = (User) request.getSession().getAttribute("user");
+
+                                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                                logDAO.insertLog(actorName, actorRole, "UPDATE_ASSESSMENT", "Updated Assessment ID: " + assessmentId + " (Course ID: " + courseId + ")");
+
                                 session.setAttribute("message", "Assessment updated successfully");
                                 session.setAttribute("messageType", "success");
                             } else {
@@ -143,7 +169,7 @@ public class AssessmentController extends HttpServlet {
                             }
                         }
                     }
-                    
+
                     response.sendRedirect(request.getContextPath() + "/course?action=assessment&courseId=" + courseId);
                 } catch (NumberFormatException e) {
                     session.setAttribute("message", "Invalid input");
@@ -151,20 +177,21 @@ public class AssessmentController extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/course?action=all");
                 }
                 break;
-                
+
             case "delete":
                 try {
                     int assessmentId = Integer.parseInt(request.getParameter("assessmentId"));
                     int courseId = Integer.parseInt(request.getParameter("courseId"));
-                    
+
                     if (assessmentDAO.deleteAssessment(assessmentId)) {
+
                         session.setAttribute("message", "Assessment deleted successfully");
                         session.setAttribute("messageType", "success");
                     } else {
                         session.setAttribute("message", "Failed to delete assessment");
                         session.setAttribute("messageType", "error");
                     }
-                    
+
                     response.sendRedirect(request.getContextPath() + "/course?action=assessment&courseId=" + courseId);
                 } catch (NumberFormatException e) {
                     session.setAttribute("message", "Invalid input");
@@ -172,7 +199,7 @@ public class AssessmentController extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/course?action=all");
                 }
                 break;
-                
+
             default:
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 break;

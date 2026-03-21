@@ -8,6 +8,7 @@ import dao.CourseDAO;
 import dao.FeedbackDAO;
 import dao.SyllabusDAO;
 import dao.AssessmentDAO;
+import dao.SystemLogDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -92,11 +93,11 @@ public class CourseController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         CourseDAO courseDAO = new CourseDAO();
-        if(action == null){
+        if (action == null) {
             action = "all";
         }
-        
-        switch(action){
+
+        switch (action) {
             case "all":
                 String searchQuery = request.getParameter("searchQuery");
                 String statusFilter = request.getParameter("status");
@@ -174,11 +175,11 @@ public class CourseController extends HttpServlet {
                 break;
             case "details":
                 String courseIdParam = request.getParameter("courseId");
-                if(courseIdParam != null && !courseIdParam.isEmpty()){
+                if (courseIdParam != null && !courseIdParam.isEmpty()) {
                     try {
                         int courseId = Integer.parseInt(courseIdParam);
                         Course course = courseDAO.getCourseById(courseId);
-                        if(course != null){
+                        if (course != null) {
                             request.setAttribute("course", course);
                             HttpSession session = request.getSession(false);
                             boolean isLoggedIn = (session != null && session.getAttribute("user") != null);
@@ -195,7 +196,7 @@ public class CourseController extends HttpServlet {
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         }
-                    } catch(NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     }
                 } else {
@@ -252,11 +253,11 @@ public class CourseController extends HttpServlet {
                 break;
             case "edit":
                 String editCourseIdParam = request.getParameter("courseId");
-                if(editCourseIdParam != null && !editCourseIdParam.isEmpty()){
+                if (editCourseIdParam != null && !editCourseIdParam.isEmpty()) {
                     try {
                         int courseId = Integer.parseInt(editCourseIdParam);
                         Course course = courseDAO.getCourseById(courseId);
-                        if(course != null){
+                        if (course != null) {
                             request.setAttribute("course", course);
                             request.setAttribute("formAction", "update");
                             request.setAttribute("pageTitle", "Edit Course");
@@ -265,7 +266,7 @@ public class CourseController extends HttpServlet {
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         }
-                    } catch(NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     }
                 } else {
@@ -274,18 +275,18 @@ public class CourseController extends HttpServlet {
                 break;
             case "delete":
                 String deleteCourseIdParam = request.getParameter("courseId");
-                if(deleteCourseIdParam != null && !deleteCourseIdParam.isEmpty()){
+                if (deleteCourseIdParam != null && !deleteCourseIdParam.isEmpty()) {
                     try {
                         int courseId = Integer.parseInt(deleteCourseIdParam);
                         Course course = courseDAO.getCourseById(courseId);
-                        if(course != null){
+                        if (course != null) {
                             request.setAttribute("course", course);
                             request.setAttribute("home_view", "/academic/course_delete_confirm.jsp");
                             request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         }
-                    } catch(NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     }
                 } else {
@@ -294,15 +295,15 @@ public class CourseController extends HttpServlet {
                 break;
             case "assessment":
                 String assessmentCourseIdParam = request.getParameter("courseId");
-                if(assessmentCourseIdParam != null && !assessmentCourseIdParam.isEmpty()){
+                if (assessmentCourseIdParam != null && !assessmentCourseIdParam.isEmpty()) {
                     try {
                         int courseId = Integer.parseInt(assessmentCourseIdParam);
                         Course course = courseDAO.getCourseById(courseId);
-                        if(course != null){
+                        if (course != null) {
                             AssessmentDAO assessmentDAO = new AssessmentDAO();
                             List<model.Assessment> assessments = assessmentDAO.getAssessmentsByCourse(courseId);
                             double totalWeight = assessmentDAO.getTotalWeightByCourse(courseId);
-                            
+
                             request.setAttribute("course", course);
                             request.setAttribute("assessments", assessments);
                             request.setAttribute("totalWeight", totalWeight);
@@ -311,7 +312,7 @@ public class CourseController extends HttpServlet {
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         }
-                    } catch(NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     }
                 } else {
@@ -321,15 +322,15 @@ public class CourseController extends HttpServlet {
             case "deleteAssessment":
                 String delAssessmentIdParam = request.getParameter("assessmentId");
                 String delCourseIdParam = request.getParameter("courseId");
-                if(delAssessmentIdParam != null && delCourseIdParam != null){
+                if (delAssessmentIdParam != null && delCourseIdParam != null) {
                     try {
                         int assessmentId = Integer.parseInt(delAssessmentIdParam);
                         int courseId = Integer.parseInt(delCourseIdParam);
                         Course course = courseDAO.getCourseById(courseId);
-                        if(course != null){
+                        if (course != null) {
                             AssessmentDAO assessmentDAO = new AssessmentDAO();
                             model.Assessment assessment = assessmentDAO.getAssessmentById(assessmentId);
-                            if(assessment != null){
+                            if (assessment != null) {
                                 request.setAttribute("course", course);
                                 request.setAttribute("assessment", assessment);
                                 request.setAttribute("home_view", "/academic/assessment_delete_confirm.jsp");
@@ -340,7 +341,7 @@ public class CourseController extends HttpServlet {
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         }
-                    } catch(NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     }
                 } else {
@@ -350,15 +351,15 @@ public class CourseController extends HttpServlet {
             case "editAssessment":
                 String editAsmtIdParam = request.getParameter("assessmentId");
                 String editAsmtCourseIdParam = request.getParameter("courseId");
-                if(editAsmtIdParam != null && editAsmtCourseIdParam != null){
+                if (editAsmtIdParam != null && editAsmtCourseIdParam != null) {
                     try {
                         int assessmentId = Integer.parseInt(editAsmtIdParam);
                         int courseId = Integer.parseInt(editAsmtCourseIdParam);
                         Course course = courseDAO.getCourseById(courseId);
-                        if(course != null){
+                        if (course != null) {
                             AssessmentDAO assessmentDAO = new AssessmentDAO();
                             model.Assessment assessment = assessmentDAO.getAssessmentById(assessmentId);
-                            if(assessment != null){
+                            if (assessment != null) {
                                 request.setAttribute("course", course);
                                 request.setAttribute("assessment", assessment);
                                 request.setAttribute("home_view", "/academic/assessment_edit_confirm.jsp");
@@ -369,7 +370,7 @@ public class CourseController extends HttpServlet {
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         }
-                    } catch(NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     }
                 } else {
@@ -379,7 +380,7 @@ public class CourseController extends HttpServlet {
             case "search":
                 String keyword = request.getParameter("keyword");
                 List<Course> searchResults;
-                if(keyword != null && !keyword.trim().isEmpty()) {
+                if (keyword != null && !keyword.trim().isEmpty()) {
                     searchResults = courseDAO.searchCourses(keyword.trim());
                 } else {
                     searchResults = courseDAO.getAllCourse();
@@ -417,11 +418,11 @@ public class CourseController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         CourseDAO courseDAO = new CourseDAO();
-        
+
         if (action == null) {
             action = "list";
         }
-        
+
         switch (action) {
             case "add":
                 // Get form data
@@ -431,7 +432,7 @@ public class CourseController extends HttpServlet {
                 String tuitionFeeStr = request.getParameter("tuitionFee");
                 String statusStr = request.getParameter("status");
                 String images = request.getParameter("images");
-                
+
                 // Validate input
                 if (courseName == null || courseName.trim().isEmpty()) {
                     request.setAttribute("errorMessage", "Course name is required");
@@ -439,12 +440,12 @@ public class CourseController extends HttpServlet {
                     request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
                     return;
                 }
-                
+
                 try {
                     int totalSlots = Integer.parseInt(totalSlotsStr);
                     BigDecimal tuitionFee = new BigDecimal(tuitionFeeStr);
                     boolean status = Boolean.parseBoolean(statusStr);
-                    
+
                     Course newCourse = new Course();
                     newCourse.setCourseName(courseName.trim());
                     newCourse.setDescription(description != null ? description.trim() : "");
@@ -452,9 +453,17 @@ public class CourseController extends HttpServlet {
                     newCourse.setTuitionFee(tuitionFee);
                     newCourse.setStatus(status);
                     newCourse.setImages(images != null ? images.trim() : "");
-                    
+
                     boolean success = courseDAO.addCourse(newCourse);
                     if (success) {
+
+                        SystemLogDAO logDAO = new SystemLogDAO();
+                        User logUser = (User) request.getSession().getAttribute("user");
+
+                        String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                        String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                        logDAO.insertLog(actorName, actorRole, "CREATE_COURSE", "Created new course: " + newCourse.getCourseName());
+
                         response.sendRedirect(request.getContextPath() + "/course?action=all&message=Course added successfully");
                     } else {
                         request.setAttribute("errorMessage", "Failed to add course");
@@ -467,14 +476,14 @@ public class CourseController extends HttpServlet {
                     request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
                 }
                 break;
-                
+
             case "update":
                 String courseIdStr = request.getParameter("courseId");
                 if (courseIdStr == null || courseIdStr.isEmpty()) {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
-                
+
                 try {
                     int courseId = Integer.parseInt(courseIdStr);
                     Course existingCourse = courseDAO.getCourseById(courseId);
@@ -482,7 +491,7 @@ public class CourseController extends HttpServlet {
                         response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         return;
                     }
-                    
+
                     // Get form data
                     String updCourseName = request.getParameter("courseName");
                     String updDescription = request.getParameter("description");
@@ -508,7 +517,7 @@ public class CourseController extends HttpServlet {
                     } catch (Exception e) {
                         System.out.println("Error uploading course image: " + e.getMessage());
                     }
-                    
+
                     // Validate input
                     if (updCourseName == null || updCourseName.trim().isEmpty()) {
                         request.setAttribute("errorMessage", "Course name is required");
@@ -516,20 +525,28 @@ public class CourseController extends HttpServlet {
                         request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
                         return;
                     }
-                    
+
                     int updTotalSlots = Integer.parseInt(updTotalSlotsStr);
                     BigDecimal updTuitionFee = new BigDecimal(updTuitionFeeStr);
                     boolean updStatus = (updStatusStr == null) ? existingCourse.isStatus() : Boolean.parseBoolean(updStatusStr);
-                    
+
                     existingCourse.setCourseName(updCourseName.trim());
                     existingCourse.setDescription(updDescription != null ? updDescription.trim() : "");
                     existingCourse.setTotalSlots(updTotalSlots);
                     existingCourse.setTuitionFee(updTuitionFee);
                     existingCourse.setStatus(updStatus);
                     existingCourse.setImages(updImages != null ? updImages.trim() : "");
-                    
+
                     boolean success = courseDAO.updateCourse(existingCourse);
                     if (success) {
+
+                        SystemLogDAO logDAO = new SystemLogDAO();
+                        User logUser = (User) request.getSession().getAttribute("user");
+
+                        String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                        String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                        logDAO.insertLog(actorName, actorRole, "UPDATE_COURSE", "Updated course ID " + courseId + " (" + existingCourse.getCourseName() + ")");
+
                         response.sendRedirect(request.getContextPath() + "/course?action=all&message=Course updated successfully");
                     } else {
                         request.setAttribute("errorMessage", "Failed to update course");
@@ -550,19 +567,27 @@ public class CourseController extends HttpServlet {
                     request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
                 }
                 break;
-                
+
             case "delete":
                 String deleteCourseIdStr = request.getParameter("courseId");
                 if (deleteCourseIdStr == null || deleteCourseIdStr.isEmpty()) {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
-                
+
                 try {
                     int deleteCourseId = Integer.parseInt(deleteCourseIdStr);
                     boolean success = courseDAO.deleteCourse(deleteCourseId);
                     HttpSession session = request.getSession();
                     if (success) {
+
+                        SystemLogDAO logDAO = new SystemLogDAO();
+                        User logUser = (User) request.getSession().getAttribute("user");
+
+                        String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                        String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                        logDAO.insertLog(actorName, actorRole, "DEACTIVATE_COURSE", "Deactivated course ID: " + deleteCourseId);
+
                         session.setAttribute("message", "Inactivate Course Success!");
                         session.setAttribute("messageType", "success");
                     } else {
@@ -590,6 +615,14 @@ public class CourseController extends HttpServlet {
                     boolean success = courseDAO.activateCourse(activateCourseId);
                     HttpSession session = request.getSession();
                     if (success) {
+
+                                            SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                        logDAO.insertLog(actorName, actorRole, "ACTIVATE_COURSE", "Activated course ID: " + activateCourseId);
+
                         session.setAttribute("message", "Activate Course Success!");
                         session.setAttribute("messageType", "success");
                     } else {
@@ -604,7 +637,7 @@ public class CourseController extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/course?action=all");
                 }
                 break;
-                
+
             default:
                 response.sendRedirect(request.getContextPath() + "/course?action=all");
                 break;

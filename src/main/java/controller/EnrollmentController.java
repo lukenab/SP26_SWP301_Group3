@@ -7,6 +7,7 @@ package controller;
 import dao.ClassDAO;
 import dao.EnrollmentDAO;
 import dao.RoomDAO;
+import dao.SystemLogDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.sql.Date;
 import java.util.Collections;
 import java.util.List;
+import model.User;
 
 /**
  *
@@ -102,8 +104,8 @@ public class EnrollmentController extends HttpServlet {
 
                 if (!normalizedSearchQuery.isEmpty()) {
                     String normalizedKeyword = normalizedSearchQuery.toLowerCase();
-                    boolean hasExactMatch = classList.stream().anyMatch(c ->
-                            c[1] != null && normalizedKeyword.equals(String.valueOf(c[1]).trim().toLowerCase())
+                    boolean hasExactMatch = classList.stream().anyMatch(c
+                            -> c[1] != null && normalizedKeyword.equals(String.valueOf(c[1]).trim().toLowerCase())
                     );
 
                     classList.removeIf(c -> {
@@ -360,6 +362,14 @@ public class EnrollmentController extends HttpServlet {
 
                 boolean created = classDAO.createClass(className.trim(), courseId, teacherId, startDate, endDate, normalizedStatus, maxCapacity, roomId);
                 if (created) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                    logDAO.insertLog(actorName, actorRole, "CREATE_CLASS", "Created new class: " + className.trim());
+
                     request.getSession().setAttribute("message", "Class created successfully.");
                     request.getSession().setAttribute("messageType", "success");
                 } else {
@@ -436,6 +446,14 @@ public class EnrollmentController extends HttpServlet {
 
                 boolean updated = classDAO.updateClass(classId, className.trim(), courseId, teacherId, startDate, endDate, normalizedStatus, maxCapacity, roomId);
                 if (updated) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                    logDAO.insertLog(actorName, actorRole, "UPDATE_CLASS", "Updated information for Class ID: " + classId + " (" + className.trim() + ")");
+
                     request.getSession().setAttribute("message", "Class updated successfully.");
                     request.getSession().setAttribute("messageType", "success");
                 } else {
@@ -475,6 +493,14 @@ public class EnrollmentController extends HttpServlet {
                 int classId = Integer.parseInt(classIdParam);
                 boolean updated = classDAO.updateClassStatus(classId, normalizedStatus);
                 if (updated) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                    logDAO.insertLog(actorName, actorRole, "UPDATE_CLASS_STATUS", "Changed status of Class ID: " + classId + " to " + normalizedStatus);
+
                     request.getSession().setAttribute("message", "Class status updated successfully.");
                     request.getSession().setAttribute("messageType", "success");
                 } else {
@@ -501,6 +527,16 @@ public class EnrollmentController extends HttpServlet {
                 int classId = Integer.parseInt(classIdParam);
                 boolean updated = classDAO.updateClassStatus(classId, targetStatus);
                 if (updated) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                    String logAction = "deactivateClass".equals(action) ? "DEACTIVATE_CLASS" : "ACTIVATE_CLASS";
+                    String logDetail = ("deactivateClass".equals(action) ? "Deactivated" : "Activated") + " Class ID: " + classId;
+                    logDAO.insertLog(actorName, actorRole, logAction, logDetail);
+
                     request.getSession().setAttribute("message",
                             "deactivateClass".equals(action) ? "Inactivate Class Success!" : "Activate Class Success!");
                     request.getSession().setAttribute("messageType", "success");
@@ -591,6 +627,14 @@ public class EnrollmentController extends HttpServlet {
 
                 int inserted = enrollmentDAO.addStudentsToClass(classId, studentIds, normalizedStatus);
                 if (inserted > 0) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                    logDAO.insertLog(actorName, actorRole, "ENROLL_STUDENTS", "Added " + inserted + " student(s) to Class ID: " + classId + " (Status: " + normalizedStatus + ")");
+
                     request.getSession().setAttribute("message", "Added " + inserted + " student(s) to class with status " + normalizedStatus + ".");
                     request.getSession().setAttribute("messageType", "success");
                 } else {
@@ -626,6 +670,15 @@ public class EnrollmentController extends HttpServlet {
 
                 int removed = enrollmentDAO.removeStudentsFromClass(classId, studentIds);
                 if (removed > 0) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+
+                    logDAO.insertLog(actorName, actorRole, "REMOVE_STUDENTS", "Removed " + removed + " student(s) from Class ID: " + classId);
+
                     request.getSession().setAttribute("message", "Removed " + removed + " student(s) from class successfully.");
                     request.getSession().setAttribute("messageType", "success");
                 } else {
@@ -653,10 +706,20 @@ public class EnrollmentController extends HttpServlet {
                 boolean updated = enrollmentDAO.updateEnrollmentStatus(enrollmentId, targetStatus);
 
                 if (updated) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                    String logAction = "approveEnrollment".equals(action) ? "APPROVE_ENROLLMENT" : "REJECT_ENROLLMENT";
+                    String logDetail = ("approveEnrollment".equals(action) ? "Approved" : "Rejected") + " Enrollment ID: " + enrollmentId;
+                    logDAO.insertLog(actorName, actorRole, logAction, logDetail);
+
                     request.getSession().setAttribute("message",
                             "approveEnrollment".equals(action)
-                                    ? "Enrollment approved successfully."
-                                    : "Enrollment rejected successfully.");
+                            ? "Enrollment approved successfully."
+                            : "Enrollment rejected successfully.");
                     request.getSession().setAttribute("messageType", "success");
                 } else {
                     request.getSession().setAttribute("message", "Failed to update enrollment status.");

@@ -1,0 +1,33 @@
+.badge-role {
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    display: inline-block;
+    text-align: center;
+}
+
+.badge-admin {
+    background-color: #F3E8FF;
+    color: #7E22CE;
+    font-size: 12px;
+}
+.badge-teacher {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+    font-size: 12px;
+}
+.badge-student {
+    background-color: #D1FAE5;
+    color: #047857;
+    font-size: 12px;
+}
+.badge-saleStaff {
+    background-color: #FFEDD5;
+    color: #9A3412;
+    font-size: 12px;
+}
+.badge-academicStaff {
+    background-color: #FCE7F3;
+    color: #9D174D;
+    font-size: 12px;
+}

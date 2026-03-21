@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import model.User;
 import utils.DBContext;
 
@@ -106,19 +107,19 @@ public class UserDAO extends DBContext {
         return null;
     }
 
-      public boolean isFieldExists(String fieldName, String value){
-        if(!fieldName.equals("email") && !fieldName.equals("phone")){
+    public boolean isFieldExists(String fieldName, String value) {
+        if (!fieldName.equals("email") && !fieldName.equals("phone")) {
             return false;
         }
-        
+
         String sql = "SELECT 1 FROM [User] WHERE " + fieldName + " = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)){
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, value);
-            try (ResultSet rs = ps.executeQuery()){
+            try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
             }
         } catch (Exception e) {
-            System.out.println("Faill to check existing " +fieldName + ": " + e.getMessage());
+            System.out.println("Faill to check existing " + fieldName + ": " + e.getMessage());
         }
         return false;
     }
@@ -321,15 +322,53 @@ public class UserDAO extends DBContext {
         return false;
     }
 
+    // 1. System Demographics (Tỷ lệ các Role)
+    public Map<String, Integer> getUserDemographics() {
+        Map<String, Integer> map = new java.util.LinkedHashMap<>();
+        String sql = "SELECT r.RoleName, COUNT(u.UserID) as TotalCount "
+                + "FROM [User] u JOIN Role r ON u.RoleID = r.RoleID "
+                + "GROUP BY r.RoleName";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                map.put(rs.getString("RoleName"), rs.getInt("TotalCount"));
+            }
+        } catch (Exception e) {
+            System.out.println("Error getUserDemographics: " + e.getMessage());
+        }
+        return map;
+    }
+
+// 2. User Activity/Status (Hoạt động / Bị khóa / Vô hiệu hóa)
+    public Map<String, Integer> getUserActivityStatus() {
+        Map<String, Integer> map = new java.util.LinkedHashMap<>();
+        String sql = "SELECT "
+                + "SUM(CASE WHEN Status = 1 AND (isLocked = 0 OR isLocked IS NULL) THEN 1 ELSE 0 END) as ActiveCount, "
+                + "SUM(CASE WHEN Status = 0 THEN 1 ELSE 0 END) as InactiveCount, "
+                + "SUM(CASE WHEN isLocked = 1 THEN 1 ELSE 0 END) as LockedCount "
+                + "FROM [User]";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                map.put("Active", rs.getInt("ActiveCount"));
+                map.put("Inactive", rs.getInt("InactiveCount"));
+                map.put("Locked", rs.getInt("LockedCount"));
+            }
+        } catch (Exception e) {
+            System.out.println("Error getUserActivityStatus: " + e.getMessage());
+        }
+        return map;
+    }
+    
+    
+
     public void updateFailLoginAttempts(int userId, int attempts) {
         String sql = "UPDATE [User] SET FailedLoginAttempts = ? WHERE UserID = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, attempts);
             ps.setInt(2, userId);
-            
+
             ps.executeUpdate();
         } catch (Exception e) {
-            System.out.println("Fail to update login attempts: " +e.getMessage());
+            System.out.println("Fail to update login attempts: " + e.getMessage());
         }
     }
 
