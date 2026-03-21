@@ -140,36 +140,16 @@ public class DashboardController extends HttpServlet {
                 break;
 
             case "academic":
-            case "academicFillRateReport":
-
-                List<Object[]> classFillRateList = classDAO.getClassFillRateReport();
-                request.setAttribute("classFillRateList", classFillRateList != null ? classFillRateList : new ArrayList<>());
-                request.setAttribute("home_view", "/academic/class_fill_rate_report.jsp");
+                request.setAttribute("home_view", "/academic/academicDashboard.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 
+            case "academicFillRateReport":
+                response.sendRedirect("enrollment?action=classes");
+                break;
+
             case "academicGradeEnrollmentReport":
-                ClassDAO classDAO2 = new ClassDAO();
-                List<Object[]> gradeEnrollmentSummaryList = classDAO2.getGradeEnrollmentSummary();
-                int selectedClassId = 0;
-                try {
-                    String classIdParam = request.getParameter("classId");
-                    if (classIdParam != null && !classIdParam.isEmpty()) {
-                        selectedClassId = Integer.parseInt(classIdParam);
-                    }
-                } catch (NumberFormatException ignored) {
-                }
-
-                List<Object[]> gradeEnrollmentList = new ArrayList<>();
-                if (selectedClassId > 0) {
-                    gradeEnrollmentList = classDAO2.getGradeEnrollmentDetails(selectedClassId);
-                }
-
-                request.setAttribute("selectedClassId", selectedClassId);
-                request.setAttribute("gradeEnrollmentSummaryList", gradeEnrollmentSummaryList != null ? gradeEnrollmentSummaryList : new ArrayList<>());
-                request.setAttribute("gradeEnrollmentList", gradeEnrollmentList != null ? gradeEnrollmentList : new ArrayList<>());
-                request.setAttribute("home_view", "/academic/grade_enrollment_report.jsp");
-                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                response.sendRedirect("enrollment?action=classes");
                 break;
 
             case "teacher":

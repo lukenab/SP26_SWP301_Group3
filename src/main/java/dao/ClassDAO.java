@@ -21,12 +21,19 @@ import utils.DBContext;
  */
 public class ClassDAO extends DBContext {
 
+    private static Boolean cachedHasClassMaxCapacityColumn;
+    private static Boolean cachedHasClassRoomIdColumn;
+
     private boolean hasClassMaxCapacityColumn() {
+        if (cachedHasClassMaxCapacityColumn != null) {
+            return cachedHasClassMaxCapacityColumn;
+        }
         String sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS "
                 + "WHERE TABLE_NAME = 'Class' AND COLUMN_NAME = 'MaxCapacity'";
         try (PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
-            return rs.next();
+            cachedHasClassMaxCapacityColumn = rs.next();
+            return cachedHasClassMaxCapacityColumn;
         } catch (Exception e) {
             System.out.println("Fail to detect Class.MaxCapacity column: " + e.getMessage());
         }
@@ -34,11 +41,15 @@ public class ClassDAO extends DBContext {
     }
 
     private boolean hasClassRoomIdColumn() {
+        if (cachedHasClassRoomIdColumn != null) {
+            return cachedHasClassRoomIdColumn;
+        }
         String sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS "
                 + "WHERE TABLE_NAME = 'Class' AND COLUMN_NAME = 'RoomID'";
         try (PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
-            return rs.next();
+            cachedHasClassRoomIdColumn = rs.next();
+            return cachedHasClassRoomIdColumn;
         } catch (Exception e) {
             System.out.println("Fail to detect Class.RoomID column: " + e.getMessage());
         }
@@ -46,6 +57,10 @@ public class ClassDAO extends DBContext {
     }
 
     public List<Object[]> getClassManagementList() {
+        return getClassManagementList(null, null, null);
+    }
+
+    public List<Object[]> getClassManagementList(String searchQuery, String statusFilter, Integer monthFilter) {
         List<Object[]> list = new ArrayList<>();
         boolean hasMaxCapacity = hasClassMaxCapacityColumn();
         boolean hasRoomId = hasClassRoomIdColumn();
@@ -68,12 +83,37 @@ public class ClassDAO extends DBContext {
                 + "   ) x "
                 + "   GROUP BY ClassID "
                 + ") rm ON rm.ClassID = c.ClassID "
-                + "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status, "
+                + "WHERE 1 = 1 ";
+
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            sql += "AND LOWER(c.ClassName) LIKE ? ";
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty() && !"all".equalsIgnoreCase(statusFilter.trim())) {
+            sql += "AND c.Status = ? ";
+        }
+        if (monthFilter != null) {
+            sql += "AND MONTH(c.StartDate) = ? ";
+        }
+
+        sql += "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status, "
                 + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + ", "
                 + (hasRoomId ? "cr.RoomName, " : "")
                 + "rm.RoomName "
                 + "ORDER BY c.StartDate DESC, c.ClassID DESC";
-        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            int paramIndex = 1;
+            if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+                ps.setString(paramIndex++, searchQuery.trim().toLowerCase() + "%");
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty() && !"all".equalsIgnoreCase(statusFilter.trim())) {
+                ps.setString(paramIndex++, statusFilter.trim());
+            }
+            if (monthFilter != null) {
+                ps.setInt(paramIndex++, monthFilter);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Object[] row = new Object[11];
                 row[0] = rs.getInt("ClassID");
@@ -88,6 +128,7 @@ public class ClassDAO extends DBContext {
                 row[9] = rs.getDate("RegistrationDeadline");
                 row[10] = rs.getString("RoomName");
                 list.add(row);
+            }
             }
         } catch (Exception e) {
             System.out.println("Fail to get class management list: " + e.getMessage());

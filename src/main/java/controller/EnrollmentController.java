@@ -81,24 +81,41 @@ public class EnrollmentController extends HttpServlet {
                 String searchQuery = request.getParameter("searchQuery");
                 String statusFilter = request.getParameter("status");
                 String monthFilter = request.getParameter("month");
-                List<Object[]> classList = classDAO.getClassManagementList();
                 String normalizedSearchQuery = searchQuery == null ? "" : searchQuery.trim();
                 String normalizedStatusFilter = statusFilter == null ? "all" : statusFilter.trim();
                 String normalizedMonthFilter = monthFilter == null ? "all" : monthFilter.trim().toLowerCase();
+                Integer monthValueFilter = null;
 
                 if (!"all".equals(normalizedMonthFilter)) {
-                    classList.removeIf(c -> {
-                        java.sql.Date startDate = (java.sql.Date) c[4];
-                        if (startDate == null) {
-                            return true;
-                        }
-                        int monthValue = startDate.toLocalDate().getMonthValue();
-                        return monthValue != Integer.parseInt(normalizedMonthFilter);
-                    });
+                    try {
+                        monthValueFilter = Integer.parseInt(normalizedMonthFilter);
+                    } catch (NumberFormatException e) {
+                        monthValueFilter = null;
+                    }
                 }
 
-                if (!"all".equalsIgnoreCase(normalizedStatusFilter)) {
-                    classList.removeIf(c -> c[6] == null || !normalizedStatusFilter.equalsIgnoreCase(String.valueOf(c[6])));
+                List<Object[]> classList = classDAO.getClassManagementList(
+                        normalizedSearchQuery,
+                        normalizedStatusFilter,
+                        monthValueFilter
+                );
+
+                if (!normalizedSearchQuery.isEmpty()) {
+                    String normalizedKeyword = normalizedSearchQuery.toLowerCase();
+                    boolean hasExactMatch = classList.stream().anyMatch(c ->
+                            c[1] != null && normalizedKeyword.equals(String.valueOf(c[1]).trim().toLowerCase())
+                    );
+
+                    classList.removeIf(c -> {
+                        if (c[1] == null) {
+                            return true;
+                        }
+                        String className = String.valueOf(c[1]).trim().toLowerCase();
+                        if (hasExactMatch) {
+                            return !className.equals(normalizedKeyword);
+                        }
+                        return !className.startsWith(normalizedKeyword);
+                    });
                 }
 
                 List<Object[]> pagedClassList;
@@ -124,6 +141,41 @@ public class EnrollmentController extends HttpServlet {
                 request.setAttribute("monthFilter", normalizedMonthFilter);
                 request.setAttribute("showAllFilteredResults", shouldShowAllResults);
                 request.setAttribute("home_view", "/academic/class_list.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+            case "requests":
+                String requestCourseIdParam = request.getParameter("courseId");
+                String requestClassIdParam = request.getParameter("classId");
+                String enrollmentStatusFilter = request.getParameter("status");
+
+                Integer filterCourseId = null;
+                Integer filterClassId = null;
+
+                try {
+                    if (requestCourseIdParam != null && !requestCourseIdParam.trim().isEmpty() && !"0".equals(requestCourseIdParam)) {
+                        filterCourseId = Integer.parseInt(requestCourseIdParam);
+                    }
+                    if (requestClassIdParam != null && !requestClassIdParam.trim().isEmpty() && !"0".equals(requestClassIdParam)) {
+                        filterClassId = Integer.parseInt(requestClassIdParam);
+                    }
+                } catch (NumberFormatException e) {
+                    filterCourseId = null;
+                    filterClassId = null;
+                }
+
+                String normalizedEnrollmentStatus = enrollmentStatusFilter == null ? "" : enrollmentStatusFilter.trim();
+
+                request.setAttribute("enrollmentList", enrollmentDAO.getEnrollmentManagementList(filterCourseId, filterClassId, normalizedEnrollmentStatus));
+                request.setAttribute("totalEnrollments", enrollmentDAO.countEnrollmentsByStatus(""));
+                request.setAttribute("pendingEnrollments", enrollmentDAO.countEnrollmentsByStatus("Pending"));
+                request.setAttribute("activeEnrollments", enrollmentDAO.countEnrollmentsByStatus("Active"));
+                request.setAttribute("rejectedEnrollments", enrollmentDAO.countEnrollmentsByStatus("Rejected"));
+                request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
+                request.setAttribute("classOptions", classDAO.getClassManagementList());
+                request.setAttribute("selectedCourseId", requestCourseIdParam);
+                request.setAttribute("selectedClassId", requestClassIdParam);
+                request.setAttribute("selectedStatus", normalizedEnrollmentStatus);
+                request.setAttribute("home_view", "/academic/enrollment_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "deleteClass":
@@ -585,6 +637,36 @@ public class EnrollmentController extends HttpServlet {
                 request.getSession().setAttribute("message", "Invalid request data.");
                 request.getSession().setAttribute("messageType", "error");
                 response.sendRedirect("enrollment?action=classes");
+            }
+        } else if ("approveEnrollment".equals(action) || "rejectEnrollment".equals(action)) {
+            String enrollmentIdParam = request.getParameter("enrollmentId");
+            if (enrollmentIdParam == null || enrollmentIdParam.trim().isEmpty()) {
+                request.getSession().setAttribute("message", "Invalid enrollment request.");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("enrollment?action=requests");
+                return;
+            }
+
+            try {
+                int enrollmentId = Integer.parseInt(enrollmentIdParam);
+                String targetStatus = "approveEnrollment".equals(action) ? "Active" : "Rejected";
+                boolean updated = enrollmentDAO.updateEnrollmentStatus(enrollmentId, targetStatus);
+
+                if (updated) {
+                    request.getSession().setAttribute("message",
+                            "approveEnrollment".equals(action)
+                                    ? "Enrollment approved successfully."
+                                    : "Enrollment rejected successfully.");
+                    request.getSession().setAttribute("messageType", "success");
+                } else {
+                    request.getSession().setAttribute("message", "Failed to update enrollment status.");
+                    request.getSession().setAttribute("messageType", "error");
+                }
+                response.sendRedirect("enrollment?action=requests");
+            } catch (NumberFormatException e) {
+                request.getSession().setAttribute("message", "Invalid enrollment ID.");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("enrollment?action=requests");
             }
         } else {
             response.sendRedirect("enrollment?action=classes");
