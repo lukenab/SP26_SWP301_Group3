@@ -141,12 +141,12 @@
                                 <span class="text nav-text">Role & Permission</span></a>
                         </li>
 
-                        <li class="nav-links">
+<!--                        <li class="nav-links">
                             <a href="#">
                                 <i class="bxr bx-wallet-alt bx-flip-vertical"></i>
                                 <span class="text nav-text">Finance</span>
                             </a>
-                        </li>
+                        </li>-->
 
                         <li class="nav-links">
                             <a href="#">
