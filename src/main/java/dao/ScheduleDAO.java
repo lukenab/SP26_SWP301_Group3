@@ -223,20 +223,14 @@ public class ScheduleDAO extends DBContext {
         // Save the day of week from the start date for "weekly" pattern
         int startDayOfWeek = cal.get(java.util.Calendar.DAY_OF_WEEK);
 
-        int maxIterations = 365; // Safety limit
-        if ("after".equals(endCondition) && occurrences != null) {
-            maxIterations = occurrences;
-        }
+        int iteration = 0;
+        int maxIterations = 730; // Safety limit (2 years of daily)
 
-        int count = 0;
-        while (count < maxIterations) {
+        while (iteration < maxIterations) {
             Date currentDate = new Date(cal.getTimeInMillis());
 
-            // Check end condition
+            // Check end condition BEFORE checking pattern match
             if ("on".equals(endCondition) && endDate != null && currentDate.after(endDate)) {
-                break;
-            }
-            if ("after".equals(endCondition) && count >= occurrences) {
                 break;
             }
 
@@ -264,17 +258,21 @@ public class ScheduleDAO extends DBContext {
                     }
                     break;
                 default:
-                    shouldAdd = (count == 0); // Single schedule
+                    shouldAdd = (dates.isEmpty()); // Single schedule
                     break;
             }
 
             if (shouldAdd) {
                 dates.add(currentDate);
-                count++;
+                // Check "after" condition AFTER adding
+                if ("after".equals(endCondition) && occurrences != null && dates.size() >= occurrences) {
+                    break;
+                }
             }
 
             // Move to next day
             cal.add(java.util.Calendar.DAY_OF_MONTH, 1);
+            iteration++;
 
             // Safety check for "never" condition
             if ("never".equals(endCondition) && dates.size() >= 100) {

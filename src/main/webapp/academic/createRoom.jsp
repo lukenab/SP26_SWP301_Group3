@@ -6,7 +6,7 @@
 <div class="mb-4">
     <div aria-label="breadcrumb">
         <ol class="breadcrumb mb-1">
-            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="room">Room Management</a></li>
             <li class="breadcrumb-item active" aria-current="page">Create Room</li>
         </ol>

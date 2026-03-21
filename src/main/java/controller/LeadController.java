@@ -240,34 +240,12 @@ public class LeadController extends HttpServlet {
 
                 java.util.List<Object[]> filteredRows = new java.util.ArrayList<>();
                 for (Object[] row : monthlyRows) {
-                    int total = row[2] == null ? 0 : ((Number) row[2]).intValue();
-                    int converted = row[3] == null ? 0 : ((Number) row[3]).intValue();
-                    if (total > 0 || converted > 0) {
+                    int total = row[1] == null ? 0 : ((Number) row[1]).intValue();
+                    int converted = row[2] == null ? 0 : ((Number) row[2]).intValue();
+                    int students = row[3] == null ? 0 : ((Number) row[3]).intValue();
+                    if (total > 0 || converted > 0 || students > 0) {
                         filteredRows.add(row);
                     }
-                }
-
-                java.util.LinkedHashMap<String, int[]> dailyTotalsMap = new java.util.LinkedHashMap<>();
-                for (Object[] row : filteredRows) {
-                    String dayLabel = String.valueOf(row[0]);
-                    int total = row[2] == null ? 0 : ((Number) row[2]).intValue();
-                    int converted = row[3] == null ? 0 : ((Number) row[3]).intValue();
-                    int[] totals = dailyTotalsMap.get(dayLabel);
-                    if (totals == null) {
-                        totals = new int[]{0, 0};
-                        dailyTotalsMap.put(dayLabel, totals);
-                    }
-                    totals[0] += total;
-                    totals[1] += converted;
-                }
-
-                java.util.List<Object[]> dailyTotals = new java.util.ArrayList<>();
-                for (java.util.Map.Entry<String, int[]> entry : dailyTotalsMap.entrySet()) {
-                    String day = entry.getKey();
-                    int total = entry.getValue()[0];
-                    int converted = entry.getValue()[1];
-                    double rate = total == 0 ? 0.0 : (converted * 100.0) / total;
-                    dailyTotals.add(new Object[]{day, total, converted, rate});
                 }
 
                 request.setAttribute("totalLeads", summary[0]);
@@ -275,7 +253,6 @@ public class LeadController extends HttpServlet {
                 request.setAttribute("registeredStudents", summary[2]);
                 request.setAttribute("conversionRate", summary[3]);
                 request.setAttribute("monthlyRows", filteredRows);
-                request.setAttribute("dailyTotals", dailyTotals);
                 request.setAttribute("fromDate", fromDateReport.toLocalDate().toString());
                 request.setAttribute("toDate", toDateReport.toLocalDate().toString());
                 request.setAttribute("home_view", "/sale/viewSalesReport.jsp");

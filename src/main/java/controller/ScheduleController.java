@@ -476,7 +476,7 @@ public class ScheduleController extends HttpServlet {
         try {
             switch (action) {
                 case "create":
-                    // Create schedule
+                    // Create schedule (single or batch)
                     try {
                         int classId = Integer.parseInt(request.getParameter("classId"));
                         int roomId = Integer.parseInt(request.getParameter("roomId"));
@@ -484,57 +484,115 @@ public class ScheduleController extends HttpServlet {
                         String learningDateStr = request.getParameter("learningDate");
                         Date learningDate = Date.valueOf(learningDateStr);
 
+                        // Get recurring parameters
+                        String recurringType = request.getParameter("recurringType");
+                        if (recurringType == null || recurringType.isEmpty()) {
+                            recurringType = "none";
+                        }
+
                         // Get teacher ID from class
                         ClassDAO classDAO = new ClassDAO();
                         int teacherId = classDAO.getTeacherIdByClassId(classId);
 
-                        // 1. Check if there's a schedule conflict (same class, same slot, same date)
-                        if (scheduleDAO.hasScheduleConflict(classId, slotId, learningDate, 0)) {
-                            session.setAttribute("message", "Schedule conflict: This class already has a schedule at this time slot on this date!");
-                            session.setAttribute("messageType", "error");
-                            response.sendRedirect("schedule?action=manage");
-                            return;
-                        }
+                        // Check if this is a batch creation
+                        if (!"none".equals(recurringType)) {
+                            // Batch creation - get recurring parameters
+                            String endCondition = request.getParameter("endCondition");
+                            String endDateStr = request.getParameter("endDate");
+                            String occurrencesStr = request.getParameter("occurrences");
 
-                        // 2. Check room availability
-                        if (!scheduleDAO.isRoomAvailable(roomId, slotId, learningDate, 0)) {
-                            session.setAttribute("message", "Room is not available for this time slot!");
-                            session.setAttribute("messageType", "error");
-                            response.sendRedirect("schedule?action=manage");
-                            return;
-                        }
+                            Date endDate = null;
+                            Integer occurrences = null;
 
-                        // 3. Check teacher availability (same slot, same date)
-                        if (!scheduleDAO.isTeacherAvailable(teacherId, slotId, learningDate, 0)) {
-                            session.setAttribute("message", "Teacher is not available at this time slot on this date!");
-                            session.setAttribute("messageType", "error");
-                            response.sendRedirect("schedule?action=manage");
-                            return;
-                        }
+                            if ("on".equals(endCondition) && endDateStr != null && !endDateStr.isEmpty()) {
+                                endDate = Date.valueOf(endDateStr);
+                            }
 
-                        // 4. Check if teacher exceeds 5 slots per week limit
-                        if (scheduleDAO.teacherExceedsWeeklyLimit(teacherId, learningDate, 0)) {
-                            int currentSlots = scheduleDAO.getTeacherWeeklySlotCount(teacherId, learningDate, 0);
-                            session.setAttribute("message", "Teacher has reached the weekly limit! Current slots: " + currentSlots + "/5");
-                            session.setAttribute("messageType", "error");
-                            response.sendRedirect("schedule?action=manage");
-                            return;
-                        }
+                            if ("after".equals(endCondition) && occurrencesStr != null && !occurrencesStr.isEmpty()) {
+                                occurrences = Integer.parseInt(occurrencesStr);
+                            }
 
-                        // Create schedule
-                        boolean success = scheduleDAO.createSchedule(classId, roomId, slotId, learningDate, teacherId, false);
+                            // Get custom days for custom recurring pattern
+                            String[] recurringDaysArray = request.getParameterValues("recurringDays");
+                            String recurringDays = "";
+                            if (recurringDaysArray != null && recurringDaysArray.length > 0) {
+                                recurringDays = String.join(",", recurringDaysArray);
+                            }
 
-                        if (success) {
-                            session.setAttribute("message", "Schedule created successfully!");
-                            session.setAttribute("messageType", "success");
+                            // Create multiple schedules
+                            int createdCount = scheduleDAO.createMultipleSchedules(classId, roomId, slotId, learningDate, teacherId,
+                                    recurringType, recurringDays, endCondition, endDate, occurrences);
+
+                            if (createdCount > 0) {
+                                session.setAttribute("message", "Successfully created " + createdCount + " schedule(s)!");
+                                session.setAttribute("messageType", "success");
+                            } else {
+                                session.setAttribute("message", "Failed to create schedules or no dates were generated!");
+                                session.setAttribute("messageType", "error");
+                            }
                         } else {
-                            session.setAttribute("message", "Failed to create schedule!");
-                            session.setAttribute("messageType", "error");
+                            // Single schedule creation - validate like before
+                            // 1. Check if there's a schedule conflict
+                            if (scheduleDAO.hasScheduleConflict(classId, slotId, learningDate, 0)) {
+                                session.setAttribute("message", "Schedule conflict: This class already has a schedule at this time slot on this date!");
+                                session.setAttribute("messageType", "error");
+                                response.sendRedirect("schedule?action=manage");
+                                return;
+                            }
+
+                            // 2. Check room availability
+                            if (!scheduleDAO.isRoomAvailable(roomId, slotId, learningDate, 0)) {
+                                session.setAttribute("message", "Room is not available for this time slot!");
+                                session.setAttribute("messageType", "error");
+                                response.sendRedirect("schedule?action=manage");
+                                return;
+                            }
+
+                            // 3. Check teacher availability
+                            if (!scheduleDAO.isTeacherAvailable(teacherId, slotId, learningDate, 0)) {
+                                session.setAttribute("message", "Teacher is not available at this time slot on this date!");
+                                session.setAttribute("messageType", "error");
+                                response.sendRedirect("schedule?action=manage");
+                                return;
+                            }
+
+                            // 4. Check if teacher exceeds 5 slots per week limit
+                            if (scheduleDAO.teacherExceedsWeeklyLimit(teacherId, learningDate, 0)) {
+                                int currentSlots = scheduleDAO.getTeacherWeeklySlotCount(teacherId, learningDate, 0);
+                                session.setAttribute("message", "Teacher has reached the weekly limit! Current slots: " + currentSlots + "/5");
+                                session.setAttribute("messageType", "error");
+                                response.sendRedirect("schedule?action=manage");
+                                return;
+                            }
+
+                            // Create single schedule
+                            boolean success = scheduleDAO.createSchedule(classId, roomId, slotId, learningDate, teacherId, false);
+
+                            if (success) {
+                                session.setAttribute("message", "Schedule created successfully!");
+                                session.setAttribute("messageType", "success");
+                            } else {
+                                session.setAttribute("message", "Failed to create schedule!");
+                                session.setAttribute("messageType", "error");
+                            }
                         }
 
                     } catch (Exception e) {
                         session.setAttribute("message", "Error creating schedule: " + e.getMessage());
                         session.setAttribute("messageType", "error");
+                        e.printStackTrace();
+                    }
+
+                    // Save selected values to session for next manage view
+                    try {
+                        int classId = Integer.parseInt(request.getParameter("classId"));
+                        int roomId = Integer.parseInt(request.getParameter("roomId"));
+                        String learningDateStr = request.getParameter("learningDate");
+                        session.setAttribute("selectedClassId", classId);
+                        session.setAttribute("selectedRoomId", roomId);
+                        session.setAttribute("selectedDate", learningDateStr);
+                    } catch (Exception e) {
+                        // Silently fail if parameters are missing
                     }
 
                     // Redirect back to manage with previously selected class and date

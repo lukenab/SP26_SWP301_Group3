@@ -7,6 +7,7 @@ package controller;
 import dao.CourseDAO;
 import dao.FeedbackDAO;
 import dao.SyllabusDAO;
+import dao.AssessmentDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -97,13 +98,68 @@ public class CourseController extends HttpServlet {
         
         switch(action){
             case "all":
-                List<Course> list = courseDAO.getAllCourse();
+                String searchQuery = request.getParameter("searchQuery");
+                String statusFilter = request.getParameter("status");
+                String categoryFilter = request.getParameter("category");
+                String normalizedSearchQuery = searchQuery == null ? "" : searchQuery.trim();
+                String normalizedStatusFilter = statusFilter == null ? "all" : statusFilter.trim().toLowerCase();
+                String normalizedCategoryFilter = categoryFilter == null ? "all" : categoryFilter.trim().toLowerCase();
+
+                List<Course> list = normalizedSearchQuery.isEmpty()
+                        ? courseDAO.getAllCourse()
+                        : courseDAO.searchCourses(normalizedSearchQuery);
+
+                if (!"all".equals(normalizedCategoryFilter)) {
+                    list.removeIf(course -> {
+                        String courseName = course.getCourseName();
+                        if (courseName == null) {
+                            return true;
+                        }
+                        return !courseName.trim().toLowerCase().startsWith(normalizedCategoryFilter);
+                    });
+                }
+
+                if ("active".equals(normalizedStatusFilter)) {
+                    list.removeIf(course -> !course.isStatus());
+                } else if ("inactive".equals(normalizedStatusFilter)) {
+                    list.removeIf(Course::isStatus);
+                }
+
                 int totalCourse = list.size();
-                List<Course> pagedList = paginateCourseList(list, parsePage(request), DEFAULT_PAGE_SIZE, request);
+                List<Course> pagedList;
+                boolean shouldShowAllResults = !normalizedSearchQuery.isEmpty()
+                        || !"all".equals(normalizedStatusFilter)
+                        || !"all".equals(normalizedCategoryFilter);
+                if (shouldShowAllResults) {
+                    pagedList = list;
+                    request.setAttribute("currentPage", 1);
+                    request.setAttribute("pageSize", totalCourse == 0 ? DEFAULT_PAGE_SIZE : totalCourse);
+                    request.setAttribute("totalItems", totalCourse);
+                    request.setAttribute("totalPages", 1);
+                    request.setAttribute("startItem", totalCourse == 0 ? 0 : 1);
+                    request.setAttribute("endItem", totalCourse);
+                } else {
+                    pagedList = paginateCourseList(list, parsePage(request), DEFAULT_PAGE_SIZE, request);
+                }
                 request.setAttribute("totalCourse", totalCourse);
                 request.setAttribute("courseList", pagedList);
+                request.setAttribute("filteredCourseList", list);
+                request.setAttribute("searchQuery", normalizedSearchQuery);
+                request.setAttribute("statusFilter", normalizedStatusFilter);
+                request.setAttribute("categoryFilter", normalizedCategoryFilter);
+                request.setAttribute("showAllFilteredResults", shouldShowAllResults);
                 request.setAttribute("paginationAction", "all");
-                request.setAttribute("paginationQuery", "");
+                StringBuilder paginationQuery = new StringBuilder();
+                if (!normalizedSearchQuery.isEmpty()) {
+                    paginationQuery.append("&searchQuery=").append(normalizedSearchQuery);
+                }
+                if (!normalizedStatusFilter.isEmpty()) {
+                    paginationQuery.append("&status=").append(normalizedStatusFilter);
+                }
+                if (!normalizedCategoryFilter.isEmpty()) {
+                    paginationQuery.append("&category=").append(normalizedCategoryFilter);
+                }
+                request.setAttribute("paginationQuery", paginationQuery.toString());
                 request.setAttribute("home_view", "/academic/course_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
@@ -226,6 +282,90 @@ public class CourseController extends HttpServlet {
                             request.setAttribute("course", course);
                             request.setAttribute("home_view", "/academic/course_delete_confirm.jsp");
                             request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                        } else {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        }
+                    } catch(NumberFormatException e) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                } else {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                }
+                break;
+            case "assessment":
+                String assessmentCourseIdParam = request.getParameter("courseId");
+                if(assessmentCourseIdParam != null && !assessmentCourseIdParam.isEmpty()){
+                    try {
+                        int courseId = Integer.parseInt(assessmentCourseIdParam);
+                        Course course = courseDAO.getCourseById(courseId);
+                        if(course != null){
+                            AssessmentDAO assessmentDAO = new AssessmentDAO();
+                            List<model.Assessment> assessments = assessmentDAO.getAssessmentsByCourse(courseId);
+                            double totalWeight = assessmentDAO.getTotalWeightByCourse(courseId);
+                            
+                            request.setAttribute("course", course);
+                            request.setAttribute("assessments", assessments);
+                            request.setAttribute("totalWeight", totalWeight);
+                            request.setAttribute("home_view", "/academic/assessment_management.jsp");
+                            request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                        } else {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        }
+                    } catch(NumberFormatException e) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                } else {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                }
+                break;
+            case "deleteAssessment":
+                String delAssessmentIdParam = request.getParameter("assessmentId");
+                String delCourseIdParam = request.getParameter("courseId");
+                if(delAssessmentIdParam != null && delCourseIdParam != null){
+                    try {
+                        int assessmentId = Integer.parseInt(delAssessmentIdParam);
+                        int courseId = Integer.parseInt(delCourseIdParam);
+                        Course course = courseDAO.getCourseById(courseId);
+                        if(course != null){
+                            AssessmentDAO assessmentDAO = new AssessmentDAO();
+                            model.Assessment assessment = assessmentDAO.getAssessmentById(assessmentId);
+                            if(assessment != null){
+                                request.setAttribute("course", course);
+                                request.setAttribute("assessment", assessment);
+                                request.setAttribute("home_view", "/academic/assessment_delete_confirm.jsp");
+                                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                            } else {
+                                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                            }
+                        } else {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        }
+                    } catch(NumberFormatException e) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                } else {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                }
+                break;
+            case "editAssessment":
+                String editAsmtIdParam = request.getParameter("assessmentId");
+                String editAsmtCourseIdParam = request.getParameter("courseId");
+                if(editAsmtIdParam != null && editAsmtCourseIdParam != null){
+                    try {
+                        int assessmentId = Integer.parseInt(editAsmtIdParam);
+                        int courseId = Integer.parseInt(editAsmtCourseIdParam);
+                        Course course = courseDAO.getCourseById(courseId);
+                        if(course != null){
+                            AssessmentDAO assessmentDAO = new AssessmentDAO();
+                            model.Assessment assessment = assessmentDAO.getAssessmentById(assessmentId);
+                            if(assessment != null){
+                                request.setAttribute("course", course);
+                                request.setAttribute("assessment", assessment);
+                                request.setAttribute("home_view", "/academic/assessment_edit_confirm.jsp");
+                                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                            } else {
+                                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                            }
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         }

@@ -3,40 +3,38 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
-<link href="css/payment_list.css?v=20260311" rel="stylesheet" type="text/css"/>
+<link href="css/payment_list.css?v=20260319" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body">
-
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Payment Management</li>
+                <li class="breadcrumb-item active" aria-current="page">Enrollment Management</li>
             </ol>
         </div>
         <div class="content-header">
             <div>
-                <h2 class="page-title"><i class='bx bx-dollar-circle'></i> Payment Management</h2>
-                <p class="text-muted small mb-0">View, approve, and manage student payment requests for academic programs</p>
+                <h2 class="page-title"><i class='bx bx-user-check'></i> Enrollment Management</h2>
+                <p class="text-muted small mb-0">Review and approve or reject student enrollment requests.</p>
             </div>
         </div>
     </div>
 
-    <!-- Statistics Cards -->
     <div class="stat-card-grid">
         <div class="stat-card">
             <div class="stat-info">
-                <p>Total Payments</p>
-                <h3>${totalPayments}</h3>
+                <p>Total Enrollments</p>
+                <h3>${totalEnrollments}</h3>
             </div>
             <div class="icon-wrapper blue">
-                <i class='bx bx-receipt'></i>
+                <i class='bx bx-list-check'></i>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-info">
                 <p>Pending</p>
-                <h3>${pendingPayments}</h3>
+                <h3>${pendingEnrollments}</h3>
             </div>
             <div class="icon-wrapper" style="background: #fef3c7; color: #d97706;">
                 <i class='bx bx-time-five'></i>
@@ -45,7 +43,7 @@
         <div class="stat-card">
             <div class="stat-info">
                 <p>Approved</p>
-                <h3>${approvedPayments}</h3>
+                <h3>${activeEnrollments}</h3>
             </div>
             <div class="icon-wrapper green">
                 <i class='bx bx-check-circle'></i>
@@ -53,36 +51,34 @@
         </div>
         <div class="stat-card">
             <div class="stat-info">
-                <p>Total Amount</p>
-                <h3><fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="$" /></h3>
+                <p>Rejected</p>
+                <h3>${rejectedEnrollments}</h3>
             </div>
-            <div class="icon-wrapper" style="background: #dbeafe; color: #2563eb;">
-                <i class='bx bx-dollar'></i>
+            <div class="icon-wrapper" style="background: #fee2e2; color: #dc2626;">
+                <i class='bx bx-x-circle'></i>
             </div>
         </div>
     </div>
 
-
-    <!-- Filter Section -->
-    <form action="payment" method="GET" class="filter-container flex-wrap">
-        <input type="hidden" name="action" value="list">
+    <form action="enrollment" method="GET" class="filter-container flex-wrap">
+        <input type="hidden" name="action" value="requests">
 
         <div class="d-flex gap-3 flex-wrap w-100">
             <select name="courseId" class="custom-select-filter" onchange="this.form.submit()"
                     style="border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; background: white; outline: none; cursor: pointer; min-width: 200px;">
                 <option value="0">All Courses</option>
                 <c:forEach items="${courseOptions}" var="course">
-                    <option value="${course[0]}" ${selectedCourseId == course[0] ? 'selected' : ''}>
+                    <option value="${course[0]}" ${selectedCourseId == course[0].toString() ? 'selected' : ''}>
                         ${course[1]}
                     </option>
                 </c:forEach>
             </select>
 
             <select name="classId" class="custom-select-filter" onchange="this.form.submit()"
-                    style="border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; background: white; outline: none; cursor: pointer; min-width: 200px;">
+                    style="border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; background: white; outline: none; cursor: pointer; min-width: 220px;">
                 <option value="0">All Classes</option>
-                <c:forEach items="${classList}" var="cls">
-                    <option value="${cls[0]}" ${selectedClassId == cls[0] ? 'selected' : ''}>
+                <c:forEach items="${classOptions}" var="cls">
+                    <option value="${cls[0]}" ${selectedClassId == cls[0].toString() ? 'selected' : ''}>
                         ${cls[1]} - ${cls[2]}
                     </option>
                 </c:forEach>
@@ -90,17 +86,16 @@
 
             <select name="status" class="custom-select-filter" onchange="this.form.submit()"
                     style="border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; background: white; outline: none; cursor: pointer; min-width: 200px;">
-                <option value="">All Statuses</option>
+                <option value="" ${empty selectedStatus ? 'selected' : ''}>All Statuses</option>
                 <option value="Pending" ${selectedStatus == 'Pending' ? 'selected' : ''}>Pending</option>
-                <option value="Approved" ${selectedStatus == 'Approved' ? 'selected' : ''}>Approved</option>
+                <option value="Active" ${selectedStatus == 'Active' ? 'selected' : ''}>Approved</option>
                 <option value="Rejected" ${selectedStatus == 'Rejected' ? 'selected' : ''}>Rejected</option>
             </select>
 
             <button type="submit" style="display: none;"></button>
         </div>
     </form>
-            
-             <!-- Toast Message -->
+
     <c:if test="${not empty sessionScope.message}">
         <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
             <div class="toast-icon">
@@ -114,9 +109,7 @@
                 </c:choose>
             </div>
             <div class="toast-content">
-                <span class="toast-title">
-                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
-                </span>
+                <span class="toast-title">${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}</span>
                 <span class="toast-message">${sessionScope.message}</span>
             </div>
             <button class="toast-close" onclick="closeToast()">
@@ -128,91 +121,79 @@
         <c:remove var="messageType" scope="session" />
     </c:if>
 
-    <!-- Payment Table -->
     <div class="card user-table-card border-0 bg-white">
         <div class="table-responsive">
             <table class="table mb-0 align-middle">
                 <thead>
                     <tr>
                         <th style="width: 30px">#</th>
-                        <th>Student Name</th>
+                        <th>Student</th>
                         <th>Course</th>
-                        <th>Class Code</th>
-                        <th>Payment Date</th>
-                        <th>Amount</th>
-                        <th>Voucher</th>
+                        <th>Class</th>
+                        <th>Enroll Date</th>
+                        <th>Payment</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <c:choose>
-                        <c:when test="${empty paymentList}">
+                        <c:when test="${empty enrollmentList}">
                             <tr>
                                 <td colspan="8" class="text-center text-muted py-4">
                                     <i class='bx bx-info-circle' style='font-size: 2rem;'></i>
-                                    <p class="mb-0 mt-2">No payments found</p>
+                                    <p class="mb-0 mt-2">No enrollments found</p>
                                 </td>
                             </tr>
                         </c:when>
                         <c:otherwise>
-                            <c:forEach items="${paymentList}" var="paymentDisplay" varStatus="loop">
+                            <c:forEach items="${enrollmentList}" var="enrollment" varStatus="loop">
                                 <tr>
                                     <td>${loop.count}</td>
                                     <td>
                                         <div class="d-flex flex-column">
-                                            <span class="user-name">${paymentDisplay.studentName}</span>
-                                            <span class="user-email text-muted small">${paymentDisplay.studentEmail}</span>
+                                            <span class="user-name">${enrollment[2]}</span>
+                                            <span class="user-email text-muted small">${enrollment[3]}</span>
                                         </div>
                                     </td>
-                                    <td>${paymentDisplay.payment.enrollment.classes.course.courseName}</td>
-                                    <td><span class="badge badge-student">${paymentDisplay.payment.enrollment.classes.className}</span></td>
-                                    <td>
-                                        <c:set var="paymentDateTime" value="${paymentDisplay.payment.paymentDate}" />
-                                        <c:if test="${paymentDateTime != null}">
-                                            ${paymentDateTime.toString().replace('T', ' ').substring(0, 16)}
-                                        </c:if>
-                                    </td>
-                                    <td>
-                                        <strong style="color: #2563eb;">
-                                            <fmt:formatNumber value="${paymentDisplay.payment.amount}" type="currency" currencySymbol="$" />
-                                        </strong>
-                                    </td>
+                                    <td>${enrollment[7]}</td>
+                                    <td><span class="badge badge-student">${enrollment[5]}</span></td>
+                                    <td><fmt:formatDate value="${enrollment[8]}" pattern="dd MMM yyyy"/></td>
                                     <td>
                                         <c:choose>
-                                            <c:when test="${paymentDisplay.payment.voucher != null}">
-                                                ${paymentDisplay.payment.voucher.code}
-                                            </c:when>
+                                            <c:when test="${not empty enrollment[10]}">${enrollment[10]}</c:when>
                                             <c:otherwise>-</c:otherwise>
                                         </c:choose>
                                     </td>
                                     <td>
                                         <c:choose>
-                                            <c:when test="${paymentDisplay.payment.status == 'Pending'}">
-                                                <span class="badge" style="background: #fef3c7; color: #d97706; padding: 6px 12px; border-radius: 6px; font-weight: 500;">
-                                                    <i class='bx bx-time-five'></i> Pending
-                                                </span>
-                                            </c:when>
-                                            <c:when test="${paymentDisplay.payment.status == 'Approved'}">
+                                            <c:when test="${enrollment[9] == 'Active'}">
                                                 <span class="badge" style="background: #dcfce7; color: #16a34a; padding: 6px 12px; border-radius: 6px; font-weight: 500;">
                                                     <i class='bx bx-check-circle'></i> Approved
                                                 </span>
                                             </c:when>
-                                            <c:when test="${paymentDisplay.payment.status == 'Rejected'}">
+                                            <c:when test="${enrollment[9] == 'Rejected'}">
                                                 <span class="badge" style="background: #fee2e2; color: #dc2626; padding: 6px 12px; border-radius: 6px; font-weight: 500;">
                                                     <i class='bx bx-x-circle'></i> Rejected
                                                 </span>
                                             </c:when>
+                                            <c:otherwise>
+                                                <span class="badge" style="background: #fef3c7; color: #d97706; padding: 6px 12px; border-radius: 6px; font-weight: 500;">
+                                                    <i class='bx bx-time-five'></i> Pending
+                                                </span>
+                                            </c:otherwise>
                                         </c:choose>
                                     </td>
                                     <td class="payment-actions">
-                                        <c:if test="${paymentDisplay.payment.status == 'Pending'}">
+                                        <c:if test="${enrollment[9] != 'Active'}">
                                             <button type="button" class="action-btn action-compact action-approve" title="Approve"
-                                                    onclick="approvePayment(${paymentDisplay.payment.paymentId}, '${paymentDisplay.studentName}')">
+                                                    onclick="openApproveEnrollment(${enrollment[0]}, '${enrollment[2]}', '${enrollment[5]}')">
                                                 <i class='bx bx-check'></i>
                                             </button>
+                                        </c:if>
+                                        <c:if test="${enrollment[9] != 'Active' && enrollment[9] != 'Rejected'}">
                                             <button type="button" class="action-btn action-compact delete action-reject" title="Reject"
-                                                    onclick="rejectPayment(${paymentDisplay.payment.paymentId}, '${paymentDisplay.studentName}')">
+                                                    onclick="openRejectEnrollment(${enrollment[0]}, '${enrollment[2]}', '${enrollment[5]}')">
                                                 <i class='bx bx-x'></i>
                                             </button>
                                         </c:if>
@@ -227,69 +208,77 @@
     </div>
 </div>
 
-<!-- Evidence Modal -->
-<div class="modal fade" id="evidenceModal" tabindex="-1" aria-labelledby="evidenceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="evidenceModalLabel">
-                    <i class='bx bx-image'></i> Payment Evidence
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center">
-                <p class="mb-3"><strong id="evidenceStudentName"></strong></p>
-                <img id="evidenceImage" src="" alt="Payment Evidence" style="max-width: 100%; height: auto; border-radius: 8px;">
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Approve Modal -->
-<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+<div class="modal fade" id="approveEnrollmentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="approveModalLabel">
+                <h5 class="modal-title">
                     <i class='bx bx-check-circle' style='color: #16a34a;'></i> Confirm Approval
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="payment?action=approve" method="POST">
+            <form action="enrollment" method="POST">
+                <input type="hidden" name="action" value="approveEnrollment">
+                <input type="hidden" name="enrollmentId" id="approveEnrollmentId">
                 <div class="modal-body">
-                    <p>Are you sure you want to approve payment for <strong id="approveStudentName"></strong>?</p>
-                    <input type="hidden" name="paymentId" id="approvePaymentId">
+                    <p>Approve enrollment for <strong id="approveEnrollmentStudent"></strong> in <strong id="approveEnrollmentClass"></strong>?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Approve Payment</button>
+                    <button type="submit" class="btn btn-success">Approve Enrollment</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Reject Modal -->
-<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+<div class="modal fade" id="rejectEnrollmentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="rejectModalLabel">
+                <h5 class="modal-title">
                     <i class='bx bx-x-circle' style='color: #dc2626;'></i> Confirm Rejection
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="payment?action=reject" method="POST">
+            <form action="enrollment" method="POST">
+                <input type="hidden" name="action" value="rejectEnrollment">
+                <input type="hidden" name="enrollmentId" id="rejectEnrollmentId">
                 <div class="modal-body">
-                    <p>Are you sure you want to reject payment for <strong id="rejectStudentName"></strong>?</p>
-                    <input type="hidden" name="paymentId" id="rejectPaymentId">
+                    <p>Reject enrollment for <strong id="rejectEnrollmentStudent"></strong> in <strong id="rejectEnrollmentClass"></strong>?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Reject Payment</button>
+                    <button type="submit" class="btn btn-danger">Reject Enrollment</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-<script src="js/payment_list.js" type="text/javascript"></script>
+
+<script>
+    function openApproveEnrollment(enrollmentId, studentName, className) {
+        document.getElementById('approveEnrollmentId').value = enrollmentId;
+        document.getElementById('approveEnrollmentStudent').textContent = studentName;
+        document.getElementById('approveEnrollmentClass').textContent = className;
+        new bootstrap.Modal(document.getElementById('approveEnrollmentModal')).show();
+    }
+
+    function openRejectEnrollment(enrollmentId, studentName, className) {
+        document.getElementById('rejectEnrollmentId').value = enrollmentId;
+        document.getElementById('rejectEnrollmentStudent').textContent = studentName;
+        document.getElementById('rejectEnrollmentClass').textContent = className;
+        new bootstrap.Modal(document.getElementById('rejectEnrollmentModal')).show();
+    }
+
+    function closeToast() {
+        const toast = document.getElementById('toastMessage');
+        if (toast) {
+            toast.remove();
+        }
+    }
+
+    setTimeout(function () {
+        closeToast();
+    }, 4000);
+</script>

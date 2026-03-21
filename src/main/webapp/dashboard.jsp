@@ -229,9 +229,15 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="enrollment?action=classes" class="${pageContext.request.servletPath == '/enrollment' ? 'active' : ''}">
+                            <a href="enrollment?action=classes" class="${pageContext.request.servletPath == '/enrollment' && param.action != 'requests' ? 'active' : ''}">
                                 <i class="bxr bx-door"></i>
                                 <span class="text nav-text">Classes</span>
+                            </a>
+                        </li>
+                        <li class="nav-links">
+                            <a href="enrollment?action=requests" class="${pageContext.request.servletPath == '/enrollment' && param.action == 'requests' ? 'active' : ''}">
+                                <i class="bxr bx-check-shield"></i>
+                                <span class="text nav-text">Enrollments</span>
                             </a>
                         </li>
                         <li class="nav-links">
@@ -312,6 +318,12 @@
                         </li>
 
                         <c:if test="${sessionScope.user.role.manageFinance}">
+                            <li class="nav-links">
+                                <a href="voucher?action=report">
+                                    <i class="bx bx-report"></i>
+                                    <span class="text nav-text">Voucher Report</span>
+                                </a>
+                            </li>
                             <li class="nav-links">
                                 <a href="voucher?action=all">
                                     <i class="bxr bx-group"></i>

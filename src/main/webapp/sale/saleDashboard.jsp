@@ -77,10 +77,16 @@
                 <i class='bx bx-wallet'></i>
                 <span>Revenue Report</span>
             </a>
-            <a class="sale-quick-card" href="voucher?action=all">
-                <i class='bx bx-purchase-tag'></i>
-                <span>Voucher List</span>
-            </a>
+            <c:if test="${sessionScope.user.role.manageFinance}">
+                <a class="sale-quick-card" href="voucher?action=report">
+                    <i class='bx bx-bar-chart-alt-2'></i>
+                    <span>Voucher Report</span>
+                </a>
+                <a class="sale-quick-card" href="voucher?action=all">
+                    <i class='bx bx-purchase-tag'></i>
+                    <span>Voucher List</span>
+                </a>
+            </c:if>
         </div>
     </div>
 

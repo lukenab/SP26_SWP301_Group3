@@ -6,6 +6,7 @@ package controller;
 
 import dao.ClassDAO;
 import dao.EnrollmentDAO;
+import dao.RoomDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -74,13 +75,107 @@ public class EnrollmentController extends HttpServlet {
 
         EnrollmentDAO enrollmentDAO = new EnrollmentDAO();
         ClassDAO classDAO = new ClassDAO();
-
+        RoomDAO roomDAO = new RoomDAO();
         switch (action) {
             case "classes":
-                List<Object[]> classList = classDAO.getClassManagementList();
-                List<Object[]> pagedClassList = paginateClassList(classList, parsePage(request), DEFAULT_PAGE_SIZE, request);
+                String searchQuery = request.getParameter("searchQuery");
+                String statusFilter = request.getParameter("status");
+                String monthFilter = request.getParameter("month");
+                String normalizedSearchQuery = searchQuery == null ? "" : searchQuery.trim();
+                String normalizedStatusFilter = statusFilter == null ? "all" : statusFilter.trim();
+                String normalizedMonthFilter = monthFilter == null ? "all" : monthFilter.trim().toLowerCase();
+                Integer monthValueFilter = null;
+
+                if (!"all".equals(normalizedMonthFilter)) {
+                    try {
+                        monthValueFilter = Integer.parseInt(normalizedMonthFilter);
+                    } catch (NumberFormatException e) {
+                        monthValueFilter = null;
+                    }
+                }
+
+                List<Object[]> classList = classDAO.getClassManagementList(
+                        normalizedSearchQuery,
+                        normalizedStatusFilter,
+                        monthValueFilter
+                );
+
+                if (!normalizedSearchQuery.isEmpty()) {
+                    String normalizedKeyword = normalizedSearchQuery.toLowerCase();
+                    boolean hasExactMatch = classList.stream().anyMatch(c ->
+                            c[1] != null && normalizedKeyword.equals(String.valueOf(c[1]).trim().toLowerCase())
+                    );
+
+                    classList.removeIf(c -> {
+                        if (c[1] == null) {
+                            return true;
+                        }
+                        String className = String.valueOf(c[1]).trim().toLowerCase();
+                        if (hasExactMatch) {
+                            return !className.equals(normalizedKeyword);
+                        }
+                        return !className.startsWith(normalizedKeyword);
+                    });
+                }
+
+                List<Object[]> pagedClassList;
+                boolean shouldShowAllResults = !normalizedSearchQuery.isEmpty()
+                        || !"all".equalsIgnoreCase(normalizedStatusFilter)
+                        || !"all".equals(normalizedMonthFilter);
+                if (shouldShowAllResults) {
+                    pagedClassList = classList;
+                    int totalItems = classList.size();
+                    request.setAttribute("currentPage", 1);
+                    request.setAttribute("pageSize", totalItems == 0 ? DEFAULT_PAGE_SIZE : totalItems);
+                    request.setAttribute("totalItems", totalItems);
+                    request.setAttribute("totalPages", 1);
+                    request.setAttribute("startItem", totalItems == 0 ? 0 : 1);
+                    request.setAttribute("endItem", totalItems);
+                } else {
+                    pagedClassList = paginateClassList(classList, parsePage(request), DEFAULT_PAGE_SIZE, request);
+                }
                 request.setAttribute("classList", pagedClassList);
+                request.setAttribute("filteredClassList", classList);
+                request.setAttribute("searchQuery", normalizedSearchQuery);
+                request.setAttribute("statusFilter", normalizedStatusFilter);
+                request.setAttribute("monthFilter", normalizedMonthFilter);
+                request.setAttribute("showAllFilteredResults", shouldShowAllResults);
                 request.setAttribute("home_view", "/academic/class_list.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+            case "requests":
+                String requestCourseIdParam = request.getParameter("courseId");
+                String requestClassIdParam = request.getParameter("classId");
+                String enrollmentStatusFilter = request.getParameter("status");
+
+                Integer filterCourseId = null;
+                Integer filterClassId = null;
+
+                try {
+                    if (requestCourseIdParam != null && !requestCourseIdParam.trim().isEmpty() && !"0".equals(requestCourseIdParam)) {
+                        filterCourseId = Integer.parseInt(requestCourseIdParam);
+                    }
+                    if (requestClassIdParam != null && !requestClassIdParam.trim().isEmpty() && !"0".equals(requestClassIdParam)) {
+                        filterClassId = Integer.parseInt(requestClassIdParam);
+                    }
+                } catch (NumberFormatException e) {
+                    filterCourseId = null;
+                    filterClassId = null;
+                }
+
+                String normalizedEnrollmentStatus = enrollmentStatusFilter == null ? "" : enrollmentStatusFilter.trim();
+
+                request.setAttribute("enrollmentList", enrollmentDAO.getEnrollmentManagementList(filterCourseId, filterClassId, normalizedEnrollmentStatus));
+                request.setAttribute("totalEnrollments", enrollmentDAO.countEnrollmentsByStatus(""));
+                request.setAttribute("pendingEnrollments", enrollmentDAO.countEnrollmentsByStatus("Pending"));
+                request.setAttribute("activeEnrollments", enrollmentDAO.countEnrollmentsByStatus("Active"));
+                request.setAttribute("rejectedEnrollments", enrollmentDAO.countEnrollmentsByStatus("Rejected"));
+                request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
+                request.setAttribute("classOptions", classDAO.getClassManagementList());
+                request.setAttribute("selectedCourseId", requestCourseIdParam);
+                request.setAttribute("selectedClassId", requestClassIdParam);
+                request.setAttribute("selectedStatus", normalizedEnrollmentStatus);
+                request.setAttribute("home_view", "/academic/enrollment_list.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "deleteClass":
@@ -106,6 +201,7 @@ public class EnrollmentController extends HttpServlet {
             case "createClassForm":
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
+                request.setAttribute("roomOptions", roomDAO.getActiveRooms());
                 request.setAttribute("home_view", "/academic/create_class.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
@@ -125,6 +221,7 @@ public class EnrollmentController extends HttpServlet {
                     request.setAttribute("classEditInfo", classEditInfo);
                     request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                     request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
+                    request.setAttribute("roomOptions", roomDAO.getActiveRooms());
                     request.setAttribute("home_view", "/academic/edit_class.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (NumberFormatException e) {
@@ -193,11 +290,13 @@ public class EnrollmentController extends HttpServlet {
         String action = request.getParameter("action");
         EnrollmentDAO enrollmentDAO = new EnrollmentDAO();
         ClassDAO classDAO = new ClassDAO();
+        RoomDAO roomDAO = new RoomDAO();
 
         if ("createClass".equals(action)) {
             String className = request.getParameter("className");
             String courseIdParam = request.getParameter("courseId");
             String teacherIdParam = request.getParameter("teacherId");
+            String roomIdParam = request.getParameter("roomId");
             String startDateParam = request.getParameter("startDate");
             String endDateParam = request.getParameter("endDate");
             String status = request.getParameter("status");
@@ -211,6 +310,7 @@ public class EnrollmentController extends HttpServlet {
                 request.setAttribute("errorMessage", "Please fill all required fields.");
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
+                request.setAttribute("roomOptions", roomDAO.getActiveRooms());
                 request.setAttribute("home_view", "/academic/create_class.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 return;
@@ -223,6 +323,7 @@ public class EnrollmentController extends HttpServlet {
                 request.setAttribute("errorMessage", "Status must be Pending, Active, or Inactive.");
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
+                request.setAttribute("roomOptions", roomDAO.getActiveRooms());
                 request.setAttribute("home_view", "/academic/create_class.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 return;
@@ -233,6 +334,7 @@ public class EnrollmentController extends HttpServlet {
                 int courseId = Integer.parseInt(courseIdParam);
                 int teacherId = Integer.parseInt(teacherIdParam);
                 int maxCapacity = Integer.parseInt(maxCapacityParam);
+                Integer roomId = roomIdParam == null || roomIdParam.trim().isEmpty() ? null : Integer.parseInt(roomIdParam);
                 Date startDate = Date.valueOf(startDateParam);
                 Date endDate = Date.valueOf(endDateParam);
 
@@ -240,6 +342,7 @@ public class EnrollmentController extends HttpServlet {
                     request.setAttribute("errorMessage", "Max capacity must be greater than 0.");
                     request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                     request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
+                    request.setAttribute("roomOptions", roomDAO.getActiveRooms());
                     request.setAttribute("home_view", "/academic/create_class.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                     return;
@@ -249,12 +352,13 @@ public class EnrollmentController extends HttpServlet {
                     request.setAttribute("errorMessage", "End date must be after or equal to start date.");
                     request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                     request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
+                    request.setAttribute("roomOptions", roomDAO.getActiveRooms());
                     request.setAttribute("home_view", "/academic/create_class.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                     return;
                 }
 
-                boolean created = classDAO.createClass(className.trim(), courseId, teacherId, startDate, endDate, normalizedStatus, maxCapacity);
+                boolean created = classDAO.createClass(className.trim(), courseId, teacherId, startDate, endDate, normalizedStatus, maxCapacity, roomId);
                 if (created) {
                     request.getSession().setAttribute("message", "Class created successfully.");
                     request.getSession().setAttribute("messageType", "success");
@@ -267,6 +371,7 @@ public class EnrollmentController extends HttpServlet {
                 request.setAttribute("errorMessage", "Invalid input format.");
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
+                request.setAttribute("roomOptions", roomDAO.getActiveRooms());
                 request.setAttribute("home_view", "/academic/create_class.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
             }
@@ -275,6 +380,7 @@ public class EnrollmentController extends HttpServlet {
             String className = request.getParameter("className");
             String courseIdParam = request.getParameter("courseId");
             String teacherIdParam = request.getParameter("teacherId");
+            String roomIdParam = request.getParameter("roomId");
             String startDateParam = request.getParameter("startDate");
             String endDateParam = request.getParameter("endDate");
             String status = request.getParameter("status");
@@ -297,6 +403,7 @@ public class EnrollmentController extends HttpServlet {
                 int courseId = Integer.parseInt(courseIdParam);
                 int teacherId = Integer.parseInt(teacherIdParam);
                 int maxCapacity = Integer.parseInt(maxCapacityParam);
+                Integer roomId = roomIdParam == null || roomIdParam.trim().isEmpty() ? null : Integer.parseInt(roomIdParam);
                 Date startDate = Date.valueOf(startDateParam);
                 Date endDate = Date.valueOf(endDateParam);
                 String normalizedStatus = status.trim();
@@ -327,7 +434,7 @@ public class EnrollmentController extends HttpServlet {
                     return;
                 }
 
-                boolean updated = classDAO.updateClass(classId, className.trim(), courseId, teacherId, startDate, endDate, normalizedStatus, maxCapacity);
+                boolean updated = classDAO.updateClass(classId, className.trim(), courseId, teacherId, startDate, endDate, normalizedStatus, maxCapacity, roomId);
                 if (updated) {
                     request.getSession().setAttribute("message", "Class updated successfully.");
                     request.getSession().setAttribute("messageType", "success");
@@ -425,6 +532,12 @@ public class EnrollmentController extends HttpServlet {
                     response.sendRedirect("enrollment?action=classes");
                     return;
                 }
+                if ("Inactive".equalsIgnoreCase(String.valueOf(classInfo[6]))) {
+                    request.getSession().setAttribute("message", "Inactive classes cannot add students.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=addStudentForm&classId=" + classId);
+                    return;
+                }
                 if (selectedStudentIds == null || selectedStudentIds.length == 0) {
                     request.getSession().setAttribute("message", "Please choose at least one student.");
                     request.getSession().setAttribute("messageType", "error");
@@ -467,6 +580,13 @@ public class EnrollmentController extends HttpServlet {
                 int[] studentIds = new int[selectedStudentIds.length];
                 for (int i = 0; i < selectedStudentIds.length; i++) {
                     studentIds[i] = Integer.parseInt(selectedStudentIds[i]);
+                }
+
+                if ("UnPaid".equalsIgnoreCase(normalizedStatus) && enrollmentDAO.hasPaidStudent(studentIds)) {
+                    request.getSession().setAttribute("message", "Students with paid history cannot be added as UnPaid.");
+                    request.getSession().setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=addStudentForm&classId=" + classId);
+                    return;
                 }
 
                 int inserted = enrollmentDAO.addStudentsToClass(classId, studentIds, normalizedStatus);
@@ -517,6 +637,36 @@ public class EnrollmentController extends HttpServlet {
                 request.getSession().setAttribute("message", "Invalid request data.");
                 request.getSession().setAttribute("messageType", "error");
                 response.sendRedirect("enrollment?action=classes");
+            }
+        } else if ("approveEnrollment".equals(action) || "rejectEnrollment".equals(action)) {
+            String enrollmentIdParam = request.getParameter("enrollmentId");
+            if (enrollmentIdParam == null || enrollmentIdParam.trim().isEmpty()) {
+                request.getSession().setAttribute("message", "Invalid enrollment request.");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("enrollment?action=requests");
+                return;
+            }
+
+            try {
+                int enrollmentId = Integer.parseInt(enrollmentIdParam);
+                String targetStatus = "approveEnrollment".equals(action) ? "Active" : "Rejected";
+                boolean updated = enrollmentDAO.updateEnrollmentStatus(enrollmentId, targetStatus);
+
+                if (updated) {
+                    request.getSession().setAttribute("message",
+                            "approveEnrollment".equals(action)
+                                    ? "Enrollment approved successfully."
+                                    : "Enrollment rejected successfully.");
+                    request.getSession().setAttribute("messageType", "success");
+                } else {
+                    request.getSession().setAttribute("message", "Failed to update enrollment status.");
+                    request.getSession().setAttribute("messageType", "error");
+                }
+                response.sendRedirect("enrollment?action=requests");
+            } catch (NumberFormatException e) {
+                request.getSession().setAttribute("message", "Invalid enrollment ID.");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("enrollment?action=requests");
             }
         } else {
             response.sendRedirect("enrollment?action=classes");
