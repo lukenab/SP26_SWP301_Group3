@@ -96,7 +96,6 @@
 
 <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function () {
-        // 1. REVENUE OVERVIEW (Line Chart)
         const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
         const revenueChart = new Chart(ctxRevenue, {
             type: 'line',
@@ -104,7 +103,6 @@
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
                         label: 'Revenue',
-                        // Dữ liệu động từ Servlet truyền sang thông qua EL
                         data: [${revenueData}],
                         borderColor: '#3b82f6',
                         backgroundColor: 'rgba(59, 130, 246, 0.15)',
@@ -124,10 +122,14 @@
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: 60000, // Nhớ chỉnh max cho phù hợp với số liệu thật của bạn (ví dụ 60000 thay vì 6000)
                         ticks: {
-                            stepSize: 15000,
-                            color: '#94a3b8'
+                            color: '#94a3b8',
+                            callback: function (value, index, values) {
+                                if (value >= 1000000) {
+                                    return (value / 1000000) + 'M';
+                                }
+                                return value;
+                            }
                         },
                         grid: {
                             color: '#f1f5f9',
