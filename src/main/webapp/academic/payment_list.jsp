@@ -18,7 +18,7 @@
         </div>
         <div class="content-header">
             <div>
-                <h2 class="page-title"><i class='bx bx-dollar-circle'></i> Payment Management</h2>
+                <h2 class="page-title"><i class='bx bx-wallet'></i> Payment Management</h2>
                 <p class="text-muted small mb-0">View, approve, and manage student payment requests for academic programs</p>
             </div>
         </div>
@@ -56,10 +56,10 @@
         <div class="stat-card">
             <div class="stat-info">
                 <p>Total Amount</p>
-                <h3><fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="VND" /></h3>
+                <h3 class="amount-stat-value"><fmt:formatNumber value="${totalAmount}" pattern="#,##0.##" /> VND</h3>
             </div>
             <div class="icon-wrapper" style="background: #dbeafe; color: #2563eb;">
-                <i class='bx bx-dollar'></i>
+                <i class='bx bx-wallet-alt'></i>
             </div>
         </div>
     </div>
@@ -177,7 +177,7 @@
                                     </td>
                                     <td>
                                         <strong style="color: #2563eb;">
-                                            <fmt:formatNumber value="${paymentDisplay.payment.amount}" type="currency" currencySymbol="VND" />
+                                            <fmt:formatNumber value="${paymentDisplay.payment.amount}" pattern="#,##0.##" /> VND
                                         </strong>
                                     </td>
                                     <td>
