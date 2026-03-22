@@ -702,7 +702,7 @@ public class ScheduleDAO extends DBContext {
                 + "FROM Schedule s "
                 + "JOIN Enrollment e ON e.ClassID = s.ClassID "
                 + "AND e.StudentID = ? "
-                + "AND e.Status = 1 "
+                + "AND e.Status = 'Active' "
                 + "JOIN Class c ON s.ClassID = c.ClassID "
                 + "JOIN Course cr ON c.CourseID = cr.CourseID "
                 + "JOIN Room r ON s.RoomID = r.RoomID "

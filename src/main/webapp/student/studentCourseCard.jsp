@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setLocale value="en_US"/>
 
 <style>
     .student-course-container {
@@ -67,55 +68,11 @@
         padding: 40px;
         border-radius: 12px;
     }
-    /* ================= DARK MODE ================= */
-
-    body.dark .student-course-container {
-        background-color: #121212;
-    }
-
-    body.dark .course-card {
-        background-color: #1e1e1e;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-    }
-
-    body.dark .course-title,
-    body.dark h2 {
-        color: #ffffff;
-    }
-
-    body.dark .score-label,
-    body.dark .text-muted {
-        color: #b0b3b8 !important;
-    }
-
-    body.dark .btn-outline-primary {
-        color: #60a5fa;
-        border-color: #60a5fa;
-    }
-
-    body.dark .btn-outline-primary:hover {
-        background-color: #60a5fa;
-        color: #000;
-    }
-
-    body.dark .alert-info {
-        background-color: #1f2937;
-        border-color: #374151;
-        color: #e5e7eb;
-    }
-
-    body.dark .breadcrumb-item a {
-        color: #9ca3af;
-    }
-
-    body.dark .breadcrumb-item.active {
-        color: #ffffff;
-    }
-
 </style>
 
 <div class="container-fluid student-course-container">
 
+    <!-- HEADER -->
     <div class="mb-4 mt-4">
 
         <div aria-label="breadcrumb">
@@ -125,9 +82,7 @@
                         <i class="bx bx-home-alt"></i>
                     </a>
                 </li>
-                <li class="breadcrumb-item active" aria-current="page">
-                    My Courses
-                </li>
+                <li class="breadcrumb-item active">My Courses</li>
             </ol>
         </div>
 
@@ -140,6 +95,47 @@
 
     </div>
 
+    <!-- SEARCH + FILTER -->
+    <form action="grade" method="get" class="row mb-4">
+
+        <input type="hidden" name="action" value="student-courses"/>
+
+        <div class="col-md-10">
+            <input type="text"
+                   name="keyword"
+                   class="form-control"
+                   placeholder="Search course..."
+                   value="${keyword}">
+        </div>
+
+        <!--        <div class="col-md-3">
+                    <select name="status" class="form-control">
+        
+                        <option value="">All Status</option>
+        
+                        <option value="true"
+        ${status == true ? 'selected' : ''}>
+    Active
+</option>
+
+<option value="false"
+        ${status == false ? 'selected' : ''}>
+    Inactive
+</option>
+
+</select>
+</div>-->
+
+        <div class="col-md-2">
+            <button type="submit"
+                    class="btn btn-primary w-100 d-flex justify-content-center align-items-center">
+                Filter
+            </button>
+        </div>
+
+    </form>
+
+    <!-- COURSE LIST -->
     <div class="row g-4">
 
         <c:choose>
@@ -175,20 +171,20 @@
 
                                                     <c:when test="${avg > 7}">
                                                         <div class="score-circle circle-good">
-                                                            <fmt:formatNumber 
-                                                                value="${avg}" 
-                                                                type="number" 
-                                                                minFractionDigits="2" 
+                                                            <fmt:formatNumber
+                                                                value="${avg}"
+                                                                type="number"
+                                                                minFractionDigits="2"
                                                                 maxFractionDigits="2"/>
                                                         </div>
                                                     </c:when>
 
                                                     <c:otherwise>
                                                         <div class="score-circle circle-bad">
-                                                            <fmt:formatNumber 
-                                                                value="${avg}" 
-                                                                type="number" 
-                                                                minFractionDigits="2" 
+                                                            <fmt:formatNumber
+                                                                value="${avg}"
+                                                                type="number"
+                                                                minFractionDigits="2"
                                                                 maxFractionDigits="2"/>
                                                         </div>
                                                     </c:otherwise>
@@ -208,7 +204,7 @@
                                     </div>
                                 </div>
 
-                                <a href="grade?action=student-course-grades&courseId=${c.courseId}" 
+                                <a href="grade?action=student-course-grades&courseId=${c.courseId}"
                                    class="btn btn-outline-primary view-btn w-100">
                                     View Grades
                                 </a>
@@ -227,13 +223,46 @@
 
                 <div class="col-12">
                     <div class="alert alert-info text-center empty-box shadow-sm">
-                        You are not enrolled in any courses.
+                        No courses found.
                     </div>
                 </div>
 
             </c:otherwise>
 
         </c:choose>
+
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="d-flex justify-content-center mt-4">
+
+        <c:if test="${currentPage > 1}">
+            <c:url var="prevUrl" value="grade">
+                <c:param name="action" value="student-courses"/>
+                <c:param name="page" value="${currentPage - 1}"/>
+                <c:param name="keyword" value="${keyword}"/>
+                <c:param name="status" value="${status}"/>
+            </c:url>
+
+            <a href="${prevUrl}" class="btn btn-outline-primary me-2">
+                Previous
+            </a>
+        </c:if>
+
+        <span class="align-self-center">Page ${currentPage}</span>
+
+        <c:if test="${courseList.size() == 6}">
+            <c:url var="nextUrl" value="grade">
+                <c:param name="action" value="student-courses"/>
+                <c:param name="page" value="${currentPage + 1}"/>
+                <c:param name="keyword" value="${keyword}"/>
+                <c:param name="status" value="${status}"/>
+            </c:url>
+
+            <a href="${nextUrl}" class="btn btn-outline-primary ms-2">
+                Next
+            </a>
+        </c:if>
 
     </div>
 

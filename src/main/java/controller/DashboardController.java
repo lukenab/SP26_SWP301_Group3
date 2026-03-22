@@ -210,13 +210,17 @@ public class DashboardController extends HttpServlet {
                 dao.ScheduleDAO scheduleDAO = new dao.ScheduleDAO();
                 AttendanceDAO attendanceDAO = new AttendanceDAO();
 
-                // ===== Classes của student =====
-                List<Object[]> studentClasses = classDAO.getStudentClasses(studentId);
-
                 // ===== Schedule tuần này =====
                 java.time.LocalDate todayDate = java.time.LocalDate.now();
                 java.time.LocalDate startOfWeek = todayDate.with(java.time.DayOfWeek.MONDAY);
                 java.time.LocalDate endOfWeek = todayDate.with(java.time.DayOfWeek.SUNDAY);
+
+                // ===== Classes của student =====
+                List<Object[]> studentClasses = classDAO.getStudentClasses(
+                        studentId,
+                        startOfWeek,
+                        endOfWeek
+                );
 
 //                List<model.Schedule> weeklySchedule = scheduleDAO.getScheduleByStudentWeek(
 //                        studentId,

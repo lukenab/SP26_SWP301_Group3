@@ -1,4 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setLocale value="en_US"/>
 <%@ page contentType="text/html;charset=UTF-8" %>
 
 <link href="css/viewGrade.css" rel="stylesheet"/>
@@ -88,11 +90,11 @@
             </div>
 
             <!-- ===== BACK BUTTON ===== -->
-            <div>
-                <a href="user" class="btn-secondary">
-                    <i class='bx bx-arrow-left'></i> Back to Users
-                </a>
-            </div>
+            <!--            <div>
+                            <a href="user" class="btn-secondary">
+                                <i class='bx bx-arrow-left'></i> Back to Users
+                            </a>
+                        </div>-->
 
         </div>
 
@@ -130,7 +132,6 @@
                         <tr>
                             <th>Assessment</th>
                             <th>Score</th>
-                            <th>Status</th>
                         </tr>
                     </thead>
 
@@ -148,22 +149,6 @@
                             <tr>
                                 <td>${g.assessment.assessmentName}</td>
                                 <td class="score-cell">${g.score}</td>
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${g.score >= 8}">
-                                            <span class="badge-excellent">Excellent</span>
-                                        </c:when>
-                                        <c:when test="${g.score >= 6.5}">
-                                            <span class="badge-good">Good</span>
-                                        </c:when>
-                                        <c:when test="${g.score >= 5}">
-                                            <span class="badge-average">Average</span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="badge-fail">Failed</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
                             </tr>
 
                         </c:forEach>
@@ -174,7 +159,12 @@
                             <td colspan="2" class="score-cell">
                                 <strong>
                                     <c:if test="${count > 0}">
-                                        ${total / count}
+                                        <c:set var="avg" value="${total / count}" />
+                                        <fmt:formatNumber 
+                                            value="${avg}" 
+                                            type="number" 
+                                            minFractionDigits="2" 
+                                            maxFractionDigits="2"/>
                                     </c:if>
                                 </strong>
                             </td>
