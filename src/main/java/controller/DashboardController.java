@@ -140,17 +140,24 @@ public class DashboardController extends HttpServlet {
                 break;
 
             case "academic":
+                List<Object[]> classFillRateList = classDAO.getClassFillRateReport();
+                List<Object[]> gradeEnrollmentSummaryList = classDAO.getGradeEnrollmentSummary();
+                request.setAttribute("classFillRateList", classFillRateList != null ? classFillRateList : new ArrayList<>());
+                request.setAttribute("gradeEnrollmentSummaryList", gradeEnrollmentSummaryList != null ? gradeEnrollmentSummaryList : new ArrayList<>());
+                request.setAttribute("home_view", "/academic/academicDashboard.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
             case "academicFillRateReport":
 
-                List<Object[]> classFillRateList = classDAO.getClassFillRateReport();
-                request.setAttribute("classFillRateList", classFillRateList != null ? classFillRateList : new ArrayList<>());
+                List<Object[]> classFillRateList2 = classDAO.getClassFillRateReport();
+                request.setAttribute("classFillRateList", classFillRateList2 != null ? classFillRateList2 : new ArrayList<>());
                 request.setAttribute("home_view", "/academic/class_fill_rate_report.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 
             case "academicGradeEnrollmentReport":
                 ClassDAO classDAO2 = new ClassDAO();
-                List<Object[]> gradeEnrollmentSummaryList = classDAO2.getGradeEnrollmentSummary();
+                List<Object[]> gradeEnrollmentSummary = classDAO2.getGradeEnrollmentSummary();
                 int selectedClassId = 0;
                 try {
                     String classIdParam = request.getParameter("classId");
@@ -166,7 +173,7 @@ public class DashboardController extends HttpServlet {
                 }
 
                 request.setAttribute("selectedClassId", selectedClassId);
-                request.setAttribute("gradeEnrollmentSummaryList", gradeEnrollmentSummaryList != null ? gradeEnrollmentSummaryList : new ArrayList<>());
+                request.setAttribute("gradeEnrollmentSummaryList", gradeEnrollmentSummary != null ? gradeEnrollmentSummary : new ArrayList<>());
                 request.setAttribute("gradeEnrollmentList", gradeEnrollmentList != null ? gradeEnrollmentList : new ArrayList<>());
                 request.setAttribute("home_view", "/academic/grade_enrollment_report.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);

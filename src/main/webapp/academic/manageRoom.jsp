@@ -71,7 +71,7 @@
                                 <th class="room-index-col">#</th>
                                 <th>Room Name</th>
                                 <th>Capacity</th>
-                                <th>Type</th>
+                                <th>Description</th>
                                 <th>Status</th>
                                 <th class="text-end">Actions</th>
                             </tr>

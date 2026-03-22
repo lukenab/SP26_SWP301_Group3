@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+
 import model.Room;
 import utils.DBContext;
 
@@ -89,7 +91,7 @@ public class RoomDAO extends DBContext {
                 return new Room(roomId, roomName, capacity, type, status);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());;
         }
         return null;
     }
@@ -245,7 +247,7 @@ public class RoomDAO extends DBContext {
             int changes = p.executeUpdate();
             return changes;
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
         return -1;
     }
@@ -267,22 +269,20 @@ public class RoomDAO extends DBContext {
         }
         return -1;
     }
-//    public static void main(String[] args) {
-//        RoomDAO dao = new RoomDAO();
-////        List<Room> allRoom = dao.getAllRoom();
-//////        for (Room room : allRoom) {
-//////            System.out.println(room);
-//////        }
-////        if(allRoom.isEmpty()){
-////            System.out.println("Empty");
-////        } else {
-////            System.out.println("OK");
-////        }
-//        int changes = dao.updateRoom(25, "Hehe", 1, "hehhehe");
-//        if(changes!=-1){
-//            System.out.println("OK");
-//        } else {
-//            System.out.println("Bugggg");
-//        }
-//    }
+    public static void main(String[] args) {
+        RoomDAO dao = new RoomDAO();
+        Scanner sc = new Scanner(System.in);
+        String name = null;
+        int id  = sc.nextInt();
+        sc.nextLine();
+//        int capacity = 30;
+//        String type = "null name";
+//        int status = 1;
+//        System.out.println(dao.createRoom(name, capacity, type, 1));
+//        List<Room> all = dao.getAllRoom();
+//        System.out.println(all.get(all.size()-1).getType());
+//        System.out.println(dao.checkRoomNameExists(name));
+        System.out.println(dao.getRoomByID(id));
+
+    }
 }
