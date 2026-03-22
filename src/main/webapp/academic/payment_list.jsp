@@ -10,7 +10,9 @@
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
+                <li class="breadcrumb-item">
+                    <a href="dashboard?action=${sessionScope.user.role.roleId == 1 ? 'admin' : 'academic'}">Dashboard</a>
+                </li>
                 <li class="breadcrumb-item active" aria-current="page">Payment Management</li>
             </ol>
         </div>
@@ -39,7 +41,7 @@
                 <h3>${pendingPayments}</h3>
             </div>
             <div class="icon-wrapper" style="background: #fef3c7; color: #d97706;">
-                <i class='bx bx-time-five'></i>
+                <i class='bx bx-clock-dashed-half'></i>
             </div>
         </div>
         <div class="stat-card">
@@ -54,7 +56,7 @@
         <div class="stat-card">
             <div class="stat-info">
                 <p>Total Amount</p>
-                <h3><fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="$" /></h3>
+                <h3><fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="VND" /></h3>
             </div>
             <div class="icon-wrapper" style="background: #dbeafe; color: #2563eb;">
                 <i class='bx bx-dollar'></i>
@@ -99,8 +101,8 @@
             <button type="submit" style="display: none;"></button>
         </div>
     </form>
-            
-             <!-- Toast Message -->
+
+    <!-- Toast Message -->
     <c:if test="${not empty sessionScope.message}">
         <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
             <div class="toast-icon">
@@ -175,7 +177,7 @@
                                     </td>
                                     <td>
                                         <strong style="color: #2563eb;">
-                                            <fmt:formatNumber value="${paymentDisplay.payment.amount}" type="currency" currencySymbol="$" />
+                                            <fmt:formatNumber value="${paymentDisplay.payment.amount}" type="currency" currencySymbol="VND" />
                                         </strong>
                                     </td>
                                     <td>

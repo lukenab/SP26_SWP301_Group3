@@ -117,7 +117,7 @@ public class DashboardController extends HttpServlet {
                 String revenueDataString = monthlyRevenue.stream()
                         .map(String::valueOf)
                         .collect(Collectors.joining(","));
-                
+
                 int currentMonthIndex = java.time.LocalDate.now().getMonthValue() - 1;
                 double currentMonthRevenue = 0;
                 double lastMonthRevenue = 0;
@@ -125,7 +125,7 @@ public class DashboardController extends HttpServlet {
 
                 if (currentMonthIndex >= 0 && currentMonthIndex < 12) {
                     currentMonthRevenue = monthlyRevenue.get(currentMonthIndex);
-                    
+
                     if (currentMonthIndex > 0) {
                         lastMonthRevenue = monthlyRevenue.get(currentMonthIndex - 1);
                     }
@@ -134,9 +134,9 @@ public class DashboardController extends HttpServlet {
                 if (lastMonthRevenue > 0) {
                     revenueGrowth = ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100;
                 } else if (currentMonthRevenue > 0) {
-                    revenueGrowth = 100; 
+                    revenueGrowth = 100;
                 }
-                
+
                 List<Integer> adminMonthlyEnrollments = enrollDAO.getMonthlyNewEnrollments(currentYear);
                 double currentMonthEnroll = 0;
                 double lastMonthEnroll = 0;
@@ -148,27 +148,30 @@ public class DashboardController extends HttpServlet {
                         lastMonthEnroll = adminMonthlyEnrollments.get(currentMonthIndex - 1);
                     }
                 }
-                
+
                 if (lastMonthEnroll > 0) {
                     enrollmentGrowth = ((currentMonthEnroll - lastMonthEnroll) / lastMonthEnroll) * 100;
                 } else if (currentMonthEnroll > 0) {
                     enrollmentGrowth = 100;
                 }
 
-                double userGrowth = 8.5; 
-                double conversionGrowth = -1.2; 
-                
+                double userGrowth = 8.5;
+                double conversionGrowth = -1.2;
+
                 List<Map<String, Object>> pendingPayments = paymentDAO.getPendingPayments();
-                
-                FeedbackDAO fbDAO = new FeedbackDAO();
-                List<Map<String, Object>> lowFeedbacks = fbDAO.getLowRating(); 
-                
-                request.setAttribute(("lowFeedbacks"), lowFeedbacks);
+
+                SystemLogDAO activityLogDAO = new SystemLogDAO();
+                List<SystemLog> recentActivities = activityLogDAO.getRecentLogs("ALL");
+                if (recentActivities.size() > 5) {
+                    recentActivities = recentActivities.subList(0, 5);
+                }
+
+
+                request.setAttribute("recentActivities", recentActivities);
                 request.setAttribute("pendingPayments", pendingPayments);
                 request.setAttribute("enrollmentGrowth", enrollmentGrowth);
                 request.setAttribute("userGrowth", userGrowth);
                 request.setAttribute("conversionGrowth", conversionGrowth);
-
 
                 request.setAttribute("currentMonthRevenue", currentMonthRevenue);
                 request.setAttribute("revenueGrowth", revenueGrowth);
@@ -310,9 +313,9 @@ public class DashboardController extends HttpServlet {
 
                 break;
 
-           case "report":
+            case "report":
                 SystemLogDAO logDAO = new SystemLogDAO();
-                
+
                 // --- SYSTEM AUDIT LOGS ---
                 String filterAction = request.getParameter("filterAction");
                 if (filterAction == null) {
@@ -323,28 +326,27 @@ public class DashboardController extends HttpServlet {
                 request.setAttribute("currentFilter", filterAction);
 
                 // --- SYSTEM USAGE ---
-                
                 Map<String, Integer> usageMap = userDAO.getUserDemographics();
-                
+
                 String chartLabels = usageMap.keySet().stream()
                         .map(k -> "'" + k + "'")
                         .collect(Collectors.joining(","));
-                
+
                 String chartData = usageMap.values().stream()
                         .map(String::valueOf)
                         .collect(Collectors.joining(","));
-                
+
                 request.setAttribute("chartLabels", chartLabels);
                 request.setAttribute("chartData", chartData);
-                request.setAttribute("usageStats", usageMap); 
+                request.setAttribute("usageStats", usageMap);
                 // --- GROWTH REPORT  ---
                 int currentYearReport = java.time.Year.now().getValue();
                 List<Integer> monthlyEnrollments = enrollDAO.getMonthlyNewEnrollments(currentYearReport);
-                
+
                 String enrollDataStr = monthlyEnrollments.stream()
                         .map(String::valueOf)
                         .collect(Collectors.joining(","));
-                
+
                 request.setAttribute("growthLabels", "'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'");
                 request.setAttribute("growthData", enrollDataStr);
 

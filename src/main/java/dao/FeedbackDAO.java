@@ -113,27 +113,4 @@ public class FeedbackDAO extends DBContext {
 
         return 0;
     }
-
-    public List<Map<String, Object>> getLowRating() {
-        List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT TOP 5 f.Rating, f.Comment, uS.FullName as StudentName, uT.FullName as TeacherName "
-                + "FROM Feedback f JOIN Enrollment e ON f.EnrollmentID = e.EnrollmentID "
-                + "JOIN [User] uS ON e.StudentID = uS.UserID "
-                + "JOIN Class c ON e.ClassID = c.ClassID "
-                + "JOIN [User] uT ON c.TeacherID = uT.UserID "
-                + "WHERE f.Rating <= 2 ORDER BY f.FeedbackID DESC";
-        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("rating", rs.getInt("Rating"));
-                map.put("comment", rs.getString("Comment"));
-                map.put("student", rs.getString("StudentName"));
-                map.put("teacher", rs.getString("TeacherName"));
-                list.add(map);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
 }
