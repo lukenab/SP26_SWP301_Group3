@@ -143,9 +143,11 @@
                         </li>
 
                         <li class="nav-links">
-                            <a href="payment?action=list" class="nav-link ${param.action == 'list' ? 'active' : ''}">
-                                <i class="bxr bx-wallet-alt bx-flip-vertical"></i>
-                                <span class="text nav-text">Finance Management</span>
+                            <c:set var="isPaymentPage" value="${param.action == 'list' || param.action == 'approve' || param.action == 'reject'}" />
+
+                            <a href="payment?action=list" class="nav-link ${isPaymentPage ? 'active' : ''}">
+                                <i class='bx bx-wallet-alt'></i>
+                                <span>Finance Management</span>
                             </a>
                         </li>
 

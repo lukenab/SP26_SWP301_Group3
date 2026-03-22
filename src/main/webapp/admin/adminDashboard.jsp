@@ -133,10 +133,10 @@
 
 <div class="row">
     <div class="col-lg-6 mb-4">
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 p-2">
             <div class="card-body">
                 <h5 class="card-title fw-bold">Revenue Overview</h5>
-                <div class="chart-container" style="position: relative; height:300px; width:100%">
+                <div class="chart-container" style="position: relative; height:400px; width:100%">
                     <canvas id="revenueChart"></canvas>
                 </div>
             </div>
@@ -144,10 +144,10 @@
     </div>
 
     <div class="col-lg-6 mb-4">
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 p-2">
             <div class="card-body">
                 <h5 class="card-title fw-bold">Profit vs Expenses</h5>
-                <div class="chart-container" style="position: relative; height:300px; width:100%">
+                <div class="chart-container" style="position: relative; height:400px; width:100%">
                     <canvas id="profitExpenseChart"></canvas>
                 </div>
             </div>
@@ -159,10 +159,10 @@
     <div class="col-lg-6 mb-4">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="card-title fw-bold mb-0 text-dark">
-                    <i class='bx bx-time-five text-warning me-2'></i>Pending Payments
+                <h5 class="d-flex align-items-center card-title fw-bold mb-0 text-dark">
+                    <i class='bx bx-clock-dashed-half text-warning fs-2 me-2'></i>Pending Payments
                 </h5>
-                <a href="payment?action=manage" class="btn btn-sm btn-outline-primary">View All</a>
+                <a href="payment?action=list" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -172,7 +172,7 @@
                                 <th class="ps-4">Student</th>
                                 <th>Amount</th>
                                 <th>Date</th>
-                                <th class="text-end pe-4">Action</th>
+                                <th style="width: 20%">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -188,8 +188,8 @@
                                     <td class="text-muted small">
                                         <fmt:formatDate value="${p.date}" pattern="dd/MM/yyyy HH:mm"/>
                                     </td>
-                                    <td class="text-end pe-4">
-                                        <a href="payment?action=approve&id=${p.id}" class="btn btn-sm btn-success px-3">Approve</a>
+                                    <td>
+                                        <a href="payment?action=approve&id=${p.id}" class="btn btn-success">Approve <i class="bx bx-check"></i></a>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -203,34 +203,68 @@
         </div>
     </div>
 
+
     <div class="col-lg-6 mb-4">
         <div class="card shadow-sm border-0 h-100">
-            <div class="card-header bg-white py-3">
-                <h5 class="card-title fw-bold mb-0 text-danger">
-                    <i class='bx bxs-error text-danger me-2'></i>Low Rating Alerts
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="d-flex align-items-center card-title fw-bold mb-0 text-dark">
+                    <i class='bx bx-history text-primary fs-2 me-2'></i>Recent Activities
                 </h5>
+                <a href="dashboard?action=report&tab=logs" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
-            <div class="card-body">
-                <div class="alert-list">
-                    <c:forEach items="${lowFeedbacks}" var="f">
-                        <div class="alert-item p-3 mb-3 rounded border-start border-4 border-danger bg-light">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-bold text-dark">${f.student}</span>
-                                <span class="text-warning">
-                                    <c:forEach begin="1" end="${f.rating}"><i class='bx bxs-star'></i></c:forEach>
-                                    </span>
+            <div class="card-body px-4 mt-3">
+                <div class="activity-timeline">
+                    <c:forEach items="${recentActivities}" var="log" varStatus="status">
+                        <div class="d-flex mb-4 position-relative">
+                            <c:if test="${!status.last}">
+                                <div class="position-absolute" style="left: 15px; top: 30px; bottom: -20px; width: 2px; background: #e2e8f0;"></div>
+                            </c:if>
+
+                            <div class="flex-shrink-0 z-1">
+                                <c:choose>
+                                    <c:when test="${fn:contains(log.actionType, 'LOGIN')}">
+                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <i class='bx bx-user' style="font-size: 18px;"></i>
+                                        </div>
+                                    </c:when>
+                                    <c:when test="${fn:contains(log.actionType, 'CREATE') || fn:contains(log.actionType, 'APPROVE')}">
+                                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <i class='bx bx-plus-circle' style="font-size: 18px;"></i>
+                                        </div>
+                                    </c:when>
+                                    <c:when test="${fn:contains(log.actionType, 'UPDATE')}">
+                                        <div class="rounded-circle bg-warning text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <i class='bx bx-edit-alt' style="font-size: 18px;"></i>
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <i class='bx bx-info-circle' style="font-size: 18px;"></i>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+
+                            <div class="flex-grow-1 ms-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="fw-bold text-dark">${log.actorName}</span> 
+                                        <span class="text-muted">performed</span> 
+                                        <span class="badge bg-light text-dark border">${log.actionType}</span>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class='bx bx-time-five me-1'></i>
+                                        <fmt:formatDate value="${log.logDate}" pattern="HH:mm, dd/MM"/>
+                                    </small>
                                 </div>
-                                <p class="small text-muted mb-2">"${f.comment}"</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="badge bg-white text-dark border">Teacher: ${f.teacher}</small>
-                                <button class="btn btn-link btn-sm p-0 text-danger fw-bold text-decoration-none">Resolve</button>
+                                <p class="mb-0 text-muted small mt-1">${log.description}</p>
                             </div>
                         </div>
                     </c:forEach>
-                    <c:if test="${empty lowFeedbacks}">
-                        <div class="text-center py-5">
-                            <i class='bx bx-check-circle fs-1 text-success'></i>
-                            <p class="text-muted">All feedbacks are positive!</p>
+
+                    <c:if test="${empty recentActivities}">
+                        <div class="text-center py-4 text-muted">
+                            <p>No recent activities recorded.</p>
                         </div>
                     </c:if>
                 </div>
@@ -238,6 +272,7 @@
         </div>
     </div>
 </div>
+
 
 <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function () {
