@@ -1,7 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
+<link href="../css/manageUser.css" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body">
     <div aria-label="breadcrumb">
@@ -64,31 +64,59 @@
                             <td><strong>${r.roleName}</strong></td>
 
                             <td class="text-center">
-                                <div class="form-check form-switch d-flex justify-content-center">
-                                    <input class="form-check-input" type="checkbox" role="switch" disabled 
-                                           ${r.manageUser ? 'checked' : ''}>
-                                </div>
+                                <c:choose>
+                                    <c:when test="${r.roleId == 4 || r.roleId == 5}">
+                                        <span class="badge bg-light text-muted border">N/A</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="form-check form-switch d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" disabled 
+                                                   ${r.manageUser ? 'checked' : ''}>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
 
                             <td class="text-center">
-                                <div class="form-check form-switch d-flex justify-content-center">
-                                    <input class="form-check-input" type="checkbox" role="switch" disabled 
-                                           ${r.manageCourse ? 'checked' : ''}>
-                                </div>
+                                <c:choose>
+                                    <c:when test="${r.roleId == 4 || r.roleId == 5}">
+                                        <span class="badge bg-light text-muted border">N/A</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="form-check form-switch d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" disabled 
+                                                   ${r.manageCourse ? 'checked' : ''}>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
 
                             <td class="text-center">
-                                <div class="form-check form-switch d-flex justify-content-center">
-                                    <input class="form-check-input" type="checkbox" role="switch" disabled 
-                                           ${r.manageFinance ? 'checked' : ''}>
-                                </div>
+                                <c:choose>
+                                    <c:when test="${r.roleId == 4 || r.roleId == 5}">
+                                        <span class="badge bg-light text-muted border">N/A</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="form-check form-switch d-flex justify-content-center">
+                                            <input class="form-check-input" type="checkbox" disabled 
+                                                   ${r.manageFinance ? 'checked' : ''}>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
 
                             <td>
-                                <a class="action-btn" title="Edit Permission"
-                                   onclick="openEditRoleModal('${r.roleId}', '${r.roleName}', ${r.manageUser}, ${r.manageCourse}, ${r.manageFinance})">
-                                    <i class='bx bx-edit'></i> 
-                                </a>
+                                <c:choose>
+                                    <c:when test="${r.roleId == 4 || r.roleId == 5}">
+                                        <i style="color: #9CA3AF; font-size: 16px" class='bx bx-lock ms-3' title="System Role (Locked)"></i>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a class="action-btn" title="Edit Permission"
+                                           onclick="openEditRoleModal('${r.roleId}', '${r.roleName}', ${r.manageUser}, ${r.manageCourse}, ${r.manageFinance})">
+                                            <i class='bx bx-edit'></i> 
+                                        </a>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
                         </tr>
                     </c:forEach>
@@ -98,7 +126,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="editRoleModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="editRoleModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -135,5 +163,4 @@
         </div>
     </div>
 </div>
-
 <script src="js/manageRole.js" type="text/javascript"></script>

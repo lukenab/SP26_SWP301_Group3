@@ -6,6 +6,7 @@ package controller;
 
 import dao.RoleDAO;
 import dao.SystemLogDAO;
+import dao.UserDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -65,6 +66,7 @@ public class RoleController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         RoleDAO roleDAO = new RoleDAO();
+        UserDAO userDAO =  new UserDAO();
         if (action == null) {
             action = "all";
         }
@@ -73,6 +75,21 @@ public class RoleController extends HttpServlet {
             case "permission":
                 int roleId = Integer.parseInt(request.getParameter("roleId"));
 
+                if (roleId == 4 || roleId == 5) {
+                    HttpSession alertSession = request.getSession();
+                    alertSession.setAttribute("message", "Security Alert: Cannot modify system default roles!");
+                    alertSession.setAttribute("messageType", "error");
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+                    String actorName = (logUser != null) ? logUser.getFullName() : "Unknown";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Unknown";
+                    logDAO.insertLog(actorName, actorRole, "SECURITY_WARNING", "Unauthorized attempt to modify protected Role ID: " + roleId);
+
+                    response.sendRedirect("role");
+                    return; 
+                }
+                
                 boolean manageUser = request.getParameter("manageUser") != null;
                 boolean manageCourse = request.getParameter("manageCourse") != null;
                 boolean manageFinance = request.getParameter("manageFinance") != null;
@@ -91,6 +108,11 @@ public class RoleController extends HttpServlet {
                     String logAction = "UPDATE_ROLE_PERMISSION";
                     String detail = "Admin updated access permissions for Role ID: " + roleId;
                     logDAO.insertLog(actorName, actorRole, logAction, detail);
+                    
+                    if(logUser != null && logUser.getRole().getRoleId() == roleId){
+                       User freshUser = userDAO.getUserById(logUser.getUserId());
+                       request.getSession().setAttribute("user", freshUser);
+                    }
                     
                     permissionSession.setAttribute("message", "Permissions updated successfully!");
                     permissionSession.setAttribute("messageType", "success");

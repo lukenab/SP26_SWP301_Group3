@@ -46,6 +46,20 @@ public class UserController extends HttpServlet {
         EmployeeDAO employeeDAO = new EmployeeDAO();
         StudentDAO studentDAO = new StudentDAO();
 
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+        }
+
+        if (!currentUser.getRole().getManageUser()) {
+            session.setAttribute("message", "Access Denied: You don't have permission to manage users!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect("dashboard");
+            return;
+        }
+
         String action = request.getParameter("action");
         if (action == null) {
             action = "all";
@@ -121,6 +135,21 @@ public class UserController extends HttpServlet {
             throws ServletException, IOException {
         UserDAO userDAO = new UserDAO();
         String action = request.getParameter("action");
+        
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+        
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (!currentUser.getRole().getManageUser()) {
+            session.setAttribute("message", "Access Denied: You don't have permission to perform this action!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect("dashboard");
+            return; 
+        }
 
         switch (action) {
             case "add":
@@ -237,7 +266,7 @@ public class UserController extends HttpServlet {
                 }
 
                 boolean isUpdated = userDAO.updateUserById(uFullName, uPhone, uAddress, uGender, uDob, uAvatar, uRoleId, uUserId, uEnrollmentDate, uHDate, uEducation, uExperience);
-                HttpSession session = request.getSession();
+                HttpSession updateSession = request.getSession();
                 if (isUpdated) {
 
                     SystemLogDAO logDAO = new SystemLogDAO();
@@ -250,11 +279,11 @@ public class UserController extends HttpServlet {
                     String detail = "Admin has update info for User ID: " + uUserId + " (" + uFullName + ")";
                     logDAO.insertLog(actorName, actorRole, logAction, detail);
 
-                    session.setAttribute("message", "Update User Info Successfully!");
-                    session.setAttribute("messageType", "success");
+                    updateSession.setAttribute("message", "Update User Info Successfully!");
+                    updateSession.setAttribute("messageType", "success");
                 } else {
-                    session.setAttribute("message", "Update Failed!");
-                    session.setAttribute("messageType", "error");
+                    updateSession.setAttribute("message", "Update Failed!");
+                    updateSession.setAttribute("messageType", "error");
                 }
                 response.sendRedirect("user");
                 break;
@@ -273,7 +302,7 @@ public class UserController extends HttpServlet {
                     break;
                 }
 
-                User currentUser = userDAO.getUserById(cpUserId);
+                currentUser = userDAO.getUserById(cpUserId);
                 String hashCurrentPass = userDAO.hashMD5(currentPassword);
 
                 if (currentPassword == null || !currentUser.getPassword().equals(hashCurrentPass)) {

@@ -356,7 +356,7 @@ nav.active .navbar-left{
     display: flex;
     align-items: center;
     gap: 5px;
-    text-decoration: none; 
+    text-decoration: none;
     width: 100%;
 }
 
@@ -425,7 +425,7 @@ nav.active .navbar-left{
 }
 
 .sidebar li a.active {
-    background-color: #1C5284;   
+    background-color: #1C5284;
     color: #fff;
 }
 
@@ -471,4 +471,12 @@ nav {
 
 .modal {
     z-index: 9999 !important;
+}
+
+.menu-header{
+    padding: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 1px;
 }

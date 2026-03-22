@@ -43,17 +43,26 @@ public class PaymentController extends HttpServlet {
 
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
+
         if (currentUser == null) {
-            response.sendRedirect("login.jsp");
-            return;
+            response.sendRedirect("login");
         }
 
         switch (action) {
             case "list":
-                handleListPayments(request, response, paymentDAO, courseDAO, classDAO);
-                break;
             case "view":
-                handleViewPayment(request, response, paymentDAO);
+                if (currentUser.getRole() == null || !currentUser.getRole().getManageFinance()) {
+                    session.setAttribute("message", "Access Denied: You don't have permission to manage finance!");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("dashboard");
+                    return;
+                }
+
+                if (action.equals("list")) {
+                    handleListPayments(request, response, paymentDAO, courseDAO, classDAO);
+                } else if (action.equals("view")) {
+                    handleViewPayment(request, response, paymentDAO);
+                }
                 break;
 
             case "review":
@@ -137,7 +146,7 @@ public class PaymentController extends HttpServlet {
                 }
                 break;
             default:
-                handleListPayments(request, response, paymentDAO, courseDAO, classDAO);
+                response.sendRedirect("payment?action=list");
                 break;
         }
     }
@@ -155,10 +164,21 @@ public class PaymentController extends HttpServlet {
 
         switch (action) {
             case "approve":
-                handleApprovePayment(request, response, paymentDAO);
-                break;
             case "reject":
-                handleRejectPayment(request, response, paymentDAO);
+                HttpSession sessionPost = request.getSession();
+                User currentUserPost = (User) sessionPost.getAttribute("user");
+                if (currentUserPost.getRole() == null || !currentUserPost.getRole().getManageFinance()) {
+                    sessionPost.setAttribute("message", "Access Denied: You don't have permission to approve/reject payments!");
+                    sessionPost.setAttribute("messageType", "error");
+                    response.sendRedirect("dashboard");
+                    return;
+                }
+
+                if (action.equals("approve")) {
+                    handleApprovePayment(request, response, paymentDAO);
+                } else {
+                    handleRejectPayment(request, response, paymentDAO);
+                }
                 break;
             case "confirmPayment":
                 HttpSession session = request.getSession();
@@ -333,6 +353,8 @@ public class PaymentController extends HttpServlet {
 
         BigDecimal totalAmount = paymentDAO.getTotalAmountByStatus(null);
         BigDecimal approvedAmount = paymentDAO.getTotalAmountByStatus("Approved");
+        
+        BigDecimal pendingAmount = paymentDAO.getTotalAmountByStatus("Pending");
 
         // Get filter options
         List<Object[]> courseOptions = classDAO.getActiveCoursesForClassForm();
@@ -346,6 +368,7 @@ public class PaymentController extends HttpServlet {
         request.setAttribute("rejectedPayments", rejectedPayments);
         request.setAttribute("totalAmount", totalAmount);
         request.setAttribute("approvedAmount", approvedAmount);
+        request.setAttribute("pendingAmount", pendingAmount);
         request.setAttribute("courseOptions", courseOptions);
         request.setAttribute("classList", classList);
 
