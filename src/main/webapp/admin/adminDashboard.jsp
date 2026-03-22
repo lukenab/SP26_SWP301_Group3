@@ -30,44 +30,105 @@
 </c:forEach>
 
 <div class="stat-card-grid">
-    <div class="stat-card">
-        <div class="stat-info">              
-            <p>Total Revenue</p>
-            <h3>
-                <fmt:formatNumber value="${totalRevenue}" type="currency" currencySymbol="VND" maxFractionDigits="2"/>
+
+    <div class="stat-card position-relative overflow-hidden">
+        <div class="stat-info">            
+            <p class="text-muted mb-1 fw-bold">Revenue This Month</p>
+            <h3 class="mb-2">
+                <fmt:formatNumber value="${currentMonthRevenue}" type="currency" currencySymbol="VND" maxFractionDigits="0"/>
             </h3>
+            <c:choose>
+                <c:when test="${revenueGrowth >= 0}">
+                    <span class="badge bg-success bg-opacity-10 text-success fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-up align-middle me-1'></i> 
+                        <fmt:formatNumber value="${revenueGrowth}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:when>
+                <c:otherwise>
+                    <span class="badge bg-danger bg-opacity-10 text-danger fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-down align-middle me-1'></i> 
+                        <fmt:formatNumber value="${revenueGrowth * -1}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:otherwise>
+            </c:choose>
         </div>
-        <div class="icon-wrapper green">
-            <i class='bx bxs-dollar'></i>
+        <div class="icon-wrapper green position-absolute top-50 end-0 translate-middle-y me-3">
+            <i class='bx bx-dollar fs-2'></i>
         </div>
     </div>
-    <div class="stat-card">
+
+    <div class="stat-card position-relative overflow-hidden">
         <div class="stat-info">
-            <p>Active Users</p>
-            <h3>${totalActive}</h3> 
+            <p class="text-muted mb-1 fw-bold">Active Users</p>
+            <h3 class="mb-2">${totalActive}</h3> 
+            <c:choose>
+                <c:when test="${userGrowth >= 0}">
+                    <span class="badge bg-success bg-opacity-10 text-success fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-up align-middle me-1'></i>
+                        <fmt:formatNumber value="${userGrowth}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:when>
+                <c:otherwise>
+                    <span class="badge bg-danger bg-opacity-10 text-danger fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-down align-middle me-1'></i>
+                        <fmt:formatNumber value="${userGrowth * -1}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:otherwise>
+            </c:choose>
         </div>
-        <div class="icon-wrapper green">
-            <i class='bx bx-group'></i>
+        <div class="icon-wrapper green position-absolute top-50 end-0 translate-middle-y me-3">
+            <i class='bx bx-group fs-2'></i>
         </div>
     </div>
-    <div class="stat-card">
+
+    <div class="stat-card position-relative overflow-hidden">
         <div class="stat-info">
-            <p>Total Enrollments</p>
-            <h3>${totalEnrollments}</h3>
+            <p class="text-muted mb-1 fw-bold">Total Enrollments</p>
+            <h3 class="mb-2">${totalEnrollments}</h3>
+            <c:choose>
+                <c:when test="${enrollmentGrowth >= 0}">
+                    <span class="badge bg-success bg-opacity-10 text-success fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-up align-middle me-1'></i>
+                        <fmt:formatNumber value="${enrollmentGrowth}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:when>
+                <c:otherwise>
+                    <span class="badge bg-danger bg-opacity-10 text-danger fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-down align-middle me-1'></i>
+                        <fmt:formatNumber value="${enrollmentGrowth * -1}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:otherwise>
+            </c:choose>
         </div>
-        <div class="icon-wrapper red">
-            <i class='bx bx-book-bookmark'></i>
+        <div class="icon-wrapper red position-absolute top-50 end-0 translate-middle-y me-3">
+            <i class='bx bx-book-bookmark fs-2'></i>
         </div>
     </div>  
-    <div class="stat-card">         
+
+    <div class="stat-card position-relative overflow-hidden">         
         <div class="stat-info">
-            <p>Conversions Rate</p>
-            <h3><fmt:formatNumber value="${conversionRate}" type="number" maxFractionDigits="2"/>%</h3>
+            <p class="text-muted mb-1 fw-bold">Conversions Rate</p>
+            <h3 class="mb-2"><fmt:formatNumber value="${conversionRate}" type="number" maxFractionDigits="2"/>%</h3>
+            <c:choose>
+                <c:when test="${conversionGrowth >= 0}">
+                    <span class="badge bg-success bg-opacity-10 text-success fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-up align-middle me-1'></i>
+                        <fmt:formatNumber value="${conversionGrowth}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:when>
+                <c:otherwise>
+                    <span class="badge bg-danger bg-opacity-10 text-danger fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-down align-middle me-1'></i>
+                        <fmt:formatNumber value="${conversionGrowth * -1}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:otherwise>
+            </c:choose>
         </div>
-        <div class="icon-wrapper cyan">
-            <i class='bx bx-trending-up'></i>
+        <div class="icon-wrapper cyan position-absolute top-50 end-0 translate-middle-y me-3">
+            <i class='bx bx-trending-up fs'></i>
         </div>
     </div>  
+
 </div>
 
 <div class="row">
@@ -88,6 +149,90 @@
                 <h5 class="card-title fw-bold">Profit vs Expenses</h5>
                 <div class="chart-container" style="position: relative; height:300px; width:100%">
                     <canvas id="profitExpenseChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="card-title fw-bold mb-0 text-dark">
+                    <i class='bx bx-time-five text-warning me-2'></i>Pending Payments
+                </h5>
+                <a href="payment?action=manage" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr style="font-size: 0.85rem;">
+                                <th class="ps-4">Student</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th class="text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach items="${pendingPayments}" var="p">
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold text-dark">${p.name}</div>
+                                        <small class="text-muted">ID: #${p.id}</small>
+                                    </td>
+                                    <td class="fw-bold text-success">
+                                        <fmt:formatNumber value="${p.amount}" type="currency" currencySymbol=""/> VND
+                                    </td>
+                                    <td class="text-muted small">
+                                        <fmt:formatDate value="${p.date}" pattern="dd/MM/yyyy HH:mm"/>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <a href="payment?action=approve&id=${p.id}" class="btn btn-sm btn-success px-3">Approve</a>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                            <c:if test="${empty pendingPayments}">
+                                <tr><td colspan="4" class="text-center py-4 text-muted">No pending payments.</td></tr>
+                            </c:if>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title fw-bold mb-0 text-danger">
+                    <i class='bx bxs-error text-danger me-2'></i>Low Rating Alerts
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert-list">
+                    <c:forEach items="${lowFeedbacks}" var="f">
+                        <div class="alert-item p-3 mb-3 rounded border-start border-4 border-danger bg-light">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-bold text-dark">${f.student}</span>
+                                <span class="text-warning">
+                                    <c:forEach begin="1" end="${f.rating}"><i class='bx bxs-star'></i></c:forEach>
+                                    </span>
+                                </div>
+                                <p class="small text-muted mb-2">"${f.comment}"</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="badge bg-white text-dark border">Teacher: ${f.teacher}</small>
+                                <button class="btn btn-link btn-sm p-0 text-danger fw-bold text-decoration-none">Resolve</button>
+                            </div>
+                        </div>
+                    </c:forEach>
+                    <c:if test="${empty lowFeedbacks}">
+                        <div class="text-center py-5">
+                            <i class='bx bx-check-circle fs-1 text-success'></i>
+                            <p class="text-muted">All feedbacks are positive!</p>
+                        </div>
+                    </c:if>
                 </div>
             </div>
         </div>
