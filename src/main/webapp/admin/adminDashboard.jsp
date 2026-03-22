@@ -155,6 +155,90 @@
     </div>
 </div>
 
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="card-title fw-bold mb-0 text-dark">
+                    <i class='bx bx-time-five text-warning me-2'></i>Pending Payments
+                </h5>
+                <a href="payment?action=manage" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr style="font-size: 0.85rem;">
+                                <th class="ps-4">Student</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th class="text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach items="${pendingPayments}" var="p">
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold text-dark">${p.name}</div>
+                                        <small class="text-muted">ID: #${p.id}</small>
+                                    </td>
+                                    <td class="fw-bold text-success">
+                                        <fmt:formatNumber value="${p.amount}" type="currency" currencySymbol=""/> VND
+                                    </td>
+                                    <td class="text-muted small">
+                                        <fmt:formatDate value="${p.date}" pattern="dd/MM/yyyy HH:mm"/>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <a href="payment?action=approve&id=${p.id}" class="btn btn-sm btn-success px-3">Approve</a>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                            <c:if test="${empty pendingPayments}">
+                                <tr><td colspan="4" class="text-center py-4 text-muted">No pending payments.</td></tr>
+                            </c:if>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title fw-bold mb-0 text-danger">
+                    <i class='bx bxs-error text-danger me-2'></i>Low Rating Alerts
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert-list">
+                    <c:forEach items="${lowFeedbacks}" var="f">
+                        <div class="alert-item p-3 mb-3 rounded border-start border-4 border-danger bg-light">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-bold text-dark">${f.student}</span>
+                                <span class="text-warning">
+                                    <c:forEach begin="1" end="${f.rating}"><i class='bx bxs-star'></i></c:forEach>
+                                    </span>
+                                </div>
+                                <p class="small text-muted mb-2">"${f.comment}"</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="badge bg-white text-dark border">Teacher: ${f.teacher}</small>
+                                <button class="btn btn-link btn-sm p-0 text-danger fw-bold text-decoration-none">Resolve</button>
+                            </div>
+                        </div>
+                    </c:forEach>
+                    <c:if test="${empty lowFeedbacks}">
+                        <div class="text-center py-5">
+                            <i class='bx bx-check-circle fs-1 text-success'></i>
+                            <p class="text-muted">All feedbacks are positive!</p>
+                        </div>
+                    </c:if>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function () {
         const ctxRevenue = document.getElementById('revenueChart').getContext('2d');

@@ -21,7 +21,7 @@
         <link href="css/form.css" rel="stylesheet" type="text/css"/>
         <title>Admin Page</title>
     </head>
-<body>
+    <body>
         <c:set var="currentAction" value="${param.action}" />
         <nav class="active">
             <div class="custom-navbar">
@@ -141,12 +141,12 @@
                                 <span class="text nav-text">Role & Permission</span></a>
                         </li>
 
-<!--                        <li class="nav-links">
-                            <a href="#">
+                        <li class="nav-links">
+                            <a href="payment?action=list" class="nav-link ${param.action == 'list' ? 'active' : ''}">
                                 <i class="bxr bx-wallet-alt bx-flip-vertical"></i>
-                                <span class="text nav-text">Finance</span>
+                                <span class="text nav-text">Finance Management</span>
                             </a>
-                        </li>-->
+                        </li>
 
                         <li class="nav-links">
                             <a href="dashboard?action=report">
@@ -261,9 +261,9 @@
                             </a>
                         </li>
 
-                       
 
-                        
+
+
                         <li class="nav-links">
                             <a href="dashboard?action=profile" class="${currentAction == 'profile' ? 'active' : ''}">
                                 <i class="bxr bx-user"></i>

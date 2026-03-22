@@ -11,7 +11,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import model.Classes;
 import model.Course;
 import model.Enrollment;
@@ -450,5 +452,26 @@ public class PaymentDAO extends DBContext {
             System.out.println("Fail to get total Revenue: " + e.getMessage());
         }
         return total;
+    }
+
+    public List<Map<String, Object>> getPendingPayments() {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT TOP 5 p.PaymentID, u.FullName, p.Amount, p.PaymentDate "
+                + "FROM Payment p JOIN Enrollment e ON p.EnrollmentID = e.EnrollmentID "
+                + "JOIN [User] u ON e.StudentID = u.UserID "
+                + "WHERE p.Status = 'Pending' ORDER BY p.PaymentDate DESC";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", rs.getInt("PaymentID"));
+                map.put("name", rs.getString("FullName"));
+                map.put("amount", rs.getDouble("Amount"));
+                map.put("date", rs.getTimestamp("PaymentDate"));
+                list.add(map);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }
