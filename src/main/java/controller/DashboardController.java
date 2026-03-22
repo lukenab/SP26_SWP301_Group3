@@ -7,6 +7,7 @@ package controller;
 import dao.AttendanceDAO;
 import dao.ClassDAO;
 import dao.EnrollmentDAO;
+import dao.FeedbackDAO;
 import dao.LeadDAO;
 import dao.PaymentDAO;
 import dao.SystemLogDAO;
@@ -143,9 +144,16 @@ public class DashboardController extends HttpServlet {
                     enrollmentGrowth = 100;
                 }
 
-                double userGrowth = 8.5; // Tăng 8.5%
-                double conversionGrowth = -1.2; // Giảm 1.2%
+                double userGrowth = 8.5; 
+                double conversionGrowth = -1.2; 
                 
+                List<Map<String, Object>> pendingPayments = paymentDAO.getPendingPayments();
+                
+                FeedbackDAO fbDAO = new FeedbackDAO();
+                List<Map<String, Object>> lowFeedbacks = fbDAO.getLowRating(); 
+                
+                request.setAttribute(("lowFeedbacks"), lowFeedbacks);
+                request.setAttribute("pendingPayments", pendingPayments);
                 request.setAttribute("enrollmentGrowth", enrollmentGrowth);
                 request.setAttribute("userGrowth", userGrowth);
                 request.setAttribute("conversionGrowth", conversionGrowth);
