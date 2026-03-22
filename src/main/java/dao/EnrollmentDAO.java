@@ -256,12 +256,7 @@ public class EnrollmentDAO extends DBContext {
         int removedCount = 0;
         try {
             conn.setAutoCommit(false);
-            try (PreparedStatement findEnrollment = conn.prepareStatement(findEnrollmentSql);
-                    PreparedStatement deleteAttendance = conn.prepareStatement(deleteAttendanceSql);
-                    PreparedStatement deleteGrade = conn.prepareStatement(deleteGradeSql);
-                    PreparedStatement deleteFeedback = conn.prepareStatement(deleteFeedbackSql);
-                    PreparedStatement deletePayment = conn.prepareStatement(deletePaymentSql);
-                    PreparedStatement deleteEnrollment = conn.prepareStatement(deleteEnrollmentSql)) {
+            try (PreparedStatement findEnrollment = conn.prepareStatement(findEnrollmentSql); PreparedStatement deleteAttendance = conn.prepareStatement(deleteAttendanceSql); PreparedStatement deleteGrade = conn.prepareStatement(deleteGradeSql); PreparedStatement deleteFeedback = conn.prepareStatement(deleteFeedbackSql); PreparedStatement deletePayment = conn.prepareStatement(deletePaymentSql); PreparedStatement deleteEnrollment = conn.prepareStatement(deleteEnrollmentSql)) {
                 for (int studentId : studentIds) {
                     findEnrollment.setInt(1, classId);
                     findEnrollment.setInt(2, studentId);
@@ -498,6 +493,33 @@ public class EnrollmentDAO extends DBContext {
         }
 
         return total;
+    }
+
+    public List<Integer> getMonthlyNewEnrollments(int year) {
+        List<Integer> data = new java.util.ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            data.add(0);
+        }
+        String sql = "SELECT MONTH(EnrollDate) as Month, COUNT(StudentID) as Total "
+                + "FROM Enrollment " 
+                + "WHERE YEAR(EnrollDate) = ? "
+                + "GROUP BY MONTH(EnrollDate)";
+
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, year);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int month = rs.getInt("Month");
+                    int total = rs.getInt("Total");               
+                    if (month >= 1 && month <= 12) {
+                        data.set(month - 1, total);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get monthly new enrollments: " + e.getMessage());
+        }
+        return data;
     }
 
     public static void main(String[] args) {

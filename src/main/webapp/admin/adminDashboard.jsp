@@ -30,44 +30,105 @@
 </c:forEach>
 
 <div class="stat-card-grid">
-    <div class="stat-card">
-        <div class="stat-info">              
-            <p>Total Revenue</p>
-            <h3>
-                <fmt:formatNumber value="${totalRevenue}" type="currency" currencySymbol="VND" maxFractionDigits="2"/>
+
+    <div class="stat-card position-relative overflow-hidden">
+        <div class="stat-info">            
+            <p class="text-muted mb-1 fw-bold">Revenue This Month</p>
+            <h3 class="mb-2">
+                <fmt:formatNumber value="${currentMonthRevenue}" type="currency" currencySymbol="VND" maxFractionDigits="0"/>
             </h3>
+            <c:choose>
+                <c:when test="${revenueGrowth >= 0}">
+                    <span class="badge bg-success bg-opacity-10 text-success fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-up align-middle me-1'></i> 
+                        <fmt:formatNumber value="${revenueGrowth}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:when>
+                <c:otherwise>
+                    <span class="badge bg-danger bg-opacity-10 text-danger fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-down align-middle me-1'></i> 
+                        <fmt:formatNumber value="${revenueGrowth * -1}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:otherwise>
+            </c:choose>
         </div>
-        <div class="icon-wrapper green">
-            <i class='bx bxs-dollar'></i>
+        <div class="icon-wrapper green position-absolute top-50 end-0 translate-middle-y me-3">
+            <i class='bx bx-dollar fs-2'></i>
         </div>
     </div>
-    <div class="stat-card">
+
+    <div class="stat-card position-relative overflow-hidden">
         <div class="stat-info">
-            <p>Active Users</p>
-            <h3>${totalActive}</h3> 
+            <p class="text-muted mb-1 fw-bold">Active Users</p>
+            <h3 class="mb-2">${totalActive}</h3> 
+            <c:choose>
+                <c:when test="${userGrowth >= 0}">
+                    <span class="badge bg-success bg-opacity-10 text-success fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-up align-middle me-1'></i>
+                        <fmt:formatNumber value="${userGrowth}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:when>
+                <c:otherwise>
+                    <span class="badge bg-danger bg-opacity-10 text-danger fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-down align-middle me-1'></i>
+                        <fmt:formatNumber value="${userGrowth * -1}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:otherwise>
+            </c:choose>
         </div>
-        <div class="icon-wrapper green">
-            <i class='bx bx-group'></i>
+        <div class="icon-wrapper green position-absolute top-50 end-0 translate-middle-y me-3">
+            <i class='bx bx-group fs-2'></i>
         </div>
     </div>
-    <div class="stat-card">
+
+    <div class="stat-card position-relative overflow-hidden">
         <div class="stat-info">
-            <p>Total Enrollments</p>
-            <h3>${totalEnrollments}</h3>
+            <p class="text-muted mb-1 fw-bold">Total Enrollments</p>
+            <h3 class="mb-2">${totalEnrollments}</h3>
+            <c:choose>
+                <c:when test="${enrollmentGrowth >= 0}">
+                    <span class="badge bg-success bg-opacity-10 text-success fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-up align-middle me-1'></i>
+                        <fmt:formatNumber value="${enrollmentGrowth}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:when>
+                <c:otherwise>
+                    <span class="badge bg-danger bg-opacity-10 text-danger fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-down align-middle me-1'></i>
+                        <fmt:formatNumber value="${enrollmentGrowth * -1}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:otherwise>
+            </c:choose>
         </div>
-        <div class="icon-wrapper red">
-            <i class='bx bx-book-bookmark'></i>
+        <div class="icon-wrapper red position-absolute top-50 end-0 translate-middle-y me-3">
+            <i class='bx bx-book-bookmark fs-2'></i>
         </div>
     </div>  
-    <div class="stat-card">         
+
+    <div class="stat-card position-relative overflow-hidden">         
         <div class="stat-info">
-            <p>Conversions Rate</p>
-            <h3><fmt:formatNumber value="${conversionRate}" type="number" maxFractionDigits="2"/>%</h3>
+            <p class="text-muted mb-1 fw-bold">Conversions Rate</p>
+            <h3 class="mb-2"><fmt:formatNumber value="${conversionRate}" type="number" maxFractionDigits="2"/>%</h3>
+            <c:choose>
+                <c:when test="${conversionGrowth >= 0}">
+                    <span class="badge bg-success bg-opacity-10 text-success fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-up align-middle me-1'></i>
+                        <fmt:formatNumber value="${conversionGrowth}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:when>
+                <c:otherwise>
+                    <span class="badge bg-danger bg-opacity-10 text-danger fw-bold p-2" style="font-size: 0.75rem;">
+                        <i class='bx bx-trending-down align-middle me-1'></i>
+                        <fmt:formatNumber value="${conversionGrowth * -1}" type="number" maxFractionDigits="1"/>% vs Last Month
+                    </span>
+                </c:otherwise>
+            </c:choose>
         </div>
-        <div class="icon-wrapper cyan">
-            <i class='bx bx-trending-up'></i>
+        <div class="icon-wrapper cyan position-absolute top-50 end-0 translate-middle-y me-3">
+            <i class='bx bx-trending-up fs'></i>
         </div>
     </div>  
+
 </div>
 
 <div class="row">

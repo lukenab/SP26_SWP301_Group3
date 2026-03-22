@@ -9,21 +9,21 @@ import dao.ClassDAO;
 import dao.EnrollmentDAO;
 import dao.LeadDAO;
 import dao.PaymentDAO;
+import dao.SystemLogDAO;
 import dao.UserDAO;
 import java.io.IOException;
-
+import java.time.Year;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import model.SystemLog;
 import model.User;
-import java.time.LocalDateTime;
 
 /**
  *
@@ -92,6 +92,7 @@ public class DashboardController extends HttpServlet {
                 }
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
+
             case "admin":
                 List<User> list = userDAO.getAllUser();
                 int totalUsers = list.size();
@@ -99,11 +100,59 @@ public class DashboardController extends HttpServlet {
                 int totalEnrollments = enrollDAO.getTotalEnrollments();
                 double conversionRate = leadDAO.getConversionRate();
 
-                List<Double> monthlyRevenue = paymentDAO.getMonthlyRevenue(2026);
+                int currentYear = Year.now().getValue();
+                List<Double> monthlyRevenue = paymentDAO.getMonthlyRevenue(currentYear);
                 String revenueDataString = monthlyRevenue.stream()
                         .map(String::valueOf)
                         .collect(Collectors.joining(","));
+                
+                int currentMonthIndex = java.time.LocalDate.now().getMonthValue() - 1;
+                double currentMonthRevenue = 0;
+                double lastMonthRevenue = 0;
+                double revenueGrowth = 0;
 
+                if (currentMonthIndex >= 0 && currentMonthIndex < 12) {
+                    currentMonthRevenue = monthlyRevenue.get(currentMonthIndex);
+                    
+                    if (currentMonthIndex > 0) {
+                        lastMonthRevenue = monthlyRevenue.get(currentMonthIndex - 1);
+                    }
+                }
+
+                if (lastMonthRevenue > 0) {
+                    revenueGrowth = ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100;
+                } else if (currentMonthRevenue > 0) {
+                    revenueGrowth = 100; 
+                }
+                
+                List<Integer> adminMonthlyEnrollments = enrollDAO.getMonthlyNewEnrollments(currentYear);
+                double currentMonthEnroll = 0;
+                double lastMonthEnroll = 0;
+                double enrollmentGrowth = 0;
+
+                if (adminMonthlyEnrollments != null && currentMonthIndex >= 0 && currentMonthIndex < 12) {
+                    currentMonthEnroll = adminMonthlyEnrollments.get(currentMonthIndex);
+                    if (currentMonthIndex > 0) {
+                        lastMonthEnroll = adminMonthlyEnrollments.get(currentMonthIndex - 1);
+                    }
+                }
+                
+                if (lastMonthEnroll > 0) {
+                    enrollmentGrowth = ((currentMonthEnroll - lastMonthEnroll) / lastMonthEnroll) * 100;
+                } else if (currentMonthEnroll > 0) {
+                    enrollmentGrowth = 100;
+                }
+
+                double userGrowth = 8.5; // Tăng 8.5%
+                double conversionGrowth = -1.2; // Giảm 1.2%
+                
+                request.setAttribute("enrollmentGrowth", enrollmentGrowth);
+                request.setAttribute("userGrowth", userGrowth);
+                request.setAttribute("conversionGrowth", conversionGrowth);
+
+
+                request.setAttribute("currentMonthRevenue", currentMonthRevenue);
+                request.setAttribute("revenueGrowth", revenueGrowth);
                 request.setAttribute("conversionRate", conversionRate);
                 request.setAttribute("totalEnrollments", totalEnrollments);
                 request.setAttribute("totalRevenue", totalRevenue);
@@ -113,6 +162,7 @@ public class DashboardController extends HttpServlet {
                 request.setAttribute("home_view", "/admin/adminDashboard.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
+
             case "profile":
                 HttpSession session = request.getSession();
                 User loggedInUser = (User) session.getAttribute("user");
@@ -210,10 +260,8 @@ public class DashboardController extends HttpServlet {
                 dao.ScheduleDAO scheduleDAO = new dao.ScheduleDAO();
                 AttendanceDAO attendanceDAO = new AttendanceDAO();
 
-                // ===== Classes của student =====
                 List<Object[]> studentClasses = classDAO.getStudentClasses(studentId);
 
-                // ===== Schedule tuần này =====
                 java.time.LocalDate todayDate = java.time.LocalDate.now();
                 java.time.LocalDate startOfWeek = todayDate.with(java.time.DayOfWeek.MONDAY);
                 java.time.LocalDate endOfWeek = todayDate.with(java.time.DayOfWeek.SUNDAY);
@@ -241,6 +289,49 @@ public class DashboardController extends HttpServlet {
                 request.setAttribute("home_view", "student/studentDashboard.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
 
+                break;
+
+           case "report":
+                SystemLogDAO logDAO = new SystemLogDAO();
+                
+                // --- SYSTEM AUDIT LOGS ---
+                String filterAction = request.getParameter("filterAction");
+                if (filterAction == null) {
+                    filterAction = "ALL";
+                }
+                List<SystemLog> logs = logDAO.getRecentLogs(filterAction);
+                request.setAttribute("systemLogs", logs);
+                request.setAttribute("currentFilter", filterAction);
+
+                // --- SYSTEM USAGE ---
+                
+                Map<String, Integer> usageMap = userDAO.getUserDemographics();
+                
+                String chartLabels = usageMap.keySet().stream()
+                        .map(k -> "'" + k + "'")
+                        .collect(Collectors.joining(","));
+                
+                String chartData = usageMap.values().stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(","));
+                
+                request.setAttribute("chartLabels", chartLabels);
+                request.setAttribute("chartData", chartData);
+                request.setAttribute("usageStats", usageMap); 
+                // --- GROWTH REPORT  ---
+                int currentYearReport = java.time.Year.now().getValue();
+                List<Integer> monthlyEnrollments = enrollDAO.getMonthlyNewEnrollments(currentYearReport);
+                
+                String enrollDataStr = monthlyEnrollments.stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(","));
+                
+                request.setAttribute("growthLabels", "'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'");
+                request.setAttribute("growthData", enrollDataStr);
+
+                // --- CHUYỂN HƯỚNG ---
+                request.setAttribute("home_view", "/admin/systemReport.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
         }
     }

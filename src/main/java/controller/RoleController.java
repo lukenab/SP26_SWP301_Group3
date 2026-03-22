@@ -5,6 +5,7 @@
 package controller;
 
 import dao.RoleDAO;
+import dao.SystemLogDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import model.Role;
+import model.User;
 
 /**
  *
@@ -79,6 +81,17 @@ public class RoleController extends HttpServlet {
 
                 HttpSession permissionSession = request.getSession();
                 if (isUpdated) {
+                    
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+                    
+                    String logAction = "UPDATE_ROLE_PERMISSION";
+                    String detail = "Admin updated access permissions for Role ID: " + roleId;
+                    logDAO.insertLog(actorName, actorRole, logAction, detail);
+                    
                     permissionSession.setAttribute("message", "Permissions updated successfully!");
                     permissionSession.setAttribute("messageType", "success");
                 } else {

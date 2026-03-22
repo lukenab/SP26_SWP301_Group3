@@ -8,6 +8,7 @@ import dao.PaymentDAO;
 import dao.PaymentDAO.PaymentDisplay;
 import dao.CourseDAO;
 import dao.ClassDAO;
+import dao.SystemLogDAO;
 import dao.VoucherDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -175,6 +176,16 @@ public class PaymentController extends HttpServlet {
                     boolean isSuccess = paymentDAO.confirmQRPayment(enrollmentId, amount, voucherId);
 
                     if (isSuccess) {
+
+                        SystemLogDAO logDAO = new SystemLogDAO();
+                        User logUser = (User) request.getSession().getAttribute("user");
+
+                        String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                        String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+
+                        String detail = "Student submitted a new QR payment (Amount: " + amount + ") for Enrollment ID: " + enrollmentId;
+                        logDAO.insertLog(actorName, actorRole, "SUBMIT_PAYMENT", detail);
+
                         Integer paymentId = paymentDAO.getLatestPaymentIdByEnrollment(enrollmentId);
                         if (paymentId != null) {
                             paymentDAO.updatePaymentStatus(paymentId, "Approved");
@@ -401,6 +412,16 @@ public class PaymentController extends HttpServlet {
                 boolean isPaymentApproved = paymentDAO.updatePaymentStatus(paymentId, "Approved");
 
                 if (isPaymentApproved) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+
+                    String detail = "Approved Payment ID: " + paymentId + " for Enrollment ID: " + payment.getEnrollment().getEnrollmentId();
+                    logDAO.insertLog(actorName, actorRole, "APPROVE_PAYMENT", detail);
+
                     int enrollmentId = payment.getEnrollment().getEnrollmentId();
                     dao.EnrollmentDAO enrollmentDAO = new dao.EnrollmentDAO();
                     enrollmentDAO.updateEnrollmentStatus(enrollmentId, "Active");
@@ -442,6 +463,16 @@ public class PaymentController extends HttpServlet {
             boolean success = paymentDAO.updatePaymentStatus(paymentId, "Rejected");
 
             if (success) {
+
+                SystemLogDAO logDAO = new SystemLogDAO();
+                User logUser = (User) request.getSession().getAttribute("user");
+
+                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+
+                String detail = "Rejected Payment ID: " + paymentId;
+                logDAO.insertLog(actorName, actorRole, "REJECT_PAYMENT", detail);
+
                 request.getSession().setAttribute("message", "Payment rejected successfully.");
                 request.getSession().setAttribute("messageType", "success");
             } else {
@@ -456,5 +487,3 @@ public class PaymentController extends HttpServlet {
         response.sendRedirect("payment?action=list");
     }
 }
-
-

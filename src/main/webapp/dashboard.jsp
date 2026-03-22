@@ -149,9 +149,9 @@
                         </li>-->
 
                         <li class="nav-links">
-                            <a href="#">
+                            <a href="dashboard?action=report">
                                 <i class="bxr bx-file-report"></i>
-                                <span class="text nav-text">Reports</span>
+                                <span class="text nav-text">System Reports</span>
                             </a>
                         </li>
 

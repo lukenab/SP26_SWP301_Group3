@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -421,7 +420,7 @@ public class PaymentDAO extends DBContext {
         List<Double> revenueList = new ArrayList<>(Collections.nCopies(12, 0.0));
         String sql = "SELECT MONTH(PaymentDate) as month, SUM(Amount) as total "
                 + "From Payment "
-                + "WHERE YEAR(PaymentDate) = ? AND Status = 'Paid' "
+                + "WHERE YEAR(PaymentDate) = ? AND Status = 'Approved' "
                 + "GROUP BY MONTH(PaymentDate)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, year);
@@ -452,5 +451,4 @@ public class PaymentDAO extends DBContext {
         }
         return total;
     }
-
 }
