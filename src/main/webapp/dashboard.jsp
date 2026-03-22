@@ -19,6 +19,7 @@
         <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
         <link href="css/viewUser.css" rel="stylesheet" type="text/css"/>
         <link href="css/form.css" rel="stylesheet" type="text/css"/>
+        <link href="css/saleDashboard.css" rel="stylesheet" type="text/css"/>
         <title>Admin Page</title>
     </head>
     <body>
@@ -88,22 +89,22 @@
                 <div class="sidebar-header">
                     <c:choose>
                         <c:when test="${sessionScope.user.role.roleId == 1}">
-                            <c:set var="logoUrl" value="dashboard?action=admin" />
+                            <c:set var="logoUrl" value="${pageContext.request.contextPath}/dashboard?action=admin" />
                         </c:when>
                         <c:when test="${sessionScope.user.role.roleId == 2}">
-                            <c:set var="logoUrl" value="dashboard?action=academic" />
+                            <c:set var="logoUrl" value="${pageContext.request.contextPath}/dashboard?action=academic" />
                         </c:when>
                         <c:when test="${sessionScope.user.role.roleId == 3}">
-                            <c:set var="logoUrl" value="dashboard?action=sale" />
+                            <c:set var="logoUrl" value="${pageContext.request.contextPath}/dashboard" />
                         </c:when>
                         <c:when test="${sessionScope.user.role.roleId == 4}">
-                            <c:set var="logoUrl" value="dashboard?action=teacher" />
+                            <c:set var="logoUrl" value="${pageContext.request.contextPath}/dashboard?action=teacher" />
                         </c:when>
                         <c:when test="${sessionScope.user.role.roleId == 5}">
-                            <c:set var="logoUrl" value="dashboard?action=student" />
+                            <c:set var="logoUrl" value="${pageContext.request.contextPath}/dashboard?action=student" />
                         </c:when>
                         <c:otherwise>
-                            <c:set var="logoUrl" value="dashboard" />
+                            <c:set var="logoUrl" value="${pageContext.request.contextPath}/dashboard" />
                         </c:otherwise>
                     </c:choose>
 
