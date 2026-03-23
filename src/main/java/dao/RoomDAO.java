@@ -81,6 +81,101 @@ public class RoomDAO extends DBContext {
         return null;
     }
 
+    // Get all distinct room types from database
+    public List<String> getDistinctRoomTypes() {
+        try {
+            List<String> types = new ArrayList<>();
+            String query = "SELECT DISTINCT [Type] FROM Room WHERE [Type] IS NOT NULL ORDER BY [Type]";
+            PreparedStatement p = conn.prepareStatement(query);
+            ResultSet rs = p.executeQuery();
+            while (rs.next()) {
+                String type = rs.getString("Type");
+                types.add(type);
+            }
+            return types;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+
+    // Get all distinct room capacities from database
+    public List<Integer> getDistinctRoomCapacities() {
+        try {
+            List<Integer> capacities = new ArrayList<>();
+            String query = "SELECT DISTINCT Capacity FROM Room ORDER BY Capacity";
+            PreparedStatement p = conn.prepareStatement(query);
+            ResultSet rs = p.executeQuery();
+            while (rs.next()) {
+                int capacity = rs.getInt("Capacity");
+                capacities.add(capacity);
+            }
+            return capacities;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+
+    // Filter rooms by capacity, type, and status
+    public List<Room> getRoomsByFilter(String capacityStr, String typeStr, String statusStr) {
+        try {
+            List<Room> filteredRooms = new ArrayList<>();
+            StringBuilder query = new StringBuilder("SELECT * FROM Room WHERE 1=1");
+
+            if (capacityStr != null && !capacityStr.isEmpty()) {
+                int capacity = Integer.parseInt(capacityStr);
+                if (capacity < 100) {
+                    query.append(" AND Capacity <= ?");
+                } else {
+                    query.append(" AND Capacity >= ?");
+                }
+            }
+
+            if (typeStr != null && !typeStr.isEmpty()) {
+                query.append(" AND [Type] = ?");
+            }
+
+            if (statusStr != null && !statusStr.isEmpty()) {
+                int status = statusStr.equalsIgnoreCase("active") ? 1 : 0;
+                query.append(" AND Status = ?");
+            }
+
+            query.append(" ORDER BY RoomName");
+
+            PreparedStatement p = conn.prepareStatement(query.toString());
+            int paramIndex = 1;
+
+            if (capacityStr != null && !capacityStr.isEmpty()) {
+                int capacity = Integer.parseInt(capacityStr);
+                p.setInt(paramIndex++, capacity);
+            }
+
+            if (typeStr != null && !typeStr.isEmpty()) {
+                p.setString(paramIndex++, typeStr);
+            }
+
+            if (statusStr != null && !statusStr.isEmpty()) {
+                int status = statusStr.equalsIgnoreCase("active") ? 1 : 0;
+                p.setInt(paramIndex++, status);
+            }
+
+            ResultSet rs = p.executeQuery();
+            while (rs.next()) {
+                int roomId = rs.getInt("RoomID");
+                String roomName = rs.getString("RoomName");
+                int capacity = rs.getInt("Capacity");
+                String type = rs.getString("Type");
+                boolean roomStatus = rs.getBoolean("Status");
+                filteredRooms.add(new Room(roomId, roomName, capacity, type, roomStatus));
+            }
+            return filteredRooms;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     //READ
     public Room getRoomByID(int id) {
         try {

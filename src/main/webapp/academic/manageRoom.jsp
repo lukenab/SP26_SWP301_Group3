@@ -14,7 +14,7 @@
                 <li class="breadcrumb-item active" aria-current="page">Room Management</li>
             </ol>
         </div>
-        <div class="content-header">
+        <div class="content-header mb-3">
             <div>
                 <h2 class="page-title">Room Management</h2>
                 <p class="text-muted small mb-0">Manage and organize your rooms</p>
@@ -22,6 +22,49 @@
             <a href="room?action=create" class="btn btn-add-new">
                 <i class='bx bx-plus-circle'></i> Create New Room
             </a>
+        </div>
+
+        <div class="card user-table-card border-0 bg-white mb-3 section-card">
+            <div class="card-body p-3 p-lg-4">
+                <form action="room" method="GET" class="row g-3 align-items-end">
+                    <input type="hidden" name="action" value="manage">
+
+                    <div class="col-md-3">
+                        <label class="form-label filter-label">Filter By Capacity</label>
+                        <select name="capacity" class="form-select">
+                            <option value="">All Capacities</option>
+                            <c:forEach items="${capacities}" var="cap">
+                                <option value="${cap}" ${capacity != null && capacity == cap ? 'selected' : ''}>${cap} people</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label filter-label">Filter By Room Type</label>
+                        <select name="type" class="form-select">
+                            <option value="">All Types</option>
+                            <c:forEach items="${roomTypes}" var="rtype">
+                                <option value="${rtype}" ${type != null && type == rtype ? 'selected' : ''}>${rtype}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label filter-label">Filter By Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="active" ${status != null && status == 'active' ? 'selected' : ''}>Active</option>
+                            <option value="disabled" ${status != null && status == 'disabled' ? 'selected' : ''}>Disabled</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-add-new w-100 justify-content-center">
+                            <i class='bx bx-filter-alt'></i> Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -59,9 +102,6 @@
                     <div class="text-center py-5">
                         <i class='bx bx-door-open room-empty-icon'></i>
                         <p class="text-muted mt-3">No rooms found.</p>
-                        <a href="room?action=create" class="btn btn-add-new mt-2">
-                            <i class='bx bx-plus-circle'></i> Create Your First Room
-                        </a>
                     </div>
                 </c:when>
                 <c:otherwise>
@@ -135,19 +175,6 @@
                 </c:otherwise>
             </c:choose>
         </div>
-
-        <c:if test="${not empty allRooms}">
-            <div class="d-flex justify-content-between align-items-center p-3 border-top">
-                <div class="text-muted small">Showing 1-${allRooms.size()} of ${allRooms.size()} rooms</div>
-                <div>
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item disabled"><a class="page-link" href="#"><i class='bx bx-chevron-left'></i> Previous</a></li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">Next <i class='bx bx-chevron-right'></i></a></li>
-                    </ul>
-                </div>
-            </div>
-        </c:if>
     </div>
 </div>
 <script src="/js/manageUser.js" type="text/javascript"></script>

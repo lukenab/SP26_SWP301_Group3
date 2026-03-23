@@ -212,6 +212,12 @@ public class DashboardController extends HttpServlet {
                 break;
 
             case "academic":
+                ClassDAO classDAOAcademic = new ClassDAO();
+                List<Object[]> classFillRateList = classDAOAcademic.getClassFillRateReport();
+                List<Object[]> gradeEnrollmentSummaryList = classDAOAcademic.getGradeEnrollmentSummary();
+                
+                request.setAttribute("classFillRateList", classFillRateList);
+                request.setAttribute("gradeEnrollmentSummaryList", gradeEnrollmentSummaryList);
                 request.setAttribute("home_view", "/academic/academicDashboard.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
