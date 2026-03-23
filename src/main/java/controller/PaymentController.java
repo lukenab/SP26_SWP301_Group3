@@ -8,6 +8,7 @@ import dao.PaymentDAO;
 import dao.PaymentDAO.PaymentDisplay;
 import dao.CourseDAO;
 import dao.ClassDAO;
+import dao.SystemLogDAO;
 import dao.VoucherDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -42,17 +43,26 @@ public class PaymentController extends HttpServlet {
 
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
+
         if (currentUser == null) {
-            response.sendRedirect("login.jsp");
-            return;
+            response.sendRedirect("login");
         }
 
         switch (action) {
             case "list":
-                handleListPayments(request, response, paymentDAO, courseDAO, classDAO);
-                break;
             case "view":
-                handleViewPayment(request, response, paymentDAO);
+                if (currentUser.getRole() == null || !currentUser.getRole().getManageFinance()) {
+                    session.setAttribute("message", "Access Denied: You don't have permission to manage finance!");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("dashboard");
+                    return;
+                }
+
+                if (action.equals("list")) {
+                    handleListPayments(request, response, paymentDAO, courseDAO, classDAO);
+                } else if (action.equals("view")) {
+                    handleViewPayment(request, response, paymentDAO);
+                }
                 break;
 
             case "review":
@@ -136,7 +146,7 @@ public class PaymentController extends HttpServlet {
                 }
                 break;
             default:
-                handleListPayments(request, response, paymentDAO, courseDAO, classDAO);
+                response.sendRedirect("payment?action=list");
                 break;
         }
     }
@@ -154,10 +164,21 @@ public class PaymentController extends HttpServlet {
 
         switch (action) {
             case "approve":
-                handleApprovePayment(request, response, paymentDAO);
-                break;
             case "reject":
-                handleRejectPayment(request, response, paymentDAO);
+                HttpSession sessionPost = request.getSession();
+                User currentUserPost = (User) sessionPost.getAttribute("user");
+                if (currentUserPost.getRole() == null || !currentUserPost.getRole().getManageFinance()) {
+                    sessionPost.setAttribute("message", "Access Denied: You don't have permission to approve/reject payments!");
+                    sessionPost.setAttribute("messageType", "error");
+                    response.sendRedirect("dashboard");
+                    return;
+                }
+
+                if (action.equals("approve")) {
+                    handleApprovePayment(request, response, paymentDAO);
+                } else {
+                    handleRejectPayment(request, response, paymentDAO);
+                }
                 break;
             case "confirmPayment":
                 HttpSession session = request.getSession();
@@ -175,6 +196,16 @@ public class PaymentController extends HttpServlet {
                     boolean isSuccess = paymentDAO.confirmQRPayment(enrollmentId, amount, voucherId);
 
                     if (isSuccess) {
+
+                        SystemLogDAO logDAO = new SystemLogDAO();
+                        User logUser = (User) request.getSession().getAttribute("user");
+
+                        String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                        String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+
+                        String detail = "Student submitted a new QR payment (Amount: " + amount + ") for Enrollment ID: " + enrollmentId;
+                        logDAO.insertLog(actorName, actorRole, "SUBMIT_PAYMENT", detail);
+
                         Integer paymentId = paymentDAO.getLatestPaymentIdByEnrollment(enrollmentId);
                         if (paymentId != null) {
                             paymentDAO.updatePaymentStatus(paymentId, "Approved");
@@ -322,6 +353,8 @@ public class PaymentController extends HttpServlet {
 
         BigDecimal totalAmount = paymentDAO.getTotalAmountByStatus(null);
         BigDecimal approvedAmount = paymentDAO.getTotalAmountByStatus("Approved");
+        
+        BigDecimal pendingAmount = paymentDAO.getTotalAmountByStatus("Pending");
 
         // Get filter options
         List<Object[]> courseOptions = classDAO.getActiveCoursesForClassForm();
@@ -335,6 +368,7 @@ public class PaymentController extends HttpServlet {
         request.setAttribute("rejectedPayments", rejectedPayments);
         request.setAttribute("totalAmount", totalAmount);
         request.setAttribute("approvedAmount", approvedAmount);
+        request.setAttribute("pendingAmount", pendingAmount);
         request.setAttribute("courseOptions", courseOptions);
         request.setAttribute("classList", classList);
 
@@ -401,6 +435,16 @@ public class PaymentController extends HttpServlet {
                 boolean isPaymentApproved = paymentDAO.updatePaymentStatus(paymentId, "Approved");
 
                 if (isPaymentApproved) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+
+                    String detail = "Approved Payment ID: " + paymentId + " for Enrollment ID: " + payment.getEnrollment().getEnrollmentId();
+                    logDAO.insertLog(actorName, actorRole, "APPROVE_PAYMENT", detail);
+
                     int enrollmentId = payment.getEnrollment().getEnrollmentId();
                     dao.EnrollmentDAO enrollmentDAO = new dao.EnrollmentDAO();
                     enrollmentDAO.updateEnrollmentStatus(enrollmentId, "Active");
@@ -442,6 +486,16 @@ public class PaymentController extends HttpServlet {
             boolean success = paymentDAO.updatePaymentStatus(paymentId, "Rejected");
 
             if (success) {
+
+                SystemLogDAO logDAO = new SystemLogDAO();
+                User logUser = (User) request.getSession().getAttribute("user");
+
+                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+
+                String detail = "Rejected Payment ID: " + paymentId;
+                logDAO.insertLog(actorName, actorRole, "REJECT_PAYMENT", detail);
+
                 request.getSession().setAttribute("message", "Payment rejected successfully.");
                 request.getSession().setAttribute("messageType", "success");
             } else {
@@ -456,5 +510,3 @@ public class PaymentController extends HttpServlet {
         response.sendRedirect("payment?action=list");
     }
 }
-
-

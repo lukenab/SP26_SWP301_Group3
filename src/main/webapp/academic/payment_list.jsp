@@ -2,6 +2,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
+
 <link href="css/manageUser.css" rel="stylesheet" type="text/css"/>
 <link href="css/payment_list.css?v=20260311" rel="stylesheet" type="text/css"/>
 
@@ -10,13 +11,15 @@
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
+                <li class="breadcrumb-item">
+                    <a href="dashboard?action=${sessionScope.user.role.roleId == 1 ? 'admin' : 'sale'}">Dashboard</a>
+                </li>
                 <li class="breadcrumb-item active" aria-current="page">Payment Management</li>
             </ol>
         </div>
         <div class="content-header">
             <div>
-                <h2 class="page-title"><i class='bx bx-dollar-circle'></i> Payment Management</h2>
+                <h2 class="page-title"><i class='bx bx-wallet'></i> Payment Management</h2>
                 <p class="text-muted small mb-0">View, approve, and manage student payment requests for academic programs</p>
             </div>
         </div>
@@ -39,7 +42,7 @@
                 <h3>${pendingPayments}</h3>
             </div>
             <div class="icon-wrapper" style="background: #fef3c7; color: #d97706;">
-                <i class='bx bx-time-five'></i>
+                <i class='bx bx-clock-dashed-half'></i>
             </div>
         </div>
         <div class="stat-card">
@@ -52,13 +55,27 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-info">
-                <p>Total Amount</p>
-                <h3><fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="$" /></h3>
-            </div>
-            <div class="icon-wrapper" style="background: #dbeafe; color: #2563eb;">
-                <i class='bx bx-dollar'></i>
-            </div>
+            <c:choose>
+                <c:when test="${sessionScope.user.role.roleId == 1}">
+                    <div class="stat-info">
+                        <p>Total Amount</p>
+                        <h3><fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="VND" /></h3>
+                    </div>
+                    <div class="icon-wrapper" style="background: #dbeafe; color: #2563eb;">
+                        <i class='bx bx-dollar'></i>
+                    </div>
+                </c:when>
+
+                <c:otherwise>
+                    <div class="stat-info">
+                        <p>Pending Amount</p>
+                        <h3><fmt:formatNumber value="${pendingAmount}" type="number" pattern="#,##0"/> VND</h3>
+                    </div>
+                    <div class="icon-wrapper" style="background: #dbeafe; color: #2563eb;">
+                        <i class='bx bx-dollar'></i>
+                    </div>
+                </c:otherwise>
+            </c:choose>
         </div>
     </div>
 
@@ -99,8 +116,8 @@
             <button type="submit" style="display: none;"></button>
         </div>
     </form>
-            
-             <!-- Toast Message -->
+
+    <!-- Toast Message -->
     <c:if test="${not empty sessionScope.message}">
         <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
             <div class="toast-icon">
@@ -175,7 +192,7 @@
                                     </td>
                                     <td>
                                         <strong style="color: #2563eb;">
-                                            <fmt:formatNumber value="${paymentDisplay.payment.amount}" type="currency" currencySymbol="$" />
+                                            <fmt:formatNumber value="${paymentDisplay.payment.amount}" pattern="#,##0.##" /> VND
                                         </strong>
                                     </td>
                                     <td>

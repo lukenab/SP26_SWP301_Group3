@@ -5,6 +5,7 @@
 package controller;
 
 import dao.SettingDAO;
+import dao.SystemLogDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -92,6 +93,17 @@ public class SettingController extends HttpServlet {
         }
         HttpSession session = request.getSession();
         if (allSuccess) {
+
+            SystemLogDAO logDAO = new SystemLogDAO();
+            User logUser = (User) request.getSession().getAttribute("user");
+
+            String actorName = (logUser != null) ? logUser.getFullName() : "System";
+            String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+
+            String logAction = "UPDATE_SETTING";
+            String detail = "Admin updated system configurations (Passing Grade, Absences, etc.)";
+            logDAO.insertLog(actorName, actorRole, logAction, detail);
+
             session.setAttribute("message", "System settings updated successfully!");
             session.setAttribute("messageType", "success");
         } else {
@@ -101,14 +113,13 @@ public class SettingController extends HttpServlet {
         response.sendRedirect("setting");
     }
 
-
-/**
- * Returns a short description of the servlet.
- *
- * @return a String containing servlet description
- */
-@Override
-public String getServletInfo() {
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
 
