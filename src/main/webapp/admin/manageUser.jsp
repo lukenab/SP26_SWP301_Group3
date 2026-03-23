@@ -19,7 +19,7 @@
                 <p class="text-muted small mb-0">Manage and organize room</p>
             </div>
             <a href="user?action=add" class="btn btn-add-new">
-                <i class='bx bx-user-plus'></i> Add User
+                <i class='bx bx-user-plus'></i> Add New User
             </a>
         </div>
     </div>

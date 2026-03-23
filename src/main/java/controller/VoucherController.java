@@ -1,5 +1,6 @@
 package controller;
 
+import dao.SystemLogDAO;
 import dao.VoucherDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,6 +14,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import model.User;
 import model.Voucher;
 
 @WebServlet(name = "VoucherController", urlPatterns = {"/voucher"})
@@ -187,8 +189,20 @@ public class VoucherController extends HttpServlet {
             }
 
             boolean updated = voucherDAO.updateVoucher(id, code, discountAmount, discountPercent, validUntil, status, maxUsage);
-            setSessionMessage(session, updated ? "Update voucher successfully!" : "Update voucher failed.",
-                    updated ? "success" : "error");
+
+            if (updated) {
+                SystemLogDAO logDAO = new SystemLogDAO();
+                User logUser = (User) request.getSession().getAttribute("user");
+
+                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+
+                logDAO.insertLog(actorName, actorRole, "UPDATE_VOUCHER", "Updated Voucher ID: " + id + " (Code: " + code + ")");
+
+                setSessionMessage(session, "Update voucher successfully!", "success");
+            } else {
+                setSessionMessage(session, "Update voucher failed.", "error");
+            }
             response.sendRedirect("voucher?action=all");
             return;
         }
@@ -197,6 +211,14 @@ public class VoucherController extends HttpServlet {
             int id = parseInt(request.getParameter("voucherId"));
             if (id > 0) {
                 voucherDAO.deleteVoucher(id);
+
+                SystemLogDAO logDAO = new SystemLogDAO();
+                User logUser = (User) request.getSession().getAttribute("user");
+
+                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+                logDAO.insertLog(actorName, actorRole, "DEACTIVATE_VOUCHER", "Deactivated/Deleted Voucher ID: " + id);
+
                 setSessionMessage(session, "Voucher has been moved to inactive.", "success");
             } else {
                 setSessionMessage(session, "Delete voucher failed.", "error");
@@ -209,6 +231,15 @@ public class VoucherController extends HttpServlet {
             int id = parseInt(request.getParameter("voucherId"));
             if (id > 0) {
                 voucherDAO.restoreVoucher(id);
+
+                SystemLogDAO logDAO = new SystemLogDAO();
+                User logUser = (User) request.getSession().getAttribute("user");
+
+                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+
+                logDAO.insertLog(actorName, actorRole, "ACTIVATE_VOUCHER", "Restored Voucher ID: " + id);
+
                 setSessionMessage(session, "Voucher has been restored.", "success");
             } else {
                 setSessionMessage(session, "Restore voucher failed.", "error");
@@ -267,6 +298,19 @@ public class VoucherController extends HttpServlet {
         voucher.setStatus(status);
         voucher.setMaxUsage(maxUsage);
         voucherDAO.insertVoucher(voucher);
+
+        SystemLogDAO logDAO = new SystemLogDAO();
+        User logUser = (User) request.getSession().getAttribute("user");
+
+        String actorName = (logUser != null) ? logUser.getFullName() : "System";
+        String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+        String logDetail = "Created new voucher: " + code;
+        if (discountAmount.compareTo(BigDecimal.ZERO) > 0) {
+            logDetail += " (Discount: " + discountAmount + " VND)";
+        } else {
+            logDetail += " (Discount: " + discountPercent + "%)";
+        }
+        logDAO.insertLog(actorName, actorRole, "CREATE_VOUCHER", logDetail);
 
         setSessionMessage(session, "Create voucher successfully!", "success");
         response.sendRedirect("voucher?action=all");

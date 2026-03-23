@@ -22,6 +22,7 @@ import model.Grade;
 import model.Student;
 import model.User;
 import dao.CourseDAO;
+import java.util.HashMap;
 import model.Assessment;
 import model.Course;
 
@@ -159,6 +160,7 @@ public class GradeController extends HttpServlet {
 
             case "student-courses":
 
+                // ===== 1. AUTH CHECK =====
                 if (currentUser == null) {
                     response.sendRedirect("login.jsp");
                     return;
@@ -175,12 +177,40 @@ public class GradeController extends HttpServlet {
 
                 int studentId = currentUser.getUserId();
 
+                // ===== 2. GET FILTER PARAM =====
+                String keyword = request.getParameter("keyword");
+                String statusParam = request.getParameter("status");
+
+                Boolean status = null;
+
+                if (statusParam != null && !statusParam.isEmpty()) {
+                    status = Boolean.parseBoolean(statusParam);
+                }
+
+                // ===== 3. PAGINATION =====
+                int page = 1;
+                int pageSize = 6;
+
+                if (request.getParameter("page") != null) {
+                    page = Integer.parseInt(request.getParameter("page"));
+                }
+
+                // ===== 4. STUDENT INFO =====
                 Student studentInfo = studentDAO.getStudentById(studentId);
 
+                // ===== 5. GET COURSE LIST (ADVANCED SEARCH) =====
                 CourseDAO courseDAO = new CourseDAO();
-                List<Course> courseList = courseDAO.getCoursesByStudentId(studentId);
 
-                Map<Integer, Double> averageMap = new java.util.HashMap<>();
+                List<Course> courseList = courseDAO.getCoursesByStudentAdvanced(
+                        studentId,
+                        keyword,
+                        status,
+                        page,
+                        pageSize
+                );
+
+                // ===== 6. CALCULATE AVERAGE SCORE =====
+                Map<Integer, Double> averageMap = new HashMap<>();
 
                 for (Course c : courseList) {
 
@@ -190,14 +220,23 @@ public class GradeController extends HttpServlet {
                     averageMap.put(c.getCourseId(), avg);
                 }
 
+                // ===== 7. SET ATTRIBUTE =====
                 request.setAttribute("courseList", courseList);
                 request.setAttribute("averageMap", averageMap);
+
                 request.setAttribute("studentName", currentUser.getFullName());
                 request.setAttribute("studentInfo", studentInfo);
+
+                // giữ filter khi reload page
+                request.setAttribute("keyword", keyword);
+                request.setAttribute("status", status);
+                request.setAttribute("currentPage", page);
+
                 request.setAttribute("home_view", "student/studentCourseCard.jsp");
 
                 request.getRequestDispatcher("dashboard.jsp")
                         .forward(request, response);
+
                 break;
 
             case "student-course-grades":
@@ -239,8 +278,7 @@ public class GradeController extends HttpServlet {
                     List<Assessment> assessmentList = assessmentDAO.getAssessmentsByClass(classId);
 
                     List<Map<String, Object>> gradeAllList = dao.getFullGradeReport(classId);
-                   
-                    
+
                     Map<Integer, Double> avgMap = dao.getAverageByClassId(classId);
 
                     String currentClassName = classDAO.getClassNameById(classId);

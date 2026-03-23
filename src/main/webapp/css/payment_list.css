@@ -154,3 +154,9 @@
     background: #dbeafe;
     border-color: #93c5fd;
 }
+
+.amount-stat-value {
+    white-space: nowrap;
+    font-size: 1.9rem;
+    line-height: 1.1;
+}

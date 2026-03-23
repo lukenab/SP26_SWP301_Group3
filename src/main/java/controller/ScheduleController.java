@@ -21,7 +21,17 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.ArrayList;
+import model.Classes;
+import model.Schedule;
+import model.Slot;
+import model.User;
+import dao.ScheduleDAO;
+import dao.SlotDAO;
+import dao.SystemLogDAO;
+import dao.UserDAO;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -54,7 +64,7 @@ public class ScheduleController extends HttpServlet {
 
         // Allow both teacher (roleId 4) and academic staff (roleId 2)
         int roleId = user.getRole().getRoleId();
-        if (roleId != 4 && roleId != 2 && roleId != 5 ) {
+        if (roleId != 4 && roleId != 2 && roleId != 5) {
             response.sendRedirect("login.jsp");
             return;
         }
@@ -521,6 +531,14 @@ public class ScheduleController extends HttpServlet {
                             int createdCount = scheduleDAO.createMultipleSchedules(classId, roomId, slotId, learningDate, teacherId,
                                     recurringType, recurringDays, endCondition, endDate, occurrences);
                             if (createdCount > 0) {
+
+                                SystemLogDAO logDAO = new SystemLogDAO();
+                                User logUser = (User) request.getSession().getAttribute("user");
+
+                                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                                logDAO.insertLog(actorName, actorRole, "CREATE_SCHEDULE_BATCH", "Created " + createdCount + " schedules for Class ID: " + classId);
+
                                 session.setAttribute("message", "Successfully created " + createdCount + " schedule(s)!");
                                 session.setAttribute("messageType", "success");
                             } else {
@@ -531,6 +549,15 @@ public class ScheduleController extends HttpServlet {
                             // Single schedule creation - validate với 2 bước kiểm tra
                             boolean success = scheduleDAO.createSchedule(classId, roomId, slotId, learningDate, teacherId, false);
                             if (success) {
+
+                                SystemLogDAO logDAO = new SystemLogDAO();
+                                User logUser = (User) request.getSession().getAttribute("user");
+
+                                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+
+                                logDAO.insertLog(actorName, actorRole, "CREATE_SCHEDULE", "Created single schedule for Class ID: " + classId + " on " + learningDate);
+
                                 session.setAttribute("message", "Schedule created successfully!");
                                 session.setAttribute("messageType", "success");
                             } else {
@@ -603,6 +630,14 @@ public class ScheduleController extends HttpServlet {
                                 learningDate, teacherId, attendanceStatus);
 
                         if (success) {
+
+                            SystemLogDAO logDAO = new SystemLogDAO();
+                            User logUser = (User) request.getSession().getAttribute("user");
+
+                            String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                            String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                            logDAO.insertLog(actorName, actorRole, "UPDATE_SCHEDULE", "Updated schedule ID: " + scheduleId + " (Class ID: " + classId + ")");
+
                             session.setAttribute("message", "Schedule updated successfully!");
                             session.setAttribute("messageType", "success");
                         } else {
@@ -641,6 +676,14 @@ public class ScheduleController extends HttpServlet {
                             int deletedCount = scheduleDAO.deleteSimilarSchedules(scheduleId);
 
                             if (deletedCount > 0) {
+
+                                SystemLogDAO logDAO = new SystemLogDAO();
+                                User logUser = (User) request.getSession().getAttribute("user");
+
+                                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                                logDAO.insertLog(actorName, actorRole, "DELETE_SCHEDULE_BATCH", "Deleted " + deletedCount + " schedules in series starting from Schedule ID: " + scheduleId);
+
                                 message = "Successfully deleted " + deletedCount + " schedule(s) in the series!";
                                 session.setAttribute("messageType", "success");
                             } else {
@@ -653,6 +696,14 @@ public class ScheduleController extends HttpServlet {
                             success = scheduleDAO.deleteSchedule(scheduleId);
 
                             if (success) {
+
+                                SystemLogDAO logDAO = new SystemLogDAO();
+                                User logUser = (User) request.getSession().getAttribute("user");
+
+                                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                                logDAO.insertLog(actorName, actorRole, "DELETE_SCHEDULE", "Deleted schedule ID: " + scheduleId);
+
                                 session.setAttribute("message", "Schedule deleted successfully!");
                                 session.setAttribute("messageType", "success");
                             } else {
@@ -715,4 +766,3 @@ public class ScheduleController extends HttpServlet {
     }// </editor-fold>
 
 }
-

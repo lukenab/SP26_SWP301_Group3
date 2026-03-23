@@ -573,3 +573,12 @@ body.dark .toast-message {
     color: #4e73df !important; 
     transform: translateY(-2px);
 }
+
+.modal {
+    z-index: 100000 !important;
+}
+
+#editRoleModal .modal-content {
+    box-shadow: 0px 20px 50px rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid #ccc;
+}

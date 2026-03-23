@@ -19,13 +19,19 @@ import utils.DBContext;
  */
 public class RoomDAO extends DBContext {
 
+    private static Boolean cachedHasClassRoomIdColumn;
+
     private boolean hasClassRoomIdColumn() {
+        if (cachedHasClassRoomIdColumn != null) {
+            return cachedHasClassRoomIdColumn;
+        }
         try {
             String query = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS "
                     + "WHERE TABLE_NAME = 'Class' AND COLUMN_NAME = 'RoomID'";
             PreparedStatement p = conn.prepareStatement(query);
             ResultSet rs = p.executeQuery();
-            return rs.next();
+            cachedHasClassRoomIdColumn = rs.next();
+            return cachedHasClassRoomIdColumn;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -116,8 +122,9 @@ public class RoomDAO extends DBContext {
     //CHECK if Room is being used in Schedule
     public boolean isRoomInUse(int roomId) {
         try {
+            boolean hasClassRoomId = hasClassRoomIdColumn();
             String query;
-            if (hasClassRoomIdColumn()) {
+            if (hasClassRoomId) {
                 query = "SELECT "
                         + "(SELECT COUNT(*) FROM Schedule WHERE RoomID = ?) + "
                         + "(SELECT COUNT(*) FROM Class WHERE RoomID = ?) as count";
@@ -126,7 +133,7 @@ public class RoomDAO extends DBContext {
             }
             PreparedStatement p = conn.prepareStatement(query);
             p.setInt(1, roomId);
-            if (hasClassRoomIdColumn()) {
+            if (hasClassRoomId) {
                 p.setInt(2, roomId);
             }
             ResultSet rs = p.executeQuery();
@@ -144,8 +151,9 @@ public class RoomDAO extends DBContext {
     public List<String[]> getClassesUsingRoom(int roomId) {
         List<String[]> classList = new ArrayList<>();
         try {
+            boolean hasClassRoomId = hasClassRoomIdColumn();
             String query;
-            if (hasClassRoomIdColumn()) {
+            if (hasClassRoomId) {
                 query = "SELECT c.ClassID, c.ClassName, c.Status, "
                         + "co.CourseName, u.FullName as TeacherName, "
                         + "COUNT(s.ScheduleID) as TotalSchedules "
@@ -172,7 +180,7 @@ public class RoomDAO extends DBContext {
             }
             PreparedStatement p = conn.prepareStatement(query);
             p.setInt(1, roomId);
-            if (hasClassRoomIdColumn()) {
+            if (hasClassRoomId) {
                 p.setInt(2, roomId);
                 p.setInt(3, roomId);
             }

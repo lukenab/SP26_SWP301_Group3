@@ -4,8 +4,7 @@
  */
 package model;
 
-import java.time.LocalDateTime;
-
+import java.sql.Timestamp;
 /**
  *
  * @author phuct
@@ -14,25 +13,19 @@ public class SystemLog {
     private int logId;
     private String actorName;
     private String actionType;
+    private String actorRole;
     private String description;
-    private LocalDateTime logDate;
+    private Timestamp logDate;
 
     public SystemLog() {
     }
 
-    public SystemLog(int logId, String actorName, String actionType, String description, LocalDateTime logDate) {
+    public SystemLog(int logId, String actorName, String actionType, String actorRole, String description, Timestamp logDate) {
         this.logId = logId;
         this.actorName = actorName;
         this.actionType = actionType;
+        this.actorRole = actorRole;
         this.description = description;
-        this.logDate = logDate;
-    }
-
-    public LocalDateTime getLogDate() {
-        return logDate;
-    }
-
-    public void setLogDate(LocalDateTime logDate) {
         this.logDate = logDate;
     }
 
@@ -60,6 +53,14 @@ public class SystemLog {
         this.actionType = actionType;
     }
 
+    public String getActorRole() {
+        return actorRole;
+    }
+
+    public void setActorRole(String actorRole) {
+        this.actorRole = actorRole;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -68,9 +69,16 @@ public class SystemLog {
         this.description = description;
     }
 
+    public Timestamp getLogDate() {
+        return logDate;
+    }
+
+    public void setLogDate(Timestamp logDate) {
+        this.logDate = logDate;
+    }
+
     @Override
     public String toString() {
-        return "SystemLog{" + "logId=" + logId + ", actorName=" + actorName + ", actionType=" + actionType + ", description=" + description + ", logDate=" + logDate + '}';
+        return "SystemLog{" + "logId=" + logId + ", actorName=" + actorName + ", actionType=" + actionType + ", actorRole=" + actorRole + ", description=" + description + ", logDate=" + logDate + '}';
     }
-    
 }
