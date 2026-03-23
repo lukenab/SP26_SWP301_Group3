@@ -3,7 +3,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <link href="css/manageUser.css" rel="stylesheet"/>
-<link href="css/feedback_list.css" rel="stylesheet" type="text/css"/>
+
 
 <div class="container-fluid px-4" id="feedback-page-container" data-pre-class="${classId}">
 
@@ -106,11 +106,11 @@
                 <thead class="bg-light text-muted small text-uppercase">
                     <tr>
                         <th class="text-center" style="width:60px">#</th>
-                        <th>Student Information</th>
+                        <th>Student</th>
                         <th class="text-center">Class</th>
                         <th class="text-center">Rating</th>
                         <th>Comment</th>
-                        <th class="text-center" style="width:130px">Date</th>
+                        <th class="text-center">Date</th>
                     </tr>
                 </thead>
 
@@ -141,7 +141,7 @@
                                         </c:choose>
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-dark">${studentNameMap[f.feedbackId]}</div>
+                                        <div class="fw-bold text-dark">Student #${(f.feedbackId * 73 + 19) % 9000 + 1000}</div>
                                         <!--                                        <div class="small text-muted" style="font-size: 0.7rem;">
                                                                                     ID: ${f.enrollment.student.userId}
                                                                                 </div>-->
@@ -185,3 +185,4 @@
 </div>
 
 <script src="js/feedbackList.js" type="text/javascript"></script>
+

@@ -389,11 +389,9 @@ public class EnrollmentDAO extends DBContext {
     public int getTotalEnrollments() {
         int total = 0;
         String sql = "SELECT COUNT(*) as total FROM Enrollment";
-
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
                 total = rs.getInt("total");
             }
@@ -523,8 +521,5 @@ public class EnrollmentDAO extends DBContext {
     }
 
     public static void main(String[] args) {
-        EnrollmentDAO dao = new EnrollmentDAO();
-//        System.out.println(dao.getEnrollmentById(0));
     }
-
 }

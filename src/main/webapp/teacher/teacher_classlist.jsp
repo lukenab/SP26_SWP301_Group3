@@ -111,6 +111,31 @@
                     </tr>
                 </thead>
                 <tbody id="classTableBody">
+                    <c:choose>
+                        <c:when test="${not empty ClassList}">
+                            <c:forEach items="${ClassList}" var="c" varStatus="loop">
+                                <tr class="class-row">
+                                </tr>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class='bx bx-folder-open text-muted' style="font-size: 4rem;"></i>
+                                        <h4 class="text-muted mt-3">No Classes Assigned</h4>
+                                        <p class="text-muted">You are currently not assigned to any classes in the system.</p>
+                                        <a href="dashboard?action=teacher" class="btn btn-primary mt-2">Return to Dashboard</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </c:otherwise>
+                    </c:choose>
+
+                    <tr id="noResultRow" style="display: none;">
+                        <td colspan="6" class="text-center py-4 text-muted">No classes match your search.</td>
+                    </tr>
+                    
                     <c:forEach items="${ClassList}" var="c" varStatus="loop">
                         <tr class="class-row">
                             <td>${loop.count}</td>

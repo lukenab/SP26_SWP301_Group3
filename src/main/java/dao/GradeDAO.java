@@ -380,5 +380,48 @@ public class GradeDAO extends DBContext {
         }
         return list;
     }
+    
+    
+     public void updateFinalGradeByEnrollmentId(int enrollmentId, Double finalGrade) {
+        String sql = "UPDATE Enrollment SET FinalGrade = ? WHERE EnrollmentID = ?";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            if (finalGrade == null) {
+                st.setNull(1, Types.DOUBLE);
+            } else {
+                st.setDouble(1, finalGrade);
+            }
+            st.setInt(2, enrollmentId);
+            st.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Double recalculateAndPersistFinalGrade(int enrollmentId) {
+        Double finalGrade = calculateAverage(enrollmentId);
+        updateFinalGradeByEnrollmentId(enrollmentId, finalGrade);
+        return finalGrade;
+    }
+
+    public void recalculateAndPersistFinalGradeByClassId(int classId) {
+        String sql = "UPDATE e "
+                + "SET e.FinalGrade = calc.FinalScore "
+                + "FROM Enrollment e "
+                + "OUTER APPLY ("
+                + "    SELECT SUM(g.Score * a.Weight) / NULLIF(SUM(a.Weight), 0) AS FinalScore "
+                + "    FROM Grade g "
+                + "    JOIN Assessment a ON g.AssessmentID = a.AssessmentID "
+                + "    WHERE g.EnrollmentID = e.EnrollmentID"
+                + ") calc "
+                + "WHERE e.ClassID = ?";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, classId);
+            st.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }

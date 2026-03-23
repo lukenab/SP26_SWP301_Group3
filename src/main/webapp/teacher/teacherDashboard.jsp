@@ -1,7 +1,7 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+﻿<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<div class="container-fluid px-4 content-body">
+<div id="teacher-dashboard" class="container-fluid px-4 content-body">
     <div class="mb-4 mt-3 d-flex justify-content-between align-items-center">
         <div>
             <h2 class="page-title fw-bold text-dark mb-1">Teacher Dashboard</h2>
@@ -187,7 +187,7 @@
                                             </c:when>
                                             <c:otherwise>
                                                 <a href="attendance?action=take&scheduleId=${s.scheduleId}&classId=${s.classes.classid}" 
-                                                   class="btn btn-sm btn-warning rounded-pill px-3 fw-bold shadow-sm">
+                                                   class="btn btn-warning btn-sm rounded-pill take-attendance-btn">
                                                     Take Attendance
                                                 </a>
                                             </c:otherwise>
@@ -239,7 +239,7 @@
                     <c:forEach var="f" items="${latestFeedbacks}">
                         <div class="p-3 border-bottom feedback-item transition">
                             <div class="d-flex justify-content-between mb-2">
-                                <span class="fw-bold small text-dark">${studentNameMap[f.feedbackId]}</span>
+                                <span class="fw-bold small text-dark">Student #${(f.feedbackId * 73 + 19) % 9000 + 1000}</span>
                                 <div class="text-warning small" style="font-size: 0.65rem;">
                                     <c:forEach begin="1" end="${f.rating}"><i class='bx bxs-star'></i></c:forEach>
                                 </div>
@@ -257,3 +257,4 @@
         </div>
     </div>
 </div>
+
