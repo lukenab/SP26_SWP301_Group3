@@ -56,8 +56,8 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label for="type">Type <span>*</span></label>
-                <textarea id="type" name="type" placeholder="Enter room type or description" required></textarea>
+                <label for="type">Description <span>*</span></label>
+                <textarea id="type" name="type" placeholder="Enter room description" required></textarea>
             </div>
 
             <div class="form-group">

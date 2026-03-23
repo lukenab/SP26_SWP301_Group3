@@ -8,6 +8,7 @@ import dao.ClassDAO;
 import dao.ScheduleDAO;
 import dao.SlotDAO;
 import dao.TeacherDAO;
+import dao.UserDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -18,6 +19,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import model.Classes;
 import model.Schedule;
@@ -34,9 +36,12 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import model.Classes;
+import model.Schedule;
 import model.Slot;
-import java.time.ZoneId;
-import java.util.ArrayList;
+import model.User;
 
 /**
  *
@@ -133,22 +138,26 @@ public class ScheduleController extends HttpServlet {
                 Integer roomFilterId = null;
                 List<Schedule> managementScheduleList = new ArrayList<>();
 
+                // Only filter by classId if not "0" (All Classes)
                 if (filterClassId != null && !filterClassId.isEmpty() && !filterClassId.equals("0")) {
                     classFilterId = Integer.parseInt(filterClassId);
-                    // Save selected classId to session for later use
                     session.setAttribute("selectedClassId", classFilterId);
                 } else {
                     session.setAttribute("selectedClassId", 0);
+                    classFilterId = null; // Set to null to show all classes
                 }
 
+                // Only filter by roomId if not "0" (All Rooms)
                 if (filterRoomId != null && !filterRoomId.isEmpty() && !filterRoomId.equals("0")) {
                     roomFilterId = Integer.parseInt(filterRoomId);
                     session.setAttribute("selectedRoomId", roomFilterId);
                 } else {
                     session.setAttribute("selectedRoomId", 0);
+                    roomFilterId = null; // Set to null to show all rooms
                 }
 
                 // Load schedules using selected filters (class/room/week)
+                // If both are null, will show FULL schedule for the week
                 managementScheduleList = scheduleDAO.getSchedulesForManagement(selectedDate, classFilterId, roomFilterId);
 
                 // Save selected date to session
@@ -495,9 +504,8 @@ public class ScheduleController extends HttpServlet {
                         ClassDAO classDAO = new ClassDAO();
                         int teacherId = classDAO.getTeacherIdByClassId(classId);
 
-                        // Check if this is a batch creation
+                        // Nếu là batch creation
                         if (!"none".equals(recurringType)) {
-                            // Batch creation - get recurring parameters
                             String endCondition = request.getParameter("endCondition");
                             String endDateStr = request.getParameter("endDate");
                             String occurrencesStr = request.getParameter("occurrences");
@@ -508,22 +516,20 @@ public class ScheduleController extends HttpServlet {
                             if ("on".equals(endCondition) && endDateStr != null && !endDateStr.isEmpty()) {
                                 endDate = Date.valueOf(endDateStr);
                             }
-
                             if ("after".equals(endCondition) && occurrencesStr != null && !occurrencesStr.isEmpty()) {
                                 occurrences = Integer.parseInt(occurrencesStr);
                             }
-
-                            // Get custom days for custom recurring pattern
+                            // Nếu recurringType là never thì occurrences = 100 (đồng bộ với giao diện)
+                            if ("never".equals(recurringType)) {
+                                occurrences = 100;
+                            }
                             String[] recurringDaysArray = request.getParameterValues("recurringDays");
                             String recurringDays = "";
                             if (recurringDaysArray != null && recurringDaysArray.length > 0) {
                                 recurringDays = String.join(",", recurringDaysArray);
                             }
-
-                            // Create multiple schedules
                             int createdCount = scheduleDAO.createMultipleSchedules(classId, roomId, slotId, learningDate, teacherId,
                                     recurringType, recurringDays, endCondition, endDate, occurrences);
-
                             if (createdCount > 0) {
 
                                 SystemLogDAO logDAO = new SystemLogDAO();
@@ -540,43 +546,8 @@ public class ScheduleController extends HttpServlet {
                                 session.setAttribute("messageType", "error");
                             }
                         } else {
-                            // Single schedule creation - validate like before
-                            // 1. Check if there's a schedule conflict
-                            if (scheduleDAO.hasScheduleConflict(classId, slotId, learningDate, 0)) {
-                                session.setAttribute("message", "Schedule conflict: This class already has a schedule at this time slot on this date!");
-                                session.setAttribute("messageType", "error");
-                                response.sendRedirect("schedule?action=manage");
-                                return;
-                            }
-
-                            // 2. Check room availability
-                            if (!scheduleDAO.isRoomAvailable(roomId, slotId, learningDate, 0)) {
-                                session.setAttribute("message", "Room is not available for this time slot!");
-                                session.setAttribute("messageType", "error");
-                                response.sendRedirect("schedule?action=manage");
-                                return;
-                            }
-
-                            // 3. Check teacher availability
-                            if (!scheduleDAO.isTeacherAvailable(teacherId, slotId, learningDate, 0)) {
-                                session.setAttribute("message", "Teacher is not available at this time slot on this date!");
-                                session.setAttribute("messageType", "error");
-                                response.sendRedirect("schedule?action=manage");
-                                return;
-                            }
-
-                            // 4. Check if teacher exceeds 5 slots per week limit
-                            if (scheduleDAO.teacherExceedsWeeklyLimit(teacherId, learningDate, 0)) {
-                                int currentSlots = scheduleDAO.getTeacherWeeklySlotCount(teacherId, learningDate, 0);
-                                session.setAttribute("message", "Teacher has reached the weekly limit! Current slots: " + currentSlots + "/5");
-                                session.setAttribute("messageType", "error");
-                                response.sendRedirect("schedule?action=manage");
-                                return;
-                            }
-
-                            // Create single schedule
+                            // Single schedule creation - validate với 2 bước kiểm tra
                             boolean success = scheduleDAO.createSchedule(classId, roomId, slotId, learningDate, teacherId, false);
-
                             if (success) {
 
                                 SystemLogDAO logDAO = new SystemLogDAO();
@@ -590,17 +561,15 @@ public class ScheduleController extends HttpServlet {
                                 session.setAttribute("message", "Schedule created successfully!");
                                 session.setAttribute("messageType", "success");
                             } else {
-                                session.setAttribute("message", "Failed to create schedule!");
+                                session.setAttribute("message", "Failed to create schedule! (Possible duplicate, class conflict, or missing teacher)");
                                 session.setAttribute("messageType", "error");
                             }
                         }
-
                     } catch (Exception e) {
                         session.setAttribute("message", "Error creating schedule: " + e.getMessage());
                         session.setAttribute("messageType", "error");
-                        e.printStackTrace();
+                        e.printStackTrace(); // log lỗi hệ thống ở console
                     }
-
                     // Save selected values to session for next manage view
                     try {
                         int classId = Integer.parseInt(request.getParameter("classId"));
@@ -612,35 +581,29 @@ public class ScheduleController extends HttpServlet {
                     } catch (Exception e) {
                         // Silently fail if parameters are missing
                     }
-
                     // Redirect back to manage with previously selected class and date
                     Integer savedClassId = (Integer) session.getAttribute("selectedClassId");
                     Integer savedRoomId = (Integer) session.getAttribute("selectedRoomId");
                     String savedDate = (String) session.getAttribute("selectedDate");
-
                     StringBuilder redirectUrl = new StringBuilder("schedule?action=manage");
-
                     if (savedClassId != null && savedClassId > 0) {
                         redirectUrl.append("&classId=").append(savedClassId);
                     } else {
                         redirectUrl.append("&classId=0");
                     }
-
                     if (savedRoomId != null && savedRoomId > 0) {
                         redirectUrl.append("&roomId=").append(savedRoomId);
                     } else {
                         redirectUrl.append("&roomId=0");
                     }
-
                     if (savedDate != null && !savedDate.isEmpty()) {
                         redirectUrl.append("&date=").append(savedDate);
                     }
-
                     response.sendRedirect(redirectUrl.toString());
                     break;
 
                 case "update":
-                    // Update schedule
+                    // Update schedule with 2-step validation
                     try {
                         int scheduleId = Integer.parseInt(request.getParameter("scheduleId"));
                         int classId = Integer.parseInt(request.getParameter("classId"));
@@ -661,40 +624,8 @@ public class ScheduleController extends HttpServlet {
                             teacherId = classDAO.getTeacherIdByClassId(classId);
                         }
 
-                        // 1. Check if there's a schedule conflict (exclude current schedule)
-                        if (scheduleDAO.hasScheduleConflict(classId, slotId, learningDate, scheduleId)) {
-                            session.setAttribute("message", "Schedule conflict: This class already has a schedule at this time slot on this date!");
-                            session.setAttribute("messageType", "error");
-                            response.sendRedirect("schedule?action=manage");
-                            return;
-                        }
-
-                        // 2. Check room availability (exclude current schedule)
-                        if (!scheduleDAO.isRoomAvailable(roomId, slotId, learningDate, scheduleId)) {
-                            session.setAttribute("message", "Room is not available for this time slot!");
-                            session.setAttribute("messageType", "error");
-                            response.sendRedirect("schedule?action=manage");
-                            return;
-                        }
-
-                        // 3. Check teacher availability (exclude current schedule)
-                        if (!scheduleDAO.isTeacherAvailable(teacherId, slotId, learningDate, scheduleId)) {
-                            session.setAttribute("message", "Teacher is not available at this time slot on this date!");
-                            session.setAttribute("messageType", "error");
-                            response.sendRedirect("schedule?action=manage");
-                            return;
-                        }
-
-                        // 4. Check if teacher exceeds 5 slots per week limit (exclude current schedule)
-                        if (scheduleDAO.teacherExceedsWeeklyLimit(teacherId, learningDate, scheduleId)) {
-                            int currentSlots = scheduleDAO.getTeacherWeeklySlotCount(teacherId, learningDate, scheduleId);
-                            session.setAttribute("message", "Teacher has reached the weekly limit! Current slots: " + currentSlots + "/5");
-                            session.setAttribute("messageType", "error");
-                            response.sendRedirect("schedule?action=manage");
-                            return;
-                        }
-
-                        // Update schedule
+                        // STEP 1: Check duplicate (exclude current schedule)
+                        // STEP 2: Check class conflict in slot (exclude current schedule)
                         boolean success = scheduleDAO.editSchedule(scheduleId, classId, roomId, slotId,
                                 learningDate, teacherId, attendanceStatus);
 
@@ -710,7 +641,7 @@ public class ScheduleController extends HttpServlet {
                             session.setAttribute("message", "Schedule updated successfully!");
                             session.setAttribute("messageType", "success");
                         } else {
-                            session.setAttribute("message", "Failed to update schedule!");
+                            session.setAttribute("message", "Failed to update schedule! (Possible duplicate or class conflict)");
                             session.setAttribute("messageType", "error");
                         }
 
@@ -719,18 +650,7 @@ public class ScheduleController extends HttpServlet {
                         session.setAttribute("messageType", "error");
                     }
 
-                    Integer savedClassId3 = (Integer) session.getAttribute("selectedClassId");
-                    Integer savedRoomId3 = (Integer) session.getAttribute("selectedRoomId");
-                    String savedDate3 = (String) session.getAttribute("selectedDate");
-
-                    StringBuilder redirectUrl3 = new StringBuilder("schedule?action=manage");
-                    redirectUrl3.append("&classId=").append(savedClassId3 != null ? savedClassId3 : 0);
-                    redirectUrl3.append("&roomId=").append(savedRoomId3 != null ? savedRoomId3 : 0);
-                    if (savedDate3 != null && !savedDate3.isEmpty()) {
-                        redirectUrl3.append("&date=").append(savedDate3);
-                    }
-
-                    response.sendRedirect(redirectUrl3.toString());
+                    response.sendRedirect("schedule?action=manage");
                     break;
 
                 case "delete":

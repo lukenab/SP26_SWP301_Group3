@@ -96,7 +96,7 @@ public class LoginController extends HttpServlet {
                     redirectUrl = "dashboard?action=admin";
                     break;
                 case 2:
-                    redirectUrl = "dashboard";
+                    redirectUrl = "dashboard?action=academic";
                     break;
                 case 3:
                     redirectUrl = "dashboard";
