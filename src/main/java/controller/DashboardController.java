@@ -282,7 +282,7 @@ public class DashboardController extends HttpServlet {
                 dao.ScheduleDAO scheduleDAO = new dao.ScheduleDAO();
                 AttendanceDAO attendanceDAO = new AttendanceDAO();
 
-                List<Object[]> studentClasses = classDAO.getStudentClasses(studentId);
+//                List<Object[]> studentClasses = classDAO.getStudentClasses(studentId);
 
                 java.time.LocalDate todayDate = java.time.LocalDate.now();
                 java.time.LocalDate startOfWeek = todayDate.with(java.time.DayOfWeek.MONDAY);
