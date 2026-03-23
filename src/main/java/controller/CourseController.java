@@ -105,12 +105,12 @@ public class CourseController extends HttpServlet {
             return;
         }
 
-        if (currentUser.getRole() == null || !currentUser.getRole().getManageCourse()) {
-            uSession.setAttribute("message", "Access Denied: You don't have permission to manage courses!");
-            uSession.setAttribute("messageType", "error");
-            response.sendRedirect("dashboard");
-            return;
-        }
+//        if (currentUser.getRole() == null || !currentUser.getRole().getManageCourse()) {
+//            uSession.setAttribute("message", "Access Denied: You don't have permission to manage courses!");
+//            uSession.setAttribute("messageType", "error");
+//            response.sendRedirect("dashboard");
+//            return;
+//        }
 
         switch (action) {
             case "all":
