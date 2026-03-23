@@ -97,7 +97,7 @@
                                 <div class="d-flex align-items-center">
                                     <div class="avatar-container me-3">
                                         <c:choose>
-                                          
+
                                             <c:when test="${not empty s.avatar}">
                                                 <img src="${pageContext.request.contextPath}/${s.avatar}" 
                                                      class="avatar-img" 
@@ -119,7 +119,7 @@
 
                                     <div>
                                         <div class="fw-bold text-dark student-name">${s.fullName}</div>
-                                        
+
                                     </div>
                                 </div>
                             </td>
@@ -141,7 +141,7 @@
 
                             <td class="text-center">
                                 <div class="d-flex justify-content-center align-items-center gap-1">
-                                    
+
 
                                     <c:choose>
                                         <c:when test="${avg == null}">
@@ -168,6 +168,15 @@
                             </td>
                         </tr>
                     </c:forEach>
+
+                    <c:if test="${empty studentList}">
+                        <tr id="emptyClassRow">
+                            <td colspan="6" class="text-center py-5 text-muted">
+                               <i class='bx bx-search-alt fs-1 d-block mb-2'></i>
+                                <p class="mb-0">No students found for this class.</p>
+                            </td>
+                        </tr>
+                    </c:if>
                 </tbody>
             </table>
         </div>

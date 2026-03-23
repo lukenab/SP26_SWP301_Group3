@@ -232,11 +232,29 @@ public class TeacherDAO extends DBContext {
         return result;
     }
 
-   
+//    public int getTotalStudentsByTeacher(int teacherId) {
+//        String sql = "SELECT COUNT(DISTINCT e.StudentID) FROM Enrollment e "
+//                + "JOIN Class c ON e.ClassID = c.ClassID "
+//                + "WHERE c.TeacherID = ?";
+//        try (PreparedStatement st = conn.prepareStatement(sql)) {
+//            st.setInt(1, teacherId);
+//            ResultSet rs = st.executeQuery();
+//            if (rs.next()) {
+//                return rs.getInt(1);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return 0;
+//    }
+
     public int getTotalStudentsByTeacher(int teacherId) {
-        String sql = "SELECT COUNT(DISTINCT e.StudentID) FROM Enrollment e "
+        String sql = "SELECT COUNT(DISTINCT e.StudentID) "
+                + "FROM Enrollment e "
                 + "JOIN Class c ON e.ClassID = c.ClassID "
-                + "WHERE c.TeacherID = ?";
+                + "WHERE c.TeacherID = ? "
+                + "AND c.Status = 'Active' "
+                + "AND CAST(GETDATE() AS date) BETWEEN c.StartDate AND c.EndDate";
         try (PreparedStatement st = conn.prepareStatement(sql)) {
             st.setInt(1, teacherId);
             ResultSet rs = st.executeQuery();
@@ -248,7 +266,6 @@ public class TeacherDAO extends DBContext {
         }
         return 0;
     }
-
 
     public int getClassProgress(int classId) {
         String sql = "SELECT "
@@ -284,7 +301,6 @@ public class TeacherDAO extends DBContext {
         }
         return 0.0;
     }
-
 
     public int getTotalSlotsTaught(int teacherId) {
         String sql = "SELECT COUNT(*) FROM Schedule s "

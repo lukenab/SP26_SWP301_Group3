@@ -76,8 +76,8 @@
                                    name="score_${ass.assessmentId}" 
                                    class="form-control"
                                    step="0.01" min="0" max="10" 
-                                   value="${scoreMap[ass.assessmentName]}"
-                                   placeholder="0.0" required/>
+                                   value="${scoreMap[ass.assessmentName] != null ? scoreMap[ass.assessmentName] : ''}"
+                                   placeholder="0.0" />
                         </div>
                     </c:forEach>
                 </div>

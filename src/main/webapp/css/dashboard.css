@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 
 html{
     font-size: 16px;
@@ -472,3 +472,24 @@ nav {
 .modal {
     z-index: 9999 !important;
 }
+
+
+#teacher-dashboard .take-attendance-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;
+    min-width: 0;
+    font-size: 0.64rem !important;
+    font-weight: 600;
+    line-height: 1.05;
+    border-radius: 999px;
+    white-space: nowrap;
+    gap: 0;
+}
+#teacher-dashboard .take-attendance-btn:hover,
+#teacher-dashboard .take-attendance-btn:focus {
+    filter: brightness(0.97);
+}
+
+

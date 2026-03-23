@@ -300,7 +300,7 @@ public class GradeController extends HttpServlet {
                                 dao.saveOrUpdate(enrollmentId, a.getAssessmentId(), score);
                             }
                         }
-
+                        dao.recalculateAndPersistFinalGrade(enrollmentId);
                         session.setAttribute("message", "Grades updated successfully!");
                         session.setAttribute("messageType", "success");
                     }
@@ -328,7 +328,7 @@ public class GradeController extends HttpServlet {
                 if (enrollmentIdDel != null) {
                     dao.deleteAllByEnrollment(enrollmentIdDel);
                 }
-
+                dao.updateFinalGradeByEnrollmentId(enrollmentIdDel, null);
                 session.setAttribute("message", "All grades deleted successfully!");
                 session.setAttribute("messageType", "success");
 
