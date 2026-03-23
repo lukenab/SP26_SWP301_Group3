@@ -106,10 +106,48 @@ public class FeedbackController extends HttpServlet {
                     return;
                 }
 
-                List<Object[]> classListFeedback
-                        = classDAO.getClassesByStudentId(user.getUserId());
+                int studentId = user.getUserId();
+
+                // ================= SEARCH =================
+                String keyword = request.getParameter("keyword");
+                if (keyword != null && keyword.trim().isEmpty()) {
+                    keyword = null;
+                }
+
+                // ================= PAGINATION =================
+                int pageSize = 6;
+                int page = 1;
+
+                String pageParam = request.getParameter("page");
+                if (pageParam != null) {
+                    page = Integer.parseInt(pageParam);
+                }
+
+                if (page < 1) {
+                    page = 1;
+                }
+
+                // ================= COUNT =================
+                int total = classDAO.countClassesByStudentId(studentId, keyword);
+
+                int totalPage = (int) Math.ceil((double) total / pageSize);
+                if (totalPage == 0) {
+                    totalPage = 1;
+                }
+
+                if (page > totalPage) {
+                    page = totalPage;
+                }
+
+                // ================= DATA =================
+                List<Object[]> classListFeedback = classDAO.getClassesByStudentIdAdvanced(
+                        studentId, keyword, page, pageSize);
 
                 request.setAttribute("classList", classListFeedback);
+
+                request.setAttribute("keyword", keyword);
+                request.setAttribute("currentPage", page);
+                request.setAttribute("totalPage", totalPage);
 
                 request.setAttribute("home_view",
                         "student/studentFeedbackCourses.jsp");

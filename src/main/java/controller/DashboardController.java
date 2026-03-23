@@ -288,6 +288,13 @@ public class DashboardController extends HttpServlet {
                 java.time.LocalDate startOfWeek = todayDate.with(java.time.DayOfWeek.MONDAY);
                 java.time.LocalDate endOfWeek = todayDate.with(java.time.DayOfWeek.SUNDAY);
 
+                // ===== Classes của student =====
+                List<Object[]> studentClasses = classDAO.getStudentClasses(
+                        studentId,
+                        startOfWeek,
+                        endOfWeek
+                );
+
 //                List<model.Schedule> weeklySchedule = scheduleDAO.getScheduleByStudentWeek(
 //                        studentId,
 //                        startOfWeek.toString(),

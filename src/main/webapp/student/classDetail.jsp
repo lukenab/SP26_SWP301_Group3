@@ -56,7 +56,9 @@
         <ol class="breadcrumb mb-1">
 
             <li class="breadcrumb-item">
-                <a href="dashboard?action=student">Dashboard</a>
+                <a href="dashboard?action=student">
+                    <i class="bx bx-home-alt"></i>
+                </a>
             </li>
 
             <c:if test="${sourcePage != 'studentDashboard'}">
@@ -196,7 +198,7 @@
 
                     <div class="d-flex align-items-center">
 
-                        <img src="images/teacher-avatar.png"
+                        <img src="${empty teacherAvatar ? 'images/default.png' : teacherAvatar}" 
                              class="teacher-avatar me-3"/>
 
                         <div>
@@ -243,6 +245,7 @@
                                 <th>Date</th>
                                 <th>Slot</th>
                                 <th>Time</th>
+                                <th>Room</th>
                             </tr>
 
                         </thead>
@@ -268,7 +271,9 @@
                                             ${s.slot.startTime} - ${s.slot.endTime}
                                         </td>
 
-
+                                        <td>
+                                            ${s.room.roomName}
+                                        </td>
 
                                     </tr>
 
@@ -293,21 +298,21 @@
 
 
             <!-- COURSE DESCRIPTION -->
-            <div class="card card-custom">
+            <!--            <div class="card card-custom">
+            
+                            <div class="card-body">
+            
+                                <h5>
+                                    Course Description
+                                </h5>
+            
+                                <p class="text-muted">
+            ${classDetail.course.description}
+        </p>
 
-                <div class="card-body">
+    </div>
 
-                    <h5>
-                        Course Description
-                    </h5>
-
-                    <p class="text-muted">
-                        ${classDetail.course.description}
-                    </p>
-
-                </div>
-
-            </div>
+</div>-->
 
         </div>
 
@@ -328,7 +333,7 @@
                         Register Now
                     </a>
 
-                    <a href="class?action=availableClass"
+                    <a href="class?action=myClasses"
                        class="btn btn-light w-100">
                         Back to Classes
                     </a>

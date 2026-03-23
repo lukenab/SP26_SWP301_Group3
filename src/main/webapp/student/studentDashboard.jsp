@@ -35,7 +35,7 @@
         border-radius:12px;
         transition: 0.2s;
     }
-    
+
     .today-schedule-item:hover {
         background: #e9ecef;
     }
@@ -70,7 +70,7 @@
         text-align:center;
         transition: 0.2s;
     }
-    
+
     .summary-box:hover {
         background: #e9ecef;
     }
@@ -79,44 +79,44 @@
         font-size:28px;
         font-weight:700;
     }
-    
+
     /* Container chính */
     .dashboard-wrapper {
         background: #f8f9fa;
         min-height: 100vh;
         padding: 20px;
     }
-    
+
     /* Style cho card header */
     .section-header {
         border-bottom: 2px solid #e9ecef;
         padding-bottom: 15px;
         margin-bottom: 20px;
     }
-    
+
     .section-header h5 {
         font-weight: 600;
         color: #2c3e50;
         margin: 0;
     }
-    
+
     /* Style cho progress bar */
     .progress {
         background-color: #e9ecef;
         border-radius: 10px;
     }
-    
+
     .progress-bar {
         border-radius: 10px;
     }
-    
+
     /* Empty state styling */
     .empty-schedule {
         text-align: center;
         padding: 40px 20px;
         color: #6c757d;
     }
-    
+
     .empty-schedule i {
         font-size: 48px;
         margin-bottom: 15px;
@@ -165,7 +165,7 @@
                     <span class="badge bg-primary">${studentClasses.size()} Classes</span>
                 </c:if>
             </div>
-            
+
             <div class="row g-4">
                 <c:choose>
                     <c:when test="${not empty studentClasses}">
@@ -177,9 +177,9 @@
                                             <div class="fw-bold fs-5 text-primary">
                                                 ${c[0].classes.course.courseName}
                                             </div>
-                                            
+
                                         </div>
-                                        
+
                                         <div class="mb-3">
                                             <div class="d-flex align-items-center mb-2">
                                                 <i class='bx bx-user text-muted me-2' style="width: 20px;"></i>
@@ -191,14 +191,25 @@
                                             </div>
                                             <div class="d-flex align-items-center mb-2">
                                                 <i class='bx bx-calendar text-muted me-2' style="width: 20px;"></i>
-                                                <span>${c[2]}</span>
+                                                <span>
+                                                    <c:choose>
+                                                        <c:when test="${not empty c[2]}">
+                                                            ${c[2]}
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="text-muted fst-italic">
+                                                                No schedule this week
+                                                            </span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </span>
                                             </div>
                                             <div class="d-flex align-items-center">
                                                 <i class='bx bx-time text-muted me-2' style="width: 20px;"></i>
                                                 <span>${c[3]}</span>
                                             </div>
                                         </div>
-                                        
+
                                         <a href="class?action=detail&classId=${c[0].classes.classid}&source=studentDashboard"
                                            class="btn btn-primary w-100">
                                             <i class='bx bx-detail me-1'></i> View Details
@@ -219,7 +230,7 @@
                     </c:otherwise>
                 </c:choose>
             </div>
-            
+
             <c:if test="${studentClasses.size() > 3}">
                 <div class="text-center mt-4">
                     <a href="class?action=myClasses" class="btn btn-outline-primary btn-sm">
@@ -232,7 +243,7 @@
         <!-- SCHEDULE + SUMMARY SECTION -->
         <div class="row">
             <!-- TODAY SCHEDULE -->
-            <div class="col-lg-6">
+            <div class="col-lg-12">
                 <div class="card today-schedule-card p-4">
                     <div class="section-header d-flex justify-content-between align-items-center">
                         <h5><i class='bx bx-calendar-check me-2'></i>Today's Schedule</h5>
@@ -240,7 +251,7 @@
                             <fmt:formatDate value="<%= new java.util.Date()%>" pattern="EEEE"/>
                         </span>
                     </div>
-                    
+
                     <c:choose>
                         <c:when test="${not empty todaySchedule}">
                             <c:forEach items="${todaySchedule}" var="s">
@@ -265,7 +276,7 @@
                                         </div>
                                     </div>
                                     <div>
-                                        
+
                                     </div>
                                 </div>
                             </c:forEach>
@@ -278,55 +289,6 @@
                             </div>
                         </c:otherwise>
                     </c:choose>
-                </div>
-            </div>
-
-            <!-- ATTENDANCE SUMMARY -->
-            <div class="col-lg-6">
-                <div class="card summary-card p-4">
-                    <div class="section-header">
-                        <h5><i class='bx bx-pie-chart-alt-2 me-2'></i>Attendance Summary</h5>
-                    </div>
-                    
-                    <div class="row g-3 mb-4">
-                        <div class="col-6">
-                            <div class="summary-box">
-                                <div class="summary-number text-primary"><%= total %></div>
-                                <div class="text-muted small">Total Classes</div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="summary-box">
-                                <div class="summary-number text-success"><%= present %></div>
-                                <div class="text-muted small">Present</div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="summary-box">
-                                <div class="summary-number text-danger"><%= absent %></div>
-                                <div class="text-muted small">Absent</div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="summary-box">
-                                <div class="summary-number text-warning"><%= late %></div>
-                                <div class="text-muted small">Late</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-<!--                    <div class="attendance-rate">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="fw-semibold">Attendance Rate</span>
-                            <span class="badge bg-dark"><%= rate %>%</span>
-                        </div>
-                        <div class="progress" style="height: 12px;">
-                            <div class="progress-bar bg-dark" 
-                                 style="width: <%= rate %>%"></div>
-                        </div>
-                        
-                        
-                    </div>-->
                 </div>
             </div>
         </div>

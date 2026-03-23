@@ -15,6 +15,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -71,6 +75,12 @@ public class ClassController extends HttpServlet {
         ClassDAO classDAO = new ClassDAO();
         ScheduleDAO scheduleDAO = new ScheduleDAO();
         String action = request.getParameter("action");
+        String keyword = request.getParameter("keyword");
+        String status = request.getParameter("status");
+
+        int page = 1;
+        int pageSize = 6;
+
         if (action == null) {
             action = "all";
         }
@@ -92,57 +102,78 @@ public class ClassController extends HttpServlet {
 
             case "availableClass":
 
-                List<Object[]> classList = classDAO.getOpenClassesForStudent();
+                Integer teacherId = null;
+                if (request.getParameter("teacherId") != null
+                        && !request.getParameter("teacherId").isEmpty()) {
+                    teacherId = Integer.parseInt(request.getParameter("teacherId"));
+                }
 
+                java.sql.Date fromDate = null;
+                java.sql.Date toDate = null;
+
+                if (request.getParameter("fromDate") != null
+                        && !request.getParameter("fromDate").isEmpty()) {
+                    fromDate = java.sql.Date.valueOf(request.getParameter("fromDate"));
+                }
+
+                if (request.getParameter("toDate") != null
+                        && !request.getParameter("toDate").isEmpty()) {
+                    toDate = java.sql.Date.valueOf(request.getParameter("toDate"));
+                }
+
+                if (request.getParameter("page") != null) {
+                    page = Integer.parseInt(request.getParameter("page"));
+                }
+
+                // ===== 3. CALL DAO (NEW) =====
+                List<Object[]> classList = classDAO.getClassesAdvanced(
+                        keyword,
+                        teacherId,
+                        status,
+                        fromDate,
+                        toDate,
+                        page,
+                        pageSize
+                );
+
+                // ===== 4. ADD SCHEDULE INFO =====
                 for (Object[] row : classList) {
 
                     int classId = (int) row[0];
 
                     List<Schedule> schedules = scheduleDAO.getSchedulesByClass(classId);
 
-                    Set<String> days = new LinkedHashSet<>();
+                    Set<Integer> dayNumbers = new HashSet<>();
                     String timeRange = "";
 
                     for (Schedule s : schedules) {
 
-                        java.time.LocalDate learningDate
+                        LocalDate learningDate
                                 = ((java.sql.Date) s.getLearningDate()).toLocalDate();
 
-                        java.time.DayOfWeek d = learningDate.getDayOfWeek();
-
-                        switch (d) {
-                            case MONDAY:
-                                days.add("Mon");
-                                break;
-                            case TUESDAY:
-                                days.add("Tue");
-                                break;
-                            case WEDNESDAY:
-                                days.add("Wed");
-                                break;
-                            case THURSDAY:
-                                days.add("Thu");
-                                break;
-                            case FRIDAY:
-                                days.add("Fri");
-                                break;
-                            case SATURDAY:
-                                days.add("Sat");
-                                break;
-                            case SUNDAY:
-                                days.add("Sun");
-                                break;
-                        }
+                        int dayValue = learningDate.getDayOfWeek().getValue();
+                        dayNumbers.add(dayValue);
 
                         if (timeRange.isEmpty()) {
-                            timeRange = s.getSlot().getStartTime() + " - " + s.getSlot().getEndTime();
+                            timeRange = s.getSlot().getStartTime()
+                                    + " - "
+                                    + s.getSlot().getEndTime();
                         }
                     }
 
-                    String dayString = String.join("-", days);
+                    String[] dayMap = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+
+                    List<String> orderedDays = new ArrayList<>();
+
+                    for (int i = 1; i <= 7; i++) {
+                        if (dayNumbers.contains(i)) {
+                            orderedDays.add(dayMap[i - 1]);
+                        }
+                    }
+
+                    String dayString = String.join("-", orderedDays);
 
                     Object[] newRow = new Object[10];
-
                     System.arraycopy(row, 0, newRow, 0, row.length);
 
                     newRow[8] = dayString;
@@ -152,10 +183,18 @@ public class ClassController extends HttpServlet {
                     classList.set(index, newRow);
                 }
 
+                // ===== 5. SET ATTRIBUTE =====
                 request.setAttribute("classList", classList);
+                request.setAttribute("currentPage", page);
+
+                // giữ lại filter trên UI
+                request.setAttribute("keyword", keyword);
+                request.setAttribute("status", status);
+                request.setAttribute("teacherId", teacherId);
+                request.setAttribute("fromDate", fromDate);
+                request.setAttribute("toDate", toDate);
 
                 request.setAttribute("home_view", "student/studentClassList.jsp");
-
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
 
                 break;
@@ -175,13 +214,15 @@ public class ClassController extends HttpServlet {
 
                 Classes classDetail = (Classes) data[0];
                 String teacherName = (String) data[1];
-                String roomName = (String) data[2];
+                String teacherAvatar = (String) data[2];
+                String roomName = (String) data[3];
 
                 List<Schedule> schedules = scheduleDAO.getSchedulesByClass(classId);
 
                 request.setAttribute("classDetail", classDetail);
                 request.setAttribute("teacherName", teacherName);
-                 request.setAttribute("roomName", roomName); 
+                request.setAttribute("teacherAvatar", teacherAvatar);
+                request.setAttribute("roomName", roomName);
                 request.setAttribute("scheduleList", schedules);
 
                 // truyền sang JSP để breadcrumb biết nguồn
@@ -204,9 +245,38 @@ public class ClassController extends HttpServlet {
 
                 int studentId = student.getUserId();
 
-                List<Object[]> myClassList = classDAO.getStudentClasses(studentId);
+                String pageRaw = request.getParameter("page");
+                if (pageRaw != null && !pageRaw.isBlank()) {
+                    page = Integer.parseInt(pageRaw);
+                }
 
-                request.setAttribute("classList", myClassList);
+                LocalDate todayDate = LocalDate.now();
+                LocalDate startOfWeek = todayDate.with(DayOfWeek.MONDAY);
+                LocalDate endOfWeek = todayDate.with(DayOfWeek.SUNDAY);
+
+                List<Object[]> fullList = classDAO.getStudentClassesAdvanced(
+                        studentId,
+                        startOfWeek,
+                        endOfWeek,
+                        keyword,
+                        status
+                );
+
+                int totalRecords = fullList.size();
+                int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+
+                int fromIndex = (page - 1) * pageSize;
+                int toIndex = Math.min(fromIndex + pageSize, totalRecords);
+
+                List<Object[]> pageList = new ArrayList<>();
+
+                if (fromIndex < totalRecords) {
+                    pageList = fullList.subList(fromIndex, toIndex);
+                }
+
+                request.setAttribute("classList", pageList);
+                request.setAttribute("currentPage", page);
+                request.setAttribute("totalPages", totalPages);
 
                 request.setAttribute("home_view", "student/studentMyClassList.jsp");
 
