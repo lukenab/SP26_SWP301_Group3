@@ -69,7 +69,7 @@
                                         <div class="fw-semibold">${p[2]}</div>
                                         <div class="text-muted small">${p[3]}</div>
                                     </td>
-                                    <td><fmt:formatNumber type="currency" value="${p[4]}" /></td>
+                                    <td><fmt:formatNumber value="${p[4]}" pattern="#,##0" /> VND</td>
                                     <td>
                                         <c:choose>
                                             <c:when test="${not empty p[5]}">

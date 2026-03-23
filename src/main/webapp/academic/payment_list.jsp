@@ -19,7 +19,7 @@
         </div>
         <div class="content-header">
             <div>
-                <h2 class="page-title"><i class='bx bx-dollar-circle'></i> Payment Management</h2>
+                <h2 class="page-title"><i class='bx bx-wallet'></i> Payment Management</h2>
                 <p class="text-muted small mb-0">View, approve, and manage student payment requests for academic programs</p>
             </div>
         </div>
@@ -192,7 +192,7 @@
                                     </td>
                                     <td>
                                         <strong style="color: #2563eb;">
-                                            <fmt:formatNumber value="${paymentDisplay.payment.amount}" type="currency" currencySymbol="VND" />
+                                            <fmt:formatNumber value="${paymentDisplay.payment.amount}" pattern="#,##0.##" /> VND
                                         </strong>
                                     </td>
                                     <td>

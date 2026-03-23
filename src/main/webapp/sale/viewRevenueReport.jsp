@@ -37,7 +37,7 @@
         <div class="stat-card">
             <div class="stat-info">
                 <p>Total Revenue</p>
-                <h3><fmt:formatNumber type="currency" value="${totalRevenue}" /></h3>
+                <h3><fmt:formatNumber value="${totalRevenue}" pattern="#,##0" /> VND</h3>
             </div>
             <div class="icon-wrapper green">
                 <i class='bx bxs-wallet'></i>
@@ -80,7 +80,7 @@
                             <c:forEach items="${monthlyRevenueRows}" var="row">
                                 <tr>
                                     <td>${row[0]}</td>
-                                    <td><fmt:formatNumber type="currency" value="${row[1]}" /></td>
+                                    <td><fmt:formatNumber value="${row[1]}" pattern="#,##0" /> VND</td>
                                     <td>${row[2]}</td>
                                     <td>${row[3]}</td>
                                 </tr>
