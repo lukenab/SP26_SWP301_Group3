@@ -175,3 +175,36 @@
     border-bottom: 1px solid #eee;
 }
 
+.room-page .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.room-page .search-box i {
+    position: absolute;
+    left: 12px;
+    color: #9ca3af;
+    font-size: 1.2rem;
+    pointer-events: none;
+}
+
+.room-page .search-box .form-control {
+    padding-left: 40px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.room-page .search-box .form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.room-page .no-search-results {
+    color: #9ca3af;
+}
+
+.room-page .no-search-results i {
+    color: #d1d5db;
+}

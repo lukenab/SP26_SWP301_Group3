@@ -42,8 +42,46 @@ public class RoomController extends HttpServlet {
                         roomUsageMap.put(room.getRoomId(), isInUse);
                     }
 
+                    // Get filter criteria from database
+                    List<String> roomTypes = rdao.getDistinctRoomTypes();
+                    List<Integer> capacities = rdao.getDistinctRoomCapacities();
+
                     request.setAttribute("allRooms", allRoom);
                     request.setAttribute("roomUsageMap", roomUsageMap);
+                    request.setAttribute("roomTypes", roomTypes);
+                    request.setAttribute("capacities", capacities);
+                    request.setAttribute("home_view", "/academic/manageRoom.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                    break;
+                case "manage":
+                    String capacity = request.getParameter("capacity");
+                    String type = request.getParameter("type");
+                    String status = request.getParameter("status");
+
+                    List<Room> filteredRooms = rdao.getRoomsByFilter(capacity, type, status);
+                    if (filteredRooms == null) {
+                        filteredRooms = rdao.getAllRoom();
+                    }
+
+                    // Check which rooms have classes assigned
+                    Map<Integer, Boolean> usageMap = new HashMap<>();
+                    for (Room room : filteredRooms) {
+                        boolean isInUse = rdao.isRoomInUse(room.getRoomId());
+                        usageMap.put(room.getRoomId(), isInUse);
+                    }
+
+                    // Get filter criteria from database
+                    List<String> allRoomTypes = rdao.getDistinctRoomTypes();
+                    List<Integer> allCapacities = rdao.getDistinctRoomCapacities();
+
+                    request.setAttribute("allRooms", filteredRooms);
+                    request.setAttribute("roomUsageMap", usageMap);
+                    request.setAttribute("roomTypes", allRoomTypes);
+                    request.setAttribute("capacities", allCapacities);
+                    // Set current filter values for pre-selection
+                    request.setAttribute("capacity", capacity);
+                    request.setAttribute("type", type);
+                    request.setAttribute("status", status);
                     request.setAttribute("home_view", "/academic/manageRoom.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                     break;
