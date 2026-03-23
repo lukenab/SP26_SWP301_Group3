@@ -107,6 +107,40 @@ public class ScheduleDAO extends DBContext {
 
     // Create new schedule
     public boolean createSchedule(int classId, int roomId, int slotId, Date learningDate, int teacherId, boolean attendanceStatus) {
+        // STEP 0: Check if learning date is within class start and end dates
+        // If not, silently skip (don't create the schedule)
+        if (!isLearningDateWithinClassRange(classId, learningDate)) {
+            System.out.println("Info: Learning date " + learningDate + " is outside class date range, skipping...");
+            return false;
+        }
+        
+        // STEP 1: Check if exact duplicate exists (all fields except ScheduleID)
+        if (isDuplicateSchedule(classId, roomId, slotId, learningDate, teacherId, -1)) {
+            System.out.println("Error: Duplicate schedule already exists!");
+            return false;
+        }
+        
+        // STEP 2: Check if class already has schedule in same slot on same date
+        // This prevents 1 class from having multiple schedules in same slot on same day
+        if (hasClassConflictInSlot(classId, slotId, learningDate, -1)) {
+            System.out.println("Error: Class already has a schedule for this slot on this date!");
+            return false;
+        }
+        
+        // STEP 3: Check if room already has schedule in same slot on same date
+        // This prevents 1 room from having multiple schedules in same slot on same day
+        if (hasRoomConflictInSlot(roomId, slotId, learningDate, -1)) {
+            System.out.println("Error: Room already has a schedule for this slot on this date!");
+            return false;
+        }
+        
+        // STEP 4: Check if teacher already has schedule in same slot on same date
+        // This prevents 1 teacher from teaching multiple classes in same slot on same day
+        if (hasTeacherConflictInSlot(teacherId, slotId, learningDate, -1)) {
+            System.out.println("Error: Teacher already has a schedule for this slot on this date!");
+            return false;
+        }
+        
         String sql = "INSERT INTO Schedule (ClassID, RoomID, SlotID, LearningDate, TeacherID, AttendanceStatus) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -127,6 +161,30 @@ public class ScheduleDAO extends DBContext {
 
     // Edit/Update schedule
     public boolean editSchedule(int scheduleId, int classId, int roomId, int slotId, Date learningDate, int teacherId, boolean attendanceStatus) {
+        // STEP 1: Check if exact duplicate exists (exclude current schedule)
+        if (isDuplicateSchedule(classId, roomId, slotId, learningDate, teacherId, scheduleId)) {
+            System.out.println("Error: Duplicate schedule already exists!");
+            return false;
+        }
+        
+        // STEP 2: Check if class already has schedule in same slot on same date (exclude current)
+        if (hasClassConflictInSlot(classId, slotId, learningDate, scheduleId)) {
+            System.out.println("Error: Class already has a schedule for this slot on this date!");
+            return false;
+        }
+        
+        // STEP 3: Check if room already has schedule in same slot on same date (exclude current)
+        if (hasRoomConflictInSlot(roomId, slotId, learningDate, scheduleId)) {
+            System.out.println("Error: Room already has a schedule for this slot on this date!");
+            return false;
+        }
+        
+        // STEP 4: Check if teacher already has schedule in same slot on same date (exclude current)
+        if (hasTeacherConflictInSlot(teacherId, slotId, learningDate, scheduleId)) {
+            System.out.println("Error: Teacher already has a schedule for this slot on this date!");
+            return false;
+        }
+        
         String sql = "UPDATE Schedule SET ClassID = ?, RoomID = ?, SlotID = ?, LearningDate = ?, TeacherID = ?, AttendanceStatus = ? "
                 + "WHERE ScheduleID = ?";
 
@@ -180,6 +238,36 @@ public class ScheduleDAO extends DBContext {
 
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 for (Date date : scheduleDates) {
+                    // STEP 0: Check if learning date is within class start and end dates
+                    if (!isLearningDateWithinClassRange(classId, date)) {
+                        System.out.println("Info: Learning date " + date + " is outside class date range, skipping...");
+                        continue; // Skip this date
+                    }
+                    
+                    // STEP 1: Check if exact duplicate exists
+                    if (isDuplicateSchedule(classId, roomId, slotId, date, teacherId, -1)) {
+                        System.out.println("Warning: Duplicate schedule exists for slot " + slotId + " on " + date + ", skipping...");
+                        continue; // Skip this date
+                    }
+                    
+                    // STEP 2: Check if class already has schedule in same slot on same date
+                    if (hasClassConflictInSlot(classId, slotId, date, -1)) {
+                        System.out.println("Warning: Class already has schedule for slot " + slotId + " on " + date + ", skipping...");
+                        continue; // Skip this date
+                    }
+                    
+                    // STEP 3: Check if room already has schedule in same slot on same date
+                    if (hasRoomConflictInSlot(roomId, slotId, date, -1)) {
+                        System.out.println("Warning: Room already has schedule for slot " + slotId + " on " + date + ", skipping...");
+                        continue; // Skip this date
+                    }
+                    
+                    // STEP 4: Check if teacher already has schedule in same slot on same date
+                    if (hasTeacherConflictInSlot(teacherId, slotId, date, -1)) {
+                        System.out.println("Warning: Teacher already has schedule for slot " + slotId + " on " + date + ", skipping...");
+                        continue; // Skip this date
+                    }
+                    
                     ps.setInt(1, classId);
                     ps.setInt(2, roomId);
                     ps.setInt(3, slotId);
@@ -223,20 +311,14 @@ public class ScheduleDAO extends DBContext {
         // Save the day of week from the start date for "weekly" pattern
         int startDayOfWeek = cal.get(java.util.Calendar.DAY_OF_WEEK);
 
-        int maxIterations = 365; // Safety limit
-        if ("after".equals(endCondition) && occurrences != null) {
-            maxIterations = occurrences;
-        }
+        int iteration = 0;
+        int maxIterations = 730; // Safety limit (2 years of daily)
 
-        int count = 0;
-        while (count < maxIterations) {
+        while (iteration < maxIterations) {
             Date currentDate = new Date(cal.getTimeInMillis());
 
-            // Check end condition
+            // Check end condition BEFORE checking pattern match
             if ("on".equals(endCondition) && endDate != null && currentDate.after(endDate)) {
-                break;
-            }
-            if ("after".equals(endCondition) && count >= occurrences) {
                 break;
             }
 
@@ -264,17 +346,21 @@ public class ScheduleDAO extends DBContext {
                     }
                     break;
                 default:
-                    shouldAdd = (count == 0); // Single schedule
+                    shouldAdd = (dates.isEmpty()); // Single schedule
                     break;
             }
 
             if (shouldAdd) {
                 dates.add(currentDate);
-                count++;
+                // Check "after" condition AFTER adding
+                if ("after".equals(endCondition) && occurrences != null && dates.size() >= occurrences) {
+                    break;
+                }
             }
 
             // Move to next day
             cal.add(java.util.Calendar.DAY_OF_MONTH, 1);
+            iteration++;
 
             // Safety check for "never" condition
             if ("never".equals(endCondition) && dates.size() >= 100) {
@@ -428,6 +514,126 @@ public class ScheduleDAO extends DBContext {
             }
         } catch (Exception e) {
             System.out.println("Fail to check schedule conflict: " + e.getMessage());
+        }
+        return false;
+    }
+
+    // Check if class already has a schedule for the same slot on the same date (regardless of room)
+    // This prevents a class from being in multiple rooms at the same time
+    public boolean hasClassSlotConflict(int classId, int slotId, Date learningDate, int excludeScheduleId) {
+        String sql = "SELECT COUNT(*) as count FROM Schedule "
+                + "WHERE ClassID = ? AND SlotID = ? AND LearningDate = ? AND ScheduleID != ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            ps.setInt(2, slotId);
+            ps.setDate(3, learningDate);
+            ps.setInt(4, excludeScheduleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count") > 0; // Conflict exists if count > 0
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to check class-slot conflict: " + e.getMessage());
+        }
+        return false;
+    }
+
+    // STEP 1: Check if schedule with exact same info already exists (duplicate)
+    // Check: ClassID, RoomID, SlotID, LearningDate, TeacherID all match (except ScheduleID)
+    public boolean isDuplicateSchedule(int classId, int roomId, int slotId, Date learningDate, int teacherId, int excludeScheduleId) {
+        String sql = "SELECT COUNT(*) as count FROM Schedule "
+                + "WHERE ClassID = ? AND RoomID = ? AND SlotID = ? AND LearningDate = ? AND TeacherID = ? AND ScheduleID != ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            ps.setInt(2, roomId);
+            ps.setInt(3, slotId);
+            ps.setDate(4, learningDate);
+            ps.setInt(5, teacherId);
+            ps.setInt(6, excludeScheduleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count") > 0; // Duplicate found if count > 0
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to check duplicate schedule: " + e.getMessage());
+        }
+        return false;
+    }
+
+    // STEP 2: Check if class already has schedule in same slot on same date (conflict)
+    // This prevents 1 class from having 2 schedules in same slot on same day
+    // Check only: ClassID, SlotID, LearningDate (ignore RoomID, TeacherID)
+    public boolean hasClassConflictInSlot(int classId, int slotId, Date learningDate, int excludeScheduleId) {
+        String sql = "SELECT COUNT(*) as count FROM Schedule "
+                + "WHERE ClassID = ? AND SlotID = ? AND LearningDate = ? AND ScheduleID != ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            ps.setInt(2, slotId);
+            ps.setDate(3, learningDate);
+            ps.setInt(4, excludeScheduleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count") > 0; // Conflict exists if count > 0
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to check class conflict in slot: " + e.getMessage());
+        }
+        return false;
+    }
+
+    // STEP 3: Check if room already has schedule in same slot on same date (conflict)
+    // This prevents 1 room from having 2 schedules in same slot on same day
+    // Check only: RoomID, SlotID, LearningDate (ignore ClassID, TeacherID)
+    public boolean hasRoomConflictInSlot(int roomId, int slotId, Date learningDate, int excludeScheduleId) {
+        String sql = "SELECT COUNT(*) as count FROM Schedule "
+                + "WHERE RoomID = ? AND SlotID = ? AND LearningDate = ? AND ScheduleID != ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setInt(2, slotId);
+            ps.setDate(3, learningDate);
+            ps.setInt(4, excludeScheduleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count") > 0; // Conflict exists if count > 0
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to check room conflict in slot: " + e.getMessage());
+        }
+        return false;
+    }
+
+    // STEP 4: Check if teacher already has schedule in same slot on same date (conflict)
+    // This prevents 1 teacher from teaching 2 classes in same slot on same day
+    // Check only: TeacherID, SlotID, LearningDate (ignore ClassID, RoomID)
+    public boolean hasTeacherConflictInSlot(int teacherId, int slotId, Date learningDate, int excludeScheduleId) {
+        String sql = "SELECT COUNT(*) as count FROM Schedule "
+                + "WHERE TeacherID = ? AND SlotID = ? AND LearningDate = ? AND ScheduleID != ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, teacherId);
+            ps.setInt(2, slotId);
+            ps.setDate(3, learningDate);
+            ps.setInt(4, excludeScheduleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count") > 0; // Conflict exists if count > 0
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to check teacher conflict in slot: " + e.getMessage());
         }
         return false;
     }
@@ -704,7 +910,7 @@ public class ScheduleDAO extends DBContext {
                 + "FROM Schedule s "
                 + "JOIN Enrollment e ON e.ClassID = s.ClassID "
                 + "AND e.StudentID = ? "
-                + "AND e.Status = 1 "
+                + "AND e.Status = 'Active' "
                 + "JOIN Class c ON s.ClassID = c.ClassID "
                 + "JOIN Course cr ON c.CourseID = cr.CourseID "
                 + "JOIN Room r ON s.RoomID = r.RoomID "
@@ -973,5 +1179,37 @@ public class ScheduleDAO extends DBContext {
         }
 
         return list;
+    }
+
+    // Helper method: Check if learning date is within class start and end dates
+    private boolean isLearningDateWithinClassRange(int classId, Date learningDate) {
+        String sql = "SELECT StartDate, EndDate FROM Class WHERE ClassID = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Date startDate = rs.getDate("StartDate");
+                    Date endDate = rs.getDate("EndDate");
+
+                    // Nếu class không có start/end date thì allow (không có restriction)
+                    if (startDate == null || endDate == null) {
+                        return true;
+                    }
+
+                    // Check: learningDate >= startDate AND learningDate <= endDate
+                    // compareTo() trả về: -1 (sớm), 0 (bằng), 1 (muộn)
+                    boolean isOnOrAfterStart = learningDate.compareTo(startDate) >= 0;
+                    boolean isOnOrBeforeEnd = learningDate.compareTo(endDate) <= 0;
+                    
+                    return isOnOrAfterStart && isOnOrBeforeEnd;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to check class date range: " + e.getMessage());
+        }
+        // Nếu class không tồn tại hoặc lỗi thì allow (tránh chặn)
+        return true;
     }
 }

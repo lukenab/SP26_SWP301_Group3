@@ -9,7 +9,7 @@
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="room">Rooms</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Room Details</li>
             </ol>
@@ -52,7 +52,7 @@
                     <span class="user-email"><i class="bx bx-door-open"></i>Room ID: #${roomDetail.roomId}</span>
                 </div>
                 <div class="profile-header-right">
-                    <span class="user-email"><i class="bx bx-buildings"></i>Type: ${roomDetail.type}</span>
+                    <span class="user-email"><i class="bx bx-buildings"></i>Description: ${roomDetail.type}</span>
                     <span class="user-email">
                         <i class="bx ${roomDetail.status ? 'bx-check-circle' : 'bx-x-circle'}"></i>
                         Status: ${roomDetail.status ? 'Active' : 'Disabled'}
@@ -80,7 +80,7 @@
                         <span>${roomDetail.capacity} people</span>
                     </div>
                     <div class="info-item">
-                        <p>Type</p>
+                        <p>Description</p>
                         <span>${roomDetail.type}</span>
                     </div>
                     <div class="info-item">
@@ -100,16 +100,18 @@
                             <thead>
                                 <tr>
                                     <th>Class Name</th>
-                                    <th>Learning Date</th>
-                                    <th>Slot</th>
+                                    <th>Course</th>
+                                    <th>Teacher</th>
+                                    <th>Total Schedules</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:forEach var="classInfo" items="${classesUsingRoom}">
                                     <tr>
-                                        <td>${classInfo[0]}</td>
                                         <td>${classInfo[1]}</td>
-                                        <td>Slot ${classInfo[2]}</td>
+                                        <td>${classInfo[3]}</td>
+                                        <td>${classInfo[4]}</td>
+                                        <td>${classInfo[5]}</td>
                                     </tr>
                                 </c:forEach>
                             </tbody>

@@ -356,7 +356,7 @@ nav.active .navbar-left{
     display: flex;
     align-items: center;
     gap: 5px;
-    text-decoration: none; 
+    text-decoration: none;
     width: 100%;
 }
 
@@ -425,7 +425,7 @@ nav.active .navbar-left{
 }
 
 .sidebar li a.active {
-    background-color: #1C5284;   
+    background-color: #1C5284;
     color: #fff;
 }
 
@@ -473,23 +473,10 @@ nav {
     z-index: 9999 !important;
 }
 
-
-#teacher-dashboard .take-attendance-btn {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    width: auto !important;
-    min-width: 0;
-    font-size: 0.64rem !important;
-    font-weight: 600;
-    line-height: 1.05;
-    border-radius: 999px;
-    white-space: nowrap;
-    gap: 0;
+.menu-header{
+    padding: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 1px;
 }
-#teacher-dashboard .take-attendance-btn:hover,
-#teacher-dashboard .take-attendance-btn:focus {
-    filter: brightness(0.97);
-}
-
-

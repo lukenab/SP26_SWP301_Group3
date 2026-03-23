@@ -12,7 +12,7 @@
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
                 <li class="breadcrumb-item active">Manage Schedule</li>
             </ol>
         </div>
@@ -98,12 +98,12 @@
     </c:if>
 
     <c:choose>
-        <c:when test="${(empty classId or classId == 0) and (empty roomId or roomId == 0)}">
+        <c:when test="${empty scheduleList or scheduleList.size() == 0}">
             <div class="card user-table-card border-0 bg-white section-card">
                 <div class="empty-state">
                     <i class='bx bx-calendar-x'></i>
-                    <h4 class="mt-3 mb-2">Please select a class or room to view schedule</h4>
-                    <p class="text-muted">Use filters above to view schedule by class, room, or both</p>
+                    <h4 class="mt-3 mb-2">No schedules found</h4>
+                    <p class="text-muted">There are no schedules for the selected filters and week</p>
                 </div>
             </div>
         </c:when>

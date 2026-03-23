@@ -1,5 +1,6 @@
 package controller;
 
+import dao.SystemLogDAO;
 import dao.VoucherDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,7 +12,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import model.User;
 import model.Voucher;
 
 @WebServlet(name = "VoucherController", urlPatterns = {"/voucher"})
@@ -41,6 +44,54 @@ public class VoucherController extends HttpServlet {
                 request.setAttribute("statusFilter", status);
                 request.setAttribute("today", LocalDate.now().toString());
                 request.setAttribute("home_view", "/sale/viewVoucherList.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                break;
+            case "report":
+                String fromDateRaw = request.getParameter("fromDate");
+                String toDateRaw = request.getParameter("toDate");
+
+                LocalDate defaultFromDate = LocalDate.now().withDayOfYear(1);
+                LocalDate defaultToDate = LocalDate.now().plusMonths(12);
+
+                LocalDate fromDateValue = parseDateOrNull(fromDateRaw);
+                LocalDate toDateValue = parseDateOrNull(toDateRaw);
+                if (fromDateValue == null) {
+                    fromDateValue = defaultFromDate;
+                }
+                if (toDateValue == null) {
+                    toDateValue = defaultToDate;
+                }
+
+                if (fromDateValue.isAfter(toDateValue)) {
+                    LocalDate temp = fromDateValue;
+                    fromDateValue = toDateValue;
+                    toDateValue = temp;
+                }
+
+                Date fromDate = Date.valueOf(fromDateValue);
+                Date toDate = Date.valueOf(toDateValue);
+                Object[] summary = voucherDAO.getVoucherInventoryReportSummary(fromDate, toDate);
+                List<Object[]> voucherRows = voucherDAO.getVoucherInventoryReport(fromDate, toDate);
+                List<Object[]> rawMonthlyRows = voucherDAO.getVoucherInventoryMonthlyReport(fromDate, toDate);
+                List<Object[]> monthlyRows = new java.util.ArrayList<>();
+                for (Object[] row : rawMonthlyRows) {
+                    int issued = row[1] == null ? 0 : ((Number) row[1]).intValue();
+                    int used = row[2] == null ? 0 : ((Number) row[2]).intValue();
+                    int remaining = row[3] == null ? 0 : ((Number) row[3]).intValue();
+                    if (issued > 0 || used > 0 || remaining > 0) {
+                        monthlyRows.add(row);
+                    }
+                }
+
+                request.setAttribute("totalVouchers", summary[0]);
+                request.setAttribute("activeVouchers", summary[1]);
+                request.setAttribute("totalIssued", summary[2]);
+                request.setAttribute("totalRemaining", summary[3]);
+                request.setAttribute("voucherRows", voucherRows);
+                request.setAttribute("monthlyRows", monthlyRows);
+                request.setAttribute("fromDate", fromDateValue.toString());
+                request.setAttribute("toDate", toDateValue.toString());
+                request.setAttribute("home_view", "/sale/viewVoucherReport.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "add":
@@ -138,8 +189,20 @@ public class VoucherController extends HttpServlet {
             }
 
             boolean updated = voucherDAO.updateVoucher(id, code, discountAmount, discountPercent, validUntil, status, maxUsage);
-            setSessionMessage(session, updated ? "Update voucher successfully!" : "Update voucher failed.",
-                    updated ? "success" : "error");
+
+            if (updated) {
+                SystemLogDAO logDAO = new SystemLogDAO();
+                User logUser = (User) request.getSession().getAttribute("user");
+
+                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+
+                logDAO.insertLog(actorName, actorRole, "UPDATE_VOUCHER", "Updated Voucher ID: " + id + " (Code: " + code + ")");
+
+                setSessionMessage(session, "Update voucher successfully!", "success");
+            } else {
+                setSessionMessage(session, "Update voucher failed.", "error");
+            }
             response.sendRedirect("voucher?action=all");
             return;
         }
@@ -148,6 +211,14 @@ public class VoucherController extends HttpServlet {
             int id = parseInt(request.getParameter("voucherId"));
             if (id > 0) {
                 voucherDAO.deleteVoucher(id);
+
+                SystemLogDAO logDAO = new SystemLogDAO();
+                User logUser = (User) request.getSession().getAttribute("user");
+
+                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+                logDAO.insertLog(actorName, actorRole, "DEACTIVATE_VOUCHER", "Deactivated/Deleted Voucher ID: " + id);
+
                 setSessionMessage(session, "Voucher has been moved to inactive.", "success");
             } else {
                 setSessionMessage(session, "Delete voucher failed.", "error");
@@ -160,6 +231,15 @@ public class VoucherController extends HttpServlet {
             int id = parseInt(request.getParameter("voucherId"));
             if (id > 0) {
                 voucherDAO.restoreVoucher(id);
+
+                SystemLogDAO logDAO = new SystemLogDAO();
+                User logUser = (User) request.getSession().getAttribute("user");
+
+                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+
+                logDAO.insertLog(actorName, actorRole, "ACTIVATE_VOUCHER", "Restored Voucher ID: " + id);
+
                 setSessionMessage(session, "Voucher has been restored.", "success");
             } else {
                 setSessionMessage(session, "Restore voucher failed.", "error");
@@ -219,6 +299,19 @@ public class VoucherController extends HttpServlet {
         voucher.setMaxUsage(maxUsage);
         voucherDAO.insertVoucher(voucher);
 
+        SystemLogDAO logDAO = new SystemLogDAO();
+        User logUser = (User) request.getSession().getAttribute("user");
+
+        String actorName = (logUser != null) ? logUser.getFullName() : "System";
+        String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+        String logDetail = "Created new voucher: " + code;
+        if (discountAmount.compareTo(BigDecimal.ZERO) > 0) {
+            logDetail += " (Discount: " + discountAmount + " VND)";
+        } else {
+            logDetail += " (Discount: " + discountPercent + "%)";
+        }
+        logDAO.insertLog(actorName, actorRole, "CREATE_VOUCHER", logDetail);
+
         setSessionMessage(session, "Create voucher successfully!", "success");
         response.sendRedirect("voucher?action=all");
     }
@@ -273,6 +366,39 @@ public class VoucherController extends HttpServlet {
             }
             return Date.valueOf(value.trim());
         } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private LocalDateTime parseFilterDateTimeStart(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Date.valueOf(value.trim()).toLocalDate().atStartOfDay();
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private LocalDateTime parseFilterDateTimeEnd(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Date.valueOf(value.trim()).toLocalDate().atTime(23, 59, 59);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private LocalDate parseDateOrNull(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Date.valueOf(value.trim()).toLocalDate();
+        } catch (IllegalArgumentException e) {
             return null;
         }
     }

@@ -6,7 +6,7 @@
 <div class="mb-4">
     <div aria-label="breadcrumb">
         <ol class="breadcrumb mb-1">
-            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="room">Room Management</a></li>
             <li class="breadcrumb-item active" aria-current="page">Create Room</li>
         </ol>
@@ -56,8 +56,8 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label for="type">Type <span>*</span></label>
-                <textarea id="type" name="type" placeholder="Enter room type or description" required></textarea>
+                <label for="type">Description <span>*</span></label>
+                <textarea id="type" name="type" placeholder="Enter room description" required></textarea>
             </div>
 
             <div class="form-group">

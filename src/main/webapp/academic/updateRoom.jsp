@@ -16,7 +16,7 @@
     </div>
     <div aria-label="breadcrumb">
         <ol class="breadcrumb mb-1">
-            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="room">Room Management</a></li>
             <li class="breadcrumb-item active" aria-current="page">Edit Room</li>
         </ol>
@@ -50,7 +50,7 @@
                 <span class="user-email"><i class="bx bx-door-open"></i>Room ID: #${roomUpdate.roomId}</span>
             </div>
             <div class="profile-header-right">
-                <span class="user-email"><i class="bx bx-buildings"></i>Type: ${roomUpdate.type}</span>
+                <span class="user-email"><i class="bx bx-buildings"></i>Description: ${roomUpdate.type}</span>
                 <span class="user-email">
                     <i class="bx ${roomUpdate.status ? 'bx-check-circle' : 'bx-x-circle'}"></i>
                     Status: ${roomUpdate.status ? 'Active' : 'Disabled'}
@@ -81,8 +81,8 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="type">Type</label>
-                        <textarea id="type" name="type" placeholder="Enter room type or description" required>${roomUpdate.type}</textarea>
+                        <label for="type">Description</label>
+                        <textarea id="type" name="type" placeholder="Enter room description" required>${roomUpdate.type}</textarea>
                     </div>
 
                     <div class="form-group">

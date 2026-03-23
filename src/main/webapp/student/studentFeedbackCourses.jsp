@@ -57,9 +57,9 @@
 
 </style>
 
-
 <div class="container-fluid feedback-container">
 
+    <!-- ================= HEADER ================= -->
     <div class="mb-4 mt-4">
 
         <div aria-label="breadcrumb">
@@ -83,7 +83,26 @@
 
     </div>
 
+    <!-- ================= SEARCH ================= -->
+    <form action="feedback" method="get" class="row mb-4">
+        <input type="hidden" name="action" value="viewStudentCoursesFeedback"/>
+        <input type="hidden" name="page" value="1"/>
 
+        <div class="col-md-10">
+            <input type="text" name="keyword" class="form-control"
+                   placeholder="Search class, course, teacher..."
+                   value="${keyword}">
+        </div>
+
+        <div class="col-md-2">
+            <button type="submit"
+                    class="btn btn-primary w-100 d-flex justify-content-center align-items-center">
+                Search
+            </button>
+        </div>
+    </form>
+
+    <!-- ================= GRID ================= -->
     <div class="row g-4">
 
         <c:choose>
@@ -114,13 +133,10 @@
 
                                 </div>
 
-
                                 <a href="feedback?action=writeFeedback&enrollmentId=${c[0]}"
-                                   class="btn btn-outline-primary feedback-btn w-100"
-                                   style="display: flex; align-items: center; justify-content: center; text-align: center; background-color: #0d6efd; color: white; border-color: #0d6efd; cursor: default;">
+                                   class="btn btn-primary feedback-btn w-100 d-flex justify-content-center align-items-center">
                                     Give Feedback
                                 </a>
-
 
                             </div>
 
@@ -131,7 +147,6 @@
                 </c:forEach>
 
             </c:when>
-
 
             <c:otherwise>
 
@@ -144,6 +159,29 @@
             </c:otherwise>
 
         </c:choose>
+
+    </div>
+
+    <!-- ================= PAGINATION ================= -->
+    <div class="d-flex justify-content-center mt-4">
+
+        <c:if test="${currentPage > 1}">
+            <a href="feedback?action=viewStudentCoursesFeedback&page=${currentPage - 1}&keyword=${keyword}"
+               class="btn btn-outline-primary me-2">
+                Previous
+            </a>
+        </c:if>
+
+        <span class="align-self-center">
+            Page ${currentPage} / ${totalPage}
+        </span>
+
+        <c:if test="${currentPage < totalPage}">
+            <a href="feedback?action=viewStudentCoursesFeedback&page=${currentPage + 1}&keyword=${keyword}"
+               class="btn btn-outline-primary ms-2">
+                Next
+            </a>
+        </c:if>
 
     </div>
 

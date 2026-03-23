@@ -77,23 +77,31 @@ public class EnrollmentDAO extends DBContext {
 
     public List<Object[]> getStudentsInClass(int classId) {
         List<Object[]> list = new ArrayList<>();
-        String sql = "SELECT e.EnrollmentID, s.StudentID, u.FullName, u.Email, e.EnrollDate, e.Status "
+        String sql = "SELECT e.EnrollmentID, s.StudentID, u.FullName, u.Email, e.EnrollDate, e.Status, grade_summary.FinalGrade "
                 + "FROM Enrollment e "
                 + "JOIN Student s ON e.StudentID = s.StudentID "
                 + "JOIN [User] u ON s.StudentID = u.UserID "
+                + "LEFT JOIN ( "
+                + "    SELECT g.EnrollmentID, "
+                + "           SUM(g.Score * a.Weight) / NULLIF(SUM(a.Weight), 0) AS FinalGrade "
+                + "    FROM Grade g "
+                + "    JOIN Assessment a ON g.AssessmentID = a.AssessmentID "
+                + "    GROUP BY g.EnrollmentID "
+                + ") grade_summary ON e.EnrollmentID = grade_summary.EnrollmentID "
                 + "WHERE e.ClassID = ? "
                 + "ORDER BY u.FullName ASC";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, classId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Object[] row = new Object[6];
+                    Object[] row = new Object[7];
                     row[0] = rs.getInt("EnrollmentID");
                     row[1] = rs.getInt("StudentID");
                     row[2] = rs.getString("FullName");
                     row[3] = rs.getString("Email");
                     row[4] = rs.getDate("EnrollDate");
                     row[5] = rs.getString("Status");
+                    row[6] = rs.getObject("FinalGrade");
                     list.add(row);
                 }
             }
@@ -105,7 +113,24 @@ public class EnrollmentDAO extends DBContext {
 
     public List<Object[]> getStudentsNotInClass(int classId) {
         List<Object[]> list = new ArrayList<>();
-        String sql = "SELECT s.StudentID, u.FullName, u.Email, s.EnrollmentDate "
+        String sql = "SELECT s.StudentID, u.FullName, u.Email, s.EnrollmentDate, "
+                + "CASE "
+                + "    WHEN EXISTS ( "
+                + "        SELECT 1 "
+                + "        FROM Enrollment e2 "
+                + "        WHERE e2.StudentID = s.StudentID "
+                + "          AND e2.Status IN ('Paid', 'Active', 'Completed') "
+                + "    ) "
+                + "    OR EXISTS ( "
+                + "        SELECT 1 "
+                + "        FROM Payment p "
+                + "        JOIN Enrollment e3 ON p.EnrollmentID = e3.EnrollmentID "
+                + "        WHERE e3.StudentID = s.StudentID "
+                + "          AND p.Status IN ('Approved', 'Paid', 'Complete', 'Completed') "
+                + "    ) "
+                + "    THEN 'Paid' "
+                + "    ELSE 'UnPaid' "
+                + "END AS SuggestedStatus "
                 + "FROM Student s "
                 + "JOIN [User] u ON s.StudentID = u.UserID "
                 + "WHERE NOT EXISTS ( "
@@ -122,7 +147,7 @@ public class EnrollmentDAO extends DBContext {
                     row[1] = rs.getString("FullName");
                     row[2] = rs.getString("Email");
                     row[3] = rs.getDate("EnrollmentDate");
-                    row[4] = "UnPaid";
+                    row[4] = rs.getString("SuggestedStatus");
                     list.add(row);
                 }
             }
@@ -130,6 +155,52 @@ public class EnrollmentDAO extends DBContext {
             System.out.println("Fail to get students not in class: " + e.getMessage());
         }
         return list;
+    }
+
+    public boolean hasPaidStudent(int[] studentIds) {
+        if (studentIds == null || studentIds.length == 0) {
+            return false;
+        }
+
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < studentIds.length; i++) {
+            if (i > 0) {
+                placeholders.append(", ");
+            }
+            placeholders.append("?");
+        }
+
+        String sql = "SELECT TOP 1 1 "
+                + "FROM Student s "
+                + "WHERE s.StudentID IN (" + placeholders + ") "
+                + "AND ( "
+                + "    EXISTS ( "
+                + "        SELECT 1 "
+                + "        FROM Enrollment e "
+                + "        WHERE e.StudentID = s.StudentID "
+                + "          AND e.Status IN ('Paid', 'Active', 'Completed') "
+                + "    ) "
+                + "    OR EXISTS ( "
+                + "        SELECT 1 "
+                + "        FROM Payment p "
+                + "        JOIN Enrollment e2 ON p.EnrollmentID = e2.EnrollmentID "
+                + "        WHERE e2.StudentID = s.StudentID "
+                + "          AND p.Status IN ('Approved', 'Paid', 'Complete', 'Completed') "
+                + "    ) "
+                + ")";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < studentIds.length; i++) {
+                ps.setInt(i + 1, studentIds[i]);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to check paid students: " + e.getMessage());
+        }
+        return false;
     }
 
     public int addStudentsToClass(int classId, int[] studentIds, String enrollmentStatus) {
@@ -176,15 +247,40 @@ public class EnrollmentDAO extends DBContext {
         if (studentIds == null || studentIds.length == 0) {
             return 0;
         }
-        String sql = "DELETE FROM Enrollment WHERE ClassID = ? AND StudentID = ?";
+        String findEnrollmentSql = "SELECT EnrollmentID FROM Enrollment WHERE ClassID = ? AND StudentID = ?";
+        String deleteAttendanceSql = "DELETE FROM Attendance WHERE EnrollmentID = ?";
+        String deleteGradeSql = "DELETE FROM Grade WHERE EnrollmentID = ?";
+        String deleteFeedbackSql = "DELETE FROM Feedback WHERE EnrollmentID = ?";
+        String deletePaymentSql = "DELETE FROM Payment WHERE EnrollmentID = ?";
+        String deleteEnrollmentSql = "DELETE FROM Enrollment WHERE EnrollmentID = ?";
         int removedCount = 0;
         try {
             conn.setAutoCommit(false);
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (PreparedStatement findEnrollment = conn.prepareStatement(findEnrollmentSql); PreparedStatement deleteAttendance = conn.prepareStatement(deleteAttendanceSql); PreparedStatement deleteGrade = conn.prepareStatement(deleteGradeSql); PreparedStatement deleteFeedback = conn.prepareStatement(deleteFeedbackSql); PreparedStatement deletePayment = conn.prepareStatement(deletePaymentSql); PreparedStatement deleteEnrollment = conn.prepareStatement(deleteEnrollmentSql)) {
                 for (int studentId : studentIds) {
-                    ps.setInt(1, classId);
-                    ps.setInt(2, studentId);
-                    removedCount += ps.executeUpdate();
+                    findEnrollment.setInt(1, classId);
+                    findEnrollment.setInt(2, studentId);
+
+                    try (ResultSet rs = findEnrollment.executeQuery()) {
+                        while (rs.next()) {
+                            int enrollmentId = rs.getInt("EnrollmentID");
+
+                            deleteAttendance.setInt(1, enrollmentId);
+                            deleteAttendance.executeUpdate();
+
+                            deleteGrade.setInt(1, enrollmentId);
+                            deleteGrade.executeUpdate();
+
+                            deleteFeedback.setInt(1, enrollmentId);
+                            deleteFeedback.executeUpdate();
+
+                            deletePayment.setInt(1, enrollmentId);
+                            deletePayment.executeUpdate();
+
+                            deleteEnrollment.setInt(1, enrollmentId);
+                            removedCount += deleteEnrollment.executeUpdate();
+                        }
+                    }
                 }
             }
             conn.commit();
@@ -304,6 +400,126 @@ public class EnrollmentDAO extends DBContext {
         }
         return total;
     }
+
+    public List<Object[]> getEnrollmentManagementList(Integer courseId, Integer classId, String statusFilter) {
+        List<Object[]> list = new ArrayList<>();
+        String normalizedStatus = statusFilter == null ? "" : statusFilter.trim();
+
+        String sql = "SELECT e.EnrollmentID, u.UserID AS StudentID, u.FullName, u.Email, "
+                + "c.ClassID, c.ClassName, co.CourseID, co.CourseName, "
+                + "e.EnrollDate, e.Status, p.Status AS PaymentStatus "
+                + "FROM Enrollment e "
+                + "JOIN Student s ON e.StudentID = s.StudentID "
+                + "JOIN [User] u ON s.StudentID = u.UserID "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "OUTER APPLY ( "
+                + "    SELECT TOP 1 Status "
+                + "    FROM Payment p "
+                + "    WHERE p.EnrollmentID = e.EnrollmentID "
+                + "    ORDER BY p.PaymentDate DESC, p.PaymentID DESC "
+                + ") p "
+                + "WHERE (? IS NULL OR co.CourseID = ?) "
+                + "AND (? IS NULL OR c.ClassID = ?) "
+                + "AND ("
+                + "    ? = '' "
+                + "    OR (? = 'Pending' AND e.Status IN ('Pending', 'UnPaid', 'Unpaid')) "
+                + "    OR (? = 'Active' AND e.Status = 'Active') "
+                + "    OR (? = 'Rejected' AND e.Status = 'Rejected') "
+                + ") "
+                + "ORDER BY e.EnrollDate DESC, e.EnrollmentID DESC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setObject(1, courseId);
+            ps.setObject(2, courseId);
+            ps.setObject(3, classId);
+            ps.setObject(4, classId);
+            ps.setString(5, normalizedStatus);
+            ps.setString(6, normalizedStatus);
+            ps.setString(7, normalizedStatus);
+            ps.setString(8, normalizedStatus);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Object[] row = new Object[11];
+                    row[0] = rs.getInt("EnrollmentID");
+                    row[1] = rs.getInt("StudentID");
+                    row[2] = rs.getString("FullName");
+                    row[3] = rs.getString("Email");
+                    row[4] = rs.getInt("ClassID");
+                    row[5] = rs.getString("ClassName");
+                    row[6] = rs.getInt("CourseID");
+                    row[7] = rs.getString("CourseName");
+                    row[8] = rs.getDate("EnrollDate");
+                    row[9] = rs.getString("Status");
+                    row[10] = rs.getString("PaymentStatus");
+                    list.add(row);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get enrollment management list: " + e.getMessage());
+        }
+
+        return list;
+    }
+
+    public int countEnrollmentsByStatus(String statusFilter) {
+        int total = 0;
+        String normalizedStatus = statusFilter == null ? "" : statusFilter.trim();
+        String sql = "SELECT COUNT(*) AS Total "
+                + "FROM Enrollment e "
+                + "WHERE ("
+                + "    ? = '' "
+                + "    OR (? = 'Pending' AND e.Status IN ('Pending', 'UnPaid', 'Unpaid')) "
+                + "    OR (? = 'Active' AND e.Status = 'Active') "
+                + "    OR (? = 'Rejected' AND e.Status = 'Rejected') "
+                + ")";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, normalizedStatus);
+            ps.setString(2, normalizedStatus);
+            ps.setString(3, normalizedStatus);
+            ps.setString(4, normalizedStatus);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    total = rs.getInt("Total");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to count enrollments by status: " + e.getMessage());
+        }
+
+        return total;
+    }
+
+    public List<Integer> getMonthlyNewEnrollments(int year) {
+        List<Integer> data = new java.util.ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            data.add(0);
+        }
+        String sql = "SELECT MONTH(EnrollDate) as Month, COUNT(StudentID) as Total "
+                + "FROM Enrollment " 
+                + "WHERE YEAR(EnrollDate) = ? "
+                + "GROUP BY MONTH(EnrollDate)";
+
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, year);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int month = rs.getInt("Month");
+                    int total = rs.getInt("Total");               
+                    if (month >= 1 && month <= 12) {
+                        data.set(month - 1, total);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get monthly new enrollments: " + e.getMessage());
+        }
+        return data;
+    }
+
     public static void main(String[] args) {
     }
 }

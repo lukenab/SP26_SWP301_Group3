@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -148,38 +149,132 @@ public class AttendanceController extends HttpServlet {
                 }
                 break;
 
-            case "studentReport":
-                try {
+            case "studentReport": {
 
-                    HttpSession session = request.getSession();
-                    User user = (User) session.getAttribute("user");
+                HttpSession session = request.getSession();
+                User user = (User) session.getAttribute("user");
 
-                    if (user == null) {
-                        response.sendRedirect("login.jsp");
-                        return;
-                    }
-
-                    int studentId = user.getUserId();
-
-                    AttendanceDAO daoAttendance = new AttendanceDAO();
-
-                    List<Object[]> reportList = daoAttendance.getAttendanceReportByStudent(studentId);
-
-                    Map<String, Integer> summary = daoAttendance.getAttendanceSummaryByStudent(studentId);
-
-                    request.setAttribute("attendanceReport", reportList);
-
-                    request.setAttribute("summary", summary);
-
-                    request.setAttribute("home_view", "student/attendanceReport.jsp");
-
-                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    response.sendRedirect("dashboard?action=student");
+                if (user == null) {
+                    response.sendRedirect("login.jsp");
+                    return;
                 }
+
+                int studentId = user.getUserId();
+
+                // ================= KEYWORD =================
+                String keyword = request.getParameter("keyword");
+                if (keyword != null) {
+                    keyword = keyword.trim();
+                    if (keyword.isEmpty()) {
+                        keyword = null;
+                    }
+                }
+
+                // ================= DATE =================
+                String fromStr = request.getParameter("fromDate");
+                String toStr = request.getParameter("toDate");
+
+                Date fromDate = null;
+                Date toDate = null;
+
+                try {
+                    if (fromStr != null && !fromStr.isEmpty()) {
+                        fromDate = Date.valueOf(fromStr);
+                    }
+                } catch (Exception e) {
+                    fromDate = null;
+                }
+
+                try {
+                    if (toStr != null && !toStr.isEmpty()) {
+                        toDate = Date.valueOf(toStr);
+                    }
+                } catch (Exception e) {
+                    toDate = null;
+                }
+
+                // ================= LOG =================
+                System.out.println("===== AFTER PARSE =====");
+                System.out.println("fromDate: " + fromDate);
+                System.out.println("toDate: " + toDate);
+
+                // ================= VALIDATE DATE =================
+                if (fromDate != null && toDate != null) {
+                    if (fromDate.after(toDate)) {
+                        Date temp = fromDate;
+                        fromDate = toDate;
+                        toDate = temp;
+                    }
+                }
+
+                System.out.println("===== FILTER INPUT =====");
+                System.out.println("from (raw): " + fromStr);
+                System.out.println("to (raw): " + toStr);
+                System.out.println("keyword: " + keyword);
+
+                // ================= VIEW =================
+                String view = request.getParameter("view");
+                if (view == null || view.isBlank()) {
+                    view = "card";
+                }
+
+                // ================= PAGINATION =================
+                int pageSize = 10;
+                int page = 1;
+
+                String pageParam = request.getParameter("page");
+                if (pageParam != null) {
+                    try {
+                        page = Integer.parseInt(pageParam);
+                    } catch (NumberFormatException e) {
+                        page = 1;
+                    }
+                }
+
+                if (page < 1) {
+                    page = 1;
+                }
+
+                // ================= COUNT =================
+                int totalRecord = dao.countAttendanceReport(
+                        studentId, keyword, fromDate, toDate
+                );
+
+                int totalPage = (int) Math.ceil((double) totalRecord / pageSize);
+                if (totalPage == 0) {
+                    totalPage = 1;
+                }
+
+                if (page > totalPage) {
+                    page = totalPage;
+                }
+
+                // ================= DATA =================
+                List<Object[]> reportList = dao.getAttendanceReportByStudent(
+                        studentId, keyword, fromDate, toDate, page, pageSize
+                );
+
+                Map<String, Integer> summary = dao.getAttendanceSummaryByStudent(studentId);
+
+                // ================= SET ATTRIBUTE =================
+                request.setAttribute("attendanceReport", reportList);
+                request.setAttribute("summary", summary);
+
+                request.setAttribute("keyword", keyword);
+
+                request.setAttribute("fromStr", fromStr);
+                request.setAttribute("toStr", toStr);
+
+                request.setAttribute("currentPage", page);
+                request.setAttribute("totalPage", totalPage);
+                request.setAttribute("view", view);
+
+                request.setAttribute("home_view", "student/attendanceReport.jsp");
+
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+
                 break;
+            }
         }
     }
 

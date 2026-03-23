@@ -4,13 +4,16 @@
  */
 package controller;
 
+import dao.AssessmentDAO;
+import dao.SystemLogDAO;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import model.User;
 
 /**
  *
@@ -19,69 +22,192 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "AssessmentController", urlPatterns = {"/assessment"})
 public class AssessmentController extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet AssessmentController</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet AssessmentController at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String action = request.getParameter("action");
+        AssessmentDAO assessmentDAO = new AssessmentDAO();
+        HttpSession session = request.getSession();
+
+        if (action == null) {
+            action = "list";
+        }
+
+        switch (action) {
+            case "delete":
+                try {
+                    int assessmentId = Integer.parseInt(request.getParameter("assessmentId"));
+                    int courseId = Integer.parseInt(request.getParameter("courseId"));
+
+                    if (assessmentDAO.deleteAssessment(assessmentId)) {
+
+                        SystemLogDAO logDAO = new SystemLogDAO();
+                        User logUser = (User) request.getSession().getAttribute("user");
+
+                        String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                        String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                        logDAO.insertLog(actorName, actorRole, "DELETE_ASSESSMENT", "Deleted Assessment ID: " + assessmentId + " (Course ID: " + courseId + ")");
+
+                        session.setAttribute("message", "Assessment deleted successfully");
+                        session.setAttribute("messageType", "success");
+                    } else {
+                        session.setAttribute("message", "Failed to delete assessment");
+                        session.setAttribute("messageType", "error");
+                    }
+
+                    response.sendRedirect(request.getContextPath() + "/course?action=assessment&courseId=" + courseId);
+                } catch (NumberFormatException e) {
+                    session.setAttribute("message", "Invalid ID");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/course?action=all");
+                }
+                break;
+            default:
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                break;
+        }
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String action = request.getParameter("action");
+        AssessmentDAO assessmentDAO = new AssessmentDAO();
+        HttpSession session = request.getSession();
+
+        if (action == null) {
+            action = "list";
+        }
+
+        switch (action) {
+            case "add":
+                try {
+                    int courseId = Integer.parseInt(request.getParameter("courseId"));
+                    String assessmentName = request.getParameter("assessmentName").trim();
+                    double weight = Double.parseDouble(request.getParameter("weight"));
+
+                    // Validation
+                    if (assessmentName.isEmpty()) {
+                        session.setAttribute("message", "Assessment name cannot be empty");
+                        session.setAttribute("messageType", "error");
+                    } else if (assessmentDAO.checkAssessmentNameExists(courseId, assessmentName)) {
+                        session.setAttribute("message", "Assessment name '" + assessmentName + "' already exists in this course");
+                        session.setAttribute("messageType", "error");
+                    } else if (weight < 0 || weight > 100) {
+                        session.setAttribute("message", "Weight must be between 0 and 100");
+                        session.setAttribute("messageType", "error");
+                    } else if (assessmentDAO.getTotalWeightByCourse(courseId) + weight > 100) {
+                        double total = assessmentDAO.getTotalWeightByCourse(courseId) + weight;
+                        session.setAttribute("message", "Total weight cannot exceed 100%. Current: " + assessmentDAO.getTotalWeightByCourse(courseId) + "% + New: " + weight + "% = " + total + "%");
+                        session.setAttribute("messageType", "error");
+                    } else if (assessmentDAO.addAssessment(courseId, assessmentName, weight)) {
+
+                        SystemLogDAO logDAO = new SystemLogDAO();
+                        User logUser = (User) request.getSession().getAttribute("user");
+
+                        String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                        String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                        logDAO.insertLog(actorName, actorRole, "CREATE_ASSESSMENT", "Created new assessment: " + assessmentName + " (Weight: " + weight + "%) for Course ID: " + courseId);
+
+                        session.setAttribute("message", "Assessment added successfully");
+                        session.setAttribute("messageType", "success");
+                    } else {
+                        session.setAttribute("message", "Failed to add assessment");
+                        session.setAttribute("messageType", "error");
+                    }
+
+                    response.sendRedirect(request.getContextPath() + "/course?action=assessment&courseId=" + courseId);
+                } catch (NumberFormatException e) {
+                    session.setAttribute("message", "Invalid input");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/course?action=all");
+                }
+                break;
+
+            case "update":
+                try {
+                    int assessmentId = Integer.parseInt(request.getParameter("assessmentId"));
+                    int courseId = Integer.parseInt(request.getParameter("courseId"));
+                    String assessmentName = request.getParameter("assessmentName").trim();
+                    double weight = Double.parseDouble(request.getParameter("weight"));
+
+                    // Validation
+                    if (assessmentName.isEmpty()) {
+                        session.setAttribute("message", "Assessment name cannot be empty");
+                        session.setAttribute("messageType", "error");
+                    } else if (weight < 0 || weight > 100) {
+                        session.setAttribute("message", "Weight must be between 0 and 100");
+                        session.setAttribute("messageType", "error");
+                    } else {
+                        // Get old assessment for weight recalculation
+                        AssessmentDAO dao = new AssessmentDAO();
+                        model.Assessment oldAssessment = dao.getAssessmentById(assessmentId);
+                        if (oldAssessment == null) {
+                            session.setAttribute("message", "Assessment not found");
+                            session.setAttribute("messageType", "error");
+                        } else {
+                            double currentTotal = dao.getTotalWeightByCourse(courseId);
+                            double newTotal = currentTotal - oldAssessment.getWeight() + weight;
+
+                            if (newTotal > 100) {
+                                session.setAttribute("message", "Total weight cannot exceed 100%. New total would be: " + newTotal + "%");
+                                session.setAttribute("messageType", "error");
+                            } else if (dao.updateAssessment(assessmentId, assessmentName, weight)) {
+
+                                SystemLogDAO logDAO = new SystemLogDAO();
+                                User logUser = (User) request.getSession().getAttribute("user");
+
+                                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                                logDAO.insertLog(actorName, actorRole, "UPDATE_ASSESSMENT", "Updated Assessment ID: " + assessmentId + " (Course ID: " + courseId + ")");
+
+                                session.setAttribute("message", "Assessment updated successfully");
+                                session.setAttribute("messageType", "success");
+                            } else {
+                                session.setAttribute("message", "Failed to update assessment");
+                                session.setAttribute("messageType", "error");
+                            }
+                        }
+                    }
+
+                    response.sendRedirect(request.getContextPath() + "/course?action=assessment&courseId=" + courseId);
+                } catch (NumberFormatException e) {
+                    session.setAttribute("message", "Invalid input");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/course?action=all");
+                }
+                break;
+
+            case "delete":
+                try {
+                    int assessmentId = Integer.parseInt(request.getParameter("assessmentId"));
+                    int courseId = Integer.parseInt(request.getParameter("courseId"));
+
+                    if (assessmentDAO.deleteAssessment(assessmentId)) {
+
+                        session.setAttribute("message", "Assessment deleted successfully");
+                        session.setAttribute("messageType", "success");
+                    } else {
+                        session.setAttribute("message", "Failed to delete assessment");
+                        session.setAttribute("messageType", "error");
+                    }
+
+                    response.sendRedirect(request.getContextPath() + "/course?action=assessment&courseId=" + courseId);
+                } catch (NumberFormatException e) {
+                    session.setAttribute("message", "Invalid input");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/course?action=all");
+                }
+                break;
+
+            default:
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                break;
+        }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "Assessment Controller";
+    }
 }

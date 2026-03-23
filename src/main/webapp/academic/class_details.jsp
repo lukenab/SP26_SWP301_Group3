@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<fmt:setLocale value="en_US"/>
 
 <link href="css/class_management.css" rel="stylesheet" type="text/css"/>
 
@@ -12,6 +13,11 @@
     <c:set var="fillRateBar" value="${fillRate > 100 ? 100 : fillRate}" />
     <c:set var="paidCount" value="0" />
     <c:set var="unpaidCount" value="0" />
+    <c:set var="gradedCount" value="0" />
+    <c:set var="passCount" value="0" />
+    <c:set var="totalGrade" value="0" />
+    <c:set var="averageGrade" value="0" />
+    <c:set var="passRate" value="0" />
     <c:forEach items="${studentsInClass}" var="s">
         <c:choose>
             <c:when test="${s[5] == 'Paid'}">
@@ -21,12 +27,23 @@
                 <c:set var="unpaidCount" value="${unpaidCount + 1}" />
             </c:when>
         </c:choose>
+        <c:if test="${s[6] != null}">
+            <c:set var="gradedCount" value="${gradedCount + 1}" />
+            <c:set var="totalGrade" value="${totalGrade + s[6]}" />
+            <c:if test="${s[6] >= 5}">
+                <c:set var="passCount" value="${passCount + 1}" />
+            </c:if>
+        </c:if>
     </c:forEach>
+    <c:if test="${gradedCount > 0}">
+        <c:set var="averageGrade" value="${totalGrade / gradedCount}" />
+        <c:set var="passRate" value="${passCount * 100.0 / gradedCount}" />
+    </c:if>
 
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-2">
-                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="enrollment?action=classes">Class Management</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Class Details</li>
             </ol>
@@ -111,16 +128,35 @@
         </div>
         <div class="class-metric-card">
             <div class="class-metric-label">Average Grade</div>
-            <div class="class-metric-value">N/A</div>
-            <div class="class-metric-sub">No grade data yet</div>
+            <div class="class-metric-value">
+                <c:choose>
+                    <c:when test="${gradedCount > 0}">
+                        <fmt:formatNumber value="${averageGrade}" minFractionDigits="1" maxFractionDigits="1"/>
+                    </c:when>
+                    <c:otherwise>N/A</c:otherwise>
+                </c:choose>
+            </div>
+            <div class="class-metric-sub">
+                <c:choose>
+                    <c:when test="${gradedCount > 0}">${gradedCount} graded students</c:when>
+                    <c:otherwise>No grade data yet</c:otherwise>
+                </c:choose>
+            </div>
             <div class="class-metric-icon info">
                 <i class='bx bx-line-chart'></i>
             </div>
         </div>
         <div class="class-metric-card">
             <div class="class-metric-label">Pass Rate</div>
-            <div class="class-metric-value">N/A</div>
-            <div class="class-metric-sub">Students passing</div>
+            <div class="class-metric-value">
+                <c:choose>
+                    <c:when test="${gradedCount > 0}">
+                        <fmt:formatNumber value="${passRate}" maxFractionDigits="0"/>%
+                    </c:when>
+                    <c:otherwise>N/A</c:otherwise>
+                </c:choose>
+            </div>
+            <div class="class-metric-sub">${passCount} students passing (>= 5)</div>
             <div class="class-metric-icon warning">
                 <i class='bx bx-award'></i>
             </div>
@@ -135,7 +171,7 @@
             </div>
             <div class="class-student-actions">
                 <span class="class-details-count">${studentsInClass.size()} students</span>
-                <a href="#" class="btn btn-outline-secondary btn-export-report">Export Report</a>
+                
             </div>
         </div>
         <div class="table-responsive">
@@ -143,16 +179,17 @@
                 <thead>
                     <tr>
                         <th style="width: 8%">#</th>
-                        <th style="width: 36%">Student</th>
-                        <th style="width: 22%">Enrollment Date</th>
-                        <th style="width: 18%">Status</th>
+                        <th style="width: 31%">Student</th>
+                        <th style="width: 19%">Enrollment Date</th>
+                        <th style="width: 12%">Final Rate</th>
+                        <th style="width: 14%">Status</th>
                         <th style="width: 16%">Contact</th>
                     </tr>
                 </thead>
                 <tbody>
                     <c:if test="${empty studentsInClass}">
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No students in class.</td>
+                            <td colspan="6" class="text-center text-muted py-4">No students in class.</td>
                         </tr>
                     </c:if>
                     <c:forEach items="${studentsInClass}" var="s" varStatus="loop">
@@ -172,6 +209,16 @@
                             <td>
                                 <span class="class-detail-date">
                                     <fmt:formatDate value="${s[4]}" pattern="dd MMM yyyy"/>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="class-detail-date">
+                                    <c:choose>
+                                        <c:when test="${s[6] != null}">
+                                            <fmt:formatNumber value="${s[6]}" minFractionDigits="1" maxFractionDigits="1"/>
+                                        </c:when>
+                                        <c:otherwise>N/A</c:otherwise>
+                                    </c:choose>
                                 </span>
                             </td>
                             <td>

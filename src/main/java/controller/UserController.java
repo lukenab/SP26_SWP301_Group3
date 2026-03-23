@@ -7,6 +7,7 @@ package controller;
 import dao.EmployeeDAO;
 import dao.RoleDAO;
 import dao.StudentDAO;
+import dao.SystemLogDAO;
 import dao.UserDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -44,6 +45,20 @@ public class UserController extends HttpServlet {
         RoleDAO roleDAO = new RoleDAO();
         EmployeeDAO employeeDAO = new EmployeeDAO();
         StudentDAO studentDAO = new StudentDAO();
+
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+        }
+
+        if (!currentUser.getRole().getManageUser()) {
+            session.setAttribute("message", "Access Denied: You don't have permission to manage users!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect("dashboard");
+            return;
+        }
 
         String action = request.getParameter("action");
         if (action == null) {
@@ -120,6 +135,21 @@ public class UserController extends HttpServlet {
             throws ServletException, IOException {
         UserDAO userDAO = new UserDAO();
         String action = request.getParameter("action");
+        
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+        
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (!currentUser.getRole().getManageUser()) {
+            session.setAttribute("message", "Access Denied: You don't have permission to perform this action!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect("dashboard");
+            return; 
+        }
 
         switch (action) {
             case "add":
@@ -153,6 +183,18 @@ public class UserController extends HttpServlet {
 
                 HttpSession aSession = request.getSession();
                 if (isAdded) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+
+                    String logAction = "CREATE_USER";
+                    String detail = "Admin has create new account: " + fullName + " (Email: " + email + ")";
+
+                    logDAO.insertLog(actorName, actorRole, logAction, detail);
+
                     aSession.setAttribute("message", "Add New User Successfully!");
                     aSession.setAttribute("messageType", "success");
                 } else {
@@ -165,23 +207,34 @@ public class UserController extends HttpServlet {
             case "inActivate":
             case "activate":
                 int id = getIntParam(request, "id", 0);
-                if(id <= 0){
+                if (id <= 0) {
                     response.sendRedirect("user");
                     return;
                 }
-                
+
                 boolean newStatus = action.equals("activate");
-                
+
                 Boolean statusUpdated = userDAO.updateUserStatus(id, newStatus);
-                
+
                 HttpSession uSession = request.getSession();
                 String actionName = newStatus ? "Activate" : "Inactivate";
-                
+
                 if (statusUpdated) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+
+                    String logAction = newStatus ? "ACTIVATE_USER" : "DEACTIVATE_USER";
+                    String detail = "Admin has " + (newStatus ? "active" : "inactive") + " account: " + id;
+                    logDAO.insertLog(actorName, actorRole, logAction, detail);
+
                     uSession.setAttribute("message", actionName + " User Success!");
                     uSession.setAttribute("messageType", "success");
                 } else {
-                    uSession.setAttribute("message", "Fail To " +actionName + " User");
+                    uSession.setAttribute("message", "Fail To " + actionName + " User");
                     uSession.setAttribute("messageType", "error");
                 }
                 response.sendRedirect("user");
@@ -213,13 +266,24 @@ public class UserController extends HttpServlet {
                 }
 
                 boolean isUpdated = userDAO.updateUserById(uFullName, uPhone, uAddress, uGender, uDob, uAvatar, uRoleId, uUserId, uEnrollmentDate, uHDate, uEducation, uExperience);
-                HttpSession session = request.getSession();
+                HttpSession updateSession = request.getSession();
                 if (isUpdated) {
-                    session.setAttribute("message", "Update User Info Successfully!");
-                    session.setAttribute("messageType", "success");
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+
+                    String logAction = "UPDATE_USER";
+                    String detail = "Admin has update info for User ID: " + uUserId + " (" + uFullName + ")";
+                    logDAO.insertLog(actorName, actorRole, logAction, detail);
+
+                    updateSession.setAttribute("message", "Update User Info Successfully!");
+                    updateSession.setAttribute("messageType", "success");
                 } else {
-                    session.setAttribute("message", "Update Failed!");
-                    session.setAttribute("messageType", "error");
+                    updateSession.setAttribute("message", "Update Failed!");
+                    updateSession.setAttribute("messageType", "error");
                 }
                 response.sendRedirect("user");
                 break;
@@ -238,7 +302,7 @@ public class UserController extends HttpServlet {
                     break;
                 }
 
-                User currentUser = userDAO.getUserById(cpUserId);
+                currentUser = userDAO.getUserById(cpUserId);
                 String hashCurrentPass = userDAO.hashMD5(currentPassword);
 
                 if (currentPassword == null || !currentUser.getPassword().equals(hashCurrentPass)) {
@@ -251,6 +315,13 @@ public class UserController extends HttpServlet {
                 String newPasswordHashed = userDAO.hashMD5(newPassword);
                 Boolean isPasswordChanged = userDAO.updatePassword(newPasswordHashed, cpUserId);
                 if (isPasswordChanged) {
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+                    logDAO.insertLog(actorName, actorRole, "CHANGE_PASSWORD", "User ID " + cpUserId + " changed their password.");
+
                     passSession.invalidate();
 
                     HttpSession newSession = request.getSession();
@@ -292,6 +363,17 @@ public class UserController extends HttpServlet {
                 HttpSession pSession = request.getSession();
 
                 if (isProfUpdated) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+
+                    String logAction = "UPDATE_PROFILE";
+                    String detail = "User updated personal profile information (User ID: " + pUserId + ")";
+                    logDAO.insertLog(actorName, actorRole, logAction, detail);
+
                     pSession.setAttribute("message", "Profile Updated Successfully!");
                     pSession.setAttribute("messageType", "success");
 
@@ -319,6 +401,14 @@ public class UserController extends HttpServlet {
 
                 HttpSession resetSession = request.getSession();
                 if (isReset) {
+
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+                    logDAO.insertLog(actorName, actorRole, "RESET_PASSWORD", "Admin reset password for User ID " + targetUserId + " (" + targetEmail + ")");
+
                     Boolean isEmailSent = controller.EmailController.sendEmail(targetEmail, targetFullName, randomPass);
                     if (isEmailSent) {
                         resetSession.setAttribute("message", "Reset password success. Email has been sent!");
@@ -334,7 +424,7 @@ public class UserController extends HttpServlet {
 
                 response.sendRedirect("user");
                 break;
-                
+
             case "toggleLock":
                 int lockUserId = Integer.parseInt(request.getParameter("id"));
                 boolean lockVal = Boolean.parseBoolean(request.getParameter("val"));
@@ -342,6 +432,17 @@ public class UserController extends HttpServlet {
                 boolean isToggled = userDAO.toggleLockUser(lockUserId, lockVal);
                 HttpSession lockSession = request.getSession();
                 if (isToggled) {
+                    SystemLogDAO logDAO = new SystemLogDAO();
+                    User logUser = (User) request.getSession().getAttribute("user");
+
+                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+
+                    String logAction = lockVal ? "LOCK_USER" : "UNLOCK_USER";
+                    String detail = "Admin đã " + (lockVal ? "lock" : "unlock") + " account has ID: " + lockUserId;
+                    logDAO.insertLog(actorName, actorRole, logAction, detail);
+
+                    lockSession.setAttribute("message", "User account has been...");
                     lockSession.setAttribute("message", "User account has been " + (lockVal ? "Locked" : "Unlocked") + " successfully!");
                     lockSession.setAttribute("messageType", "success");
                 } else {

@@ -1,107 +1,157 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
 <div class="container-fluid student-course-container">
 
-    <!-- BREADCRUMB -->
+    <!-- ================= HEADER ================= -->
     <div class="mb-4 mt-4">
-        <div aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item">
-                    <a href="dashboard">
-                        <i class="bx bx-home-alt"></i>
-                    </a>
-                </li>
-                <li class="breadcrumb-item active">
-                    Attendance Report
-                </li>
-            </ol>
-        </div>
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item">
+                <a href="dashboard"><i class="bx bx-home-alt"></i></a>
+            </li>
+            <li class="breadcrumb-item active">Attendance Report</li>
+        </ol>
 
-        <div>
-            <h2 class="fw-bold mb-1">Attendance Report</h2>
-            <p class="text-muted small mb-0">
-                Track your attendance progress for each class.
-            </p>
-        </div>
+        <h2 class="fw-bold">Attendance Report</h2>
     </div>
 
-    <!-- CLASS LIST -->
-    <div class="row">
+    <!-- ================= SEARCH + FILTER ================= -->
+    <form action="attendance" method="get" class="row mb-4">
+        <input type="hidden" name="action" value="studentReport"/>
+        <input type="hidden" name="page" value="1"/>
+        <input type="hidden" name="view" value="${view}"/>
 
-        <c:forEach var="r" items="${attendanceReport}">
+        <div class="col-md-4">
+            <input type="text" name="keyword" class="form-control"
+                   placeholder="Search class or course..."
+                   value="${keyword != null ? keyword : ''}">
+        </div>
 
-            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+        <div class="col-md-3">
+            <input type="date" name="fromDate" class="form-control"
+                   value="${fromStr != null ? fromStr : ''}">
+        </div>
 
-                <div class="card shadow-sm h-100 border-0" 
-                     style="border-radius:8px; padding:5px;">
+        <div class="col-md-3">
+            <input type="date" name="toDate" class="form-control"
+                   value="${toStr != null ? toStr : ''}">
+        </div>
 
-                    <div class="card-body">
+        <div class="col-md-2">
+            <button type="submit"
+                    class="btn btn-primary w-100 d-flex justify-content-center align-items-center">
+                Search
+            </button>
+        </div>
+    </form>
 
-                        <!-- CLASS TITLE -->
-                        <h5 class="card-title d-flex justify-content-between">
-                            ${r[2]}
-                            <span class="badge bg-info">
-                                ${r[1]}
-                            </span>
-                        </h5>
+    <!-- ================= TABLE ================= -->
+    <div id="tableView">
 
-                        <!-- COURSE -->
-                        <p class="text-muted">
-                            Course: ${r[1]}
-                        </p>
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Class</th>
+                    <th>Course</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Attended</th>
+                    <th>Total</th>
+                    <th>Rate</th>
+                </tr>
+            </thead>
 
-                        <!-- DATE -->
-                        <p>
-                            <i class="bx bx-calendar"></i>
+            <tbody>
 
-                            <fmt:formatDate value="${r[3]}" pattern="dd MMM yyyy"/>
+                <!-- NO DATA -->
+                <c:if test="${empty attendanceReport}">
+                    <tr>
+                        <td colspan="8" class="text-center">No data found</td>
+                    </tr>
+                </c:if>
 
-                            -
+                <!-- DATA -->
+                <c:forEach var="r" items="${attendanceReport}" varStatus="loop">
+                    <tr>
+                        <!-- FIX INDEX: pageSize = 6 -->
+                        <td>
+                            ${(currentPage - 1) * 6 + loop.index + 1}
+                        </td>
 
-                            <fmt:formatDate value="${r[4]}" pattern="dd MMM yyyy"/>
-                        </p>
+                        <td>${r[2]}</td>
+                        <td>${r[1]}</td>
 
-                        <!-- ATTENDANCE -->
-                        <p>
-                            <i class="bx bx-check-circle"></i>
+                        <td>
+                            <fmt:formatDate value="${r[3]}" pattern="dd/MM/yyyy"/>
+                        </td>
 
-                            Attended: 
-                            <strong>${r[6]}/${r[5]}</strong> slots
-                        </p>
+                        <td>
+                            <fmt:formatDate value="${r[4]}" pattern="dd/MM/yyyy"/>
+                        </td>
 
-                        <hr>
+                        <td>${r[6]}</td>
+                        <td>${r[5]}</td>
 
-                        <!-- RATE -->
-                        <h5 class="text-primary">
+                        <!-- FIX RATE: tránh chia 0 -->
+                        <td>
+                            <c:choose>
+                                <c:when test="${r[5] > 0}">
+                                    ${ (r[6] * 100) / r[5] }%
+                                </c:when>
+                                <c:otherwise>
+                                    0%
+                                </c:otherwise>
+                            </c:choose>
+                        </td>
+                    </tr>
+                </c:forEach>
 
-                            ${r[7]} %
+            </tbody>
+        </table>
 
-                            <span class="text-muted small">
-                                Attendance Rate
-                            </span>
+    </div>
 
-                        </h5>
+    <!-- ================= PAGINATION ================= -->
 
-                        <!-- PROGRESS BAR -->
-                        <div class="progress mt-2">
+    <!-- PREVIOUS -->
+    <c:url var="pageUrlPrev" value="attendance">
+        <c:param name="action" value="studentReport"/>
+        <c:param name="page" value="${currentPage - 1}"/>
+        <c:param name="view" value="${view}"/>
+        <c:param name="keyword" value="${keyword}"/>
+        <c:param name="fromDate" value="${fromStr}"/>
+        <c:param name="toDate" value="${toStr}"/>
+    </c:url>
 
-                            <div class="progress-bar bg-success"
-                                 role="progressbar"
-                                 style="width:${r[7]}%">
+    <!-- NEXT -->
+    <c:url var="pageUrlNext" value="attendance">
+        <c:param name="action" value="studentReport"/>
+        <c:param name="page" value="${currentPage + 1}"/>
+        <c:param name="view" value="${view}"/>
+        <c:param name="keyword" value="${keyword}"/>
+        <c:param name="fromDate" value="${fromStr}"/>
+        <c:param name="toDate" value="${toStr}"/>
+    </c:url>
 
-                            </div>
+    <div class="d-flex justify-content-center mt-4">
 
-                        </div>
+        <c:if test="${currentPage > 1}">
+            <a href="${pageUrlPrev}" class="btn btn-outline-primary me-2">
+                Previous
+            </a>
+        </c:if>
 
-                    </div>
+        <span class="align-self-center">
+            Page ${currentPage} / ${totalPage}
+        </span>
 
-                </div>
-
-            </div>
-
-        </c:forEach>
+        <c:if test="${currentPage < totalPage}">
+            <a href="${pageUrlNext}" class="btn btn-outline-primary ms-2">
+                Next
+            </a>
+        </c:if>
 
     </div>
 

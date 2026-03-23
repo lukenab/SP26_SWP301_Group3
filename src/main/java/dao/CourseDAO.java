@@ -95,6 +95,82 @@ public class CourseDAO extends DBContext {
         return list;
     }
 
+    public List<Course> getCoursesByStudentAdvanced(
+            int studentId,
+            String keyword,
+            Boolean status,
+            int page,
+            int pageSize) {
+
+        List<Course> list = new ArrayList<>();
+
+        String sql = "SELECT DISTINCT "
+                + "co.CourseID, "
+                + "co.CourseName, "
+                + "co.Description, "
+                + "co.TotalSlots, "
+                + "co.TuitionFee, "
+                + "co.Status, "
+                + "co.Image "
+                + "FROM Enrollment e "
+                + "INNER JOIN Class c ON e.ClassID = c.ClassID "
+                + "INNER JOIN Course co ON c.CourseID = co.CourseID "
+                + "WHERE e.StudentID = ? ";
+
+        if (keyword != null && !keyword.isBlank()) {
+            sql += " AND co.CourseName LIKE ? ";
+        }
+
+        if (status != null) {
+            sql += " AND co.Status = ? ";
+        }
+
+        sql += " ORDER BY co.CourseID DESC ";
+        sql += " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int index = 1;
+
+            ps.setInt(index++, studentId);
+
+            if (keyword != null && !keyword.isBlank()) {
+                ps.setString(index++, "%" + keyword + "%");
+            }
+
+            if (status != null) {
+                ps.setBoolean(index++, status);
+            }
+
+            int offset = (page - 1) * pageSize;
+
+            ps.setInt(index++, offset);
+            ps.setInt(index++, pageSize);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                Course course = new Course(
+                        rs.getInt("CourseID"),
+                        rs.getString("CourseName"),
+                        rs.getString("Description"),
+                        rs.getInt("TotalSlots"),
+                        rs.getBigDecimal("TuitionFee"),
+                        rs.getBoolean("Status"),
+                        rs.getString("Image")
+                );
+
+                list.add(course);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail advanced course search: " + e.getMessage());
+        }
+
+        return list;
+    }
+
     public List<Course> getActiveCourses() {
         List<Course> list = new ArrayList<>();
 
@@ -253,7 +329,7 @@ public class CourseDAO extends DBContext {
             return false;
         }
     }
-    
+
     public int getTotalCourseCount() {
         String sql = "SELECT COUNT(*) FROM Course";
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
@@ -268,12 +344,15 @@ public class CourseDAO extends DBContext {
 
     public List<Course> searchCourses(String keyword) {
         List<Course> list = new ArrayList<>();
-        String sql = "SELECT * FROM Course WHERE CourseName LIKE ? OR Description LIKE ?";
+        String sql = "SELECT * FROM Course WHERE (? IS NULL OR LTRIM(RTRIM(?)) = '' OR CourseName LIKE ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            String searchKeyword = "%" + keyword + "%";
-            ps.setString(1, searchKeyword);
-            ps.setString(2, searchKeyword);
+            String normalizedKeyword = keyword == null ? null : keyword.trim();
+            String searchKeyword = normalizedKeyword == null || normalizedKeyword.isEmpty()
+                    ? null : normalizedKeyword + "%";
+            ps.setString(1, normalizedKeyword);
+            ps.setString(2, normalizedKeyword);
+            ps.setString(3, searchKeyword);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {

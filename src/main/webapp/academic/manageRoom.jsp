@@ -10,7 +10,7 @@
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Room Management</li>
             </ol>
         </div>
@@ -71,7 +71,7 @@
                                 <th class="room-index-col">#</th>
                                 <th>Room Name</th>
                                 <th>Capacity</th>
-                                <th>Type</th>
+                                <th>Description</th>
                                 <th>Status</th>
                                 <th class="text-end">Actions</th>
                             </tr>

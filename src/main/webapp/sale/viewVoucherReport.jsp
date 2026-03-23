@@ -13,66 +13,75 @@
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item"><a href="#"><i class="bx bx-home-alt"></i></a></li>
-                <li class="breadcrumb-item active" aria-current="page">Sales Reports</li>
+                <li class="breadcrumb-item active" aria-current="page">Voucher Report</li>
             </ol>
         </div>
         <div class="content-header">
             <div>
-                <h2 class="page-title">Sales Reports</h2>
-                <p class="text-muted small mb-0">Lead conversion and student registration effectiveness</p>
+                <h2 class="page-title">Voucher Report</h2>
+                <p class="text-muted small mb-0">Voucher inventory, status, and remaining capacity</p>
             </div>
         </div>
     </div>
 
-    <form action="lead" method="GET" class="filter-container flex-wrap">
-        <input type="hidden" name="action" value="salesReport">
+    <form action="voucher" method="GET" class="filter-container flex-wrap">
+        <input type="hidden" name="action" value="report">
         <div class="d-flex gap-3">
             <input type="date" class="custom-select-filter" name="fromDate" value="${fromDate}" title="From date">
             <input type="date" class="custom-select-filter" name="toDate" value="${toDate}" title="To date">
             <button type="submit" class="btn btn-add-new">
                 <i class='bx bx-filter-alt'></i> Apply
             </button>
-            <a href="lead?action=salesReport" class="btn btn-cancel">Reset</a>
+            <a href="voucher?action=report" class="btn btn-cancel">Reset</a>
         </div>
     </form>
 
     <div class="stat-card-grid">
         <div class="stat-card">
             <div class="stat-info">
-                <p>Total Leads</p>
-                <h3>${totalLeads}</h3>
+                <p>Total Vouchers</p>
+                <h3>${totalVouchers}</h3>
             </div>
             <div class="icon-wrapper blue">
-                <i class='bx bxs-reading'></i>
+                <i class='bx bxs-purchase-tag'></i>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-info">
-                <p>Converted Leads</p>
-                <h3>${convertedLeads}</h3>
+                <p>Active Vouchers</p>
+                <h3>${activeVouchers}</h3>
             </div>
             <div class="icon-wrapper cyan">
-                <i class='bx bxs-user-check'></i>
+                <i class='bx bxs-badge-check'></i>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-info">
-                <p>Conversion Rate</p>
-                <h3><fmt:formatNumber value="${conversionRate}" minFractionDigits="2" maxFractionDigits="2"/>%</h3>
+                <p>Total Issued</p>
+                <h3>${totalIssued}</h3>
             </div>
             <div class="icon-wrapper orange">
-                <i class='bx bxs-doughnut-chart'></i>
+                <i class='bx bxs-coupon'></i>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <p>Total Remaining</p>
+                <h3>${totalRemaining}</h3>
+            </div>
+            <div class="icon-wrapper green">
+                <i class='bx bxs-package'></i>
             </div>
         </div>
     </div>
 
     <div class="chart-section mt-4">
         <div class="chart-card">
-            <h4 class="chart-title">Sales Performance</h4>
+            <h4 class="chart-title">Voucher Capacity Overview</h4>
             <c:choose>
                 <c:when test="${not empty monthlyRows}">
                     <div class="chart-container">
-                        <canvas id="salesChart"></canvas>
+                        <canvas id="voucherReportChart"></canvas>
                     </div>
                 </c:when>
                 <c:otherwise>
@@ -87,29 +96,53 @@
             <table class="table mb-0 align-middle">
                 <thead>
                     <tr>
-                        <th style="width: 22%">Month</th>
-                        <th style="width: 18%">Leads Created</th>
-                        <th style="width: 18%">Leads Converted</th>
-                        <th style="width: 18%">Registered Students</th>
-                        <th style="width: 18%">Conversion Rate</th>
+                        <th style="width: 18%">Code</th>
+                        <th style="width: 16%">Discount</th>
+                        <th style="width: 12%">Issued</th>
+                        <th style="width: 12%">Used</th>
+                        <th style="width: 12%">Remaining</th>
+                        <th style="width: 15%">Valid Until</th>
+                        <th style="width: 15%">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <c:choose>
-                        <c:when test="${not empty monthlyRows}">
-                            <c:forEach items="${monthlyRows}" var="row">
+                        <c:when test="${not empty voucherRows}">
+                            <c:forEach items="${voucherRows}" var="row">
                                 <tr>
                                     <td>${row[0]}</td>
-                                    <td>${row[1]}</td>
-                                    <td>${row[2]}</td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${row[1] != null && row[1] > 0}">
+                                                <fmt:formatNumber value="${row[1]}" pattern="#,##0" /> VND
+                                            </c:when>
+                                            <c:otherwise>
+                                                <fmt:formatNumber value="${row[2]}" minFractionDigits="0" maxFractionDigits="2" />%
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
                                     <td>${row[3]}</td>
-                                    <td><fmt:formatNumber value="${row[4]}" minFractionDigits="2" maxFractionDigits="2"/>%</td>
+                                    <td>${row[4]}</td>
+                                    <td>${row[5]}</td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${row[6] != null}">
+                                                <fmt:formatDate value="${row[6]}" pattern="dd/MM/yyyy" />
+                                            </c:when>
+                                            <c:otherwise>No expiry</c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>
+                                        <span class="badge ${row[7] ? 'badge-saleStaff' : 'badge-inactive'}">
+                                            ${row[7] ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
                                 </tr>
                             </c:forEach>
                         </c:when>
                         <c:otherwise>
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">No sales report data found.</td>
+                                <td colspan="7" class="text-center text-muted py-4">No voucher report data found.</td>
                             </tr>
                         </c:otherwise>
                     </c:choose>
@@ -129,19 +162,25 @@
             </c:forEach>
             ];
 
-            const leadsCreated = [
+            const issuedCounts = [
             <c:forEach items="${monthlyRows}" var="row" varStatus="loop">
                 ${row[1]}<c:if test="${!loop.last}">,</c:if>
             </c:forEach>
             ];
 
-            const leadsConverted = [
+            const usedCounts = [
             <c:forEach items="${monthlyRows}" var="row" varStatus="loop">
                 ${row[2]}<c:if test="${!loop.last}">,</c:if>
             </c:forEach>
             ];
 
-            const ctx = document.getElementById('salesChart');
+            const remainingCounts = [
+            <c:forEach items="${monthlyRows}" var="row" varStatus="loop">
+                ${row[3]}<c:if test="${!loop.last}">,</c:if>
+            </c:forEach>
+            ];
+
+            const ctx = document.getElementById('voucherReportChart');
             if (!ctx) {
                 return;
             }
@@ -152,17 +191,24 @@
                     labels,
                     datasets: [
                         {
-                            label: 'Leads Created',
-                            data: leadsCreated,
+                            label: 'Issued',
+                            data: issuedCounts,
                             backgroundColor: 'rgba(37, 99, 235, 0.6)',
                             borderColor: 'rgba(37, 99, 235, 1)',
                             borderWidth: 1
                         },
                         {
-                            label: 'Leads Converted',
-                            data: leadsConverted,
-                            backgroundColor: 'rgba(14, 116, 144, 0.6)',
-                            borderColor: 'rgba(14, 116, 144, 1)',
+                            label: 'Used',
+                            data: usedCounts,
+                            backgroundColor: 'rgba(249, 115, 22, 0.6)',
+                            borderColor: 'rgba(249, 115, 22, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Remaining',
+                            data: remainingCounts,
+                            backgroundColor: 'rgba(132, 204, 22, 0.6)',
+                            borderColor: 'rgba(132, 204, 22, 1)',
                             borderWidth: 1
                         }
                     ]

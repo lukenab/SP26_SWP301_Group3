@@ -3,12 +3,13 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <link href="css/class_management.css" rel="stylesheet" type="text/css"/>
+<c:set var="classInactive" value="${classInfo[6] == 'Inactive'}"/>
 
 <div class="container-fluid px-4 content-body class-management-page">
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="enrollment?action=classes">Class Management</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Add Student</li>
             </ol>
@@ -57,6 +58,9 @@
                     <h5 class="mb-0">Available Students</h5>
                     <p class="text-muted small mb-0 mt-2">
                         <c:choose>
+                            <c:when test="${classInactive}">
+                                This class is inactive. You cannot add more students.
+                            </c:when>
                             <c:when test="${remainingSlots > 0}">
                                 You can add up to <strong>${remainingSlots}</strong> more student(s) to this class.
                             </c:when>
@@ -96,7 +100,8 @@
                                                    type="checkbox"
                                                    name="studentIds"
                                                    value="${s[0]}"
-                                                   ${remainingSlots <= 0 ? 'disabled' : ''}/>
+                                                   data-payment-status="${s[4]}"
+                                                   ${remainingSlots <= 0 || classInactive ? 'disabled' : ''}/>
                                         </td>
                                         <td class="fw-semibold">${s[1]}</td>
                                         <td>${s[2]}</td>
@@ -119,7 +124,7 @@
                                 <input type="radio" id="statusUnpaid" name="enrollmentStatus" value="UnPaid" checked>
                                 <label for="statusUnpaid">UnPaid</label>
                             </div>
-                            <button type="submit" class="btn btn-add-new" ${remainingSlots <= 0 ? 'disabled' : ''}>
+                            <button type="submit" class="btn btn-add-new" ${remainingSlots <= 0 || classInactive ? 'disabled' : ''}>
                                 <i class='bx bx-user-plus'></i> Add Selected Students
                             </button>
                         </div>
@@ -196,6 +201,7 @@
 <script>
     (function () {
         const remainingSlots = ${remainingSlots};
+        const classInactive = ${classInactive};
         const selectAllAvailable = document.getElementById('selectAllAvailable');
         const availableCheckboxes = document.querySelectorAll('.student-checkbox');
         const addForm = document.querySelector('form[action="enrollment"] input[name="action"][value="addStudents"]')?.closest('form');
@@ -204,13 +210,13 @@
             const checkedCount = Array.from(availableCheckboxes).filter(cb => cb.checked).length;
             availableCheckboxes.forEach(cb => {
                 if (!cb.checked) {
-                    cb.disabled = remainingSlots <= 0 || checkedCount >= remainingSlots;
+                    cb.disabled = classInactive || remainingSlots <= 0 || checkedCount >= remainingSlots;
                 }
             });
             if (selectAllAvailable) {
                 const enabledCheckboxes = Array.from(availableCheckboxes).filter(cb => !cb.disabled);
                 selectAllAvailable.checked = availableCheckboxes.length > 0 && checkedCount === availableCheckboxes.length;
-                selectAllAvailable.disabled = remainingSlots <= 0 || enabledCheckboxes.length === 0;
+                selectAllAvailable.disabled = classInactive || remainingSlots <= 0 || enabledCheckboxes.length === 0;
             }
         }
 
@@ -235,6 +241,20 @@
 
         if (addForm) {
             addForm.addEventListener('submit', function (event) {
+                if (classInactive) {
+                    event.preventDefault();
+                    alert('Inactive classes cannot add students.');
+                    return;
+                }
+
+                const unpaidSelected = document.getElementById('statusUnpaid')?.checked;
+                const paidStudentSelected = Array.from(availableCheckboxes).some(cb => cb.checked && cb.dataset.paymentStatus === 'Paid');
+                if (unpaidSelected && paidStudentSelected) {
+                    event.preventDefault();
+                    alert('Students with paid history cannot be added as UnPaid.');
+                    return;
+                }
+
                 const checkedCount = Array.from(availableCheckboxes).filter(cb => cb.checked).length;
                 if (checkedCount > remainingSlots) {
                     event.preventDefault();

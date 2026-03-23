@@ -168,8 +168,23 @@ public class AttendanceDAO extends DBContext {
         return map;
     }
 
-    public List<Object[]> getAttendanceReportByStudent(int studentId) {
+    public List<Object[]> getAttendanceReportByStudent(
+            int studentId,
+            String keyword,
+            Date fromDate,
+            Date toDate,
+            int page,
+            int pageSize) {
+
         List<Object[]> list = new ArrayList<>();
+
+        if (fromDate == null) {
+            fromDate = Date.valueOf("1900-01-01");
+        }
+
+        if (toDate == null) {
+            toDate = Date.valueOf("9999-12-31");
+        }
 
         String sql = "SELECT "
                 + "c.ClassID, "
@@ -177,38 +192,62 @@ public class AttendanceDAO extends DBContext {
                 + "c.ClassName, "
                 + "c.StartDate, "
                 + "c.EndDate, "
-                + "COUNT(s.ScheduleID) AS TotalSlots, "
-                + "SUM(CASE WHEN a.Status IN ('Present','Late') THEN 1 ELSE 0 END) AS AttendedSlots, "
-                + "ROUND(100.0 * "
-                + "SUM(CASE WHEN a.Status IN ('Present','Late') THEN 1 ELSE 0 END) "
-                + "/ COUNT(s.ScheduleID),0) AS AttendanceRate "
-                + "FROM Enrollment e "
-                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "COUNT(DISTINCT s.ScheduleID) AS totalSessions, "
+                + "SUM(CASE WHEN a.Status = 'Present' THEN 1 ELSE 0 END) AS presentCount, "
+                + "SUM(CASE WHEN a.Status = 'Absent' THEN 1 ELSE 0 END) AS absentCount "
+                + "FROM Class c "
+                + "JOIN Enrollment e ON e.ClassID = c.ClassID "
                 + "JOIN Course co ON c.CourseID = co.CourseID "
-                + "JOIN Schedule s ON c.ClassID = s.ClassID "
-                + "LEFT JOIN Attendance a ON s.ScheduleID = a.ScheduleID "
-                + "AND a.EnrollmentID = e.EnrollmentID "
+                + "LEFT JOIN Schedule s ON c.ClassID = s.ClassID "
+                + "LEFT JOIN Attendance a ON s.ScheduleID = a.ScheduleID AND a.EnrollmentID = e.EnrollmentID "
                 + "WHERE e.StudentID = ? "
-                + "GROUP BY c.ClassID, co.CourseName, c.ClassName, c.StartDate, c.EndDate";
+                + "AND c.StartDate >= ? "
+                + "AND c.EndDate <= ? "
+                + "AND (? IS NULL OR c.ClassName LIKE ? OR co.CourseName LIKE ?) "
+                + "GROUP BY c.ClassID, co.CourseName, c.ClassName, c.StartDate, c.EndDate "
+                + "ORDER BY c.StartDate DESC "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, studentId);
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int index = 1;
+
+            // student
+            ps.setInt(index++, studentId);
+
+            // date filter 
+            ps.setDate(index++, fromDate);
+            ps.setDate(index++, toDate);
+
+            // keyword
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(index++, keyword);
+                ps.setString(index++, "%" + keyword + "%");
+                ps.setString(index++, "%" + keyword + "%");
+            } else {
+                ps.setNull(index++, Types.VARCHAR);
+                ps.setString(index++, "%");
+                ps.setString(index++, "%");
+            }
+
+            // pagination
+            int offset = (page - 1) * pageSize;
+            ps.setInt(index++, offset);
+            ps.setInt(index++, pageSize);
 
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
+                Object[] row = new Object[8];
 
-                Object[] row = new Object[]{
-                    rs.getInt("ClassID"),
-                    rs.getString("CourseName"),
-                    rs.getString("ClassName"),
-                    rs.getDate("StartDate"),
-                    rs.getDate("EndDate"),
-                    rs.getInt("TotalSlots"),
-                    rs.getInt("AttendedSlots"),
-                    rs.getInt("AttendanceRate")
-                };
+                row[0] = rs.getInt("ClassID");
+                row[1] = rs.getString("CourseName");
+                row[2] = rs.getString("ClassName");
+                row[3] = rs.getDate("StartDate");
+                row[4] = rs.getDate("EndDate");
+                row[5] = rs.getInt("totalSessions");
+                row[6] = rs.getInt("presentCount");
+                row[7] = rs.getInt("absentCount");
 
                 list.add(row);
             }
@@ -218,6 +257,56 @@ public class AttendanceDAO extends DBContext {
         }
 
         return list;
+    }
+
+    public int countAttendanceReport(int studentId, String keyword, Date fromDate, Date toDate) {
+
+        if (fromDate == null) {
+            fromDate = Date.valueOf("1900-01-01");
+        }
+
+        if (toDate == null) {
+            toDate = Date.valueOf("9999-12-31");
+        }
+
+        String sql = "SELECT COUNT(DISTINCT c.ClassID) "
+                + "FROM Class c "
+                + "JOIN Enrollment e ON e.ClassID = c.ClassID "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "WHERE e.StudentID = ? "
+                + "AND c.StartDate <= ? "
+                + "AND c.EndDate >= ? "
+                + "AND (? IS NULL OR c.ClassName LIKE ? OR co.CourseName LIKE ?)";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int index = 1;
+
+            ps.setInt(index++, studentId);
+            ps.setDate(index++, toDate);
+            ps.setDate(index++, fromDate);
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(index++, keyword);
+                ps.setString(index++, "%" + keyword + "%");
+                ps.setString(index++, "%" + keyword + "%");
+            } else {
+                ps.setNull(index++, Types.VARCHAR);
+                ps.setString(index++, "%");
+                ps.setString(index++, "%");
+            }
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
     }
 
     public Map<String, Integer> getAttendanceSummaryByStudent(int studentId) {
