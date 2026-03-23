@@ -97,6 +97,21 @@ public class CourseController extends HttpServlet {
             action = "all";
         }
 
+        HttpSession uSession = request.getSession();
+        User currentUser = (User) uSession.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (currentUser.getRole() == null || !currentUser.getRole().getManageCourse()) {
+            uSession.setAttribute("message", "Access Denied: You don't have permission to manage courses!");
+            uSession.setAttribute("messageType", "error");
+            response.sendRedirect("dashboard");
+            return;
+        }
+
         switch (action) {
             case "all":
                 String searchQuery = request.getParameter("searchQuery");
@@ -422,6 +437,21 @@ public class CourseController extends HttpServlet {
         if (action == null) {
             action = "list";
         }
+        
+        HttpSession uSession = request.getSession();
+        User currentUser = (User) uSession.getAttribute("user");
+        
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (currentUser.getRole() == null || !currentUser.getRole().getManageCourse()) {
+            uSession.setAttribute("message", "Access Denied: You don't have permission to manage courses!");
+            uSession.setAttribute("messageType", "error");
+            response.sendRedirect("dashboard");
+            return;
+        }
 
         switch (action) {
             case "add":
@@ -616,11 +646,11 @@ public class CourseController extends HttpServlet {
                     HttpSession session = request.getSession();
                     if (success) {
 
-                                            SystemLogDAO logDAO = new SystemLogDAO();
-                    User logUser = (User) request.getSession().getAttribute("user");
+                        SystemLogDAO logDAO = new SystemLogDAO();
+                        User logUser = (User) request.getSession().getAttribute("user");
 
-                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
-                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                        String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                        String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
                         logDAO.insertLog(actorName, actorRole, "ACTIVATE_COURSE", "Activated course ID: " + activateCourseId);
 
                         session.setAttribute("message", "Activate Course Success!");

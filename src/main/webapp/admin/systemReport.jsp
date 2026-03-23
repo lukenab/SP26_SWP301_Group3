@@ -35,7 +35,7 @@
                 <form action="report" method="GET" class="d-flex gap-2">
                     <input type="hidden" name="action" value="report">
                     <input type="hidden" name="tab" value="logs">
-                    
+
                     <select name="filterAction" class="form-select form-select-sm" onchange="this.form.submit()">
                         <option value="ALL" ${currentFilter == 'ALL' ? 'selected' : ''}>All Actions</option>
                         <option value="LOGIN" ${currentFilter == 'LOGIN' ? 'selected' : ''}>Logins</option>
@@ -48,7 +48,7 @@
             </div>
 
             <div class="card-body p-0">
-                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                <div class="table-responsive" style="max-height: 700px; overflow-y: auto;">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light position-sticky top-0" style="z-index: 1;">
                             <tr>
@@ -121,7 +121,7 @@
             <h5 class="fw-bold mb-4">User Demographics Statistics</h5>
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <div style="height: 450px; position: relative;">
+                    <div style="height: 700px; position: relative;">
                         <canvas id="usageChart"></canvas> 
                     </div>
                 </div>
@@ -150,7 +150,7 @@
     <div class="tab-pane fade" id="growth-content" role="tabpanel">
         <div class="card border-0 shadow-sm p-4 mt-4">
             <h5 class="fw-bold mb-4">Enrollment Growth Tracking</h5>
-            <div style="height: 450px;">
+            <div style="height: 700px;">
                 <canvas id="growthChart"></canvas>
             </div>
         </div>
@@ -160,94 +160,94 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const activeTab = urlParams.get('tab');
+                        document.addEventListener("DOMContentLoaded", function () {
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const activeTab = urlParams.get('tab');
 
-        if (activeTab) {
-            var someTabTriggerEl = document.querySelector('#' + activeTab + '-tab');
-            if (someTabTriggerEl) {
-                var tab = new bootstrap.Tab(someTabTriggerEl);
-                tab.show();
-            }
-        }
+                            if (activeTab) {
+                                var someTabTriggerEl = document.querySelector('#' + activeTab + '-tab');
+                                if (someTabTriggerEl) {
+                                    var tab = new bootstrap.Tab(someTabTriggerEl);
+                                    tab.show();
+                                }
+                            }
 
-        var triggerTabList = [].slice.call(document.querySelectorAll('#reportTabs button'));
-        triggerTabList.forEach(function (triggerEl) {
-            triggerEl.addEventListener('shown.bs.tab', function (event) {
-                const tabTarget = event.target.getAttribute('data-bs-target').replace('-content', '').replace('#', '');
-                const newUrl = window.location.pathname + '?action=report&tab=' + tabTarget;
-                window.history.replaceState({}, '', newUrl);
-            });
-        });
+                            var triggerTabList = [].slice.call(document.querySelectorAll('#reportTabs button'));
+                            triggerTabList.forEach(function (triggerEl) {
+                                triggerEl.addEventListener('shown.bs.tab', function (event) {
+                                    const tabTarget = event.target.getAttribute('data-bs-target').replace('-content', '').replace('#', '');
+                                    const newUrl = window.location.pathname + '?action=report&tab=' + tabTarget;
+                                    window.history.replaceState({}, '', newUrl);
+                                });
+                            });
 
-        const ctxUsage = document.getElementById('usageChart').getContext('2d');
-        new Chart(ctxUsage, {
-            type: 'doughnut',
-            data: {
-                labels: [${chartLabels}],
-                datasets: [{
-                    data: [${chartData}],
-                    backgroundColor: ['#7E22CE', '#1E40AF', '#047857', '#9A3412', '#9D174D'],
-                    borderWidth: 2,
-                    borderColor: '#ffffff',
-                    hoverOffset: 10
-                }]
-            },
-            options: { 
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '55%', 
-                layout: {
-                    padding: 20 
-                },
-                plugins: {
-                    legend: {
-                        display: false 
-                    },
-                    tooltip: {
-                        bodyFont: { size: 14 },
-                        padding: 10,
-                        boxPadding: 5
-                    }
-                }
-            }
-        });
+                            const ctxUsage = document.getElementById('usageChart').getContext('2d');
+                            new Chart(ctxUsage, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: [${chartLabels}],
+                                    datasets: [{
+                                            data: [${chartData}],
+                                            backgroundColor: ['#7E22CE', '#1E40AF', '#047857', '#9A3412', '#9D174D'],
+                                            borderWidth: 2,
+                                            borderColor: '#ffffff',
+                                            hoverOffset: 10
+                                        }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    cutout: '55%',
+                                    layout: {
+                                        padding: 20
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        },
+                                        tooltip: {
+                                            bodyFont: {size: 14},
+                                            padding: 10,
+                                            boxPadding: 5
+                                        }
+                                    }
+                                }
+                            });
 
-        // --- GROWTH REPORT ---
-        const ctxGrowth = document.getElementById('growthChart').getContext('2d');
-        new Chart(ctxGrowth, {
-            type: 'line',
-            data: {
-                labels: [${growthLabels}],
-                datasets: [{
-                    label: 'New Enrollments',
-                    data: [${growthData}],
-                    borderColor: '#4e73df',
-                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
-                    borderWidth: 3,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#4e73df',
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: { 
-                        beginAtZero: true, 
-                        ticks: { stepSize: 1, font: { size: 13 } } 
-                    },
-                    x: {
-                        ticks: { font: { size: 13 } }
-                    }
-                }
-            }
-        });
-    });
+                            // --- GROWTH REPORT ---
+                            const ctxGrowth = document.getElementById('growthChart').getContext('2d');
+                            new Chart(ctxGrowth, {
+                                type: 'line',
+                                data: {
+                                    labels: [${growthLabels}],
+                                    datasets: [{
+                                            label: 'New Enrollments',
+                                            data: [${growthData}],
+                                            borderColor: '#4e73df',
+                                            backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                                            borderWidth: 3,
+                                            pointRadius: 4,
+                                            pointBackgroundColor: '#4e73df',
+                                            fill: true,
+                                            tension: 0.3
+                                        }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {display: false}
+                                    },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: {stepSize: 1, font: {size: 13}}
+                                        },
+                                        x: {
+                                            ticks: {font: {size: 13}}
+                                        }
+                                    }
+                                }
+                            });
+                        });
 </script>

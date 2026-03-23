@@ -124,53 +124,62 @@
             <div class="menu-bar">
                 <c:if test="${sessionScope.user.role.roleId == 1}">
                     <ul class="menu-links">
+
+                        <li class="menu-header">
+                            <span class="text nav-text">MAIN</span>
+                        </li>
                         <li class="nav-links">
                             <a href="dashboard?action=admin">
-                                <i class="bxr bx-dashboard"></i>
-                                <span class="text nav-text">Dashboard</span></a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="user">
-                                <i class="bxr bx-group"></i>
-                                <span class="text nav-text">User Management</span></a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="role">
-                                <i class="bxr bx-shield"></i>
-                                <span class="text nav-text">Role & Permission</span></a>
-                        </li>
-
-                        <li class="nav-links">
-                            <c:set var="isPaymentPage" value="${param.action == 'list' || param.action == 'approve' || param.action == 'reject'}" />
-
-                            <a href="payment?action=list" class="nav-link ${isPaymentPage ? 'active' : ''}">
-                                <i class='bx bx-wallet-alt'></i>
-                                <span>Finance Management</span>
+                                <i class="bx bx-dashboard"></i>
+                                <span class="text nav-text">Dashboard</span>
                             </a>
                         </li>
 
+                        <li class="menu-header">
+                            <span class="text nav-text">MANAGEMENT</span>
+                        </li>
+                        <li class="nav-links">
+                            <a href="user">
+                                <i class="bx bx-group"></i>
+                                <span class="text nav-text">User Management</span>
+                            </a>
+                        </li>
+                        <!--                        <li class="nav-links">
+                                                    <a href="course" class="${pageContext.request.servletPath == '/course' ? 'active' : ''}">
+                                                        <i class="bx bx-book"></i>
+                                                        <span class="text nav-text">Academic Management</span>
+                                                    </a>
+                                                </li>-->
+                        <li class="nav-links">
+                            <c:set var="isPaymentPage" value="${param.action == 'list' || param.action == 'approve' || param.action == 'reject'}" />
+                            <a href="payment?action=list" class="${isPaymentPage ? 'active' : ''}">
+                                <i class='bx bx-wallet-alt'></i>
+                                <span class="text nav-text">Finance Management</span>
+                            </a>
+                        </li>
+
+                        <li class="menu-header">
+                            <span class="text nav-text">SYSTEM</span>
+                        </li>
+                        <li class="nav-links">
+                            <a href="role">
+                                <i class="bx bx-shield"></i>
+                                <span class="text nav-text">Role & Permission</span>
+                            </a>
+                        </li>
                         <li class="nav-links">
                             <a href="dashboard?action=report">
-                                <i class="bxr bx-file-report"></i>
+                                <i class="bx bx-file-report"></i>
                                 <span class="text nav-text">System Reports</span>
                             </a>
                         </li>
-
                         <li class="nav-links">
                             <a href="setting">
-                                <i class="bxr bx-cog"></i>
-                                <span class="text nav-text">Settings</span>
+                                <i class="bx bx-cog"></i>
+                                <span class="text nav-text">System Settings</span>
                             </a>
                         </li>
 
-                        <li class="nav-links">
-                            <a href="dashboard?action=profile">
-                                <i class="bxr bx-user"></i>
-                                <span class="text nav-text">Profile</span>
-                            </a>
-                        </li>
                     </ul>
                 </c:if>
 
@@ -278,6 +287,9 @@
 
                 <c:if test="${sessionScope.user.role.roleId == 3}">
                     <ul class="menu-links">
+                        <li class="menu-header">
+                            <span class="text nav-text">MAIN</span>
+                        </li>
                         <li class="nav-links">
                             <a href="dashboard">
                                 <i class="bxr bx-dashboard"></i>
@@ -285,10 +297,13 @@
                             </a>
                         </li>
 
+                        <li class="menu-header">
+                            <span class="text nav-text">SALES & CRM</span>
+                        </li>
                         <li class="nav-links">
                             <a href="lead?action=all">
-                                <i class="bxr bx-book"></i>
-                                <span class="text nav-text">Lead</span>
+                                <i class="bx bx-user"></i>
+                                <span class="text nav-text">Leads Management</span>
                             </a>
                         </li>
 
@@ -299,34 +314,18 @@
                             </a>
                         </li>
 
-                        <li class="nav-links">
-                            <a href="lead?action=salesReport">
-                                <i class="bxr bx-file-report"></i>
-                                <span class="text nav-text">Sales Reports</span>
-                            </a>
+                        <li class="menu-header">
+                            <span class="text nav-text">FINANCE & PROMO</span>
                         </li>
 
                         <li class="nav-links">
                             <a href="payment?action=list">
                                 <i class="bxr bx-check-circle"></i>
-                                <span class="text nav-text">Verify Tuition Payment</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="lead?action=revenueReport">
-                                <i class="bxr bx-wallet-alt"></i>
-                                <span class="text nav-text">Revenue Report</span>
+                                <span class="text nav-text">Verify Payments</span>
                             </a>
                         </li>
 
                         <c:if test="${sessionScope.user.role.manageFinance}">
-                            <li class="nav-links">
-                                <a href="voucher?action=report">
-                                    <i class="bx bx-report"></i>
-                                    <span class="text nav-text">Voucher Report</span>
-                                </a>
-                            </li>
                             <li class="nav-links">
                                 <a href="voucher?action=all">
                                     <i class="bxr bx-group"></i>
@@ -336,12 +335,32 @@
                         </c:if>
 
 
+                        <li class="menu-header">
+                            <span class="text nav-text">REPORTS</span>
+                        </li>
+
                         <li class="nav-links">
-                            <a href="dashboard?action=profile">
-                                <i class="bxr bx-user"></i>
-                                <span class="text nav-text">Profile</span>
+                            <a href="lead?action=revenueReport">
+                                <i class="bxr bx-wallet-alt"></i>
+                                <span class="text nav-text">Revenue Report</span>
                             </a>
                         </li>
+
+                        <li class="nav-links">
+                            <a href="lead?action=salesReport">
+                                <i class="bxr bx-chart-line"></i>
+                                <span class="text nav-text">Sales Reports</span>
+                            </a>
+                        </li>
+
+                        <c:if test="${sessionScope.user.role.manageFinance}">
+                            <li class="nav-links">
+                                <a href="voucher?action=report">
+                                    <i class="bx bx-receipt"></i>
+                                    <span class="text nav-text">Voucher Report</span>
+                                </a>
+                            </li>
+                        </c:if>
                     </ul>
                 </c:if>
 
