@@ -31,6 +31,21 @@ public class LeadController extends HttpServlet {
         LeadDAO leadDAO = new LeadDAO();
         CourseDAO courseDAO = new CourseDAO();
 
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (currentUser.getRole() == null || !currentUser.getRole().getManageFinance()) {
+            session.setAttribute("message", "Access Denied: You don't have permission to access Leads management!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
+            return;
+        }
+
         if (action == null) {
             action = "all";
         }
@@ -308,6 +323,20 @@ public class LeadController extends HttpServlet {
         LeadDAO leadDAO = new LeadDAO();
         UserDAO userDAO = new UserDAO();
         HttpSession session = request.getSession();
+
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (currentUser.getRole() == null || !currentUser.getRole().getManageFinance()) {
+            session.setAttribute("message", "Security Alert: Unauthorized action on Lead data!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
+            return;
+        }
 
         if ("validateVoucher".equals(action)) {
             handleValidateVoucher(request, response);

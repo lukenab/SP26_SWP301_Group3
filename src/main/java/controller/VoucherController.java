@@ -30,6 +30,21 @@ public class VoucherController extends HttpServlet {
             action = "all";
         }
 
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (currentUser.getRole() == null || !currentUser.getRole().getManageFinance()) {
+            session.setAttribute("message", "Access Denied: You don't have permission to manage Vouchers!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
+            return;
+        }
+
         switch (action) {
             case "all":
                 String searchQuery = request.getParameter("searchQuery");
@@ -149,6 +164,20 @@ public class VoucherController extends HttpServlet {
 
         if ("create".equals(action)) {
             handleCreateVoucher(request, response);
+            return;
+        }
+
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (currentUser.getRole() == null || !currentUser.getRole().getManageFinance()) {
+            session.setAttribute("message", "Access Denied: Unauthorized action!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
             return;
         }
 

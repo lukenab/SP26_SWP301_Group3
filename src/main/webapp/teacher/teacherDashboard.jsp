@@ -35,6 +35,33 @@
         </div>
     </c:if>
 
+    <c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-cross-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+
+        <c:remove var="message" scope="session" />
+        <c:remove var="messageType" scope="session" />
+    </c:if>
+
     <div class="row row-cols-1 row-cols-md-5 g-3 mb-4">
         <div class="col">
             <div class="card border-0 shadow-sm p-3 border-start border-4 border-primary h-100 position-relative overflow-hidden">
@@ -242,9 +269,9 @@
                                 <span class="fw-bold small text-dark">Student #${(f.feedbackId * 73 + 19) % 9000 + 1000}</span>
                                 <div class="text-warning small" style="font-size: 0.65rem;">
                                     <c:forEach begin="1" end="${f.rating}"><i class='bx bxs-star'></i></c:forEach>
+                                    </div>
                                 </div>
-                            </div>
-                            <p class="small text-muted mb-0 fst-italic" style="line-height: 1.4;">"${f.comment}"</p>
+                                <p class="small text-muted mb-0 fst-italic" style="line-height: 1.4;">"${f.comment}"</p>
                         </div>
                     </c:forEach>
                 </div>

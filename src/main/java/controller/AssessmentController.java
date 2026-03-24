@@ -29,6 +29,19 @@ public class AssessmentController extends HttpServlet {
         AssessmentDAO assessmentDAO = new AssessmentDAO();
         HttpSession session = request.getSession();
 
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (currentUser.getRole() == null || !currentUser.getRole().getManageCourse()) {
+            session.setAttribute("message", "Access Denied: You don't have permission to manage assessments!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
+            return;
+        }
+
         if (action == null) {
             action = "list";
         }
@@ -74,6 +87,19 @@ public class AssessmentController extends HttpServlet {
         String action = request.getParameter("action");
         AssessmentDAO assessmentDAO = new AssessmentDAO();
         HttpSession session = request.getSession();
+
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (currentUser.getRole() == null || !currentUser.getRole().getManageCourse()) {
+            session.setAttribute("message", "Security Alert: Unauthorized assessment modification!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
+            return;
+        }
 
         if (action == null) {
             action = "list";

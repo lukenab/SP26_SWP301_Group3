@@ -34,33 +34,6 @@ import model.Course;
 public class GradeController extends HttpServlet {
 
     /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet GradeController</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet GradeController at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
      * Handles the HTTP <code>GET</code> method.
      *
      * @param request servlet request
@@ -82,6 +55,29 @@ public class GradeController extends HttpServlet {
         AssessmentDAO assessmentDAO = new AssessmentDAO();
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String roleName = (currentUser.getRole() != null) ? currentUser.getRole().getRoleName() : "";
+
+        if (action.equals("enter") || action.equals("edit") || action.equals("report")) {
+            boolean canAccess = roleName.equalsIgnoreCase("Teacher") || currentUser.getRole().getManageCourse();
+            if (!canAccess) {
+                session.setAttribute("message", "Access Denied: You don't have permission to manage grades!");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("dashboard");
+                return;
+            }
+        } else if (action.equals("student-courses") || action.equals("student-course-grades")) {
+            if (!roleName.equalsIgnoreCase("Student")) {
+                response.sendRedirect("dashboard");
+                return;
+            }
+        }
+
         switch (action) {
             case "enter":
                 try {
@@ -160,21 +156,6 @@ public class GradeController extends HttpServlet {
 
             case "student-courses":
 
-                // ===== 1. AUTH CHECK =====
-                if (currentUser == null) {
-                    response.sendRedirect("login.jsp");
-                    return;
-                }
-
-                if (currentUser.getRole() == null
-                        || currentUser.getRole().getRoleId() != 5) {
-
-                    session.setAttribute("message", "Bạn không có quyền truy cập!");
-                    session.setAttribute("messageType", "error");
-                    response.sendRedirect("dashboard.jsp");
-                    return;
-                }
-
                 int studentId = currentUser.getUserId();
 
                 // ===== 2. GET FILTER PARAM =====
@@ -240,12 +221,6 @@ public class GradeController extends HttpServlet {
                 break;
 
             case "student-course-grades":
-
-                if (currentUser == null) {
-                    response.sendRedirect("login.jsp");
-                    return;
-                }
-
                 int courseId = Integer.parseInt(request.getParameter("courseId"));
                 int studentIdDetail = currentUser.getUserId();
 
@@ -267,7 +242,7 @@ public class GradeController extends HttpServlet {
                 request.setAttribute("studentName", currentUser.getFullName());
                 request.setAttribute("home_view", "student/studentGrade.jsp");
 
-                request.getRequestDispatcher("dashboard.jsp")
+                request.getRequestDispatcher("dashboard")
                         .forward(request, response);
                 break;
 
@@ -314,6 +289,24 @@ public class GradeController extends HttpServlet {
         GradeDAO dao = new GradeDAO();
         AssessmentDAO assessmentDAO = new AssessmentDAO();
         HttpSession session = request.getSession();
+        
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String roleName = (currentUser.getRole() != null) ? currentUser.getRole().getRoleName() : "";
+        boolean canModify = roleName.equalsIgnoreCase("Teacher") || currentUser.getRole().getManageCourse();
+
+        if (!canModify) {
+            session.setAttribute("message", "Security Alert: Unauthorized attempts to change grades!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect("dashboard");
+            return;
+        }
+        
         switch (action) {
 
             case "save":

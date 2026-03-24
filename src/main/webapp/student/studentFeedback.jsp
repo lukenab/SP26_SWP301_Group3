@@ -14,7 +14,7 @@
         <style>
 
             .feedback-container{
-                padding:20px 10px;
+                padding: 50px 10px;
             }
 
             .feedback-card{

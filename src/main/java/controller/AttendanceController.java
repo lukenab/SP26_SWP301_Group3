@@ -31,33 +31,6 @@ import model.User;
 public class AttendanceController extends HttpServlet {
 
     /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet AttendanceController</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet AttendanceController at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
      * Handles the HTTP <code>GET</code> method.
      *
      * @param request servlet request
@@ -74,6 +47,36 @@ public class AttendanceController extends HttpServlet {
             action = "take";
         } else {
             action = action.trim();
+        }
+
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String roleName = currentUser.getRole().getRoleName();
+
+        if (action.equals("take")) {
+            if (!roleName.equalsIgnoreCase("Teacher")) {
+                session.setAttribute("message", "Only teachers can take attendance!");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("dashboard");
+                return;
+            }
+        } else if (action.equals("studentReport")) {
+            if (!roleName.equalsIgnoreCase("Student")) {
+                response.sendRedirect("dashboard");
+                return;
+            }
+        } else if (action.equals("report")) {
+            boolean canView = roleName.equalsIgnoreCase("Teacher") || currentUser.getRole().getManageCourse();
+            if (!canView) {
+                response.sendRedirect("dashboard");
+                return;
+            }
         }
 
         AttendanceDAO dao = new AttendanceDAO();
@@ -115,16 +118,13 @@ public class AttendanceController extends HttpServlet {
                 try {
                     int classId = Integer.parseInt(request.getParameter("classId").trim());
 
-                    HttpSession session = request.getSession();
-                    User user = (User) session.getAttribute("user");
-
                     Map<String, Object> data = dao.getAttendanceData(0, classId);
                     List<User> studentList = (List<User>) data.get("studentList");
                     List<Schedule> scheduleList = dao.getSchedulesByClass(classId);
                     Map<String, String> reportMap = dao.getAttendanceReportMap(classId);
 
                     TeacherDAO teacherDAO = new dao.TeacherDAO();
-                    List<Classes> classesOfTeacher = teacherDAO.getAllClassOfTeacherID(user.getUserId());
+                    List<Classes> classesOfTeacher = teacherDAO.getAllClassOfTeacherID(currentUser.getUserId());
                     String currentClassName = "";
                     for (Classes c : classesOfTeacher) {
 
@@ -151,15 +151,7 @@ public class AttendanceController extends HttpServlet {
 
             case "studentReport": {
 
-                HttpSession session = request.getSession();
-                User user = (User) session.getAttribute("user");
-
-                if (user == null) {
-                    response.sendRedirect("login.jsp");
-                    return;
-                }
-
-                int studentId = user.getUserId();
+                int studentId = currentUser.getUserId();
 
                 // ================= KEYWORD =================
                 String keyword = request.getParameter("keyword");
@@ -293,6 +285,13 @@ public class AttendanceController extends HttpServlet {
         AttendanceDAO dao = new AttendanceDAO();
 
         HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null || !currentUser.getRole().getRoleName().equalsIgnoreCase("Teacher")) {
+            session.setAttribute("message", "Security Alert: Only teachers can save attendance!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect("dashboard.jsp");
+            return;
+        }
 
         switch (action) {
             case "save":
@@ -338,8 +337,3 @@ public class AttendanceController extends HttpServlet {
     }// </editor-fold>
 
 }
-
-
-
-
-

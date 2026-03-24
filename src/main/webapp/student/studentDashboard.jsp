@@ -144,6 +144,33 @@
 
 <div class="dashboard-wrapper">
     <div class="container-fluid">
+
+        <c:if test="${not empty sessionScope.message}">
+            <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+                <div class="toast-icon">
+                    <c:choose>
+                        <c:when test="${sessionScope.messageType == 'success'}">
+                            <i class='bx bx-check-circle'></i>
+                        </c:when>
+                        <c:otherwise>
+                            <i class='bx bx-cross-circle'></i>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+                <div class="toast-content">
+                    <span class="toast-title">
+                        ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                    </span>
+                    <span class="toast-message">${sessionScope.message}</span>
+                </div>
+                <button class="toast-close" onclick="closeToast()">
+                    <i class='bx bx-x'></i>
+                </button>
+            </div>
+
+            <c:remove var="message" scope="session" />
+            <c:remove var="messageType" scope="session" />
+        </c:if>
         <!-- WELCOME BANNER -->
         <div class="dashboard-banner">
             <h3><i class='bx bx-sun'></i> Welcome back</h3>

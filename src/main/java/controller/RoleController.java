@@ -43,6 +43,21 @@ public class RoleController extends HttpServlet {
             action = "all";
         }
 
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (currentUser.getRole() == null || !currentUser.getRole().getRoleName().equalsIgnoreCase("Admin")) {
+            session.setAttribute("message", "Access Denied: Only Admin can access Role Management!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
+            return;
+        }
+
         switch (action) {
             case "all":
                 request.setAttribute("roleList", list);
@@ -66,9 +81,24 @@ public class RoleController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         RoleDAO roleDAO = new RoleDAO();
-        UserDAO userDAO =  new UserDAO();
+        UserDAO userDAO = new UserDAO();
         if (action == null) {
             action = "all";
+        }
+
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (currentUser.getRole() == null || !currentUser.getRole().getRoleName().equalsIgnoreCase("Admin")) {
+            session.setAttribute("message", "Access Denied: Only Admin can modify roles!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
+            return;
         }
 
         switch (action) {
@@ -87,9 +117,9 @@ public class RoleController extends HttpServlet {
                     logDAO.insertLog(actorName, actorRole, "SECURITY_WARNING", "Unauthorized attempt to modify protected Role ID: " + roleId);
 
                     response.sendRedirect("role");
-                    return; 
+                    return;
                 }
-                
+
                 boolean manageUser = request.getParameter("manageUser") != null;
                 boolean manageCourse = request.getParameter("manageCourse") != null;
                 boolean manageFinance = request.getParameter("manageFinance") != null;
@@ -98,22 +128,22 @@ public class RoleController extends HttpServlet {
 
                 HttpSession permissionSession = request.getSession();
                 if (isUpdated) {
-                    
+
                     SystemLogDAO logDAO = new SystemLogDAO();
                     User logUser = (User) request.getSession().getAttribute("user");
 
                     String actorName = (logUser != null) ? logUser.getFullName() : "System";
                     String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
-                    
+
                     String logAction = "UPDATE_ROLE_PERMISSION";
                     String detail = "Admin updated access permissions for Role ID: " + roleId;
                     logDAO.insertLog(actorName, actorRole, logAction, detail);
-                    
-                    if(logUser != null && logUser.getRole().getRoleId() == roleId){
-                       User freshUser = userDAO.getUserById(logUser.getUserId());
-                       request.getSession().setAttribute("user", freshUser);
+
+                    if (logUser != null && logUser.getRole().getRoleId() == roleId) {
+                        User freshUser = userDAO.getUserById(logUser.getUserId());
+                        request.getSession().setAttribute("user", freshUser);
                     }
-                    
+
                     permissionSession.setAttribute("message", "Permissions updated successfully!");
                     permissionSession.setAttribute("messageType", "success");
                 } else {

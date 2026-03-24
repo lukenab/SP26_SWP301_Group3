@@ -52,7 +52,7 @@
                         <th style="width: 50px">ID</th>
                         <th>Role Name</th>
                         <th class="text-center">Manage Users</th>
-                        <th class="text-center">Manage Courses</th>
+                        <th class="text-center">Manage Academics</th>
                         <th class="text-center">Manage Finance</th>
                         <th>Actions</th>
                     </tr>

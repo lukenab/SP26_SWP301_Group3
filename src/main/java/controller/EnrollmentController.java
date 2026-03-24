@@ -14,6 +14,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.sql.Date;
 import java.util.Collections;
 import java.util.List;
@@ -73,6 +74,21 @@ public class EnrollmentController extends HttpServlet {
         String action = request.getParameter("action");
         if (action == null) {
             action = "classes";
+        }
+
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (currentUser.getRole() == null || !currentUser.getRole().getManageCourse()) {
+            session.setAttribute("message", "Access Denied: You don't have permission to manage enrollments/classes!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
+            return;
         }
 
         EnrollmentDAO enrollmentDAO = new EnrollmentDAO();
@@ -290,6 +306,22 @@ public class EnrollmentController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
+
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        if (currentUser.getRole() == null || !currentUser.getRole().getManageCourse()) {
+            session.setAttribute("message", "Access Denied: Unauthorized action!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
+            return;
+        }
+
         EnrollmentDAO enrollmentDAO = new EnrollmentDAO();
         ClassDAO classDAO = new ClassDAO();
         RoomDAO roomDAO = new RoomDAO();

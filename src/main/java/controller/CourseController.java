@@ -100,17 +100,19 @@ public class CourseController extends HttpServlet {
         HttpSession uSession = request.getSession();
         User currentUser = (User) uSession.getAttribute("user");
 
-        if (currentUser == null) {
-            response.sendRedirect("login");
-            return;
-        }
+        if (!"publicDetails".equals(action)) {
+            if (currentUser == null) {
+                response.sendRedirect("login");
+                return;
+            }
+            if (currentUser.getRole() == null || !currentUser.getRole().getManageCourse()) {
+                uSession.setAttribute("message", "Access Denied: You don't have permission to manage courses!");
+                uSession.setAttribute("messageType", "error");
 
-//        if (currentUser.getRole() == null || !currentUser.getRole().getManageCourse()) {
-//            uSession.setAttribute("message", "Access Denied: You don't have permission to manage courses!");
-//            uSession.setAttribute("messageType", "error");
-//            response.sendRedirect("dashboard");
-//            return;
-//        }
+                response.sendRedirect(request.getContextPath() + "/dashboard");
+                return;
+            }
+        }
 
         switch (action) {
             case "all":
@@ -437,10 +439,10 @@ public class CourseController extends HttpServlet {
         if (action == null) {
             action = "list";
         }
-        
+
         HttpSession uSession = request.getSession();
         User currentUser = (User) uSession.getAttribute("user");
-        
+
         if (currentUser == null) {
             response.sendRedirect("login");
             return;

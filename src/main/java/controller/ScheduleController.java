@@ -5,10 +5,7 @@
 package controller;
 
 import dao.ClassDAO;
-import dao.ScheduleDAO;
-import dao.SlotDAO;
 import dao.TeacherDAO;
-import dao.UserDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -18,21 +15,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
-import model.Classes;
-import model.Schedule;
-import model.Slot;
-import model.User;
 import dao.ScheduleDAO;
 import dao.SlotDAO;
 import dao.SystemLogDAO;
 import dao.UserDAO;
-import java.sql.Date;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -55,6 +43,10 @@ public class ScheduleController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+       TeacherDAO teacherDAO = new TeacherDAO();
+        SlotDAO slotDAO = new SlotDAO();
+        String action = request.getParameter("action");
+        
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
 
@@ -63,18 +55,45 @@ public class ScheduleController extends HttpServlet {
             return;
         }
 
-        // Allow both teacher (roleId 4) and academic staff (roleId 2)
+        String roleName = user.getRole().getRoleName();
+        boolean isAcademic = user.getRole().getManageCourse();
         int roleId = user.getRole().getRoleId();
-        if (roleId != 4 && roleId != 2 && roleId != 5) {
-            response.sendRedirect("login.jsp");
-            return;
+
+        if (action == null) {
+            if (roleId == 5) {
+                action = "studentView";
+            } else if (roleId == 4) {
+                action = "view";
+            } else if (isAcademic) {
+                action = "manage";
+            } else {
+                action = "view";
+            }
         }
 
-        TeacherDAO teacherDAO = new TeacherDAO();
-        SlotDAO slotDAO = new SlotDAO();
-        String action = request.getParameter("action");
-        if (action == null) {
-            action = "view";
+        if (action.equals("manage") || action.equals("createForm") || action.equals("editForm")) {
+            if (!isAcademic) {
+                session.setAttribute("message", "Access Denied: Unauthorized access to management!");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("dashboard");
+                return;
+            }
+        } 
+        
+        else if (action.equals("view") || action.equals("viewByClass")) {
+            if (roleId == 5) {
+                session.setAttribute("message", "Access Denied: Students cannot view teacher schedules!");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("dashboard");
+                return;
+            }
+        }
+        
+        else if (action.equals("studentView")) {
+            if (roleId != 5) {
+                response.sendRedirect("dashboard");
+                return;
+            }
         }
 
         List<Slot> allSlots = slotDAO.getAllSlots();
@@ -478,6 +497,13 @@ public class ScheduleController extends HttpServlet {
 
         if (user == null || user.getRole() == null) {
             response.sendRedirect("login.jsp");
+            return;
+        }
+
+        if (user == null || !user.getRole().getManageCourse()) {
+            session.setAttribute("message", "Security Alert: Unauthorized schedule modification!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect("dashboard.jsp");
             return;
         }
 

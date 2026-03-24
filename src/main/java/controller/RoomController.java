@@ -11,10 +11,12 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import model.Room;
+import model.User;
 
 /**
  *
@@ -32,6 +34,21 @@ public class RoomController extends HttpServlet {
             if (action == null) {
                 action = "all";
             }
+
+            HttpSession session = request.getSession();
+            User currentUser = (User) session.getAttribute(("user"));
+
+            if (currentUser == null) {
+                response.sendRedirect("login");
+                return;
+            }
+            if (currentUser.getRole() == null || !currentUser.getRole().getManageCourse()) {
+                session.setAttribute("message", "Access Denied: You do not have permission to manage rooms!");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("dashboard");
+                return;
+            }
+
             switch (action) {
                 case "all":
                     List<Room> allRoom = rdao.getAllRoom();
@@ -159,6 +176,21 @@ public class RoomController extends HttpServlet {
             if (action == null) {
                 action = "all";
             }
+
+            HttpSession session = request.getSession();
+            User currentUser = (User) session.getAttribute(("user"));
+
+            if (currentUser == null) {
+                response.sendRedirect("login");
+                return;
+            }
+            if (currentUser.getRole() == null || !currentUser.getRole().getManageCourse()) {
+                session.setAttribute("message", "Access Denied: You do not have permission to manage rooms!");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("dashboard");
+                return;
+            }
+
             switch (action) {
                 case "all":
                     response.sendRedirect("room");

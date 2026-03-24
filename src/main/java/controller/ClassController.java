@@ -15,6 +15,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -84,10 +85,34 @@ public class ClassController extends HttpServlet {
         if (action == null) {
             action = "all";
         }
+
+        User currentUser = (User) request.getSession().getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "";
+
+        if (action.equals("all")) {
+            if (!roleName.equalsIgnoreCase("Teacher")) {
+                request.getSession().setAttribute("message", "Access Denied: Only Teachers can view this page!");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("dashboard");
+                return;
+            }
+        } else if (action.equals("myClasses") || action.equals("availableClass")) {
+            if (!roleName.equalsIgnoreCase("Student")) {
+                request.getSession().setAttribute("message", "Access Denied: This feature is for Students only!");
+                request.getSession().setAttribute("messageType", "error");
+                response.sendRedirect("dashboard");
+                return;
+            }
+        }
+
         switch (action) {
-
             case "all":
-
                 User user = (User) request.getSession().getAttribute("user");
                 if (user != null) {
                     int teacherID = user.getUserId();
