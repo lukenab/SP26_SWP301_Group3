@@ -113,4 +113,107 @@ public class FeedbackDAO extends DBContext {
 
         return 0;
     }
+
+    public List<Object[]> getFeedbackByStudentId(int studentId) {
+
+        List<Object[]> list = new ArrayList<>();
+
+        String sql = "SELECT "
+                + "f.FeedbackID, "
+                + "f.EnrollmentID, "
+                + "c.ClassName, "
+                + "co.CourseName, "
+                + "t.FullName AS TeacherName, "
+                + "f.Rating, "
+                + "f.Comment, "
+                + "f.SentDate "
+                + "FROM Feedback f "
+                + "JOIN Enrollment e ON f.EnrollmentID = e.EnrollmentID "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "LEFT JOIN [User] t ON c.TeacherID = t.UserID "
+                + "WHERE e.StudentID = ? "
+                + "ORDER BY f.SentDate DESC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, studentId);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                Object[] row = new Object[8];
+
+                row[0] = rs.getInt("FeedbackID");
+                row[1] = rs.getInt("EnrollmentID");
+                row[2] = rs.getString("ClassName");
+                row[3] = rs.getString("CourseName");
+                row[4] = rs.getString("TeacherName");
+                row[5] = rs.getInt("Rating");
+                row[6] = rs.getString("Comment");
+                row[7] = rs.getTimestamp("SentDate");
+
+                list.add(row);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public Object[] getFeedbackByEnrollment(int enrollmentId) {
+
+        String sql = "SELECT "
+                + "f.FeedbackID, "
+                + "f.Rating, "
+                + "f.Comment, "
+                + "f.SentDate "
+                + "FROM Feedback f "
+                + "WHERE f.EnrollmentID = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, enrollmentId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+
+                return new Object[]{
+                    rs.getInt("FeedbackID"),
+                    rs.getInt("Rating"),
+                    rs.getString("Comment"),
+                    rs.getTimestamp("SentDate")
+                };
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public boolean updateFeedback(int feedbackId, int rating, String comment) {
+
+        String sql = "UPDATE Feedback "
+                + "SET Rating = ?, Comment = ?, SentDate = GETDATE() "
+                + "WHERE FeedbackID = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, rating);
+            ps.setString(2, comment);
+            ps.setInt(3, feedbackId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }
