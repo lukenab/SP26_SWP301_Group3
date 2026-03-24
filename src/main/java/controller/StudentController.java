@@ -25,33 +25,6 @@ import model.User;
 public class StudentController extends HttpServlet {
 
     /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet StudentController</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet StudentController at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
      * Handles the HTTP <code>GET</code> method.
      *
      * @param request servlet request
@@ -63,6 +36,24 @@ public class StudentController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
+
+        jakarta.servlet.http.HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect("login");
+            return;
+        }
+
+        String roleName = (currentUser.getRole() != null) ? currentUser.getRole().getRoleName() : "";
+        boolean isTeacher = roleName.equalsIgnoreCase("Teacher");
+
+        if (!isTeacher) {
+            session.setAttribute("message", "Access Denied: Only teachers can view the class list!");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect("dashboard");
+            return;
+        }
 
         if (action == null) {
             action = "viewByClass";
@@ -118,7 +109,6 @@ public class StudentController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
     }
 
     /**
