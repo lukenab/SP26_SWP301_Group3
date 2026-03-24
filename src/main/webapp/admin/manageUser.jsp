@@ -261,16 +261,33 @@
         </div>
 
         <div class="d-flex justify-content-between align-items-center p-3 border-top">
-            <div class="text-muted small">Showing 1-10 of ${userList.size()} users</div>
-            <div>
-                <ul class="pagination pagination-sm mb-0">
-                    <li class="page-item disabled"><a class="page-link" href="#"><i class='bx bx-chevron-left'></i> Previous</a></li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link" href="#">Next <i class='bx bx-chevron-right'></i></a></li>
-                </ul>
+            <div class="text-muted small">
+                Showing <strong>${startItem} - ${endItem}</strong> of <strong>${totalItems}</strong> users
             </div>
+
+            <c:if test="${totalPages > 1}">
+                <div>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                            <a class="page-link" href="user?action=all&page=${currentPage - 1}${paginationQuery}">
+                                <i class='bx bx-chevron-left'></i> Previous
+                            </a>
+                        </li>
+
+                        <c:forEach begin="1" end="${totalPages}" var="i">
+                            <li class="page-item ${currentPage == i ? 'active' : ''}">
+                                <a class="page-link" href="user?action=all&page=${i}${paginationQuery}">${i}</a>
+                            </li>
+                        </c:forEach>
+
+                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                            <a class="page-link" href="user?action=all&page=${currentPage + 1}${paginationQuery}">
+                                Next <i class='bx bx-chevron-right'></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </c:if>
         </div>
     </div>
 </div>
@@ -311,10 +328,10 @@
         </div>
     </div>
 </div>
-            
+
 <div class="modal fade" id="lockUserModal" tabindex="-1" aria-labelledby="lockModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-       <div class="modal-content">
+        <div class="modal-content">
             <div class="modal-header" id="lockModalHeader">
                 <h5 class="modal-title" id="lockModalLabel">
                     <i id="lockModalIcon" class='bx bxs-lock'></i> <span id="lockModalTitleText">Confirm Action</span>

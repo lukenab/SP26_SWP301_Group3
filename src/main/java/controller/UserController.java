@@ -38,6 +38,47 @@ import java.sql.Date;
 )
 public class UserController extends HttpServlet {
 
+    private static final int DEFAULT_PAGE_SIZE = 10;
+
+    private int parsePage(HttpServletRequest request) {
+        String pageParam = request.getParameter("page");
+        if (pageParam == null || pageParam.trim().isEmpty()) {
+            return 1;
+        }
+        try {
+            return Math.max(1, Integer.parseInt(pageParam));
+        } catch (NumberFormatException e) {
+            return 1;
+        }
+    }
+
+    private List<User> paginateUserList(List<User> source, int page, int pageSize, HttpServletRequest request) {
+        if (source == null || source.isEmpty()) {
+            request.setAttribute("currentPage", 1);
+            request.setAttribute("pageSize", pageSize);
+            request.setAttribute("totalItems", 0);
+            request.setAttribute("totalPages", 1);
+            request.setAttribute("startItem", 0);
+            request.setAttribute("endItem", 0);
+            return java.util.Collections.emptyList();
+        }
+
+        int totalItems = source.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        int currentPage = Math.min(page, totalPages);
+        int fromIndex = (currentPage - 1) * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, totalItems);
+
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalItems", totalItems);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("startItem", fromIndex + 1);
+        request.setAttribute("endItem", toIndex);
+
+        return source.subList(fromIndex, toIndex);
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -71,11 +112,24 @@ public class UserController extends HttpServlet {
                 String searchRoleId = request.getParameter("roleId");
                 String searchStatus = request.getParameter("status");
 
-                List<User> list = userDAO.searchAndFilterUsers(seachQuery, searchRoleId, searchStatus);
+                List<User> fullList = userDAO.searchAndFilterUsers(seachQuery, searchRoleId, searchStatus);
 
-                int totalUsers = list.size();
-                request.setAttribute("totalUsers", totalUsers);
-                request.setAttribute("userList", list);
+                StringBuilder paginationQuery = new StringBuilder();
+                if (seachQuery != null && !seachQuery.isEmpty()) {
+                    paginationQuery.append("&searchQuery=").append(seachQuery);
+                }
+                if (searchRoleId != null && !searchRoleId.isEmpty()) {
+                    paginationQuery.append("&roleId=").append(searchRoleId);
+                }
+                if (searchStatus != null && !searchStatus.isEmpty()) {
+                    paginationQuery.append("&status=").append(searchStatus);
+                }
+                request.setAttribute("paginationQuery", paginationQuery.toString());
+
+                List<User> pagedList = paginateUserList(fullList, parsePage(request), DEFAULT_PAGE_SIZE, request);
+
+                request.setAttribute("totalUsers", fullList.size());
+                request.setAttribute("userList", pagedList); 
                 request.setAttribute("home_view", "/admin/manageUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
@@ -135,10 +189,10 @@ public class UserController extends HttpServlet {
             throws ServletException, IOException {
         UserDAO userDAO = new UserDAO();
         String action = request.getParameter("action");
-        
+
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
-        
+
         if (currentUser == null) {
             response.sendRedirect("login");
             return;
@@ -148,7 +202,7 @@ public class UserController extends HttpServlet {
             session.setAttribute("message", "Access Denied: You don't have permission to perform this action!");
             session.setAttribute("messageType", "error");
             response.sendRedirect("dashboard");
-            return; 
+            return;
         }
 
         switch (action) {
