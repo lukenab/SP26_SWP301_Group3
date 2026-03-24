@@ -21,6 +21,49 @@
         <title>Landing Page</title>
     </head>
     <body>
+        <c:if test="${not empty promoVoucher}">
+            <div class="promo-popup-backdrop" id="promoVoucherPopup">
+                <div class="promo-popup-card">
+                    <button type="button" class="promo-popup-close" id="promoPopupClose" aria-label="Close">
+                        <i class='bx bx-x'></i>
+                    </button>
+                    <span class="promo-popup-badge">Special Offer</span>
+                    <h2>Voucher for New Students</h2>
+                    <p class="promo-popup-desc">Register now and use this code to receive the current center promotion.</p>
+
+                    <div class="promo-popup-code-wrap">
+                        <span class="promo-popup-code" id="promoVoucherCode">${promoVoucher.code}</span>
+                        <button type="button" class="promo-copy-btn" id="promoCopyBtn">Copy Code</button>
+                    </div>
+
+                    <div class="promo-popup-meta">
+                        <div>
+                            <span>Discount</span>
+                            <strong>
+                                <c:choose>
+                                    <c:when test="${promoVoucher.discountAmount != null && promoVoucher.discountAmount > 0}">
+                                        <fmt:formatNumber value="${promoVoucher.discountAmount}" type="number"/> VND
+                                    </c:when>
+                                    <c:otherwise>
+                                        <fmt:formatNumber value="${promoVoucher.discountPercent}" type="number"/>%
+                                    </c:otherwise>
+                                </c:choose>
+                            </strong>
+                        </div>
+                        <div>
+                            <span>Valid Until</span>
+                            <strong><fmt:formatDate value="${promoVoucher.validUntil}" pattern="dd/MM/yyyy"/></strong>
+                        </div>
+                    </div>
+
+                    <div class="promo-popup-actions">
+                        <a href="#contact" class="promo-primary-btn" id="promoRegisterBtn">Register Now</a>
+                        <button type="button" class="promo-secondary-btn" id="promoPopupHideBtn">Maybe Later</button>
+                    </div>
+                </div>
+            </div>
+        </c:if>
+
         <nav>
             <div class="navbar"> 
                 <div class="nav-items">
@@ -350,5 +393,60 @@
 
         <script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
         <script src="js/landingPage.js" type="text/javascript"></script>
+        <c:if test="${not empty promoVoucher}">
+            <script>
+                (function () {
+                    const popup = document.getElementById('promoVoucherPopup');
+                    const closeBtn = document.getElementById('promoPopupClose');
+                    const laterBtn = document.getElementById('promoPopupHideBtn');
+                    const registerBtn = document.getElementById('promoRegisterBtn');
+                    const copyBtn = document.getElementById('promoCopyBtn');
+                    const codeEl = document.getElementById('promoVoucherCode');
+                    const contactSection = document.getElementById('contact');
+
+                    if (!popup) {
+                        return;
+                    }
+
+                    const closePopup = function () {
+                        popup.classList.add('promo-popup-hidden');
+                    };
+
+                    closeBtn.addEventListener('click', function () {
+                        closePopup();
+                    });
+
+                    laterBtn.addEventListener('click', function () {
+                        closePopup();
+                    });
+
+                    registerBtn.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        closePopup();
+
+                        if (contactSection) {
+                            setTimeout(function () {
+                                contactSection.scrollIntoView({behavior: 'smooth', block: 'start'});
+                            }, 150);
+                        }
+                    });
+
+                    popup.addEventListener('click', function (event) {
+                        if (event.target === popup) {
+                            closePopup();
+                        }
+                    });
+
+                    copyBtn.addEventListener('click', async function () {
+                        try {
+                            await navigator.clipboard.writeText(codeEl.textContent.trim());
+                            copyBtn.textContent = 'Copied';
+                        } catch (error) {
+                            copyBtn.textContent = 'Copy Failed';
+                        }
+                    });
+                })();
+            </script>
+        </c:if>
     </body>
 </html>

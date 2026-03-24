@@ -25,6 +25,163 @@ body{
     background-color: var(--nav-color);
 }
 
+.promo-popup-backdrop{
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(9, 22, 34, 0.45);
+    backdrop-filter: blur(4px);
+}
+
+.promo-popup-hidden{
+    display: none;
+}
+
+.promo-popup-card{
+    position: relative;
+    width: min(100%, 520px);
+    padding: 32px;
+    border-radius: 28px;
+    color: #fff;
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 45%, #ffc228 100%);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+}
+
+.promo-popup-close{
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    color: #8a3b06;
+    background: rgba(255, 255, 255, 0.85);
+    font-size: 24px;
+    line-height: 1;
+    padding: 0;
+}
+
+.promo-popup-badge{
+    display: inline-block;
+    margin-bottom: 14px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    color: #a84400;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: rgba(255, 255, 255, 0.82);
+}
+
+.promo-popup-card h2{
+    margin-bottom: 10px;
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.promo-popup-desc{
+    margin-bottom: 20px;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.promo-popup-code-wrap{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.promo-popup-code{
+    flex: 1;
+    padding: 14px 18px;
+    border: 2px dashed rgba(255, 255, 255, 0.8);
+    border-radius: 16px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.promo-copy-btn,
+.promo-primary-btn,
+.promo-secondary-btn{
+    border: none;
+    border-radius: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.promo-copy-btn{
+    padding: 14px 18px;
+    color: #fff;
+    background: #b63f00;
+}
+
+.promo-popup-meta{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.promo-popup-meta div{
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.promo-popup-meta span{
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.promo-popup-meta strong{
+    font-size: 18px;
+}
+
+.promo-popup-actions{
+    display: flex;
+    gap: 12px;
+}
+
+.promo-primary-btn,
+.promo-secondary-btn{
+    padding: 14px 20px;
+    font-size: 15px;
+}
+
+.promo-primary-btn{
+    color: #8a3b06;
+    background: #fff3cf;
+}
+
+.promo-secondary-btn{
+    color: #fff;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.promo-copy-btn:hover,
+.promo-primary-btn:hover,
+.promo-secondary-btn:hover,
+.promo-popup-close:hover{
+    transform: translateY(-1px);
+}
+
 .main-content {
     margin-top: 70px;
 }
@@ -455,4 +612,34 @@ nav{
 .social-icon{
     font-size: 20px;
     padding: 5px;
+}
+
+@media (max-width: 768px){
+    .promo-popup-card{
+        padding: 24px 20px;
+        border-radius: 22px;
+    }
+
+    .promo-popup-card h2{
+        font-size: 28px;
+    }
+
+    .promo-popup-code-wrap,
+    .promo-popup-actions,
+    .promo-popup-meta{
+        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+
+    .promo-copy-btn,
+    .promo-primary-btn,
+    .promo-secondary-btn{
+        width: 100%;
+        text-align: center;
+    }
+
+    .promo-popup-code{
+        width: 100%;
+        font-size: 24px;
+    }
 }

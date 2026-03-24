@@ -205,6 +205,18 @@
     font-size: 12px;
 }
 
+.badge-popup {
+    background-color: #DCFCE7;
+    color: #166534;
+    font-size: 12px;
+}
+
+.badge-popup-muted {
+    background-color: #E5E7EB;
+    color: #4B5563;
+    font-size: 12px;
+}
+
 .form-check-input {
     width: 3em;
     height: 1.2em;
@@ -221,14 +233,44 @@
 .action-btn {
     color: #9CA3AF;
     font-size: 1.2rem;
-    margin-left: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     transition: color 0.2s;
+    background: transparent;
+    border: none;
+    padding: 0;
+    line-height: 1;
+    vertical-align: middle;
+    text-decoration: none;
+}
+
+.actions-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.actions-row .action-btn {
+    margin-left: 0;
 }
 .action-btn:hover {
     color: var(--primary-blue);
 }
 .action-btn.delete:hover {
     color: #EF4444;
+}
+
+.action-btn-button {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.action-btn-active {
+    color: #2563EB;
 }
 
 .row-inactive {
