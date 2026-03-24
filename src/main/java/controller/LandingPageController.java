@@ -7,6 +7,7 @@ package controller;
 import dao.CourseDAO;
 import dao.LeadDAO;
 import dao.UserDAO;
+import dao.VoucherDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,6 +18,7 @@ import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import model.Course;
 import model.Lead;
+import model.Voucher;
 
 /**
  *
@@ -39,6 +41,7 @@ public class LandingPageController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         CourseDAO courseDAO = new CourseDAO();
+        VoucherDAO voucherDAO = new VoucherDAO();
         if (action == null) {
             action = "all";
         }
@@ -54,6 +57,10 @@ public class LandingPageController extends HttpServlet {
                 }
                 request.setAttribute("courseList", list);
                 request.setAttribute("searchKeyword", isBlank(keyword) ? "" : keyword.trim());
+                Voucher promoVoucher = voucherDAO.getLandingPopupVoucher();
+                if (promoVoucher != null) {
+                    request.setAttribute("promoVoucher", promoVoucher);
+                }
                 request.getRequestDispatcher("landingPage.jsp").forward(request, response);
                 break;
             default:

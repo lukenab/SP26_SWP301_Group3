@@ -277,6 +277,33 @@ public class VoucherController extends HttpServlet {
             return;
         }
 
+        if ("setLandingPopup".equals(action)) {
+            int id = parseInt(request.getParameter("voucherId"));
+            Voucher voucher = voucherDAO.getVoucherByID(id);
+
+            if (voucher == null) {
+                setSessionMessage(session, "Voucher not found.", "error");
+            } else if (!voucher.isStatus()) {
+                setSessionMessage(session, "Only active vouchers can be shown on the landing page.", "error");
+            } else if (voucherDAO.setLandingPopupVoucher(id)) {
+                SystemLogDAO logDAO = new SystemLogDAO();
+                User logUser = (User) request.getSession().getAttribute("user");
+
+                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+
+                logDAO.insertLog(actorName, actorRole, "SET_LANDING_POPUP_VOUCHER",
+                        "Set landing page popup voucher ID: " + id + " (Code: " + voucher.getCode() + ")");
+
+                setSessionMessage(session, "Landing page popup voucher updated successfully.", "success");
+            } else {
+                setSessionMessage(session, "Failed to set landing page popup voucher.", "error");
+            }
+
+            response.sendRedirect("voucher?action=all");
+            return;
+        }
+
         response.sendRedirect("voucher?action=all");
     }
 

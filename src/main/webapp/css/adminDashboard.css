@@ -156,6 +156,11 @@
     width: 100%;
 }
 
+.chart-container canvas {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
 /* Responsive cho màn hình nhỏ */
 @media (max-width: 1200px) {
     .stat-card-grid { grid-template-columns: repeat(2, 1fr); }

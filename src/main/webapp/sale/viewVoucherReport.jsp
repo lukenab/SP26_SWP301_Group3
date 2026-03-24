@@ -77,7 +77,7 @@
 
     <div class="chart-section mt-4">
         <div class="chart-card">
-            <h4 class="chart-title">Voucher Capacity Overview</h4>
+            <h4 class="chart-title">Voucher Capacity Overview by Month</h4>
             <c:choose>
                 <c:when test="${not empty monthlyRows}">
                     <div class="chart-container">
@@ -216,6 +216,39 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'xy',
+                        intersect: true
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        axis: 'xy',
+                        intersect: true
+                    },
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            mode: 'nearest',
+                            axis: 'xy',
+                            intersect: true,
+                            backgroundColor: 'rgba(31, 41, 55, 0.95)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            displayColors: true,
+                            padding: 12,
+                            caretSize: 8,
+                            callbacks: {
+                                title: function (tooltipItems) {
+                                    return tooltipItems[0].label;
+                                },
+                                label: function (context) {
+                                    return context.dataset.label + ': ' + context.formattedValue;
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         x: { ticks: { autoSkip: false } },
                         y: {
