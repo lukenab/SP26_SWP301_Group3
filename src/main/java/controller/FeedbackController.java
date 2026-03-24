@@ -164,10 +164,8 @@ public class FeedbackController extends HttpServlet {
                     return;
                 }
 
-                int enrollmentId = Integer.parseInt(request.getParameter("enrollmentId"));
-
                 List<Object[]> classes = classDAO.getClassesByStudentId(user.getUserId());
-
+                int enrollmentId = Integer.parseInt(request.getParameter("enrollmentId"));
                 Object[] selectedClass = null;
 
                 for (Object[] c : classes) {
@@ -177,14 +175,19 @@ public class FeedbackController extends HttpServlet {
                     }
                 }
 
+                FeedbackDAO feedbackDAO = new FeedbackDAO();
+                Object[] feedback = feedbackDAO.getFeedbackByEnrollment(enrollmentId);
+
                 request.setAttribute("classInfo", selectedClass);
                 request.setAttribute("enrollmentId", enrollmentId);
+                request.setAttribute("feedback", feedback);
 
                 request.setAttribute("home_view", "student/studentFeedback.jsp");
 
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
 
                 break;
+
         }
     }
 
@@ -220,9 +223,24 @@ public class FeedbackController extends HttpServlet {
                         return;
                     }
 
-                    int enrollmentId = Integer.parseInt(request.getParameter("enrollmentId"));
-                    int rating = Integer.parseInt(request.getParameter("rating"));
+                    String enrollmentRaw = request.getParameter("enrollmentId");
+                    String ratingRaw = request.getParameter("rating");
                     String comment = request.getParameter("comment");
+
+                    if (enrollmentRaw == null || enrollmentRaw.isEmpty()) {
+                        response.sendRedirect("feedback?action=viewStudentCoursesFeedback");
+                        return;
+                    }
+
+                    int enrollmentId = Integer.parseInt(enrollmentRaw);
+
+                    if (ratingRaw == null || ratingRaw.isEmpty()) {
+                        session.setAttribute("error", "Please select a rating!");
+                        response.sendRedirect("feedback?action=writeFeedback&enrollmentId=" + enrollmentId);
+                        return;
+                    }
+
+                    int rating = Integer.parseInt(ratingRaw);
 
                     FeedbackDAO feedbackDAO = new FeedbackDAO();
 
@@ -245,10 +263,51 @@ public class FeedbackController extends HttpServlet {
                     if (result) {
                         session.setAttribute("success", "Feedback sent successfully!");
                     } else {
-                        session.setAttribute("message", "Send feedback failed!");
+                        session.setAttribute("error", "Send feedback failed!");
                     }
 
                     response.sendRedirect("feedback?action=writeFeedback&enrollmentId=" + enrollmentId);
+                    break;
+
+                case "updateFeedback":
+
+                    if (user.getRole().getRoleId() != 5) {
+                        response.sendRedirect("login.jsp");
+                        return;
+                    }
+
+                    String feedbackIdRaw = request.getParameter("feedbackId");
+                    String enrollmentIdRaw = request.getParameter("enrollmentId");
+                    String ratingRawUpdate = request.getParameter("rating");
+                    String commentUpdate = request.getParameter("comment");
+
+                    if (feedbackIdRaw == null || enrollmentIdRaw == null) {
+                        response.sendRedirect("feedback?action=viewStudentCoursesFeedback");
+                        return;
+                    }
+
+                    int feedbackId = Integer.parseInt(feedbackIdRaw);
+                    int enrollmentId1 = Integer.parseInt(enrollmentIdRaw);
+
+                    if (ratingRawUpdate == null || ratingRawUpdate.isEmpty()) {
+                        session.setAttribute("error", "Please select a rating!");
+                        response.sendRedirect("feedback?action=writeFeedback&enrollmentId=" + enrollmentId1);
+                        return;
+                    }
+
+                    int ratingUpdate = Integer.parseInt(ratingRawUpdate);
+
+                    FeedbackDAO dao = new FeedbackDAO();
+
+                    boolean updated = dao.updateFeedback(feedbackId, ratingUpdate, commentUpdate);
+
+                    if (updated) {
+                        session.setAttribute("success", "Feedback updated successfully!");
+                    } else {
+                        session.setAttribute("error", "Update failed!");
+                    }
+
+                    response.sendRedirect("feedback?action=writeFeedback&enrollmentId=" + enrollmentId1);
                     break;
 
                 default:
