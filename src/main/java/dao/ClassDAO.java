@@ -988,7 +988,9 @@ public class ClassDAO extends DBContext {
             LocalDate startWeek,
             LocalDate endWeek,
             String keyword,
-            String status) {
+            String status,
+            int page,
+            int pageSize) {
 
         List<Object[]> list = new ArrayList<>();
 
@@ -1056,7 +1058,8 @@ public class ClassDAO extends DBContext {
             sql += " AND e.Status = ? ";
         }
 
-        sql += " ORDER BY c.ClassID DESC ";
+        sql += " ORDER BY c.ClassID DESC "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -1076,6 +1079,10 @@ public class ClassDAO extends DBContext {
                 ps.setString(index++, status);
             }
 
+            int offset = (page - 1) * pageSize;
+            ps.setInt(index++, offset);
+            ps.setInt(index++, pageSize);
+
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -1092,7 +1099,15 @@ public class ClassDAO extends DBContext {
                 Enrollment e = new Enrollment();
                 e.setEnrollmentId(rs.getInt("EnrollmentID"));
                 e.setStatus(rs.getString("Status"));
-                e.setFinalGrade(rs.getDouble("FinalGrade"));
+
+                // Xử lý FinalGrade có thể là null
+                double finalGrade = rs.getDouble("FinalGrade");
+                if (rs.wasNull()) {
+                    e.setFinalGrade(-1); // Đánh dấu là chưa có điểm
+                } else {
+                    e.setFinalGrade(finalGrade);
+                }
+
                 e.setClasses(c);
 
                 list.add(new Object[]{
@@ -1109,6 +1124,62 @@ public class ClassDAO extends DBContext {
         }
 
         return list;
+    }
+
+    public int countStudentClassesAdvanced(
+            int studentId,
+            LocalDate startWeek,
+            LocalDate endWeek,
+            String keyword,
+            String status) {
+
+        String sql = "SELECT COUNT(DISTINCT c.ClassID) "
+                + "FROM Enrollment e "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
+                + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
+                + "WHERE e.StudentID = ? "
+                + "AND e.Status IN ('Active','Completed') ";
+
+        // keyword filter
+        if (keyword != null && !keyword.isBlank()) {
+            sql += " AND (c.ClassName LIKE ? OR co.CourseName LIKE ? OR u.FullName LIKE ?) ";
+        }
+
+        // status filter
+        if (status != null && !status.isBlank()) {
+            sql += " AND e.Status = ? ";
+        }
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int index = 1;
+
+            // ❗ CHỈ còn studentId
+            ps.setInt(index++, studentId);
+
+            if (keyword != null && !keyword.isBlank()) {
+                String searchPattern = "%" + keyword + "%";
+                ps.setString(index++, searchPattern);
+                ps.setString(index++, searchPattern);
+                ps.setString(index++, searchPattern);
+            }
+
+            if (status != null && !status.isBlank()) {
+                ps.setString(index++, status);
+            }
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail count student classes: " + e.getMessage());
+        }
+
+        return 0;
     }
 
     public List<Object[]> getClassesAdvanced(

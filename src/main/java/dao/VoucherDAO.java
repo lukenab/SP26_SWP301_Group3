@@ -44,7 +44,7 @@ public class VoucherDAO extends DBContext {
         if (hasStatus) {
             sql.append("AND Status = ? ");
         }
-            sql.append("ORDER BY v.VoucherID DESC");
+        sql.append("ORDER BY v.VoucherID DESC");
 
         try {
             PreparedStatement ps = conn.prepareStatement(sql.toString());
@@ -604,5 +604,34 @@ public class VoucherDAO extends DBContext {
         }
 
         return rows;
+    }
+
+    public Voucher getVoucherByStudentAndClass(int studentId, int classId) {
+
+        String sql = "SELECT TOP 1 v.* "
+                + "FROM Enrollment e "
+                + "JOIN Payment p ON e.EnrollmentID = p.EnrollmentID "
+                + "JOIN Voucher v ON p.VoucherID = v.VoucherID "
+                + "WHERE e.StudentID = ? "
+                + "AND e.ClassID = ? "
+                + "AND p.Status = 'Approved' "
+                + "ORDER BY p.PaymentDate DESC";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, studentId);
+            ps.setInt(2, classId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return mapVoucher(rs);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail get voucher by student & class: " + e.getMessage());
+        }
+
+        return null;
     }
 }

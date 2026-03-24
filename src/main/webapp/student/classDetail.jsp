@@ -150,6 +150,48 @@
 
                         </div>
 
+                        <c:if test="${not empty appliedVoucher}">
+                            <div class="mt-3">
+
+                                <div class="info-box">
+
+                                    <div class="info-icon">
+                                        🎟
+                                    </div>
+
+                                    <div>
+
+                                        <small class="text-muted">Voucher Applied</small>
+
+                                        <div class="fw-bold text-success">
+                                            ${appliedVoucher.code}
+                                        </div>
+
+                                        <!-- Discount -->
+                                        <small class="text-muted d-block">
+                                            Discount:
+                                            <c:choose>
+                                                <c:when test="${not empty appliedVoucher.discountPercent}">
+                                                    (<fmt:formatNumber value="${discountAmount}" type="number"/> VND)
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <fmt:formatNumber value="${discountAmount}" type="number"/> VND
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </small>
+
+                                        <div class="mt-1 fw-bold text-danger">
+                                            Final Price: 
+                                            <fmt:formatNumber value="${finalPrice}" type="number"/> VND
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </c:if>
+
                         <!-- ROOM -->
                         <div class="col-md-6">
 
@@ -253,14 +295,12 @@
                         <tbody>
 
                             <c:if test="${not empty scheduleList}">
-                                <c:forEach var="s" items="${scheduleList}">
+                                <c:forEach var="s" items="${scheduleList}" varStatus="loop">
 
-                                    <tr>
+                                    <tr class="${loop.index >= 5 ? 'd-none extra-row' : ''}">
 
                                         <td>
-                                            <fmt:formatDate
-                                                value="${s.learningDate}"
-                                                pattern="dd/MM/yyyy"/>
+                                            <fmt:formatDate value="${s.learningDate}" pattern="dd/MM/yyyy"/>
                                         </td>
 
                                         <td>
@@ -291,6 +331,15 @@
                         </tbody>
 
                     </table>
+                    <c:if test="${not empty scheduleList && scheduleList.size() > 5}">
+                        <div class="text-center mt-2">
+                            <button id="toggleBtn"
+                                    class="btn btn-sm btn-outline-primary"
+                                    onclick="toggleSchedule()">
+                                Show More
+                            </button>
+                        </div>
+                    </c:if>
 
                 </div>
 
@@ -347,3 +396,19 @@
     </div>
 
 </div>
+<script>
+    function toggleSchedule() {
+        const rows = document.querySelectorAll('.extra-row');
+        const btn = document.getElementById('toggleBtn');
+
+        rows.forEach(row => {
+            row.classList.toggle('d-none');
+        });
+
+        if (btn.innerText === "Show More") {
+            btn.innerText = "Show Less";
+        } else {
+            btn.innerText = "Show More";
+        }
+    }
+</script>
