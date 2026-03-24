@@ -121,15 +121,16 @@
                 </div>
             </header>
 
-            <div class="menu-bar">
-                <c:if test="${sessionScope.user.role.roleId == 1}">
-                    <ul class="menu-links">
-
+<div class="menu-bar">
+                <ul class="menu-links">
+                    
+                    <c:if test="${sessionScope.user.role.roleId == 1}">
+                        
                         <li class="menu-header">
                             <span class="text nav-text">MAIN</span>
                         </li>
                         <li class="nav-links">
-                            <a href="dashboard?action=admin">
+                            <a href="dashboard?action=admin" class="${currentAction == 'admin' ? 'active' : ''}">
                                 <i class="bx bx-dashboard"></i>
                                 <span class="text nav-text">Dashboard</span>
                             </a>
@@ -139,22 +140,9 @@
                             <span class="text nav-text">MANAGEMENT</span>
                         </li>
                         <li class="nav-links">
-                            <a href="user">
+                            <a href="user" class="${pageContext.request.servletPath == '/user' ? 'active' : ''}">
                                 <i class="bx bx-group"></i>
                                 <span class="text nav-text">User Management</span>
-                            </a>
-                        </li>
-                        <!--                        <li class="nav-links">
-                                                    <a href="course" class="${pageContext.request.servletPath == '/course' ? 'active' : ''}">
-                                                        <i class="bx bx-book"></i>
-                                                        <span class="text nav-text">Academic Management</span>
-                                                    </a>
-                                                </li>-->
-                        <li class="nav-links">
-                            <c:set var="isPaymentPage" value="${param.action == 'list' || param.action == 'approve' || param.action == 'reject'}" />
-                            <a href="payment?action=list" class="${isPaymentPage ? 'active' : ''}">
-                                <i class='bx bx-wallet-alt'></i>
-                                <span class="text nav-text">Finance Management</span>
                             </a>
                         </li>
 
@@ -162,84 +150,109 @@
                             <span class="text nav-text">SYSTEM</span>
                         </li>
                         <li class="nav-links">
-                            <a href="role">
+                            <a href="role" class="${pageContext.request.servletPath == '/role' ? 'active' : ''}">
                                 <i class="bx bx-shield"></i>
                                 <span class="text nav-text">Role & Permission</span>
                             </a>
                         </li>
                         <li class="nav-links">
-                            <a href="dashboard?action=report">
+                            <a href="dashboard?action=report" class="${currentAction == 'report' ? 'active' : ''}">
                                 <i class="bx bx-file-report"></i>
                                 <span class="text nav-text">System Reports</span>
                             </a>
                         </li>
                         <li class="nav-links">
-                            <a href="setting">
+                            <a href="setting" class="${pageContext.request.servletPath == '/setting' ? 'active' : ''}">
                                 <i class="bx bx-cog"></i>
                                 <span class="text nav-text">System Settings</span>
                             </a>
                         </li>
+                    </c:if>
 
-                    </ul>
-                </c:if>
-
-                <c:if test="${sessionScope.user.role.roleId == 4}">
-                    <ul class="menu-links">
+                    <c:if test="${sessionScope.user.role.manageFinance}">
+                        <li class="menu-header">
+                            <span class="text nav-text">SALES & CRM</span>
+                        </li>
                         <li class="nav-links">
-                            <a href="dashboard?action=teacher">
+                            <a href="dashboard?action=sale" class="${currentAction == 'sale' ? 'active' : ''}">
                                 <i class="bxr bx-dashboard"></i>
-                                <span class="text nav-text">Dashboard</span>
+                                <span class="text nav-text">Sales Dashboard</span>
                             </a>
                         </li>
-
                         <li class="nav-links">
-                            <a href="schedule">
-                                <i class="bxr bx-calendar-event"></i>
-                                <span class="text nav-text">My Schedule</span>
+                            <a href="lead?action=all" class="${pageContext.request.servletPath == '/lead' && param.action != 'revenueReport' && param.action != 'salesReport' && param.action != 'openClasses' ? 'active' : ''}">
+                                <i class="bx bx-user"></i>
+                                <span class="text nav-text">Leads Management</span>
                             </a>
                         </li>
-
                         <li class="nav-links">
-                            <a href="class">
-                                <i class="bxr bx-door"></i>
-                                <span class="text nav-text">My Classes</span>
+                            <a href="lead?action=openClasses" class="${param.action == 'openClasses' ? 'active' : ''}">
+                                <i class="bxr bx-door-open"></i>
+                                <span class="text nav-text">Open Classes</span>
                             </a>
                         </li>
 
+                        <li class="menu-header">
+                            <span class="text nav-text">FINANCE & PROMO</span>
+                        </li>
                         <li class="nav-links">
-                            <a href="feedback">
-                                <i class="bxr bx-door"></i>
-                                <span class="text nav-text">My Feedback</span>
+                            <a href="payment?action=list" class="${pageContext.request.servletPath == '/payment' ? 'active' : ''}">
+                                <i class="bxr bx-check-circle"></i>
+                                <span class="text nav-text">Verify Payments</span>
                             </a>
                         </li>
-
                         <li class="nav-links">
-                            <a href="dashboard?action=profile">
-                                <i class="bxr bx-user"></i>
-                                <span class="text nav-text">Profile</span>
+                            <a href="voucher?action=all" class="${pageContext.request.servletPath == '/voucher' && param.action != 'report' ? 'active' : ''}">
+                                <i class="bxr bx-gift"></i>
+                                <span class="text nav-text">Voucher</span>
                             </a>
                         </li>
-                    </ul>
-                </c:if>
 
-                <c:if test="${sessionScope.user.role.roleId == 2}">
+                        <li class="menu-header">
+                            <span class="text nav-text">REPORTS</span>
+                        </li>
+                        <li class="nav-links">
+                            <a href="lead?action=revenueReport" class="${param.action == 'revenueReport' ? 'active' : ''}">
+                                <i class="bxr bx-wallet-alt"></i>
+                                <span class="text nav-text">Revenue Report</span>
+                            </a>
+                        </li>
+                        <li class="nav-links">
+                            <a href="lead?action=salesReport" class="${param.action == 'salesReport' ? 'active' : ''}">
+                                <i class="bxr bx-chart-line"></i>
+                                <span class="text nav-text">Sales Reports</span>
+                            </a>
+                        </li>
+                        <li class="nav-links">
+                            <a href="voucher?action=report" class="${param.action == 'report' && pageContext.request.servletPath == '/voucher' ? 'active' : ''}">
+                                <i class="bx bx-receipt"></i>
+                                <span class="text nav-text">Voucher Report</span>
+                            </a>
+                        </li>
+                    </c:if>
 
-                    <!--                    Merge this-->
-                    <ul class="menu-links">
+                    <c:if test="${sessionScope.user.role.manageCourse}">
+                        <li class="menu-header">
+                            <span class="text nav-text">ACADEMIC MANAGEMENT</span>
+                        </li>
                         <li class="nav-links">
                             <a href="dashboard?action=academic" class="${currentAction == 'academic' ? 'active' : ''}">
                                 <i class="bxr bx-dashboard"></i>
-                                <span class="text nav-text">Dashboard</span>
+                                <span class="text nav-text">Academic Dashboard</span>
                             </a>
                         </li>
-
                         <li class="nav-links">
-                            <a href="room" class="${pageContext.request.servletPath == '/room' ? 'active' : ''}">
-                                <i class="bxr bx-door-open"></i>
-                                <span class="text nav-text">Room</span>
+                            <a href="course" class="${pageContext.request.servletPath == '/course' ? 'active' : ''}">
+                                <i class="bxr bx-book"></i>
+                                <span class="text nav-text">Courses</span>
                             </a>
                         </li>
-
+                        <li class="nav-links">
+                            <a href="syllabus?action=manage" class="${pageContext.request.servletPath == '/syllabus' ? 'active' : ''}">
+                                <i class="bxr bx-book-content"></i>
+                                <span class="text nav-text">Syllabus</span>
+                            </a>
+                        </li>
                         <li class="nav-links">
                             <a href="enrollment?action=classes" class="${pageContext.request.servletPath == '/enrollment' && param.action != 'requests' ? 'active' : ''}">
                                 <i class="bxr bx-door"></i>
@@ -253,178 +266,107 @@
                             </a>
                         </li>
                         <li class="nav-links">
-                            <a href="course" class="${pageContext.request.servletPath == '/course' ? 'active' : ''}">
-                                <i class="bxr bx-book"></i>
-                                <span class="text nav-text">Courses</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="syllabus?action=manage" class="${pageContext.request.servletPath == '/syllabus' ? 'active' : ''}">
-                                <i class="bxr bx-book-content"></i>
-                                <span class="text nav-text">Syllabus</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="schedule?action=manage" class="${pageContext.request.servletPath == '/schedule' ? 'active' : ''}">
+                            <a href="schedule?action=manage" class="${pageContext.request.servletPath == '/schedule' && param.action == 'manage' ? 'active' : ''}">
                                 <i class="bxr bx-calendar-event"></i>
-                                <span class="text nav-text">Schedule</span>
+                                <span class="text nav-text">Schedules</span>
                             </a>
                         </li>
-
-
-
-
                         <li class="nav-links">
-                            <a href="dashboard?action=profile" class="${currentAction == 'profile' ? 'active' : ''}">
-                                <i class="bxr bx-user"></i>
-                                <span class="text nav-text">Profile</span>
-                            </a>
-                        </li>
-                    </ul>
-                </c:if>
-
-                <c:if test="${sessionScope.user.role.roleId == 3}">
-                    <ul class="menu-links">
-                        <li class="menu-header">
-                            <span class="text nav-text">MAIN</span>
-                        </li>
-                        <li class="nav-links">
-                            <a href="dashboard">
-                                <i class="bxr bx-dashboard"></i>
-                                <span class="text nav-text">Dashboard</span>
-                            </a>
-                        </li>
-
-                        <li class="menu-header">
-                            <span class="text nav-text">SALES & CRM</span>
-                        </li>
-                        <li class="nav-links">
-                            <a href="lead?action=all">
-                                <i class="bx bx-user"></i>
-                                <span class="text nav-text">Leads Management</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="lead?action=openClasses">
+                            <a href="room" class="${pageContext.request.servletPath == '/room' ? 'active' : ''}">
                                 <i class="bxr bx-door-open"></i>
-                                <span class="text nav-text">Open Classes</span>
+                                <span class="text nav-text">Rooms</span>
                             </a>
                         </li>
+                    </c:if>
 
+                    <c:if test="${sessionScope.user.role.roleId == 4}">
                         <li class="menu-header">
-                            <span class="text nav-text">FINANCE & PROMO</span>
+                            <span class="text nav-text">TEACHING PORTAL</span>
                         </li>
-
                         <li class="nav-links">
-                            <a href="payment?action=list">
-                                <i class="bxr bx-check-circle"></i>
-                                <span class="text nav-text">Verify Payments</span>
-                            </a>
-                        </li>
-
-                        <c:if test="${sessionScope.user.role.manageFinance}">
-                            <li class="nav-links">
-                                <a href="voucher?action=all">
-                                    <i class="bxr bx-group"></i>
-                                    <span class="text nav-text">Voucher</span>
-                                </a>
-                            </li>
-                        </c:if>
-
-
-                        <li class="menu-header">
-                            <span class="text nav-text">REPORTS</span>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="lead?action=revenueReport">
-                                <i class="bxr bx-wallet-alt"></i>
-                                <span class="text nav-text">Revenue Report</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="lead?action=salesReport">
-                                <i class="bxr bx-chart-line"></i>
-                                <span class="text nav-text">Sales Reports</span>
-                            </a>
-                        </li>
-
-                        <c:if test="${sessionScope.user.role.manageFinance}">
-                            <li class="nav-links">
-                                <a href="voucher?action=report">
-                                    <i class="bx bx-receipt"></i>
-                                    <span class="text nav-text">Voucher Report</span>
-                                </a>
-                            </li>
-                        </c:if>
-                    </ul>
-                </c:if>
-
-                <c:if test="${sessionScope.user.role.roleId == 5}">
-                    <ul class="menu-links">
-
-                        <li class="nav-links">
-                            <a href="dashboard?action=student">
+                            <a href="dashboard?action=teacher" class="${currentAction == 'teacher' ? 'active' : ''}">
                                 <i class="bxr bx-dashboard"></i>
                                 <span class="text nav-text">Dashboard</span>
                             </a>
                         </li>
-
                         <li class="nav-links">
-                            <a href="grade?action=student-courses">
-                                <i class="bxr bx-medal"></i>
-                                <span class="text nav-text">View Grades</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="schedule?action=studentView">
+                            <a href="schedule?action=view" class="${pageContext.request.servletPath == '/schedule' ? 'active' : ''}">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">My Schedule</span>
                             </a>
                         </li>
-
                         <li class="nav-links">
-                            <a href="class?action=myClasses">
-                                <i class="bxr bx-book"></i>
+                            <a href="class?action=all" class="${pageContext.request.servletPath == '/class' ? 'active' : ''}">
+                                <i class="bxr bx-door"></i>
                                 <span class="text nav-text">My Classes</span>
                             </a>
                         </li>
-
                         <li class="nav-links">
-                            <a href="attendance?action=studentReport">
-                                <i class="bxr bx-check-square"></i>
-                                <span class="text nav-text">Attendance Report</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-links">
-                            <a href="feedback?action=viewStudentCoursesFeedback">
+                            <a href="feedback" class="${pageContext.request.servletPath == '/feedback' ? 'active' : ''}">
                                 <i class="bxr bx-poll"></i>
-                                <span class="text nav-text">Course Feedback</span>
+                                <span class="text nav-text">My Feedback</span>
                             </a>
                         </li>
+                    </c:if>
 
+                    <c:if test="${sessionScope.user.role.roleId == 5}">
+                        <li class="menu-header">
+                            <span class="text nav-text">STUDENT PORTAL</span>
+                        </li>
                         <li class="nav-links">
-                            <a href="class?action=availableClass">
+                            <a href="dashboard?action=student" class="${currentAction == 'student' ? 'active' : ''}">
+                                <i class="bxr bx-dashboard"></i>
+                                <span class="text nav-text">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-links">
+                            <a href="class?action=availableClass" class="${param.action == 'availableClass' ? 'active' : ''}">
                                 <i class="bxr bx-book-open"></i>
                                 <span class="text nav-text">Available Classes</span>
                             </a>
                         </li>
-
                         <li class="nav-links">
-                            <a href="dashboard?action=profile">
-                                <i class="bxr bx-user"></i>
-                                <span class="text nav-text">Profile</span>
+                            <a href="class?action=myClasses" class="${param.action == 'myClasses' ? 'active' : ''}">
+                                <i class="bxr bx-book"></i>
+                                <span class="text nav-text">My Classes</span>
                             </a>
                         </li>
+                        <li class="nav-links">
+                            <a href="schedule?action=studentView" class="${pageContext.request.servletPath == '/schedule' ? 'active' : ''}">
+                                <i class="bxr bx-calendar-event"></i>
+                                <span class="text nav-text">My Schedule</span>
+                            </a>
+                        </li>
+                        <li class="nav-links">
+                            <a href="attendance?action=studentReport" class="${pageContext.request.servletPath == '/attendance' ? 'active' : ''}">
+                                <i class="bxr bx-check-square"></i>
+                                <span class="text nav-text">Attendance Report</span>
+                            </a>
+                        </li>
+                        <li class="nav-links">
+                            <a href="grade?action=student-courses" class="${pageContext.request.servletPath == '/grade' ? 'active' : ''}">
+                                <i class="bxr bx-medal"></i>
+                                <span class="text nav-text">View Grades</span>
+                            </a>
+                        </li>
+                        <li class="nav-links">
+                            <a href="feedback?action=viewStudentCoursesFeedback" class="${pageContext.request.servletPath == '/feedback' ? 'active' : ''}">
+                                <i class="bxr bx-poll"></i>
+                                <span class="text nav-text">Course Feedback</span>
+                            </a>
+                        </li>
+                    </c:if>
 
-                    </ul>
-                </c:if>
+                    <li class="menu-header">
+                        <span class="text nav-text">PERSONAL</span>
+                    </li>
+                    <li class="nav-links">
+                        <a href="dashboard?action=profile" class="${currentAction == 'profile' ? 'active' : ''}">
+                            <i class="bxr bx-user"></i>
+                            <span class="text nav-text">Profile</span>
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
 
