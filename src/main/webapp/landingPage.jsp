@@ -27,18 +27,18 @@
                     <button type="button" class="promo-popup-close" id="promoPopupClose" aria-label="Close">
                         <i class='bx bx-x'></i>
                     </button>
-                    <span class="promo-popup-badge">Special Offer</span>
-                    <h2>Voucher for New Students</h2>
-                    <p class="promo-popup-desc">Register now and use this code to receive the current center promotion.</p>
-
-                    <div class="promo-popup-code-wrap">
-                        <span class="promo-popup-code" id="promoVoucherCode">${promoVoucher.code}</span>
-                        <button type="button" class="promo-copy-btn" id="promoCopyBtn">Copy Code</button>
+                    <div class="promo-popup-topline">
+                        <i class='bx bx-rocket'></i>
+                        <span>Start your English journey</span>
                     </div>
+                    <h2 class="promo-popup-title"><span class="promo-script-light">Unlock Your</span><span class="promo-script-gold">Future</span></h2>
+                    <p class="promo-popup-subtitle">With English</p>
 
-                    <div class="promo-popup-meta">
-                        <div>
-                            <span>Discount</span>
+                    <div class="promo-voucher-panel">
+                        <span class="promo-popup-badge">Exclusive Student Voucher</span>
+                        <div class="promo-popup-code" id="promoVoucherCode">${promoVoucher.code}</div>
+                        <div class="promo-popup-discount-line">
+                            Get
                             <strong>
                                 <c:choose>
                                     <c:when test="${promoVoucher.discountAmount != null && promoVoucher.discountAmount > 0}">
@@ -49,17 +49,28 @@
                                     </c:otherwise>
                                 </c:choose>
                             </strong>
-                        </div>
-                        <div>
-                            <span>Valid Until</span>
-                            <strong><fmt:formatDate value="${promoVoucher.validUntil}" pattern="dd/MM/yyyy"/></strong>
+                            OFF
                         </div>
                     </div>
 
-                    <div class="promo-popup-actions">
-                        <a href="#contact" class="promo-primary-btn" id="promoRegisterBtn">Register Now</a>
-                        <button type="button" class="promo-secondary-btn" id="promoPopupHideBtn">Maybe Later</button>
+                    <div class="promo-popup-meta">
+                        <i class='bx bx-time-five'></i>
+                        <span>Valid until <strong><fmt:formatDate value="${promoVoucher.validUntil}" pattern="dd/MM/yyyy"/></strong></span>
                     </div>
+
+                    <div class="promo-popup-actions">
+                        <a href="#contact" class="promo-primary-btn" id="promoRegisterBtn">
+                            <i class='bx bx-rocket'></i>
+                            Claim Your Offer Now
+                            <i class='bx bx-chevron-right'></i>
+                        </a>
+                    </div>
+
+                    <div class="promo-popup-links">
+                        <button type="button" class="promo-copy-btn" id="promoCopyBtn">Copy Code</button>
+                        <button type="button" class="promo-secondary-btn" id="promoPopupHideBtn">Maybe later</button>
+                    </div>
+                    <div class="promo-popup-footnote">Your future starts here.</div>
                 </div>
             </div>
         </c:if>

@@ -43,7 +43,7 @@
                 <h3>${totalVouchers}</h3>
             </div>
             <div class="icon-wrapper blue">
-                <i class='bx bxs-purchase-tag'></i>
+                <i class='bx bxs-reading'></i>
             </div>
         </div>
         <div class="stat-card">
@@ -52,7 +52,7 @@
                 <h3>${activeVouchers}</h3>
             </div>
             <div class="icon-wrapper cyan">
-                <i class='bx bxs-badge-check'></i>
+                <i class='bx bx-file'></i>
             </div>
         </div>
         <div class="stat-card">
@@ -61,7 +61,7 @@
                 <h3>${totalIssued}</h3>
             </div>
             <div class="icon-wrapper orange">
-                <i class='bx bxs-coupon'></i>
+                <i class='bx bx-discount'></i>
             </div>
         </div>
         <div class="stat-card">
@@ -70,7 +70,7 @@
                 <h3>${totalRemaining}</h3>
             </div>
             <div class="icon-wrapper green">
-                <i class='bx bxs-package'></i>
+                <i class='bx bx-file-plus'></i>
             </div>
         </div>
     </div>
