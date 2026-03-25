@@ -201,7 +201,7 @@ public class GradeDAO extends DBContext {
 
     public Double calculateAverage(int enrollmentId) {
 
-         String sql = "SELECT SUM(g.Score * a.Weight) / SUM(a.Weight) AS FinalScore "
+        String sql = "SELECT SUM(g.Score * a.Weight) / SUM(a.Weight) AS FinalScore "
                 + "FROM Grade g "
                 + "JOIN Assessment a "
                 + "ON g.AssessmentID = a.AssessmentID "
@@ -233,7 +233,7 @@ public class GradeDAO extends DBContext {
                 + "FROM Enrollment e "
                 + "LEFT JOIN Grade g ON e.EnrollmentID = g.EnrollmentID "
                 + "LEFT JOIN Assessment a ON g.AssessmentID = a.AssessmentID "
-                + "WHERE e.ClassID = ? "
+                + "WHERE e.ClassID = ? AND e.Status = 'Active' "
                 + "GROUP BY e.StudentID";
 
         try (PreparedStatement st = conn.prepareStatement(sql)) {
@@ -242,7 +242,7 @@ public class GradeDAO extends DBContext {
             ResultSet rs = st.executeQuery();
 
             while (rs.next()) {
-                 double score = rs.getDouble("FinalScore");
+                double score = rs.getDouble("FinalScore");
                 map.put(
                         rs.getInt("StudentID"),
                         rs.wasNull() ? null : score
@@ -348,7 +348,7 @@ public class GradeDAO extends DBContext {
                 + "JOIN [User] u ON e.StudentID = u.UserID "
                 + "LEFT JOIN Grade g ON e.EnrollmentID = g.EnrollmentID "
                 + "LEFT JOIN Assessment a ON g.AssessmentID = a.AssessmentID "
-                + "WHERE e.ClassID = ? "
+                + "WHERE e.ClassID = ? AND e.Status = 'Active' "
                 + "ORDER BY u.UserID, a.AssessmentID";
         try (PreparedStatement st = conn.prepareStatement(sql)) {
             st.setInt(1, classId);
@@ -380,9 +380,8 @@ public class GradeDAO extends DBContext {
         }
         return list;
     }
-    
-    
-     public void updateFinalGradeByEnrollmentId(int enrollmentId, Double finalGrade) {
+
+    public void updateFinalGradeByEnrollmentId(int enrollmentId, Double finalGrade) {
         String sql = "UPDATE Enrollment SET FinalGrade = ? WHERE EnrollmentID = ?";
 
         try (PreparedStatement st = conn.prepareStatement(sql)) {

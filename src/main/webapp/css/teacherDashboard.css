@@ -1,0 +1,238 @@
+#teacher-dashboard {
+    --td-surface: #ffffff;
+    --td-border: #e5e7eb;
+    --td-muted: #64748b;
+    --td-title: #0f172a;
+    --td-shadow-soft: 0 6px 18px rgba(15, 23, 42, 0.06);
+    --td-shadow-hover: 0 14px 30px rgba(15, 23, 42, 0.12);
+    --td-radius: 14px;
+}
+
+#teacher-dashboard.teacher-dashboard-page {
+    padding-top: 0.5rem;
+}
+
+#teacher-dashboard .teacher-header-panel {
+    gap: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    border: 1px solid var(--td-border);
+    border-radius: var(--td-radius);
+    padding: 1rem 1.1rem;
+    box-shadow: var(--td-shadow-soft);
+}
+
+#teacher-dashboard .teacher-date-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #ffffff;
+    border: 1px solid #dbe3ee;
+    border-radius: 12px;
+    padding: 0.65rem 0.9rem;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+#teacher-dashboard .teacher-date-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #e1efff 0%, #dbeafe 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#teacher-dashboard .teacher-date-value {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+#teacher-dashboard .teacher-date-subtitle {
+    color: #64748b;
+    font-size: 0.72rem;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+#teacher-dashboard .teacher-reminder {
+    border-left: 4px solid #3b82f6 !important;
+    background: linear-gradient(90deg, #eaf3ff 0%, #dbeafe 100%);
+}
+
+#teacher-dashboard .teacher-kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 18px;
+}
+
+#teacher-dashboard .teacher-kpi-grid .stat-card {
+    min-height: 120px;
+    border: 1px solid var(--td-border);
+    border-radius: var(--td-radius);
+    box-shadow: var(--td-shadow-soft);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+#teacher-dashboard .teacher-kpi-grid .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--td-shadow-hover);
+}
+
+#teacher-dashboard .teacher-kpi-grid .stat-info p {
+    margin-bottom: 0.4rem;
+    color: var(--td-muted);
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+#teacher-dashboard .teacher-kpi-grid .stat-info h3 {
+    color: var(--td-title);
+    font-size: 2rem;
+    line-height: 1;
+    font-weight: 800;
+    margin-bottom: 0;
+}
+
+#teacher-dashboard .teacher-kpi-grid .icon-wrapper {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+
+#teacher-dashboard .teacher-kpi-grid .icon-wrapper i {
+    font-size: 1.6rem;
+}
+
+#teacher-dashboard .teacher-kpi-grid .icon-wrapper.orange {
+    background: #ffedd5;
+    color: #ea580c;
+}
+
+#teacher-dashboard .teacher-kpi-grid .icon-wrapper.red {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+#teacher-dashboard .teacher-quick-links {
+    border: 1px solid var(--td-border);
+    border-radius: var(--td-radius);
+    box-shadow: var(--td-shadow-soft);
+    position: relative;
+    z-index: 20;
+    overflow: visible !important;
+}
+
+#teacher-dashboard .teacher-quick-links .card-body,
+#teacher-dashboard .teacher-quick-links .dropdown {
+    overflow: visible;
+}
+
+#teacher-dashboard .teacher-quick-links,
+#teacher-dashboard .teacher-quick-links * {
+    pointer-events: auto;
+}
+
+#teacher-dashboard .teacher-quick-links .dropdown-menu {
+    z-index: 1080;
+    position: absolute;
+}
+
+#teacher-dashboard .teacher-main-card {
+    border: 1px solid var(--td-border);
+    border-radius: var(--td-radius) !important;
+    box-shadow: var(--td-shadow-soft);
+    transition: box-shadow 0.2s ease;
+}
+
+#teacher-dashboard .teacher-main-card:hover {
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09);
+}
+
+#teacher-dashboard .teacher-main-card .card-header {
+    border-bottom: 1px solid #eef2f7 !important;
+}
+
+#teacher-dashboard .teacher-main-card thead th {
+    color: #64748b;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+#teacher-dashboard .teacher-main-card tbody tr {
+    transition: background-color 0.16s ease;
+}
+
+#teacher-dashboard .teacher-main-card tbody tr:hover {
+    background-color: #f8fbff;
+}
+
+#teacher-dashboard .teacher-feedback-card .feedback-item {
+    transition: background-color 0.18s ease;
+}
+
+#teacher-dashboard .teacher-feedback-card .feedback-item:hover {
+    background: #f8fbff;
+}
+
+#teacher-dashboard .teacher-feedback-card .feedback-item:last-child {
+    border-bottom: 0 !important;
+}
+
+#teacher-dashboard .take-attendance-btn {
+    display: inline-block !important;
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.8rem;
+    line-height: 1.25;
+    font-weight: 600;
+}
+
+#teacher-dashboard .done-badge {
+    font-size: 0.8125rem;
+    line-height: 1.25;
+    font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+    #teacher-dashboard .teacher-header-panel {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+body.dark #teacher-dashboard {
+    --td-surface: #0f172a;
+    --td-border: #1e293b;
+    --td-muted: #94a3b8;
+    --td-title: #e2e8f0;
+}
+
+body.dark #teacher-dashboard .teacher-header-panel,
+body.dark #teacher-dashboard .teacher-date-chip,
+body.dark #teacher-dashboard .teacher-main-card,
+body.dark #teacher-dashboard .teacher-quick-links,
+body.dark #teacher-dashboard .teacher-kpi-grid .stat-card {
+    background: #0f172a;
+    border-color: #1e293b;
+}
+
+body.dark #teacher-dashboard .teacher-main-card tbody tr:hover,
+body.dark #teacher-dashboard .teacher-feedback-card .feedback-item:hover {
+    background: #162033;
+}
+
+body.dark #teacher-dashboard .teacher-date-value,
+body.dark #teacher-dashboard .teacher-kpi-grid .stat-info h3 {
+    color: #e2e8f0;
+}
+
+body.dark #teacher-dashboard .teacher-kpi-grid .stat-info p,
+body.dark #teacher-dashboard .teacher-date-subtitle,
+body.dark #teacher-dashboard .teacher-main-card thead th {
+    color: #94a3b8;
+}

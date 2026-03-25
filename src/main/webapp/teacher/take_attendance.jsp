@@ -11,7 +11,7 @@
                 <li class="breadcrumb-item"><a href="dashboard?action=teacher">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="class">Class Management</a></li>
                 <li class="breadcrumb-item"><a href="schedule?action=view&classId=${classId}">Class Schedule</a></li>
-                <li class="breadcrumb-item active">Take Attendance</li>
+                <li class="breadcrumb-item active">Attendance Management</li>
             </ol>
         </div>
 
