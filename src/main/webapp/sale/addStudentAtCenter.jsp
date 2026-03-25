@@ -20,6 +20,14 @@
         </div>
     </div>
 
+    <c:if test="${not empty sessionScope.message}">
+        <div class="alert alert-${sessionScope.messageType == 'success' ? 'success' : 'danger'} mb-4" role="alert">
+            ${sessionScope.message}
+        </div>
+        <c:remove var="message" scope="session"/>
+        <c:remove var="messageType" scope="session"/>
+    </c:if>
+
     <div class="card shadow-sm">
         <div class="card-body p-4">
             <form action="lead" method="POST" class="form-body">
@@ -190,7 +198,7 @@
                     classId,
                     voucherCode
                 });
-                const response = await fetch(`${pageContext.request.contextPath}/lead`, {
+                const response = await fetch(`${pageContext.request.contextPath}/voucher`, {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: params.toString()

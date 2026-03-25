@@ -1,5 +1,6 @@
 package controller;
 
+import dao.ClassDAO;
 import dao.SystemLogDAO;
 import dao.VoucherDAO;
 import jakarta.servlet.ServletException;
@@ -46,6 +47,9 @@ public class VoucherController extends HttpServlet {
         }
 
         switch (action) {
+            case "validateVoucher":
+                handleValidateVoucher(request, response);
+                return;
             case "all":
                 String searchQuery = request.getParameter("searchQuery");
                 String status = request.getParameter("status");
@@ -164,6 +168,11 @@ public class VoucherController extends HttpServlet {
 
         if ("create".equals(action)) {
             handleCreateVoucher(request, response);
+            return;
+        }
+
+        if ("validateVoucher".equals(action)) {
+            handleValidateVoucher(request, response);
             return;
         }
 
@@ -370,6 +379,46 @@ public class VoucherController extends HttpServlet {
 
         setSessionMessage(session, "Create voucher successfully!", "success");
         response.sendRedirect("voucher?action=all");
+    }
+
+    private void handleValidateVoucher(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.setHeader("Cache-Control", "no-store");
+
+        try {
+            int classId = parseInt(request.getParameter("classId"));
+            String voucherCode = request.getParameter("voucherCode");
+
+            if (classId <= 0 || isBlank(voucherCode)) {
+                response.getWriter().write("{\"valid\":false,\"message\":\"Invalid request.\"}");
+                return;
+            }
+
+            ClassDAO classDAO = new ClassDAO();
+            double amount = classDAO.getClassPrice(classId);
+
+            VoucherDAO voucherDAO = new VoucherDAO();
+            Voucher voucher = voucherDAO.getVoucherByCode(normalizeCode(voucherCode));
+            if (voucher == null || !voucher.isStatus()) {
+                response.getWriter().write("{\"valid\":false,\"message\":\"Invalid or expired voucher code.\"}");
+                return;
+            }
+            if (!voucherDAO.isVoucherUsageAvailable(voucher.getVoucherId())) {
+                response.getWriter().write("{\"valid\":false,\"message\":\"This voucher has reached its usage limit.\"}");
+                return;
+            }
+
+            double discountAmount = Math.max(voucherDAO.calculateDiscountAmount(voucher, amount), 0);
+            double finalAmount = Math.max(amount - discountAmount, 0);
+
+            String json = String.format(java.util.Locale.US,
+                    "{\"valid\":true,\"message\":\"Voucher applied.\",\"discountAmount\":%.2f,\"finalAmount\":%.2f}",
+                    discountAmount, finalAmount);
+            response.getWriter().write(json);
+        } catch (Exception e) {
+            response.getWriter().write("{\"valid\":false,\"message\":\"Failed to apply voucher.\"}");
+        }
     }
 
     private void setSessionMessage(HttpSession session, String message, String type) {
