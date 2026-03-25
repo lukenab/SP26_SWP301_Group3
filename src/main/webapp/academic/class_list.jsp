@@ -7,6 +7,13 @@
 <link href="css/course_list.css" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body">
+    <c:url var="classListReturnUrl" value="enrollment">
+        <c:param name="action" value="classes"/>
+        <c:param name="searchQuery" value="${searchQuery}"/>
+        <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
+        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+        <c:param name="page" value="${currentPage}"/>
+    </c:url>
 
     <div class="mb-4">
         <div aria-label="breadcrumb">
@@ -277,6 +284,21 @@
                     <c:forEach items="${classList}" var="c" varStatus="loop">
                         <tr>
                             <c:set var="isActive" value="${c[6] == 'Active'}"/>
+                            <c:url var="classDetailUrl" value="enrollment">
+                                <c:param name="action" value="classDetails"/>
+                                <c:param name="classId" value="${c[0]}"/>
+                                <c:param name="returnUrl" value="${classListReturnUrl}"/>
+                            </c:url>
+                            <c:url var="editClassUrl" value="enrollment">
+                                <c:param name="action" value="editClassForm"/>
+                                <c:param name="classId" value="${c[0]}"/>
+                                <c:param name="returnUrl" value="${classListReturnUrl}"/>
+                            </c:url>
+                            <c:url var="manageStudentsUrl" value="enrollment">
+                                <c:param name="action" value="addStudentForm"/>
+                                <c:param name="classId" value="${c[0]}"/>
+                                <c:param name="returnUrl" value="${classListReturnUrl}"/>
+                            </c:url>
                             <td>${startItem + loop.index}</td>
 
                             <td>
@@ -304,15 +326,15 @@
 
                             <td class="actions-cell">
                                 <div class="table-actions">
-                                    <a href="enrollment?action=classDetails&classId=${c[0]}"
+                                    <a href="${classDetailUrl}"
                                        class="action-btn"
                                        title="View Details">
                                         <i class='bx bx-eye'></i>
                                     </a>
-                                    <a href="enrollment?action=editClassForm&classId=${c[0]}" class="action-btn" title="Edit Class">
+                                    <a href="${editClassUrl}" class="action-btn" title="Edit Class">
                                         <i class='bx bx-edit'></i>
                                     </a>
-                                    <a href="enrollment?action=addStudentForm&classId=${c[0]}" class="action-btn" title="Add Student">
+                                    <a href="${manageStudentsUrl}" class="action-btn" title="Add Student">
                                         <i class='bx bx-user-plus'></i>
                                     </a>
                                     <c:choose>

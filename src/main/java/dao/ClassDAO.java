@@ -62,26 +62,14 @@ public class ClassDAO extends DBContext {
     public List<Object[]> getClassManagementList(String searchQuery, String statusFilter, Integer monthFilter) {
         List<Object[]> list = new ArrayList<>();
         boolean hasMaxCapacity = hasClassMaxCapacityColumn();
-        boolean hasRoomId = hasClassRoomIdColumn();
         String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, u.FullName AS TeacherName, "
                 + "c.StartDate, c.EndDate, c.Status, COUNT(e.EnrollmentID) AS StudentCount, "
                 + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " AS MaxCapacity, "
-                + "DATEADD(DAY, -5, c.StartDate) AS RegistrationDeadline, "
-                + (hasRoomId ? "COALESCE(cr.RoomName, rm.RoomName)" : "rm.RoomName") + " AS RoomName "
+                + "DATEADD(DAY, -5, c.StartDate) AS RegistrationDeadline "
                 + "FROM Class c "
                 + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
                 + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
                 + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
-                + (hasRoomId ? "LEFT JOIN Room cr ON c.RoomID = cr.RoomID " : "")
-                + "LEFT JOIN ( "
-                + "   SELECT ClassID, STRING_AGG(RoomName, ', ') AS RoomName "
-                + "   FROM ( "
-                + "       SELECT DISTINCT sc.ClassID, r.RoomName "
-                + "       FROM Schedule sc "
-                + "       JOIN Room r ON sc.RoomID = r.RoomID "
-                + "   ) x "
-                + "   GROUP BY ClassID "
-                + ") rm ON rm.ClassID = c.ClassID "
                 + "WHERE 1 = 1 ";
 
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
@@ -95,9 +83,7 @@ public class ClassDAO extends DBContext {
         }
 
         sql += "GROUP BY c.ClassID, c.ClassName, co.CourseName, u.FullName, c.StartDate, c.EndDate, c.Status, "
-                + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + ", "
-                + (hasRoomId ? "cr.RoomName, " : "")
-                + "rm.RoomName "
+                + (hasMaxCapacity ? "c.MaxCapacity" : "co.TotalSlots") + " "
                 + "ORDER BY c.StartDate DESC, c.ClassID DESC";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -125,7 +111,7 @@ public class ClassDAO extends DBContext {
                     row[7] = rs.getInt("StudentCount");
                     row[8] = rs.getInt("MaxCapacity");
                     row[9] = rs.getDate("RegistrationDeadline");
-                    row[10] = rs.getString("RoomName");
+                    row[10] = null;
                     list.add(row);
                 }
             }
@@ -936,7 +922,7 @@ public class ClassDAO extends DBContext {
                 + "   GROUP BY ClassID "
                 + ") rm ON rm.ClassID = c.ClassID "
                 + "WHERE e.StudentID = ? "
-                + "AND e.Status IN ('Active','Completed')";
+                + "AND e.Status IN ('UnPaid','Unpaid','Paid','Active','Completed')";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -1048,7 +1034,7 @@ public class ClassDAO extends DBContext {
                 + "   GROUP BY ClassID "
                 + ") rm ON rm.ClassID = c.ClassID "
                 + "WHERE e.StudentID = ? "
-                + "AND e.Status IN ('Active','Completed') ";
+                + "AND e.Status IN ('UnPaid','Unpaid','Paid','Active','Completed') ";
 
         if (keyword != null && !keyword.isBlank()) {
             sql += " AND (c.ClassName LIKE ? OR co.CourseName LIKE ? OR u.FullName LIKE ?) ";
@@ -1139,7 +1125,7 @@ public class ClassDAO extends DBContext {
                 + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
                 + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
                 + "WHERE e.StudentID = ? "
-                + "AND e.Status IN ('Active','Completed') ";
+                + "AND e.Status IN ('UnPaid','Unpaid','Paid','Active','Completed') ";
 
         // keyword filter
         if (keyword != null && !keyword.isBlank()) {

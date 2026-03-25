@@ -34,6 +34,8 @@
         <div class="col-md-5">
             <select name="status" class="form-select">
                 <option value="">All Status</option>
+                <option value="UnPaid" ${status eq 'UnPaid' || status eq 'Unpaid' ? 'selected' : ''}>UnPaid</option>
+                <option value="Paid" ${status eq 'Paid' ? 'selected' : ''}>Paid</option>
                 <option value="Active" ${status eq 'Active' ? 'selected' : ''}>Active</option>
                 <option value="Completed" ${status eq 'Completed' ? 'selected' : ''}>Completed</option>
             </select>
@@ -66,7 +68,7 @@
                                 <h5 class="d-flex justify-content-between">
                                     ${e.classes.className}
 
-                                    <span class="badge ${e.status eq 'Active' ? 'bg-primary' : 'bg-success'}">
+                                    <span class="badge ${e.status eq 'Active' ? 'bg-primary' : (e.status eq 'Completed' ? 'bg-success' : (e.status eq 'Paid' ? 'bg-info text-dark' : 'bg-warning text-dark'))}">
                                         ${e.status}
                                     </span>
                                 </h5>
@@ -118,14 +120,27 @@
                                     <strong>Final Grade:</strong>
 
                                     <c:choose>
-                                        <c:when test="${e.finalGrade ne -1}">
-                                            <fmt:formatNumber value="${e.finalGrade}" pattern="#0.00"/>
+                                        <c:when test="${e.status eq 'Active' || e.status eq 'Completed'}">
+                                            <c:choose>
+                                                <c:when test="${e.finalGrade ne -1}">
+                                                    <fmt:formatNumber value="${e.finalGrade}" pattern="#0.00"/>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="text-muted">Not graded yet</span>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </c:when>
                                         <c:otherwise>
-                                            <span class="text-muted">Not graded yet</span>
+                                            <span class="text-muted">Locked until enrollment is active</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </p>
+
+                                <c:if test="${e.status ne 'Active' && e.status ne 'Completed'}">
+                                    <div class="alert alert-warning py-2 px-3 small mb-3">
+                                        This class is reserved for you, but attendance and grades will unlock after the enrollment becomes Active.
+                                    </div>
+                                </c:if>
 
                                 <!-- BUTTON -->
                                 <div class="text-end">

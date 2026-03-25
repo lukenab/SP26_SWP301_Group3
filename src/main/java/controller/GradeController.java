@@ -6,6 +6,7 @@ package controller;
 
 import dao.AssessmentDAO;
 import dao.ClassDAO;
+import dao.EnrollmentDAO;
 import dao.GradeDAO;
 import dao.StudentDAO;
 import java.io.IOException;
@@ -287,6 +288,14 @@ public class GradeController extends HttpServlet {
             case "student-course-grades":
                 int courseId = Integer.parseInt(request.getParameter("courseId"));
                 int studentIdDetail = currentUser.getUserId();
+                EnrollmentDAO enrollmentDAO = new EnrollmentDAO();
+
+                if (!enrollmentDAO.hasAcademicAccessForCourse(studentIdDetail, courseId)) {
+                    session.setAttribute("message", "Grades are locked until your enrollment becomes Active.");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("class?action=myClasses");
+                    return;
+                }
 
                 List<Grade> gradeList = dao.getGradesByStudentId(studentIdDetail);
 

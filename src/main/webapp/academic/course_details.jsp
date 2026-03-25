@@ -3,6 +3,14 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <link href="css/course_details.css" rel="stylesheet" type="text/css"/>
 
+<c:url var="editCourseUrl" value="course">
+    <c:param name="action" value="edit"/>
+    <c:param name="courseId" value="${course.courseId}"/>
+    <c:if test="${not empty param.returnUrl}">
+        <c:param name="returnUrl" value="${param.returnUrl}"/>
+    </c:if>
+</c:url>
+
 <div class="container-fluid px-4 content-body course-detail-page">
     <div class="mb-4">
         <div aria-label="breadcrumb">
@@ -19,11 +27,11 @@
                 <p class="text-muted small mb-0">Overview and quick management actions</p>
             </div>
             <div class="detail-header-actions">
-                <a href="course?action=all" class="btn btn-outline-secondary">
+                <a href="${not empty param.returnUrl ? param.returnUrl : 'course?action=all'}" class="btn btn-outline-secondary">
                     <i class='bx bx-arrow-left'></i> Back
                 </a>
                 <c:if test="${not empty course}">
-                    <a href="course?action=edit&courseId=${course.courseId}" class="btn btn-primary">
+                    <a href="${editCourseUrl}" class="btn btn-primary">
                         <i class='bx bx-edit'></i> Edit Course
                     </a>
                 </c:if>
@@ -98,11 +106,11 @@
                         <h5>Quick Actions</h5>
                     </div>
                     <div class="quick-action-list">
-                        <a href="course?action=edit&courseId=${course.courseId}" class="quick-action">
+                        <a href="${editCourseUrl}" class="quick-action">
                             <span><i class='bx bx-edit'></i> Update Information</span>
                             <i class='bx bx-chevron-right'></i>
                         </a>
-                        <a href="course?action=all" class="quick-action">
+                        <a href="${not empty param.returnUrl ? param.returnUrl : 'course?action=all'}" class="quick-action">
                             <span><i class='bx bx-list-ul'></i> Back to Course List</span>
                             <i class='bx bx-chevron-right'></i>
                         </a>

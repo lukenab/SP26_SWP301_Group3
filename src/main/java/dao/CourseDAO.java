@@ -65,6 +65,7 @@ public class CourseDAO extends DBContext {
                 + "INNER JOIN Class c ON e.ClassID = c.ClassID "
                 + "INNER JOIN Course co ON c.CourseID = co.CourseID "
                 + "WHERE e.StudentID = ? "
+                + "AND e.Status IN ('Active', 'Completed') "
                 + "AND co.Status = 1";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -115,7 +116,8 @@ public class CourseDAO extends DBContext {
                 + "FROM Enrollment e "
                 + "INNER JOIN Class c ON e.ClassID = c.ClassID "
                 + "INNER JOIN Course co ON c.CourseID = co.CourseID "
-                + "WHERE e.StudentID = ? ";
+                + "WHERE e.StudentID = ? "
+                + "AND e.Status IN ('Active', 'Completed') ";
 
         if (keyword != null && !keyword.isBlank()) {
             sql += " AND co.CourseName LIKE ? ";
@@ -234,7 +236,8 @@ public class CourseDAO extends DBContext {
                 + "JOIN Enrollment e ON cl.ClassID = e.ClassID "
                 + "JOIN Grade g ON e.EnrollmentID = g.EnrollmentID "
                 + "WHERE cl.CourseID = ? "
-                + "AND e.StudentID = ?";
+                + "AND e.StudentID = ? "
+                + "AND e.Status IN ('Active', 'Completed')";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
 

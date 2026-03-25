@@ -22,7 +22,7 @@
                     Class: <strong>${classInfo[1]}</strong> | Course: ${classInfo[2]} | Current Students: ${classInfo[7]} / ${classInfo[8]} | Remaining Slots: ${remainingSlots}
                 </p>
             </div>
-            <a href="enrollment?action=classes" class="btn btn-back">
+            <a href="${not empty param.returnUrl ? param.returnUrl : 'enrollment?action=classes'}" class="btn btn-back">
                 <i class='bx bx-left-arrow-alt'></i> Back to Class List
             </a>
         </div>
@@ -74,6 +74,7 @@
                     <form action="enrollment" method="post">
                         <input type="hidden" name="action" value="addStudents"/>
                         <input type="hidden" name="classId" value="${classInfo[0]}"/>
+                        <input type="hidden" name="returnUrl" value="${param.returnUrl}"/>
 
                         <table class="table mb-0 align-middle">
                             <thead>
@@ -107,7 +108,7 @@
                                         <td>${s[2]}</td>
                                         <td><fmt:formatDate value="${s[3]}" pattern="dd/MM/yyyy"/></td>
                                         <td>
-                                            <span class="badge-status badge-inactive">
+                                            <span class="badge-status ${s[4] == 'Paid' || s[4] == 'Active' || s[4] == 'Completed' ? 'badge-active' : 'badge-inactive'}">
                                                 ${s[4]}
                                             </span>
                                         </td>
@@ -142,6 +143,7 @@
                     <form action="enrollment" method="post">
                         <input type="hidden" name="action" value="removeStudents"/>
                         <input type="hidden" name="classId" value="${classInfo[0]}"/>
+                        <input type="hidden" name="returnUrl" value="${param.returnUrl}"/>
 
                         <table class="table mb-0 align-middle">
                             <thead>
@@ -176,7 +178,7 @@
                                         <td><fmt:formatDate value="${s[4]}" pattern="dd/MM/yyyy"/></td>
                                         <td>
                                             <span class="badge-status ${s[5] == 'Paid' || s[5] == 'Active' || s[5] == 'Completed' ? 'badge-active' : 'badge-inactive'}">
-                                                ${s[5] == 'Paid' || s[5] == 'Active' || s[5] == 'Completed' ? 'Paid' : 'UnPaid'}
+                                                ${s[5] == 'Paid' || s[5] == 'Active' || s[5] == 'Completed' ? 'Active' : 'UnPaid'}
                                             </span>
                                         </td>
                                     </tr>

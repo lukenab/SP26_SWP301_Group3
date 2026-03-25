@@ -54,6 +54,25 @@
     vertical-align: middle;
 }
 
+.class-management-page .table thead th:first-child,
+.class-management-page .table tbody td:first-child {
+    width: 56px;
+    text-align: center;
+}
+
+.class-management-page .form-check-input {
+    width: 1.05em;
+    height: 1.05em;
+    min-width: 1.05em;
+    margin-top: 0;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.class-management-page .form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
+}
+
 .class-management-page .action-btn.primary {
     display: inline-flex;
     align-items: center;

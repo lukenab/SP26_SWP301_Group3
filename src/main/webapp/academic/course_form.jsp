@@ -204,6 +204,74 @@
         color: #166534;
     }
 
+    .course-file-field {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .course-file-input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+        width: 1px;
+        height: 1px;
+    }
+
+    .course-file-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        min-height: 48px;
+        padding: 7px 14px 7px 7px;
+        border: 1px solid #d7e0ea;
+        border-radius: 12px;
+        background: #ffffff;
+        cursor: pointer;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .course-file-trigger:hover {
+        border-color: #94a3b8;
+        background: #f8fafc;
+    }
+
+    .course-file-trigger:focus-within {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .course-file-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        border-radius: 9px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #0f172a;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+        line-height: 1;
+    }
+
+    .course-file-name {
+        flex: 1;
+        min-width: 0;
+        color: #475569;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: left;
+    }
+
+    .course-file-name.is-empty {
+        color: #94a3b8;
+    }
+
     @media (max-width: 992px) {
         .course-header-card {
             grid-template-columns: 1fr;
@@ -245,7 +313,7 @@
             <div aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1">
                     <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="course?action=all">Course Management</a></li>
+                    <li class="breadcrumb-item"><a href="${not empty param.returnUrl ? param.returnUrl : 'course?action=all'}">Course Management</a></li>
                     <li class="breadcrumb-item active">${pageTitle}</li>
                 </ol>
             </div>
@@ -253,7 +321,7 @@
             <p class="course-form-subtitle">Fill in the course details and upload the course image directly from your device.</p>
         </div>
 
-        <a href="course?action=all" class="btn-secondary">
+        <a href="${not empty param.returnUrl ? param.returnUrl : 'course?action=all'}" class="btn-secondary">
             <i class='bx bx-arrow-left'></i> Back to Courses
         </a>
     </div>
@@ -322,6 +390,7 @@
             <form action="course" method="post" enctype="multipart/form-data" class="form-body" style="padding:0;">
                 <input type="hidden" name="action" value="${formAction}">
                 <input type="hidden" name="images" value="${course.images}">
+                <input type="hidden" name="returnUrl" value="${param.returnUrl}">
                 <c:if test="${formAction eq 'update'}">
                     <input type="hidden" name="courseId" value="${course.courseId}">
                 </c:if>
@@ -339,12 +408,21 @@
 
                     <div class="form-group">
                         <label for="imageFile">Course Image</label>
-                        <input type="file"
-                               id="imageFile"
-                               name="imageFile"
-                               accept="image/*"
-                               class="file-input"
-                               onchange="previewCourseImage(this)">
+                        <div class="course-file-field">
+                            <input type="file"
+                                   id="imageFile"
+                                   name="imageFile"
+                                   accept="image/*"
+                                   class="course-file-input"
+                                   onchange="previewCourseImage(this)">
+                            <label for="imageFile" class="course-file-trigger">
+                                <span class="course-file-button">
+                                    <i class='bx bx-upload'></i>
+                                    Choose File
+                                </span>
+                                <span class="course-file-name is-empty" id="imageFileName">No file chosen</span>
+                            </label>
+                        </div>
                         <small>Select a JPG, PNG, or WEBP file from your computer.</small>
                     </div>
                 </div>
@@ -400,7 +478,7 @@
                 </div>
 
                 <div class="form-buttons">
-                    <a href="course?action=all" class="btn btn-cancel">Cancel</a>
+                    <a href="${not empty param.returnUrl ? param.returnUrl : 'course?action=all'}" class="btn btn-cancel">Cancel</a>
                     <button type="submit" class="btn btn-save">
                         <i class='bx bx-save'></i>
                         <c:choose>
@@ -418,6 +496,17 @@
     function previewCourseImage(input) {
         var preview = document.getElementById("courseImagePreview");
         var fallback = document.getElementById("courseImageFallback");
+        var fileName = document.getElementById("imageFileName");
+
+        if (fileName) {
+            if (input.files && input.files[0]) {
+                fileName.textContent = input.files[0].name;
+                fileName.classList.remove("is-empty");
+            } else {
+                fileName.textContent = "No file chosen";
+                fileName.classList.add("is-empty");
+            }
+        }
 
         if (input.files && input.files[0]) {
             var reader = new FileReader();

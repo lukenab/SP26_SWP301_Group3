@@ -386,6 +386,74 @@ public class EnrollmentDAO extends DBContext {
         return false;
     }
 
+    public int countEnrollmentsByClassAndStatus(int classId, String status) {
+        String sql = "SELECT COUNT(*) AS Total "
+                + "FROM Enrollment "
+                + "WHERE ClassID = ? AND UPPER(LTRIM(RTRIM(Status))) = UPPER(LTRIM(RTRIM(?)))";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            ps.setString(2, status);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("Total");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to count enrollments by class and status: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public int countActivationBlockedEnrollments(int classId) {
+        String sql = "SELECT COUNT(*) AS Total "
+                + "FROM Enrollment "
+                + "WHERE ClassID = ? "
+                + "  AND UPPER(LTRIM(RTRIM(Status))) IN ('UNPAID', 'PENDING')";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("Total");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to count activation-blocked enrollments: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public int promotePaidEnrollmentsToActive(int classId) {
+        String sql = "UPDATE Enrollment "
+                + "SET Status = 'Active' "
+                + "WHERE ClassID = ? AND UPPER(LTRIM(RTRIM(Status))) = 'PAID'";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            return ps.executeUpdate();
+        } catch (Exception e) {
+            System.out.println("Fail to promote paid enrollments to active: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public boolean hasAcademicAccessForCourse(int studentId, int courseId) {
+        String sql = "SELECT TOP 1 1 "
+                + "FROM Enrollment e "
+                + "JOIN Class c ON e.ClassID = c.ClassID "
+                + "WHERE e.StudentID = ? "
+                + "AND c.CourseID = ? "
+                + "AND e.Status IN ('Active', 'Completed')";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, studentId);
+            ps.setInt(2, courseId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to validate academic access by course: " + e.getMessage());
+        }
+        return false;
+    }
+
     public int getTotalEnrollments() {
         int total = 0;
         String sql = "SELECT COUNT(*) as total FROM Enrollment";

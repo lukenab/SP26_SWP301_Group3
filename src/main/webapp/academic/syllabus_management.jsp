@@ -5,6 +5,14 @@
 <link href="css/syllabus_management.css" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body syllabus-page">
+    <c:url var="syllabusManageReturnUrl" value="syllabus">
+        <c:param name="action" value="manage"/>
+        <c:param name="page" value="${currentPage}"/>
+    </c:url>
+    <c:url var="addSyllabusUrl" value="syllabus">
+        <c:param name="action" value="add"/>
+        <c:param name="returnUrl" value="${syllabusManageReturnUrl}"/>
+    </c:url>
     <div class="mb-4">
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
@@ -18,7 +26,7 @@
                 <p class="text-muted small mb-0">Manage session order, topic, and lesson description by course.</p>
             </div>
             <div class="d-flex gap-2">
-                <a href="syllabus?action=add" class="btn btn-add-new">
+                <a href="${addSyllabusUrl}" class="btn btn-add-new">
                     <i class='bx bx-plus'></i> Add Syllabus
                 </a>
                 <a href="course?action=all" class="btn syllabus-btn-back">
@@ -74,6 +82,11 @@
 
                     <c:forEach items="${syllabusList}" var="s" varStatus="loop">
                         <tr>
+                            <c:url var="editSyllabusUrl" value="syllabus">
+                                <c:param name="action" value="edit"/>
+                                <c:param name="syllabusId" value="${s.syllabusId}"/>
+                                <c:param name="returnUrl" value="${syllabusManageReturnUrl}"/>
+                            </c:url>
                             <td>${startItem + loop.index}</td>
                             <td class="course-cell">${s.courseName}</td>
                             <td><span class="badge-soft">Session ${s.orderIndex}</span></td>
@@ -81,12 +94,13 @@
                             <td><div class="learning-path-preview">${s.description}</div></td>
                             <td class="actions-cell">
                                 <div class="table-actions">
-                                    <a href="syllabus?action=edit&syllabusId=${s.syllabusId}" class="action-btn" title="Update Syllabus">
+                                    <a href="${editSyllabusUrl}" class="action-btn" title="Update Syllabus">
                                         <i class='bx bx-edit'></i>
                                     </a>
                                     <form action="syllabus" method="post" class="d-inline" onsubmit="return confirm('Delete this syllabus item?');">
                                         <input type="hidden" name="action" value="delete"/>
                                         <input type="hidden" name="syllabusId" value="${s.syllabusId}"/>
+                                        <input type="hidden" name="returnUrl" value="${syllabusManageReturnUrl}"/>
                                         <button type="submit" class="action-btn action-btn-plain delete" title="Delete Syllabus">
                                             <i class='bx bx-trash'></i>
                                         </button>

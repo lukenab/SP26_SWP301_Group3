@@ -489,6 +489,7 @@ public class CourseController extends HttpServlet {
 
         switch (action) {
             case "add":
+                String addReturnUrl = request.getParameter("returnUrl");
                 // Get form data
                 String courseName = request.getParameter("courseName");
                 String description = request.getParameter("description");
@@ -531,7 +532,11 @@ public class CourseController extends HttpServlet {
                         String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
                         logDAO.insertLog(actorName, actorRole, "CREATE_COURSE", "Created new course: " + newCourse.getCourseName());
 
-                        response.sendRedirect(request.getContextPath() + "/course?action=all&message=Course added successfully");
+                        uSession.setAttribute("message", "Course added successfully.");
+                        uSession.setAttribute("messageType", "success");
+                        response.sendRedirect(addReturnUrl != null && !addReturnUrl.isEmpty()
+                                ? addReturnUrl
+                                : request.getContextPath() + "/course?action=all");
                     } else {
                         request.setAttribute("errorMessage", "Failed to add course");
                         prepareCourseForm(request, newCourse, "add", "Add New Course");
@@ -549,6 +554,7 @@ public class CourseController extends HttpServlet {
                 break;
 
             case "update":
+                String updateReturnUrl = request.getParameter("returnUrl");
                 String courseIdStr = request.getParameter("courseId");
                 if (courseIdStr == null || courseIdStr.isEmpty()) {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -601,7 +607,11 @@ public class CourseController extends HttpServlet {
                         String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
                         logDAO.insertLog(actorName, actorRole, "UPDATE_COURSE", "Updated course ID " + courseId + " (" + existingCourse.getCourseName() + ")");
 
-                        response.sendRedirect(request.getContextPath() + "/course?action=all&message=Course updated successfully");
+                        uSession.setAttribute("message", "Course updated successfully.");
+                        uSession.setAttribute("messageType", "success");
+                        response.sendRedirect(updateReturnUrl != null && !updateReturnUrl.isEmpty()
+                                ? updateReturnUrl
+                                : request.getContextPath() + "/course?action=all");
                     } else {
                         request.setAttribute("errorMessage", "Failed to update course");
                         prepareCourseForm(request, existingCourse, "update", "Edit Course");
