@@ -372,6 +372,21 @@ public class RoomDAO extends DBContext {
         }
         return -1;
     }
+    
+    public int getRoomCapacity(int roomId) {
+        String query = "SELECT Capacity FROM Room WHERE RoomID = ?";
+        try (PreparedStatement p = conn.prepareStatement(query)) {
+            p.setInt(1, roomId);
+            try (ResultSet rs = p.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("Capacity");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error getRoomCapacity: " + e.getMessage());
+        }
+        return 0; 
+    }
     public static void main(String[] args) {
         RoomDAO dao = new RoomDAO();
         Scanner sc = new Scanner(System.in);

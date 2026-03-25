@@ -73,7 +73,7 @@ public class GradeController extends HttpServlet {
             }
         } else if (action.equals("student-courses") || action.equals("student-course-grades")) {
             if (!roleName.equalsIgnoreCase("Student")) {
-                response.sendRedirect("dashboard");
+                response.sendRedirect("dashboard.jsp");
                 return;
             }
         }
@@ -242,7 +242,7 @@ public class GradeController extends HttpServlet {
                 request.setAttribute("studentName", currentUser.getFullName());
                 request.setAttribute("home_view", "student/studentGrade.jsp");
 
-                request.getRequestDispatcher("dashboard")
+                request.getRequestDispatcher("dashboard.jsp")
                         .forward(request, response);
                 break;
 
@@ -303,7 +303,7 @@ public class GradeController extends HttpServlet {
         if (!canModify) {
             session.setAttribute("message", "Security Alert: Unauthorized attempts to change grades!");
             session.setAttribute("messageType", "error");
-            response.sendRedirect("dashboard");
+            response.sendRedirect("dashboard.jsp");
             return;
         }
         

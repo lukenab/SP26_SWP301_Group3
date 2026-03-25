@@ -336,11 +336,12 @@ public class EnrollmentController extends HttpServlet {
             String status = request.getParameter("status");
             String maxCapacityParam = request.getParameter("maxCapacity");
 
-            if (className == null || className.trim().isEmpty()
-                    || courseIdParam == null || teacherIdParam == null
-                    || startDateParam == null || endDateParam == null
-                    || status == null || status.trim().isEmpty()
-                    || maxCapacityParam == null || maxCapacityParam.trim().isEmpty()) {
+            dao.SettingDAO settingDAO = new dao.SettingDAO();
+
+            if (className == null || className.trim().isEmpty() || courseIdParam == null
+                    || teacherIdParam == null || startDateParam == null || endDateParam == null
+                    || status == null || maxCapacityParam == null) {
+
                 request.setAttribute("errorMessage", "Please fill all required fields.");
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
@@ -350,40 +351,46 @@ public class EnrollmentController extends HttpServlet {
                 return;
             }
 
-            String normalizedStatus = status.trim();
-            if (!"Pending".equalsIgnoreCase(normalizedStatus)
-                    && !"Active".equalsIgnoreCase(normalizedStatus)
-                    && !"Inactive".equalsIgnoreCase(normalizedStatus)) {
-                request.setAttribute("errorMessage", "Status must be Pending, Active, or Inactive.");
-                request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
-                request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
-                request.setAttribute("roomOptions", roomDAO.getActiveRooms());
-                request.setAttribute("home_view", "/academic/create_class.jsp");
-                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
-                return;
-            }
-            normalizedStatus = Character.toUpperCase(normalizedStatus.charAt(0)) + normalizedStatus.substring(1).toLowerCase();
-
             try {
                 int courseId = Integer.parseInt(courseIdParam);
                 int teacherId = Integer.parseInt(teacherIdParam);
                 int maxCapacity = Integer.parseInt(maxCapacityParam);
-                Integer roomId = roomIdParam == null || roomIdParam.trim().isEmpty() ? null : Integer.parseInt(roomIdParam);
+                Integer roomId = (roomIdParam == null || roomIdParam.isEmpty()) ? null : Integer.parseInt(roomIdParam);
                 Date startDate = Date.valueOf(startDateParam);
                 Date endDate = Date.valueOf(endDateParam);
+                String normalizedStatus = status.trim();
 
-                if (maxCapacity <= 0) {
-                    request.setAttribute("errorMessage", "Max capacity must be greater than 0.");
+                String systemMaxStr = settingDAO.getSettingValue("MAX_STUDENTS_PER_CLASS");
+                int systemMax = (systemMaxStr != null) ? Integer.parseInt(systemMaxStr) : 100;
+
+                if (maxCapacity > systemMax) {
+                    session.setAttribute("message", "Max capacity exceeds system limit of " + systemMax + " students.");
+                    session.setAttribute("messageType", "error");
                     request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                     request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
                     request.setAttribute("roomOptions", roomDAO.getActiveRooms());
                     request.setAttribute("home_view", "/academic/create_class.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                     return;
+                }
+
+                if (roomId != null) {
+                    int roomCapacity = roomDAO.getRoomCapacity(roomId);
+                    if (maxCapacity > roomCapacity) {
+                        session.setAttribute("message", "Max capacity exceeds Room's limit (" + roomCapacity + " seats).");
+                        session.setAttribute("messageType", "error");
+                        request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
+                        request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
+                        request.setAttribute("roomOptions", roomDAO.getActiveRooms());
+                        request.setAttribute("home_view", "/academic/create_class.jsp");
+                        request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                        return;
+                    }
                 }
 
                 if (endDate.before(startDate)) {
-                    request.setAttribute("errorMessage", "End date must be after or equal to start date.");
+                    session.setAttribute("message", "End date must be after or equal to start date.");
+                    session.setAttribute("messageType", "error");
                     request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                     request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
                     request.setAttribute("roomOptions", roomDAO.getActiveRooms());
@@ -392,25 +399,26 @@ public class EnrollmentController extends HttpServlet {
                     return;
                 }
 
+                normalizedStatus = Character.toUpperCase(normalizedStatus.charAt(0)) + normalizedStatus.substring(1).toLowerCase();
                 boolean created = classDAO.createClass(className.trim(), courseId, teacherId, startDate, endDate, normalizedStatus, maxCapacity, roomId);
+
                 if (created) {
-
                     SystemLogDAO logDAO = new SystemLogDAO();
-                    User logUser = (User) request.getSession().getAttribute("user");
+                    String logDetail = "Created class: " + className + " with Max Capacity: " + maxCapacity;
+                    logDAO.insertLog(currentUser.getFullName(), currentUser.getRole().getRoleName(), "CREATE_CLASS", logDetail);
 
-                    String actorName = (logUser != null) ? logUser.getFullName() : "System";
-                    String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
-                    logDAO.insertLog(actorName, actorRole, "CREATE_CLASS", "Created new class: " + className.trim());
-
-                    request.getSession().setAttribute("message", "Class created successfully.");
-                    request.getSession().setAttribute("messageType", "success");
+                    session.setAttribute("message", "Class created successfully.");
+                    session.setAttribute("messageType", "success");
+                    response.sendRedirect("enrollment?action=classes");
                 } else {
-                    request.getSession().setAttribute("message", "Failed to create class.");
-                    request.getSession().setAttribute("messageType", "error");
+                    session.setAttribute("message", "Database error: Could not create class.");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("enrollment?action=classes");
                 }
-                response.sendRedirect("enrollment?action=classes");
+
             } catch (Exception e) {
-                request.setAttribute("errorMessage", "Invalid input format.");
+                session.setAttribute("message", "Invalid data format. Please check your inputs.");
+                session.setAttribute("messageType", "error");
                 request.setAttribute("courseOptions", classDAO.getActiveCoursesForClassForm());
                 request.setAttribute("teacherOptions", classDAO.getTeacherOptions());
                 request.setAttribute("roomOptions", roomDAO.getActiveRooms());
