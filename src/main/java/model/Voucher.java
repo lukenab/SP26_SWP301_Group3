@@ -18,6 +18,7 @@ public class Voucher {
     private double discountPercent;
     private Date validUntil;
     private boolean status;
+    private boolean landingPopup;
     private Integer maxUsage;
     private int usedCount;
     private int remainingCount;
@@ -41,6 +42,14 @@ public class Voucher {
 
     public void setStatus(boolean status) {
         this.status = status;
+    }
+
+    public boolean isLandingPopup() {
+        return landingPopup;
+    }
+
+    public void setLandingPopup(boolean landingPopup) {
+        this.landingPopup = landingPopup;
     }
 
     public Integer getMaxUsage() {
@@ -109,7 +118,7 @@ public class Voucher {
 
     @Override
     public String toString() {
-        return "Voucher{" + "voucherId=" + voucherId + ", code=" + code + ", discountAmount=" + discountAmount + ", discountPercent=" + discountPercent + ", validUntil=" + validUntil + ", status=" + status + ", maxUsage=" + maxUsage + ", usedCount=" + usedCount + ", remainingCount=" + remainingCount + '}';
+        return "Voucher{" + "voucherId=" + voucherId + ", code=" + code + ", discountAmount=" + discountAmount + ", discountPercent=" + discountPercent + ", validUntil=" + validUntil + ", status=" + status + ", landingPopup=" + landingPopup + ", maxUsage=" + maxUsage + ", usedCount=" + usedCount + ", remainingCount=" + remainingCount + '}';
     }
     
 }

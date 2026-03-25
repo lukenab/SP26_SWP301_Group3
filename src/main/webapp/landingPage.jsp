@@ -21,6 +21,60 @@
         <title>Landing Page</title>
     </head>
     <body>
+        <c:if test="${not empty promoVoucher}">
+            <div class="promo-popup-backdrop" id="promoVoucherPopup">
+                <div class="promo-popup-card">
+                    <button type="button" class="promo-popup-close" id="promoPopupClose" aria-label="Close">
+                        <i class='bx bx-x'></i>
+                    </button>
+                    <div class="promo-popup-topline">
+                        <i class='bx bx-rocket'></i>
+                        <span>Start your English journey</span>
+                    </div>
+                    <h2 class="promo-popup-title"><span class="promo-script-light">Unlock Your</span><span class="promo-script-gold">Future</span></h2>
+                    <p class="promo-popup-subtitle">With English</p>
+
+                    <div class="promo-voucher-panel">
+                        <span class="promo-popup-badge">Exclusive Student Voucher</span>
+                        <div class="promo-popup-code" id="promoVoucherCode">${promoVoucher.code}</div>
+                        <div class="promo-popup-discount-line">
+                            Get
+                            <strong>
+                                <c:choose>
+                                    <c:when test="${promoVoucher.discountAmount != null && promoVoucher.discountAmount > 0}">
+                                        <fmt:formatNumber value="${promoVoucher.discountAmount}" type="number"/> VND
+                                    </c:when>
+                                    <c:otherwise>
+                                        <fmt:formatNumber value="${promoVoucher.discountPercent}" type="number"/>%
+                                    </c:otherwise>
+                                </c:choose>
+                            </strong>
+                            OFF
+                        </div>
+                    </div>
+
+                    <div class="promo-popup-meta">
+                        <i class='bx bx-time-five'></i>
+                        <span>Valid until <strong><fmt:formatDate value="${promoVoucher.validUntil}" pattern="dd/MM/yyyy"/></strong></span>
+                    </div>
+
+                    <div class="promo-popup-actions">
+                        <a href="#contact" class="promo-primary-btn" id="promoRegisterBtn">
+                            <i class='bx bx-rocket'></i>
+                            Claim Your Offer Now
+                            <i class='bx bx-chevron-right'></i>
+                        </a>
+                    </div>
+
+                    <div class="promo-popup-links">
+                        <button type="button" class="promo-copy-btn" id="promoCopyBtn">Copy Code</button>
+                        <button type="button" class="promo-secondary-btn" id="promoPopupHideBtn">Maybe later</button>
+                    </div>
+                    <div class="promo-popup-footnote">Your future starts here.</div>
+                </div>
+            </div>
+        </c:if>
+
         <nav>
             <div class="navbar"> 
                 <div class="nav-items">
@@ -350,5 +404,60 @@
 
         <script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
         <script src="js/landingPage.js" type="text/javascript"></script>
+        <c:if test="${not empty promoVoucher}">
+            <script>
+                (function () {
+                    const popup = document.getElementById('promoVoucherPopup');
+                    const closeBtn = document.getElementById('promoPopupClose');
+                    const laterBtn = document.getElementById('promoPopupHideBtn');
+                    const registerBtn = document.getElementById('promoRegisterBtn');
+                    const copyBtn = document.getElementById('promoCopyBtn');
+                    const codeEl = document.getElementById('promoVoucherCode');
+                    const contactSection = document.getElementById('contact');
+
+                    if (!popup) {
+                        return;
+                    }
+
+                    const closePopup = function () {
+                        popup.classList.add('promo-popup-hidden');
+                    };
+
+                    closeBtn.addEventListener('click', function () {
+                        closePopup();
+                    });
+
+                    laterBtn.addEventListener('click', function () {
+                        closePopup();
+                    });
+
+                    registerBtn.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        closePopup();
+
+                        if (contactSection) {
+                            setTimeout(function () {
+                                contactSection.scrollIntoView({behavior: 'smooth', block: 'start'});
+                            }, 150);
+                        }
+                    });
+
+                    popup.addEventListener('click', function (event) {
+                        if (event.target === popup) {
+                            closePopup();
+                        }
+                    });
+
+                    copyBtn.addEventListener('click', async function () {
+                        try {
+                            await navigator.clipboard.writeText(codeEl.textContent.trim());
+                            copyBtn.textContent = 'Copied';
+                        } catch (error) {
+                            copyBtn.textContent = 'Copy Failed';
+                        }
+                    });
+                })();
+            </script>
+        </c:if>
     </body>
 </html>
