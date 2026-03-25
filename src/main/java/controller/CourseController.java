@@ -41,6 +41,44 @@ public class CourseController extends HttpServlet {
 
     private static final int DEFAULT_PAGE_SIZE = 10;
 
+    private void prepareCourseForm(HttpServletRequest request, Course course, String formAction, String pageTitle) {
+        request.setAttribute("course", course);
+        request.setAttribute("formAction", formAction);
+        request.setAttribute("pageTitle", pageTitle);
+        request.setAttribute("home_view", "/academic/course_form.jsp");
+    }
+
+    private String uploadCourseImage(HttpServletRequest request, String partName, String fallbackImage) {
+        try {
+            Part filePart = request.getPart(partName);
+            if (filePart == null || filePart.getSize() <= 0) {
+                return fallbackImage == null ? "" : fallbackImage;
+            }
+
+            String submittedFileName = java.nio.file.Paths.get(filePart.getSubmittedFileName())
+                    .getFileName()
+                    .toString();
+            if (submittedFileName == null || submittedFileName.trim().isEmpty()) {
+                return fallbackImage == null ? "" : fallbackImage;
+            }
+
+            String sanitizedFileName = submittedFileName.replaceAll("[^a-zA-Z0-9._-]", "_");
+            String uniqueFileName = System.currentTimeMillis() + "_" + sanitizedFileName;
+
+            String uploadPath = getServletContext().getRealPath("") + File.separator + "images";
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+
+            filePart.write(uploadPath + File.separator + uniqueFileName);
+            return uniqueFileName;
+        } catch (Exception e) {
+            System.out.println("Error uploading course image: " + e.getMessage());
+            return fallbackImage == null ? "" : fallbackImage;
+        }
+    }
+
     private int parsePage(HttpServletRequest request) {
         String pageParam = request.getParameter("page");
         if (pageParam == null || pageParam.trim().isEmpty()) {
@@ -262,10 +300,7 @@ public class CourseController extends HttpServlet {
                 break;
             case "add":
                 // Show add form
-                request.setAttribute("course", new Course());
-                request.setAttribute("formAction", "add");
-                request.setAttribute("pageTitle", "Add New Course");
-                request.setAttribute("home_view", "/academic/course_form.jsp");
+                prepareCourseForm(request, new Course(), "add", "Add New Course");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
             case "edit":
@@ -275,10 +310,7 @@ public class CourseController extends HttpServlet {
                         int courseId = Integer.parseInt(editCourseIdParam);
                         Course course = courseDAO.getCourseById(courseId);
                         if (course != null) {
-                            request.setAttribute("course", course);
-                            request.setAttribute("formAction", "update");
-                            request.setAttribute("pageTitle", "Edit Course");
-                            request.setAttribute("home_view", "/academic/editCourse.jsp");
+                            prepareCourseForm(request, course, "update", "Edit Course");
                             request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                         } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -463,13 +495,16 @@ public class CourseController extends HttpServlet {
                 String totalSlotsStr = request.getParameter("totalSlots");
                 String tuitionFeeStr = request.getParameter("tuitionFee");
                 String statusStr = request.getParameter("status");
-                String images = request.getParameter("images");
+                String images = uploadCourseImage(request, "imageFile", "");
 
                 // Validate input
                 if (courseName == null || courseName.trim().isEmpty()) {
                     request.setAttribute("errorMessage", "Course name is required");
-                    request.setAttribute("course", new Course()); // Empty course for form
-                    request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
+                    Course invalidCourse = new Course();
+                    invalidCourse.setDescription(description != null ? description.trim() : "");
+                    invalidCourse.setImages(images);
+                    prepareCourseForm(request, invalidCourse, "add", "Add New Course");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                     return;
                 }
 
@@ -499,13 +534,17 @@ public class CourseController extends HttpServlet {
                         response.sendRedirect(request.getContextPath() + "/course?action=all&message=Course added successfully");
                     } else {
                         request.setAttribute("errorMessage", "Failed to add course");
-                        request.setAttribute("course", newCourse);
-                        request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
+                        prepareCourseForm(request, newCourse, "add", "Add New Course");
+                        request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                     }
                 } catch (NumberFormatException e) {
                     request.setAttribute("errorMessage", "Invalid number format for slots or fee");
-                    request.setAttribute("course", new Course());
-                    request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
+                    Course invalidCourse = new Course();
+                    invalidCourse.setCourseName(courseName != null ? courseName.trim() : "");
+                    invalidCourse.setDescription(description != null ? description.trim() : "");
+                    invalidCourse.setImages(images);
+                    prepareCourseForm(request, invalidCourse, "add", "Add New Course");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 }
                 break;
 
@@ -530,31 +569,14 @@ public class CourseController extends HttpServlet {
                     String updTotalSlotsStr = request.getParameter("totalSlots");
                     String updTuitionFeeStr = request.getParameter("tuitionFee");
                     String updStatusStr = request.getParameter("status");
-                    String updImages = request.getParameter("images");
-
-                    try {
-                        Part filePart = request.getPart("imageFile");
-                        if (filePart != null && filePart.getSize() > 0) {
-                            String uploadPath = getServletContext().getRealPath("") + File.separator + "images";
-                            File uploadDir = new File(uploadPath);
-                            if (!uploadDir.exists()) {
-                                uploadDir.mkdir();
-                            }
-
-                            String fileName = java.nio.file.Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-                            String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
-                            filePart.write(uploadPath + File.separator + uniqueFileName);
-                            updImages = uniqueFileName;
-                        }
-                    } catch (Exception e) {
-                        System.out.println("Error uploading course image: " + e.getMessage());
-                    }
+                    String updImages = uploadCourseImage(request, "imageFile", request.getParameter("images"));
 
                     // Validate input
                     if (updCourseName == null || updCourseName.trim().isEmpty()) {
                         request.setAttribute("errorMessage", "Course name is required");
                         request.setAttribute("course", existingCourse);
-                        request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
+                        prepareCourseForm(request, existingCourse, "update", "Edit Course");
+                        request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                         return;
                     }
 
@@ -582,8 +604,8 @@ public class CourseController extends HttpServlet {
                         response.sendRedirect(request.getContextPath() + "/course?action=all&message=Course updated successfully");
                     } else {
                         request.setAttribute("errorMessage", "Failed to update course");
-                        request.setAttribute("course", existingCourse);
-                        request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
+                        prepareCourseForm(request, existingCourse, "update", "Edit Course");
+                        request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                     }
                 } catch (NumberFormatException e) {
                     request.setAttribute("errorMessage", "Invalid number format for slots or fee");
@@ -591,12 +613,12 @@ public class CourseController extends HttpServlet {
                     if (id != null) {
                         try {
                             Course course = courseDAO.getCourseById(Integer.parseInt(id));
-                            request.setAttribute("course", course);
+                            prepareCourseForm(request, course, "update", "Edit Course");
                         } catch (Exception ex) {
-                            request.setAttribute("course", new Course());
+                            prepareCourseForm(request, new Course(), "update", "Edit Course");
                         }
                     }
-                    request.getRequestDispatcher("/academic/course_form.jsp").forward(request, response);
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 }
                 break;
 
