@@ -98,13 +98,14 @@
                         <td>
                             <c:choose>
                                 <c:when test="${r[5] > 0}">
-                                    ${ (r[6] * 100) / r[5] }%
+                                    <fmt:formatNumber value="${(r[6] * 100) / r[5]}" 
+                                                      pattern="#0.00" />%
                                 </c:when>
                                 <c:otherwise>
                                     0%
                                 </c:otherwise>
                             </c:choose>
-                        </td>
+                        </td>   
                     </tr>
                 </c:forEach>
 
