@@ -45,7 +45,7 @@
 
     <div class="card user-table-card border-0 bg-white shadow-sm">
         <div class="card-body p-4">
-            <form method="post" action="grade">
+             <form method="post" action="grade" id="gradeForm">
                 <input type="hidden" name="action" value="save"/>
                 <input type="hidden" name="studentId" value="${studentId}"/>
                 <input type="hidden" name="classId" value="${classId}"/>
@@ -100,3 +100,4 @@
 </div>
 
 <script src="js/manageUser.js" type="text/javascript"></script>
+<script src="js/enter_grade.js" type="text/javascript"></script>

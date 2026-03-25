@@ -56,6 +56,7 @@
                     <tbody>
                         <c:set var="totalPass" value="0" />
                         <c:set var="totalFail" value="0" />
+                        <c:set var="gradedCount" value="0" />
 
                         <c:forEach var="g" items="${gradeList}">
                             <tr>
@@ -92,28 +93,42 @@
                                     </div>
                                 </td>
 
+                                <c:set var="hasVisibleScores" value="false" />
                                 <c:forEach var="ass" items="${assessmentList}">
                                     <c:set var="scoreKey" value="${ass.assessmentName}" />
                                     <c:set var="val" value="${g.scores[scoreKey]}" />
+                                    <c:if test="${not empty val}">
+                                        <c:set var="hasVisibleScores" value="true" />
+                                    </c:if>
                                     <td class="${val < 5.0 ? 'text-danger' : ''}">
                                         ${not empty val ? val : '-'}
                                     </td>
                                 </c:forEach>
 
                                 <c:set var="finalAvg" value="${avgMap[g.userId]}" />
-                                <td class="fw-bold text-primary">
-                                    <fmt:formatNumber value="${finalAvg}" maxFractionDigits="2"/>
+                                <td class="fw-bold ${hasVisibleScores and not empty finalAvg ? 'text-primary' : 'text-muted'}">
+                                    <c:choose>
+                                        <c:when test="${hasVisibleScores and not empty finalAvg}">
+                                            <fmt:formatNumber value="${finalAvg}" maxFractionDigits="2"/>
+                                        </c:when>
+                                        <c:otherwise>-</c:otherwise>
+                                    </c:choose>
                                 </td>
 
                                 <td>
                                     <c:choose>
+                                        <c:when test="${not hasVisibleScores}">
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">Not graded</span>
+                                        </c:when>
                                         <c:when test="${finalAvg >= 5.0}">
                                             <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Passed</span>
                                             <c:set var="totalPass" value="${totalPass + 1}" />
+                                            <c:set var="gradedCount" value="${gradedCount + 1}" />
                                         </c:when>
                                         <c:otherwise>
                                             <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">Failed</span>
                                             <c:set var="totalFail" value="${totalFail + 1}" />
+                                            <c:set var="gradedCount" value="${gradedCount + 1}" />
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
@@ -122,7 +137,7 @@
                     </tbody>
                     <tfoot class="table-light fw-bold">
                         <c:set var="totalStudents" value="${gradeList.size()}" />
-                        <c:set var="passRate" value="${totalStudents > 0 ? (totalPass / totalStudents) * 100 : 0}" />
+                        <c:set var="passRate" value="${gradedCount > 0 ? (totalPass / gradedCount) * 100 : 0}" />
 
                         <tr>
                             <td class="text-start ps-4">TOTAL SUMMARY</td>

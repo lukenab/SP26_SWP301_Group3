@@ -267,14 +267,22 @@ public class DashboardController extends HttpServlet {
 
                 List<model.Schedule> weekly = tDAO.getTeachingSchedule(tId, today);
                 List<model.Schedule> todaySlots = new java.util.ArrayList<>();
+                model.Schedule nextUnansweredSlot = null;
 
                 for (model.Schedule s : weekly) {
                     if (s.getLearningDate().toString().equals(today)) {
                         todaySlots.add(s);
+                 
+                        if (nextUnansweredSlot == null && !s.isAttendanceStatus()) {
+                            nextUnansweredSlot = s;
+                        }
                     }
                 }
-                request.setAttribute(
-                        "todaySlots", todaySlots);
+                request.setAttribute("todaySlots", todaySlots);
+           
+                if (nextUnansweredSlot != null) {
+                    request.setAttribute("nextUnansweredSlot", nextUnansweredSlot);
+                }
 
                 List<model.Classes> tClasses = tDAO.getAllClassOfTeacherID(tId);
                 java.util.Map<Integer, Integer> progressMap = new java.util.HashMap<>();

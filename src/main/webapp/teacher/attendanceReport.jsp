@@ -31,7 +31,7 @@
                 <button onclick="window.print()" class="btn btn-outline-secondary shadow-sm btn-sm px-3">
                     <i class='bx bx-printer'></i> Print
                 </button>
-                <a href="dashboard?action=teacher" class="btn-secondary" 
+                <a href="class?action=all" class="btn-secondary" 
                    >
                     <i class='bx bx-arrow-left me-1'></i> Back to Dashboard
                 </a>
