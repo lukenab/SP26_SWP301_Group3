@@ -22,33 +22,6 @@
     </div>
 </div>
 
-<c:if test="${not empty sessionScope.message}">
-    <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
-        <div class="toast-icon">
-            <c:choose>
-                <c:when test="${sessionScope.messageType == 'success'}">
-                    <i class='bx bx-check-circle'></i>
-                </c:when>
-                <c:otherwise>
-                    <i class='bx bx-error-circle'></i>
-                </c:otherwise>
-            </c:choose>
-        </div>
-        <div class="toast-content">
-            <span class="toast-title">
-                ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
-            </span>
-            <span class="toast-message">${sessionScope.message}</span>
-        </div>
-        <button class="toast-close" onclick="closeToast()">
-            <i class='bx bx-x'></i>
-        </button>
-    </div>
-
-    <c:remove var="message" scope="session" />
-    <c:remove var="messageType" scope="session" />
-</c:if>
-
 <div class="form-container">
     <div class="form-tabs">
         <div class="form-tab active">
@@ -59,6 +32,12 @@
 
     <p class="form-title">Basic Information</p>
 
+    <c:if test="${not empty sessionScope.error}">
+        <div class="alert-box info">
+            <i class='bx bx-error-circle'></i> ${sessionScope.error}
+        </div>
+        <% session.removeAttribute("error"); %>
+    </c:if>
 
     <form action="room" method="post" class="form-body">
         <input type="hidden" name="action" value="create">
@@ -98,4 +77,3 @@
         </div>
     </form>
 </div>
-<script src="/js/manageUser.js" type="text/javascript"></script>
