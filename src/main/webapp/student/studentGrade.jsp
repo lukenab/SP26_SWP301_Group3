@@ -155,17 +155,14 @@
 
                         <!-- ===== AVERAGE ROW ===== -->
                         <tr class="average-row">
-                            <td><strong>Average</strong></td>
+                            <td><strong>Final Grade</strong></td>
                             <td colspan="2" class="score-cell">
                                 <strong>
-                                    <c:if test="${count > 0}">
-                                        <c:set var="avg" value="${total / count}" />
-                                        <fmt:formatNumber 
-                                            value="${avg}" 
-                                            type="number" 
-                                            minFractionDigits="2" 
-                                            maxFractionDigits="2"/>
-                                    </c:if>
+                                    <fmt:formatNumber 
+                                        value="${finalGrade}" 
+                                        type="number" 
+                                        minFractionDigits="2" 
+                                        maxFractionDigits="2"/>
                                 </strong>
                             </td>
                         </tr>
