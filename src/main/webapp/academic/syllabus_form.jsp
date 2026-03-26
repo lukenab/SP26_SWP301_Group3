@@ -51,8 +51,7 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label class="form-label fw-semibold">${isEdit ? 'Syllabus ID' : 'Mode'}</label>
-                        <input type="text" class="form-control" value="${isEdit ? syllabus.syllabusId : 'Create New'}" readonly>
+                        <input type="hidden" class="form-control" value="${isEdit ? syllabus.syllabusId : 'Create New'}" >
                     </div>
 
                     <div class="col-md-12">

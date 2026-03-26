@@ -149,10 +149,6 @@
                         <li><i class='bx bxs-check-circle'></i> Official Partner of Cambridge & IDP (IELTS Venue)</li>
                         <li><i class='bx bxs-check-circle'></i> Free trial class - 0% interest installment support</li>
                     </ul>
-
-                    <button class="join-free-btn">
-                        <i class='bx bx-book-open me-2'></i>Join Free Trial Class
-                    </button>
                 </div>
 
                 <div class="col-6">
