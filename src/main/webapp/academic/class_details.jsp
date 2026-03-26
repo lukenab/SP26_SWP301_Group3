@@ -7,8 +7,16 @@
 <link href="css/class_management.css" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body class-management-page">
+    <c:url var="manageStudentsUrl" value="enrollment">
+        <c:param name="action" value="addStudentForm"/>
+        <c:param name="classId" value="${classInfo[0]}"/>
+        <c:if test="${not empty param.returnUrl}">
+            <c:param name="returnUrl" value="${param.returnUrl}"/>
+        </c:if>
+    </c:url>
     <c:set var="currentStudents" value="${classInfo[7] == null ? 0 : classInfo[7]}" />
     <c:set var="maxCapacity" value="${classInfo[8] == null ? 0 : classInfo[8]}" />
+    <c:set var="classAllowsGrades" value="${classInfo[6] == 'Active'}" />
     <c:set var="fillRate" value="${maxCapacity > 0 ? (currentStudents * 100.0 / maxCapacity) : 0}" />
     <c:set var="fillRateBar" value="${fillRate > 100 ? 100 : fillRate}" />
     <c:set var="paidCount" value="0" />
@@ -19,15 +27,16 @@
     <c:set var="averageGrade" value="0" />
     <c:set var="passRate" value="0" />
     <c:forEach items="${studentsInClass}" var="s">
+        <c:set var="studentCanShowGrade" value="${s[5] == 'Active' || s[5] == 'Completed'}" />
         <c:choose>
             <c:when test="${s[5] == 'Paid'}">
                 <c:set var="paidCount" value="${paidCount + 1}" />
             </c:when>
-            <c:when test="${s[5] == 'UnPaid' || s[5] == 'Unpaid'}">
+            <c:when test="${s[5] == 'Pending' || s[5] == 'UnPaid' || s[5] == 'Unpaid'}">
                 <c:set var="unpaidCount" value="${unpaidCount + 1}" />
             </c:when>
         </c:choose>
-        <c:if test="${s[6] != null}">
+        <c:if test="${classAllowsGrades && studentCanShowGrade && s[6] != null}">
             <c:set var="gradedCount" value="${gradedCount + 1}" />
             <c:set var="totalGrade" value="${totalGrade + s[6]}" />
             <c:if test="${s[6] >= 5}">
@@ -69,10 +78,10 @@
                 </div>
             </div>
             <div class="class-details-hero-actions">
-                <a href="enrollment?action=addStudentForm&classId=${classInfo[0]}" class="btn btn-add-new">
+                <a href="${manageStudentsUrl}" class="btn btn-add-new">
                     <i class='bx bx-user-plus'></i> Manage Students
                 </a>
-                <a href="enrollment?action=classes" class="btn btn-back">
+                <a href="${not empty param.returnUrl ? param.returnUrl : 'enrollment?action=classes'}" class="btn btn-back">
                     <i class='bx bx-left-arrow-alt'></i> Back to Classes
                 </a>
             </div>
@@ -121,7 +130,7 @@
         <div class="class-metric-card">
             <div class="class-metric-label">Payment Status</div>
             <div class="class-metric-value">${paidCount}</div>
-            <div class="class-metric-sub">${unpaidCount} unpaid</div>
+            <div class="class-metric-sub">${unpaidCount} pending or unpaid</div>
             <div class="class-metric-icon success">
                 <i class='bx bx-check-circle'></i>
             </div>
@@ -130,14 +139,16 @@
             <div class="class-metric-label">Average Grade</div>
             <div class="class-metric-value">
                 <c:choose>
-                    <c:when test="${gradedCount > 0}">
+                    <c:when test="${classAllowsGrades && gradedCount > 0}">
                         <fmt:formatNumber value="${averageGrade}" minFractionDigits="1" maxFractionDigits="1"/>
                     </c:when>
+                    <c:when test="${not classAllowsGrades}">Locked</c:when>
                     <c:otherwise>N/A</c:otherwise>
                 </c:choose>
             </div>
             <div class="class-metric-sub">
                 <c:choose>
+                    <c:when test="${not classAllowsGrades}">Grades unlock when class becomes Active</c:when>
                     <c:when test="${gradedCount > 0}">${gradedCount} graded students</c:when>
                     <c:otherwise>No grade data yet</c:otherwise>
                 </c:choose>
@@ -150,18 +161,30 @@
             <div class="class-metric-label">Pass Rate</div>
             <div class="class-metric-value">
                 <c:choose>
-                    <c:when test="${gradedCount > 0}">
+                    <c:when test="${classAllowsGrades && gradedCount > 0}">
                         <fmt:formatNumber value="${passRate}" maxFractionDigits="0"/>%
                     </c:when>
+                    <c:when test="${not classAllowsGrades}">Locked</c:when>
                     <c:otherwise>N/A</c:otherwise>
                 </c:choose>
             </div>
-            <div class="class-metric-sub">${passCount} students passing (>= 5)</div>
+            <div class="class-metric-sub">
+                <c:choose>
+                    <c:when test="${not classAllowsGrades}">Pass rate is hidden while class is pending</c:when>
+                    <c:otherwise>${passCount} students passing (>= 5)</c:otherwise>
+                </c:choose>
+            </div>
             <div class="class-metric-icon warning">
                 <i class='bx bx-award'></i>
             </div>
         </div>
     </div>
+
+    <c:if test="${classInfo[6] == 'Active' && unpaidCount > 0}">
+        <div class="alert alert-warning mb-4">
+            This active class still contains <strong>${unpaidCount}</strong> pending or unpaid enrollment(s). Please review these enrollments because only active students should remain in an active class.
+        </div>
+    </c:if>
 
     <div class="card user-table-card border-0 bg-white class-student-card">
         <div class="class-student-header">
@@ -194,6 +217,8 @@
                     </c:if>
                     <c:forEach items="${studentsInClass}" var="s" varStatus="loop">
                         <tr>
+                            <c:set var="studentCanShowGrade" value="${s[5] == 'Active' || s[5] == 'Completed'}" />
+                            <c:set var="displayStatus" value="${classInfo[6] == 'Active' && s[5] == 'Paid' ? 'Active' : s[5]}" />
                             <td>${loop.count}</td>
                             <td>
                                 <div class="user-item">
@@ -214,16 +239,20 @@
                             <td>
                                 <span class="class-detail-date">
                                     <c:choose>
-                                        <c:when test="${s[6] != null}">
+                                        <c:when test="${classAllowsGrades && studentCanShowGrade && s[6] != null}">
                                             <fmt:formatNumber value="${s[6]}" minFractionDigits="1" maxFractionDigits="1"/>
                                         </c:when>
+                                        <c:when test="${classAllowsGrades && s[5] == 'Paid'}">Pending</c:when>
+                                        <c:when test="${classAllowsGrades && s[5] == 'Pending'}">Pending</c:when>
+                                        <c:when test="${classAllowsGrades && (s[5] == 'UnPaid' || s[5] == 'Unpaid')}">Locked</c:when>
+                                        <c:when test="${not classAllowsGrades}">Locked</c:when>
                                         <c:otherwise>N/A</c:otherwise>
                                     </c:choose>
                                 </span>
                             </td>
                             <td>
-                                <span class="badge-status ${s[5] == 'Paid' || s[5] == 'Active' || s[5] == 'Completed' ? 'badge-active' : 'badge-inactive'}">
-                                    ${s[5]}
+                                <span class="badge-status ${displayStatus == 'Active' || displayStatus == 'Completed' ? 'badge-active' : 'badge-inactive'}">
+                                    ${displayStatus}
                                 </span>
                             </td>
                             <td>

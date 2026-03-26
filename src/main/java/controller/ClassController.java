@@ -329,6 +329,9 @@ public class ClassController extends HttpServlet {
                 );
 
                 int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+                if (totalPages < 1) {
+                    totalPages = 1;
+                }
 
                 System.out.println("totalRecords = " + totalRecords);
                 System.out.println("totalPages = " + totalPages);

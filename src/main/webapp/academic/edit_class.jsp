@@ -18,7 +18,7 @@
                 <h2 class="page-title">Edit Class</h2>
                 <p class="text-muted small mb-0">Update class details and assignments.</p>
             </div>
-            <a href="enrollment?action=classes" class="btn btn-back">
+            <a href="${not empty param.returnUrl ? param.returnUrl : 'enrollment?action=classes'}" class="btn btn-back">
                 <i class='bx bx-left-arrow-alt'></i> Back to Class List
             </a>
         </div>
@@ -29,6 +29,7 @@
             <form action="enrollment" method="post">
                 <input type="hidden" name="action" value="updateClass"/>
                 <input type="hidden" name="classId" value="${classEditInfo[0]}"/>
+                <input type="hidden" name="returnUrl" value="${param.returnUrl}"/>
 
                 <div class="row g-3">
                     <div class="col-md-6">

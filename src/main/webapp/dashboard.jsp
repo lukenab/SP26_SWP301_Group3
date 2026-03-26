@@ -231,7 +231,7 @@
                         </li>
                     </c:if>
 
-                    <c:if test="${sessionScope.user.role.manageCourse}">
+                    <c:if test="${sessionScope.user.role.manageCourse && sessionScope.user.role.roleId != 4 && sessionScope.user.role.roleId != 5}">
                         <li class="menu-header">
                             <span class="text nav-text">ACADEMIC MANAGEMENT</span>
                         </li>
@@ -257,12 +257,6 @@
                             <a href="enrollment?action=classes" class="${pageContext.request.servletPath == '/enrollment' && param.action != 'requests' ? 'active' : ''}">
                                 <i class="bxr bx-door"></i>
                                 <span class="text nav-text">Classes</span>
-                            </a>
-                        </li>
-                        <li class="nav-links">
-                            <a href="enrollment?action=requests" class="${pageContext.request.servletPath == '/enrollment' && param.action == 'requests' ? 'active' : ''}">
-                                <i class="bxr bx-check-shield"></i>
-                                <span class="text nav-text">Enrollments</span>
                             </a>
                         </li>
                         <li class="nav-links">
