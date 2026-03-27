@@ -152,33 +152,23 @@ public class ScheduleController extends HttpServlet {
                 ScheduleDAO scheduleDAO = new ScheduleDAO();
                 ClassDAO classDAO = new ClassDAO();
 
+                // For management view we always load the full schedule list for the selected week
+                // Client-side JS will filter by class/room without additional server requests.
+                List<Schedule> managementScheduleList = scheduleDAO.getSchedulesForManagement(selectedDate, null, null);
+
+                // Preserve selectedClassId/selectedRoomId in session only for UI state (optional)
                 String filterClassId = request.getParameter("classId");
                 String filterRoomId = request.getParameter("roomId");
-                Integer classFilterId = null;
-                Integer roomFilterId = null;
-                List<Schedule> managementScheduleList = new ArrayList<>();
-
-                // Only filter by classId if not "0" (All Classes)
-                if (filterClassId != null && !filterClassId.isEmpty() && !filterClassId.equals("0")) {
-                    classFilterId = Integer.parseInt(filterClassId);
-                    session.setAttribute("selectedClassId", classFilterId);
+                if (filterClassId != null && !filterClassId.isEmpty()) {
+                    try { session.setAttribute("selectedClassId", Integer.parseInt(filterClassId)); } catch (Exception ignored) {}
                 } else {
                     session.setAttribute("selectedClassId", 0);
-                    classFilterId = null; // Set to null to show all classes
                 }
-
-                // Only filter by roomId if not "0" (All Rooms)
-                if (filterRoomId != null && !filterRoomId.isEmpty() && !filterRoomId.equals("0")) {
-                    roomFilterId = Integer.parseInt(filterRoomId);
-                    session.setAttribute("selectedRoomId", roomFilterId);
+                if (filterRoomId != null && !filterRoomId.isEmpty()) {
+                    try { session.setAttribute("selectedRoomId", Integer.parseInt(filterRoomId)); } catch (Exception ignored) {}
                 } else {
                     session.setAttribute("selectedRoomId", 0);
-                    roomFilterId = null; // Set to null to show all rooms
                 }
-
-                // Load schedules using selected filters (class/room/week)
-                // If both are null, will show FULL schedule for the week
-                managementScheduleList = scheduleDAO.getSchedulesForManagement(selectedDate, classFilterId, roomFilterId);
 
                 // Save selected date to session
                 session.setAttribute("selectedDate", selectedDate);
@@ -187,9 +177,23 @@ public class ScheduleController extends HttpServlet {
                 List<Object[]> allRooms = scheduleDAO.getAllRooms();
                 List<Object[]> allTeachers = scheduleDAO.getAllTeachers();
 
+                // Convert selected filter strings into Integer values for JSP usage
+                Integer classFilterIdInt = null;
+                Integer roomFilterIdInt = null;
+                try {
+                    if (filterClassId != null && !filterClassId.isEmpty() && !filterClassId.equals("0")) {
+                        classFilterIdInt = Integer.parseInt(filterClassId);
+                    }
+                } catch (Exception ignored) {}
+                try {
+                    if (filterRoomId != null && !filterRoomId.isEmpty() && !filterRoomId.equals("0")) {
+                        roomFilterIdInt = Integer.parseInt(filterRoomId);
+                    }
+                } catch (Exception ignored) {}
+
                 request.setAttribute("selectedDate", selectedDate);
-                request.setAttribute("classId", classFilterId);
-                request.setAttribute("roomId", roomFilterId);
+                request.setAttribute("classId", classFilterIdInt);
+                request.setAttribute("roomId", roomFilterIdInt);
                 request.setAttribute("weekdays", weekdays);
                 request.setAttribute("slots", allSlots);
                 request.setAttribute("scheduleList", managementScheduleList);
