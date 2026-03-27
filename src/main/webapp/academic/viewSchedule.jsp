@@ -82,9 +82,6 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
-                <a href="schedule?action=manage&classId=${sessionScope.selectedClassId != null ? sessionScope.selectedClassId : 0}&roomId=${sessionScope.selectedRoomId != null ? sessionScope.selectedRoomId : 0}&date=${sessionScope.selectedDate != null ? sessionScope.selectedDate : ''}" class="btn schedule-neutral-btn">
-                    <i class='bx bx-arrow-left'></i> Back to List
-                </a>
                 <a href="schedule?action=editForm&scheduleId=${schedule.scheduleId}" class="btn btn-primary">
                     <i class='bx bx-edit'></i> Edit Schedule
                 </a>

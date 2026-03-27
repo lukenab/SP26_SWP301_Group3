@@ -71,31 +71,27 @@ public class RoomController extends HttpServlet {
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                     break;
                 case "manage":
+                    // Client-side filtering: load full room list and let JS handle filtering in the JSP
                     String capacity = request.getParameter("capacity");
                     String type = request.getParameter("type");
                     String status = request.getParameter("status");
 
-                    List<Room> filteredRooms = rdao.getRoomsByFilter(capacity, type, status);
-                    if (filteredRooms == null) {
-                        filteredRooms = rdao.getAllRoom();
-                    }
-
+                    List<Room> allRoomForManage = rdao.getAllRoom();
                     // Check which rooms have classes assigned
-                    Map<Integer, Boolean> usageMap = new HashMap<>();
-                    for (Room room : filteredRooms) {
+                    Map<Integer, Boolean> usageMapForManage = new HashMap<>();
+                    for (Room room : allRoomForManage) {
                         boolean isInUse = rdao.isRoomInUse(room.getRoomId());
-                        usageMap.put(room.getRoomId(), isInUse);
+                        usageMapForManage.put(room.getRoomId(), isInUse);
                     }
 
-                    // Get filter criteria from database
                     List<String> allRoomTypes = rdao.getDistinctRoomTypes();
                     List<Integer> allCapacities = rdao.getDistinctRoomCapacities();
 
-                    request.setAttribute("allRooms", filteredRooms);
-                    request.setAttribute("roomUsageMap", usageMap);
+                    request.setAttribute("allRooms", allRoomForManage);
+                    request.setAttribute("roomUsageMap", usageMapForManage);
                     request.setAttribute("roomTypes", allRoomTypes);
                     request.setAttribute("capacities", allCapacities);
-                    // Set current filter values for pre-selection
+                    // Preserve current filter values so selects can pre-select on page load
                     request.setAttribute("capacity", capacity);
                     request.setAttribute("type", type);
                     request.setAttribute("status", status);
