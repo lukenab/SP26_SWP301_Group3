@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.ClassDAO;
 import dao.GradeDAO;
 import dao.StudentDAO;
 import java.io.IOException;
@@ -13,8 +14,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
+import model.Classes;
 import model.User;
 
 /**
@@ -37,8 +40,9 @@ public class StudentController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
 
-        jakarta.servlet.http.HttpSession session = request.getSession();
+        HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
+        ClassDAO classDAO = new ClassDAO();
 
         if (currentUser == null) {
             response.sendRedirect("login");
@@ -76,12 +80,15 @@ public class StudentController extends HttpServlet {
                     GradeDAO gradeDAO = new GradeDAO();
                     Map<Integer, Double> averageMap
                             = gradeDAO.getAverageByClassId(classId);
+                    Classes currentClass = classDAO.getClassByID(classId);
 
+                    String classStatus = (currentClass != null) ? currentClass.getStatus() : "";
                     request.setAttribute("studentList", studentList);
                     request.setAttribute("averageMap", averageMap);
                     request.setAttribute("classId", classId);
+                    request.setAttribute("classStatus", classStatus);
                     request.setAttribute("home_view",
-                            "teacher/student_list_of_class.jsp");
+                            "teacher/studentListOfClass.jsp");
 
                     request.getRequestDispatcher("dashboard.jsp")
                             .forward(request, response);

@@ -95,7 +95,7 @@ public class FeedbackController extends HttpServlet {
                 request.setAttribute("feedbackList", data.get("feedbackList"));
                 request.setAttribute("studentNameMap", data.get("studentNameMap"));
 
-                request.setAttribute("home_view", "teacher/feedback_list.jsp");
+                request.setAttribute("home_view", "teacher/feedbackList.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 

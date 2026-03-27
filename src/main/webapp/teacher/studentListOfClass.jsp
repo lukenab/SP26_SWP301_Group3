@@ -3,7 +3,7 @@
     <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 
-    <link href="css/student_list_of_class.css" rel="stylesheet" type="text/css"/>
+    <link href="css/studentListOfClass.css" rel="stylesheet" type="text/css"/>
 
     <div class="container-fluid px-4 content-body">
 
@@ -68,7 +68,7 @@
                     <span class="input-group-text bg-white border-0">
                         <i class='bx bx-search text-muted'></i>
                     </span>
-                    <input type="text" id="studentSearch" class="form-control border-0 ps-0" 
+                    <input type="text" id="studentSearch" class="form-control border-0 ps-0"
                            placeholder="Search by student name or email...">
                 </div>
             </div>
@@ -156,10 +156,6 @@
                                                     <input type="hidden" name="action" value="delete"/>
                                                     <input type="hidden" name="studentId" value="${s.userId}"/>
                                                     <input type="hidden" name="classId" value="${classId}"/>
-                                                    <button type="submit" class="btn-icon-minimal" 
-                                                            onclick="return confirm('Delete grades for ${s.fullName}?')">
-                                                        <i class='bx bx-trash'></i>
-                                                    </button>
                                                 </form>
                                             </c:otherwise>
                                         </c:choose>
@@ -202,5 +198,5 @@
     </div>
     </div>
 
-    <script src="js/student_list_of_class.js" type="text/javascript"></script>
+    <script src="js/studentListOfClass.js" type="text/javascript"></script>
     <script src="js/manageUser.js" type="text/javascript"></script>

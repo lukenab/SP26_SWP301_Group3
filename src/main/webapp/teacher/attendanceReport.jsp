@@ -9,13 +9,13 @@
                 <li class="breadcrumb-item">
                     <a href="class" class="text-decoration-none">My Classes</a>
                 </li>
-                <li class="breadcrumb-item active">Attendance Matrix</li>
+                <li class="breadcrumb-item active">Attendance Report</li>
             </ol>
         </div>
 
         <div class="content-header d-flex justify-content-between align-items-center">
             <div>
-                <h2 class="page-title fw-bold text-dark mb-1">Attendance Report Matrix</h2>
+                <h2 class="page-title fw-bold text-dark mb-1">Attendance Report</h2>
                 <p class="text-muted small mb-0">
                     Tracking attendance status and absence percentage for class: 
                     <strong class="text-primary">
@@ -70,7 +70,17 @@
                             <th class="bg-light fw-bold text-danger">Absent %</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    
+                    <c:if test="${empty studentList}">
+                        <tr>
+                            <td colspan="${scheduleList.size() + 2}" class="text-center py-5 text-muted">
+                                <i class='bx bx-info-circle fs-4 mb-2'></i><br>
+                                No attendance data available. No students found in this class.
+                            </td>
+                        </tr>
+                    </c:if>
+
+                    <tbody> 
                         <c:forEach var="stu" items="${studentList}">
                             <tr>
                                 <td class="text-start ps-3">

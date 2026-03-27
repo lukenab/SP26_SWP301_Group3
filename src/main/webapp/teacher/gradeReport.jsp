@@ -13,7 +13,7 @@
 
         <div class="content-header d-flex justify-content-between align-items-center">
             <div>
-                <h2 class="page-title fw-bold text-dark mb-1">Grade Report Matrix - ${className}</h2>
+                <h2 class="page-title fw-bold text-dark mb-1">Grade Report ${className}</h2>
                 <p class="text-muted small mb-0">Overview of student academic performance and final status</p>
             </div>
 

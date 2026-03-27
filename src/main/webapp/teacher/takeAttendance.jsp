@@ -10,7 +10,7 @@
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item"><a href="dashboard?action=teacher">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="class">Class Management</a></li>
-                <li class="breadcrumb-item"><a href="schedule?action=view&classId=${classId}">Class Schedule</a></li>
+                <li class="breadcrumb-item"><a href="schedule?action=viewScheduleByClassId&classId=${classId}">Class Schedule</a></li>
                 <li class="breadcrumb-item active">Attendance Management</li>
             </ol>
         </div>
@@ -22,7 +22,7 @@
             </div>
 
 
-            <a href="schedule?action=view&classId=${classId}" class="btn-secondary">
+            <a href="schedule?action=viewScheduleByClassId&classId=${classId}" class="btn-secondary">
                 <i class='bx bx-arrow-left'></i> Back to Schedule
             </a>
         </div>

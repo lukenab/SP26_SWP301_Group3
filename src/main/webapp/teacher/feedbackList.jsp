@@ -106,7 +106,7 @@
                 <thead class="bg-light text-muted small text-uppercase">
                     <tr>
                         <th class="text-center" style="width:60px">#</th>
-                        <th>Student</th>
+                     
                         <th class="text-center">Class</th>
                         <th class="text-center">Rating</th>
                         <th>Comment</th>
@@ -118,36 +118,6 @@
                     <c:forEach var="f" items="${feedbackList}" varStatus="loop">
                         <tr class="feedback-item" data-class="${f.enrollment.classes.className}" data-rating="${f.rating}">
                             <td class="text-center text-muted small">${loop.count}</td>
-
-                            <td style="width: 220px">
-                                <div class="d-flex align-items-center" >
-                                    <div class="avatar-container me-3">
-                                        <c:choose>
-                                            <c:when test="${not empty avatarMap[f.feedbackId]}">
-                                                <img src="${pageContext.request.contextPath}/${avatarMap[f.feedbackId]}" 
-                                                     class="avatar-img" 
-                                                     alt="Student"
-                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-
-                                                <div class="avatar-placeholder" style="display: none;">
-                                                    <i class='bx bx-user'></i>
-                                                </div>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <div class="avatar-placeholder">
-                                                    <i class='bx bx-user'></i>
-                                                </div>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </div>
-                                    <div>
-                                        <div class="fw-bold text-dark">Student #${(f.feedbackId * 73 + 19) % 9000 + 1000}</div>
-                                        <!--                                        <div class="small text-muted" style="font-size: 0.7rem;">
-                                                                                    ID: ${f.enrollment.student.userId}
-                                                                                </div>-->
-                                    </div>
-                                </div>
-                            </td>
 
                             <td>
                                 <span class="badge bg-soft-primary text-primary border px-2 py-1">
