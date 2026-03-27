@@ -244,13 +244,47 @@ public class ClassController extends HttpServlet {
 
                 List<Schedule> schedules = scheduleDAO.getSchedulesByClass(classId);
 
+                // ===== VOUCHER LOGIC =====
+                User userV = (User) request.getSession().getAttribute("user");
+
+                dao.VoucherDAO voucherDAO = new dao.VoucherDAO();
+                model.Voucher appliedVoucher = null;
+                double discountAmount = 0;
+                double finalPrice = classDetail.getCourse().getTuitionFee().doubleValue();
+
+                if (userV != null) {
+                    appliedVoucher = voucherDAO.getVoucherByStudentAndClass(
+                            userV.getUserId(),
+                            classId
+                    );
+
+                    if (appliedVoucher != null) {
+                        discountAmount = voucherDAO.calculateDiscountAmount(
+                                appliedVoucher,
+                                finalPrice
+                        );
+
+                        finalPrice = finalPrice - discountAmount;
+
+                        if (finalPrice < 0) {
+                            finalPrice = 0;
+                        }
+                    }
+                }
+
+                // ===== SET ATTRIBUTE =====
                 request.setAttribute("classDetail", classDetail);
                 request.setAttribute("teacherName", teacherName);
                 request.setAttribute("teacherAvatar", teacherAvatar);
                 request.setAttribute("roomName", roomName);
                 request.setAttribute("scheduleList", schedules);
 
-                // truyền sang JSP để breadcrumb biết nguồn
+                // voucher
+                request.setAttribute("appliedVoucher", appliedVoucher);
+                request.setAttribute("discountAmount", discountAmount);
+                request.setAttribute("finalPrice", finalPrice);
+
+                // breadcrumb
                 request.setAttribute("sourcePage", source);
 
                 request.setAttribute("home_view", "student/classDetail.jsp");
@@ -270,38 +304,60 @@ public class ClassController extends HttpServlet {
 
                 int studentId = student.getUserId();
 
+                String keyword1 = request.getParameter("keyword");
+                String status1 = request.getParameter("status");
+
                 String pageRaw = request.getParameter("page");
                 if (pageRaw != null && !pageRaw.isBlank()) {
-                    page = Integer.parseInt(pageRaw);
+                    try {
+                        page = Integer.parseInt(pageRaw);
+                    } catch (Exception e) {
+                        page = 1;
+                    }
                 }
 
                 LocalDate todayDate = LocalDate.now();
                 LocalDate startOfWeek = todayDate.with(DayOfWeek.MONDAY);
                 LocalDate endOfWeek = todayDate.with(DayOfWeek.SUNDAY);
 
-                List<Object[]> fullList = classDAO.getStudentClassesAdvanced(
+                int totalRecords = classDAO.countStudentClassesAdvanced(
                         studentId,
                         startOfWeek,
                         endOfWeek,
-                        keyword,
-                        status
+                        keyword1,
+                        status1
                 );
 
-                int totalRecords = fullList.size();
                 int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
-
-                int fromIndex = (page - 1) * pageSize;
-                int toIndex = Math.min(fromIndex + pageSize, totalRecords);
-
-                List<Object[]> pageList = new ArrayList<>();
-
-                if (fromIndex < totalRecords) {
-                    pageList = fullList.subList(fromIndex, toIndex);
+                if (totalPages < 1) {
+                    totalPages = 1;
                 }
+
+                System.out.println("totalRecords = " + totalRecords);
+                System.out.println("totalPages = " + totalPages);
+                
+                if (page < 1) {
+                    page = 1;
+                }
+                if (page > totalPages) {
+                    page = totalPages;
+                }
+
+                List<Object[]> pageList = classDAO.getStudentClassesAdvanced(
+                        studentId,
+                        startOfWeek,
+                        endOfWeek,
+                        keyword1,
+                        status1,
+                        page,
+                        pageSize
+                );
 
                 request.setAttribute("classList", pageList);
                 request.setAttribute("currentPage", page);
                 request.setAttribute("totalPages", totalPages);
+                request.setAttribute("keyword", keyword1);
+                request.setAttribute("status", status1);
 
                 request.setAttribute("home_view", "student/studentMyClassList.jsp");
 

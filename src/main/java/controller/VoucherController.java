@@ -1,5 +1,6 @@
 package controller;
 
+import dao.ClassDAO;
 import dao.SystemLogDAO;
 import dao.VoucherDAO;
 import jakarta.servlet.ServletException;
@@ -46,6 +47,9 @@ public class VoucherController extends HttpServlet {
         }
 
         switch (action) {
+            case "validateVoucher":
+                handleValidateVoucher(request, response);
+                return;
             case "all":
                 String searchQuery = request.getParameter("searchQuery");
                 String status = request.getParameter("status");
@@ -167,6 +171,11 @@ public class VoucherController extends HttpServlet {
             return;
         }
 
+        if ("validateVoucher".equals(action)) {
+            handleValidateVoucher(request, response);
+            return;
+        }
+
         User currentUser = (User) session.getAttribute("user");
 
         if (currentUser == null) {
@@ -277,6 +286,33 @@ public class VoucherController extends HttpServlet {
             return;
         }
 
+        if ("setLandingPopup".equals(action)) {
+            int id = parseInt(request.getParameter("voucherId"));
+            Voucher voucher = voucherDAO.getVoucherByID(id);
+
+            if (voucher == null) {
+                setSessionMessage(session, "Voucher not found.", "error");
+            } else if (!voucher.isStatus()) {
+                setSessionMessage(session, "Only active vouchers can be shown on the landing page.", "error");
+            } else if (voucherDAO.setLandingPopupVoucher(id)) {
+                SystemLogDAO logDAO = new SystemLogDAO();
+                User logUser = (User) request.getSession().getAttribute("user");
+
+                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Sale Staff";
+
+                logDAO.insertLog(actorName, actorRole, "SET_LANDING_POPUP_VOUCHER",
+                        "Set landing page popup voucher ID: " + id + " (Code: " + voucher.getCode() + ")");
+
+                setSessionMessage(session, "Landing page popup voucher updated successfully.", "success");
+            } else {
+                setSessionMessage(session, "Failed to set landing page popup voucher.", "error");
+            }
+
+            response.sendRedirect("voucher?action=all");
+            return;
+        }
+
         response.sendRedirect("voucher?action=all");
     }
 
@@ -343,6 +379,46 @@ public class VoucherController extends HttpServlet {
 
         setSessionMessage(session, "Create voucher successfully!", "success");
         response.sendRedirect("voucher?action=all");
+    }
+
+    private void handleValidateVoucher(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.setHeader("Cache-Control", "no-store");
+
+        try {
+            int classId = parseInt(request.getParameter("classId"));
+            String voucherCode = request.getParameter("voucherCode");
+
+            if (classId <= 0 || isBlank(voucherCode)) {
+                response.getWriter().write("{\"valid\":false,\"message\":\"Invalid request.\"}");
+                return;
+            }
+
+            ClassDAO classDAO = new ClassDAO();
+            double amount = classDAO.getClassPrice(classId);
+
+            VoucherDAO voucherDAO = new VoucherDAO();
+            Voucher voucher = voucherDAO.getVoucherByCode(normalizeCode(voucherCode));
+            if (voucher == null || !voucher.isStatus()) {
+                response.getWriter().write("{\"valid\":false,\"message\":\"Invalid or expired voucher code.\"}");
+                return;
+            }
+            if (!voucherDAO.isVoucherUsageAvailable(voucher.getVoucherId())) {
+                response.getWriter().write("{\"valid\":false,\"message\":\"This voucher has reached its usage limit.\"}");
+                return;
+            }
+
+            double discountAmount = Math.max(voucherDAO.calculateDiscountAmount(voucher, amount), 0);
+            double finalAmount = Math.max(amount - discountAmount, 0);
+
+            String json = String.format(java.util.Locale.US,
+                    "{\"valid\":true,\"message\":\"Voucher applied.\",\"discountAmount\":%.2f,\"finalAmount\":%.2f}",
+                    discountAmount, finalAmount);
+            response.getWriter().write(json);
+        } catch (Exception e) {
+            response.getWriter().write("{\"valid\":false,\"message\":\"Failed to apply voucher.\"}");
+        }
     }
 
     private void setSessionMessage(HttpSession session, String message, String type) {

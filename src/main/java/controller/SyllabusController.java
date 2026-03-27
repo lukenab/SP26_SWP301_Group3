@@ -147,6 +147,7 @@ public class SyllabusController extends HttpServlet {
         }
         
         if ("create".equals(action) || "update".equals(action)) {
+            String returnUrl = request.getParameter("returnUrl");
             boolean isUpdate = "update".equals(action);
             String courseIdParam = request.getParameter("courseId");
             String syllabusIdParam = request.getParameter("syllabusId");
@@ -162,7 +163,7 @@ public class SyllabusController extends HttpServlet {
                 HttpSession asession = request.getSession();
                 asession.setAttribute("message", "Please fill all required fields.");
                 asession.setAttribute("messageType", "error");
-                response.sendRedirect("syllabus?action=manage");
+                response.sendRedirect(returnUrl != null && !returnUrl.isEmpty() ? returnUrl : "syllabus?action=manage");
                 return;
             }
 
@@ -195,18 +196,19 @@ public class SyllabusController extends HttpServlet {
                 session.setAttribute("messageType", "error");
             }
 
-            response.sendRedirect("syllabus?action=manage");
+            response.sendRedirect(returnUrl != null && !returnUrl.isEmpty() ? returnUrl : "syllabus?action=manage");
             return;
         }
 
         if ("delete".equals(action)) {
+            String returnUrl = request.getParameter("returnUrl");
             HttpSession dsession = request.getSession();
             String syllabusIdParam = request.getParameter("syllabusId");
 
             if (syllabusIdParam == null || syllabusIdParam.isEmpty()) {
                 session.setAttribute("message", "Invalid syllabus delete request.");
                 session.setAttribute("messageType", "error");
-                response.sendRedirect("syllabus?action=manage");
+                response.sendRedirect(returnUrl != null && !returnUrl.isEmpty() ? returnUrl : "syllabus?action=manage");
                 return;
             }
 
@@ -225,7 +227,7 @@ public class SyllabusController extends HttpServlet {
                 session.setAttribute("messageType", "error");
             }
 
-            response.sendRedirect("syllabus?action=manage");
+            response.sendRedirect(returnUrl != null && !returnUrl.isEmpty() ? returnUrl : "syllabus?action=manage");
             return;
         }
 

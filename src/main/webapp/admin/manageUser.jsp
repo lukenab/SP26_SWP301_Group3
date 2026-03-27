@@ -213,10 +213,10 @@
                                         <span class="badge badge-student">Student</span>
                                     </c:when>
                                     <c:when test="${u.role.roleId == 3}">
-                                        <span class="badge badge-saleStaff">Staff</span>
+                                        <span class="badge badge-saleStaff">Sales Staff</span>
                                     </c:when>
                                     <c:when test="${u.role.roleId == 2}">
-                                        <span class="badge badge-academicStaff">Staff</span>
+                                        <span class="badge badge-academicStaff">Academic Staff</span>
                                     </c:when>
                                 </c:choose>
                             </td>

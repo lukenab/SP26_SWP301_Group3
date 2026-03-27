@@ -7,6 +7,13 @@
 <link href="css/course_list.css" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body">
+    <c:url var="classListReturnUrl" value="enrollment">
+        <c:param name="action" value="classes"/>
+        <c:param name="searchQuery" value="${searchQuery}"/>
+        <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
+        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+        <c:param name="page" value="${currentPage}"/>
+    </c:url>
 
     <div class="mb-4">
         <div aria-label="breadcrumb">
@@ -25,6 +32,33 @@
             </a>
         </div>
     </div>
+
+    <c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-error-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+
+        <c:remove var="message" scope="session" />
+        <c:remove var="messageType" scope="session" />
+    </c:if>
 
     <c:set var="activeClass" value="0"/>
     <c:set var="pendingClass" value="0"/>
@@ -151,13 +185,13 @@
                         <c:param name="month" value="all"/>
                     </c:url>
                     <li><a class="dropdown-item" href="${allMonthUrl}">All Classes</a></li>
-                    <c:forEach begin="1" end="12" var="month">
-                        <c:url var="monthUrl" value="enrollment">
-                            <c:param name="action" value="classes"/>
-                            <c:param name="searchQuery" value="${searchQuery}"/>
-                            <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
-                            <c:param name="month" value="${month}"/>
-                        </c:url>
+                        <c:forEach begin="1" end="12" var="month">
+                            <c:url var="monthUrl" value="enrollment">
+                                <c:param name="action" value="classes"/>
+                                <c:param name="searchQuery" value="${searchQuery}"/>
+                                <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                                <c:param name="month" value="${month}"/>
+                            </c:url>
                         <li>
                             <a class="dropdown-item" href="${monthUrl}">
                                 <c:choose>
@@ -250,6 +284,21 @@
                     <c:forEach items="${classList}" var="c" varStatus="loop">
                         <tr>
                             <c:set var="isActive" value="${c[6] == 'Active'}"/>
+                            <c:url var="classDetailUrl" value="enrollment">
+                                <c:param name="action" value="classDetails"/>
+                                <c:param name="classId" value="${c[0]}"/>
+                                <c:param name="returnUrl" value="${classListReturnUrl}"/>
+                            </c:url>
+                            <c:url var="editClassUrl" value="enrollment">
+                                <c:param name="action" value="editClassForm"/>
+                                <c:param name="classId" value="${c[0]}"/>
+                                <c:param name="returnUrl" value="${classListReturnUrl}"/>
+                            </c:url>
+                            <c:url var="manageStudentsUrl" value="enrollment">
+                                <c:param name="action" value="addStudentForm"/>
+                                <c:param name="classId" value="${c[0]}"/>
+                                <c:param name="returnUrl" value="${classListReturnUrl}"/>
+                            </c:url>
                             <td>${startItem + loop.index}</td>
 
                             <td>
@@ -277,15 +326,15 @@
 
                             <td class="actions-cell">
                                 <div class="table-actions">
-                                    <a href="enrollment?action=classDetails&classId=${c[0]}"
+                                    <a href="${classDetailUrl}"
                                        class="action-btn"
                                        title="View Details">
                                         <i class='bx bx-eye'></i>
                                     </a>
-                                    <a href="enrollment?action=editClassForm&classId=${c[0]}" class="action-btn" title="Edit Class">
+                                    <a href="${editClassUrl}" class="action-btn" title="Edit Class">
                                         <i class='bx bx-edit'></i>
                                     </a>
-                                    <a href="enrollment?action=addStudentForm&classId=${c[0]}" class="action-btn" title="Add Student">
+                                    <a href="${manageStudentsUrl}" class="action-btn" title="Add Student">
                                         <i class='bx bx-user-plus'></i>
                                     </a>
                                     <c:choose>
@@ -312,44 +361,44 @@
             <div class="text-muted small">Showing ${startItem}-${endItem} of ${totalItems} classes</div>
             <c:if test="${not showAllFilteredResults}">
                 <div>
-                <ul class="pagination pagination-sm mb-0">
-                    <c:url var="prevPageUrl" value="enrollment">
-                        <c:param name="action" value="classes"/>
-                        <c:param name="searchQuery" value="${searchQuery}"/>
-                        <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
-                        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
-                        <c:param name="page" value="${currentPage - 1}"/>
-                    </c:url>
-                    <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
-                        <a class="page-link" href="${prevPageUrl}">
-                            <i class='bx bx-chevron-left'></i> Previous
-                        </a>
-                    </li>
-                    <c:forEach begin="1" end="${totalPages}" var="pageNumber">
-                        <c:url var="pageUrl" value="enrollment">
+                    <ul class="pagination pagination-sm mb-0">
+                        <c:url var="prevPageUrl" value="enrollment">
                             <c:param name="action" value="classes"/>
                             <c:param name="searchQuery" value="${searchQuery}"/>
                             <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
                             <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
-                            <c:param name="page" value="${pageNumber}"/>
+                            <c:param name="page" value="${currentPage - 1}"/>
                         </c:url>
-                        <li class="page-item ${pageNumber == currentPage ? 'active' : ''}">
-                            <a class="page-link" href="${pageUrl}">${pageNumber}</a>
+                        <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+                            <a class="page-link" href="${prevPageUrl}">
+                                <i class='bx bx-chevron-left'></i> Previous
+                            </a>
                         </li>
-                    </c:forEach>
-                    <c:url var="nextPageUrl" value="enrollment">
-                        <c:param name="action" value="classes"/>
-                        <c:param name="searchQuery" value="${searchQuery}"/>
-                        <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
-                        <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
-                        <c:param name="page" value="${currentPage + 1}"/>
-                    </c:url>
-                    <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
-                        <a class="page-link" href="${nextPageUrl}">
-                            Next <i class='bx bx-chevron-right'></i>
-                        </a>
-                    </li>
-                </ul>
+                        <c:forEach begin="1" end="${totalPages}" var="pageNumber">
+                            <c:url var="pageUrl" value="enrollment">
+                                <c:param name="action" value="classes"/>
+                                <c:param name="searchQuery" value="${searchQuery}"/>
+                                <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
+                                <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                                <c:param name="page" value="${pageNumber}"/>
+                            </c:url>
+                            <li class="page-item ${pageNumber == currentPage ? 'active' : ''}">
+                                <a class="page-link" href="${pageUrl}">${pageNumber}</a>
+                            </li>
+                        </c:forEach>
+                        <c:url var="nextPageUrl" value="enrollment">
+                            <c:param name="action" value="classes"/>
+                            <c:param name="searchQuery" value="${searchQuery}"/>
+                            <c:param name="month" value="${empty monthFilter ? 'all' : monthFilter}"/>
+                            <c:param name="status" value="${empty statusFilter ? 'all' : statusFilter}"/>
+                            <c:param name="page" value="${currentPage + 1}"/>
+                        </c:url>
+                        <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+                            <a class="page-link" href="${nextPageUrl}">
+                                Next <i class='bx bx-chevron-right'></i>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </c:if>
         </div>
@@ -357,20 +406,20 @@
 </div>
 <script src="js/manageUser.js" type="text/javascript"></script>
 <script>
-    (function () {
-        const searchInput = document.getElementById('classSearchInput');
-        const searchForm = document.getElementById('classSearchForm');
-        let debounceTimer;
+                (function () {
+                    const searchInput = document.getElementById('classSearchInput');
+                    const searchForm = document.getElementById('classSearchForm');
+                    let debounceTimer;
 
-        if (!searchInput || !searchForm) {
-            return;
-        }
+                    if (!searchInput || !searchForm) {
+                        return;
+                    }
 
-        searchInput.addEventListener('input', function () {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(function () {
-                searchForm.submit();
-            }, 400);
-        });
-    })();
+                    searchInput.addEventListener('input', function () {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(function () {
+                            searchForm.submit();
+                        }, 400);
+                    });
+                })();
 </script>

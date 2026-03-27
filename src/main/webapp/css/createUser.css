@@ -83,6 +83,7 @@
 
 .form-group input[type="text"],
 .form-group input[type="tel"],
+.form-group input[type="password"],
 .form-group input[type="date"],
 .form-group input[type="email"],
 .form-group input[type="number"],
@@ -220,3 +221,60 @@
     border: 3px solid #dc3545;
 }
 
+.profile-avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; 
+    justify-content: flex-start;
+    margin-bottom: 24px; 
+}
+
+.user-img {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin-left: 0;
+}
+
+.info-img img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    object-fit: cover;
+}
+
+.info-img-icon {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: #2563eb;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid #fff;
+}
+
+#avatarInputContainer {
+    display: none;
+    margin-top: 15px;
+    width: 100%;
+    max-width: 400px;
+    text-align: left; 
+}
+
+#avatarInputContainer.active {
+    display: block;
+}
+
+.avatar-input-content {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}

@@ -129,7 +129,7 @@ public class UserController extends HttpServlet {
                 List<User> pagedList = paginateUserList(fullList, parsePage(request), DEFAULT_PAGE_SIZE, request);
 
                 request.setAttribute("totalUsers", fullList.size());
-                request.setAttribute("userList", pagedList); 
+                request.setAttribute("userList", pagedList);
                 request.setAttribute("home_view", "/admin/manageUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
@@ -210,52 +210,107 @@ public class UserController extends HttpServlet {
                 String fullName = getStringParam(request, "fullName", "");
                 String email = getStringParam(request, "email", "");
                 String password = getStringParam(request, "password", "");
-                String phone = getStringParam(request, "phone", "");
+                String phone = getStringParam(request, "phone", "").trim();
                 String address = getStringParam(request, "address", "");
                 Boolean gender = getBoolParam(request, "gender");
                 Date dob = getDateParam(request, "dob");
-                String avatar = getStringParam(request, "avatar", "https://cdn-icons-png.flaticon.com/512/149/149071.png");
-
                 Boolean status = getBoolParam(request, "status");
+                int roleId = getIntParam(request, "roleId", 5);
 
-                int roleId = getIntParam(request, "roleId", 5); // roleId = 5 => Student
+                HttpSession aSession = request.getSession();
+
+                if (userDAO.isFieldExists("email", email)) {
+                    aSession.setAttribute("message", "Email '" + email + "' is already registered!");
+                    aSession.setAttribute("messageType", "error");
+                    response.sendRedirect("user?action=add");
+                    return;
+                }
+
+                String phoneRegex = "^0\\d{9}$";
+                if (!phone.matches(phoneRegex)) {
+                    aSession.setAttribute("message", "Phone number must start with 0 and have exactly 10 digits!");
+                    aSession.setAttribute("messageType", "error");
+                    response.sendRedirect("user?action=add");
+                    return;
+                }
+
+                if (userDAO.isFieldExists("phone", phone)) {
+                    aSession.setAttribute("message", "Phone number '" + phone + "' is already used by another account!");
+                    aSession.setAttribute("messageType", "error");
+                    response.sendRedirect("user?action=add");
+                    return;
+                }
+
+                if (dob != null) {
+                    long currentTime = System.currentTimeMillis();
+                    Date today = new Date(currentTime);
+                    if (dob.after(today)) {
+                        aSession.setAttribute("message", "Date of Birth cannot be in the future!");
+                        aSession.setAttribute("messageType", "error");
+                        response.sendRedirect("user?action=add");
+                        return;
+                    }
+
+                    java.util.Calendar calDob = java.util.Calendar.getInstance();
+                    calDob.setTime(dob);
+                    java.util.Calendar calToday = java.util.Calendar.getInstance();
+                    int age = calToday.get(java.util.Calendar.YEAR) - calDob.get(java.util.Calendar.YEAR);
+                    if (calToday.get(java.util.Calendar.DAY_OF_YEAR) < calDob.get(java.util.Calendar.DAY_OF_YEAR)) {
+                        age--;
+                    }
+
+                    if (roleId >= 1 && roleId <= 4) {
+                        if (age < 18) {
+                            aSession.setAttribute("message", "Admins and Staff must be at least 18 years old!");
+                            aSession.setAttribute("messageType", "error");
+                            response.sendRedirect("user?action=add");
+                            return;
+                        }
+                    } else if (roleId == 5 && age < 5) {
+                        aSession.setAttribute("message", "Students must be at least 5 years old!");
+                        aSession.setAttribute("messageType", "error");
+                        response.sendRedirect("user?action=add");
+                        return;
+                    }
+                }
+
+                String defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                String avatarPath = uploadAvatar(request, defaultAvatar);
 
                 Date hireDate = null;
                 String education = null;
                 String experience = null;
                 Date enrollmentDate = null;
 
-                if (roleId == 2 || roleId == 3 || roleId == 4) {
+                if (roleId >= 2 && roleId <= 4) {
                     hireDate = getDateParam(request, "hireDate");
-                    education = getStringParam(request, "education", null);
-                    experience = getStringParam(request, "experience", null);
+                    education = getStringParam(request, "education", "");
+                    experience = getStringParam(request, "experience", "");
                 } else if (roleId == 5) {
                     enrollmentDate = getDateParam(request, "enrollmentDate");
                 }
 
-                Boolean isAdded = userDAO.addNewUserFull(fullName, email, password, phone, address, gender, dob, avatar, status, roleId, hireDate, education, experience, enrollmentDate);
+                Boolean isAdded = userDAO.addNewUserFull(
+                        fullName, email, password, phone, address, gender,
+                        dob, avatarPath, status, roleId,
+                        hireDate, education, experience, enrollmentDate
+                );
 
-                HttpSession aSession = request.getSession();
                 if (isAdded) {
-
                     SystemLogDAO logDAO = new SystemLogDAO();
-                    User logUser = (User) request.getSession().getAttribute("user");
-
+                    User logUser = (User) aSession.getAttribute("user");
                     String actorName = (logUser != null) ? logUser.getFullName() : "System";
                     String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+                    logDAO.insertLog(actorName, actorRole, "CREATE_USER", "Admin created user: " + fullName + " (" + email + ")");
 
-                    String logAction = "CREATE_USER";
-                    String detail = "Admin has create new account: " + fullName + " (Email: " + email + ")";
-
-                    logDAO.insertLog(actorName, actorRole, logAction, detail);
-
-                    aSession.setAttribute("message", "Add New User Successfully!");
+                    aSession.setAttribute("message", "User created successfully!");
                     aSession.setAttribute("messageType", "success");
+                    response.sendRedirect("user");
                 } else {
-                    aSession.setAttribute("message", "Fail To Add New User");
+                    aSession.setAttribute("message", "Fail to add new user due to database error.");
                     aSession.setAttribute("messageType", "error");
+                    response.sendRedirect("user?action=add");
                 }
-                response.sendRedirect("user");
                 break;
 
             case "inActivate":
@@ -295,23 +350,76 @@ public class UserController extends HttpServlet {
                 break;
 
             case "update":
+                int uUserId = Integer.parseInt(request.getParameter("userId"));
+                int uRoleId = Integer.parseInt(request.getParameter("roleId"));
                 String uFullName = getStringParam(request, "fullName", "");
                 String uPhone = getStringParam(request, "phone", "");
                 String uAddress = getStringParam(request, "address", "");
                 Boolean uGender = getBoolParam(request, "gender");
                 Date uDob = getDateParam(request, "dob");
 
-                String uAvatar = uploadAvatar(request, request.getParameter("avatar"));
+                HttpSession updateSession = request.getSession();
 
-                int uUserId = Integer.parseInt(request.getParameter("userId"));
-                int uRoleId = Integer.parseInt(request.getParameter("roleId"));
+                phoneRegex = "^0\\d{9}$";
+                if (!uPhone.matches(phoneRegex)) {
+                    updateSession.setAttribute("message", "Invalid phone format! Must start with 0 and have exactly 10 digits.");
+                    updateSession.setAttribute("messageType", "error");
+                    response.sendRedirect("user?action=update&id=" + uUserId);
+                    return;
+                }
+
+                User existingUser = userDAO.getUserById(uUserId);
+
+                if (!uPhone.equals(existingUser.getPhone())) {
+                    if (userDAO.isFieldExists("phone", uPhone)) {
+                        updateSession.setAttribute("message", "This phone number is already registered to another account!");
+                        updateSession.setAttribute("messageType", "error");
+                        response.sendRedirect("user?action=update&id=" + uUserId);
+                        return;
+                    }
+                }
+
+                if (uDob != null) {
+                    long currentTime = System.currentTimeMillis();
+                    Date today = new Date(currentTime);
+                    if (uDob.after(today)) {
+                        updateSession.setAttribute("message", "Date of Birth cannot be in the future!");
+                        updateSession.setAttribute("messageType", "error");
+                        response.sendRedirect("user?action=update&id=" + uUserId);
+                        return;
+                    }
+
+                    java.util.Calendar calDob = java.util.Calendar.getInstance();
+                    calDob.setTime(uDob);
+                    java.util.Calendar calToday = java.util.Calendar.getInstance();
+                    int age = calToday.get(java.util.Calendar.YEAR) - calDob.get(java.util.Calendar.YEAR);
+                    if (calToday.get(java.util.Calendar.DAY_OF_YEAR) < calDob.get(java.util.Calendar.DAY_OF_YEAR)) {
+                        age--;
+                    }
+
+                    if (uRoleId >= 1 && uRoleId <= 4) {
+                        if (age < 18) {
+                            updateSession.setAttribute("message", "This role requires at least 18 years old!");
+                            updateSession.setAttribute("messageType", "error");
+                            response.sendRedirect("user?action=update&id=" + uUserId);
+                            return;
+                        }
+                    } else if (uRoleId == 5 && age < 5) {
+                        updateSession.setAttribute("message", "Student must be at least 5 years old!");
+                        updateSession.setAttribute("messageType", "error");
+                        response.sendRedirect("user?action=update&id=" + uUserId);
+                        return;
+                    }
+                }
+
+                String uAvatar = uploadAvatar(request, request.getParameter("avatar"));
 
                 java.sql.Date uHDate = null;
                 String uEducation = null;
                 String uExperience = null;
                 java.sql.Date uEnrollmentDate = null;
 
-                if (uRoleId == 2 || uRoleId == 3 || uRoleId == 4) {
+                if (uRoleId >= 2 && uRoleId <= 4) {
                     uHDate = getDateParam(request, "hireDate");
                     uEducation = getStringParam(request, "education", "");
                     uExperience = getStringParam(request, "experience", "");
@@ -320,26 +428,22 @@ public class UserController extends HttpServlet {
                 }
 
                 boolean isUpdated = userDAO.updateUserById(uFullName, uPhone, uAddress, uGender, uDob, uAvatar, uRoleId, uUserId, uEnrollmentDate, uHDate, uEducation, uExperience);
-                HttpSession updateSession = request.getSession();
+
                 if (isUpdated) {
-
                     SystemLogDAO logDAO = new SystemLogDAO();
-                    User logUser = (User) request.getSession().getAttribute("user");
-
+                    User logUser = (User) session.getAttribute("user");
                     String actorName = (logUser != null) ? logUser.getFullName() : "System";
                     String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
+                    logDAO.insertLog(actorName, actorRole, "UPDATE_USER", "Updated info for User ID: " + uUserId);
 
-                    String logAction = "UPDATE_USER";
-                    String detail = "Admin has update info for User ID: " + uUserId + " (" + uFullName + ")";
-                    logDAO.insertLog(actorName, actorRole, logAction, detail);
-
-                    updateSession.setAttribute("message", "Update User Info Successfully!");
+                    updateSession.setAttribute("message", "Update User Successfully!");
                     updateSession.setAttribute("messageType", "success");
+                    response.sendRedirect("user");
                 } else {
                     updateSession.setAttribute("message", "Update Failed!");
                     updateSession.setAttribute("messageType", "error");
+                    response.sendRedirect("user?action=update&id=" + uUserId);
                 }
-                response.sendRedirect("user");
                 break;
 
             case "changePassword":

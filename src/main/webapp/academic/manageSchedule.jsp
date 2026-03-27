@@ -29,12 +29,12 @@
 
         <div class="card user-table-card border-0 bg-white mb-3 section-card">
             <div class="card-body p-3 p-lg-4">
-                <form action="schedule" method="GET" class="row g-3 align-items-end">
+                <form id="scheduleFilterForm" onsubmit="return false;" class="row g-3 align-items-end">
                     <input type="hidden" name="action" value="manage">
 
                     <div class="col-md-3">
                         <label class="form-label filter-label">Filter By Class</label>
-                        <select name="classId" class="form-select">
+                        <select id="filterClass" name="classId" class="form-select">
                             <option value="0">All Classes</option>
                             <c:forEach items="${allClasses}" var="cls">
                                 <option value="${cls[0]}" ${classId != null && classId == cls[0] ? 'selected' : ''}>
@@ -46,7 +46,7 @@
 
                     <div class="col-md-3">
                         <label class="form-label filter-label">Filter By Room</label>
-                        <select name="roomId" class="form-select">
+                        <select id="filterRoom" name="roomId" class="form-select">
                             <option value="0">All Rooms</option>
                             <c:forEach items="${allRooms}" var="room">
                                 <option value="${room[0]}" ${roomId != null && roomId == room[0] ? 'selected' : ''}>
@@ -58,12 +58,12 @@
 
                     <div class="col-md-3">
                         <label class="form-label filter-label">Select Week</label>
-                        <input type="date" name="date" class="form-control" value="${selectedDate}">
+                        <input type="date" id="filterDate" name="date" class="form-control" value="${selectedDate}">
                     </div>
 
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-add-new w-100 justify-content-center">
-                            <i class='bx bx-filter-alt'></i> Filter
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="clearScheduleFilter" type="button" class="btn btn-outline-secondary w-100 justify-content-center border" style="border-width:1px">
+                            Clear
                         </button>
                     </div>
                 </form>
@@ -142,7 +142,7 @@
                                                 <fmt:formatDate value="${s.learningDate}" pattern="yyyy-MM-dd" var="learningDateStr"/>
 
                                                 <c:if test="${s.slot.slotID == slot.slotID && dayInSql == day}">
-                                                    <div class="schedule-item text-start">
+                                                    <div class="schedule-item text-start" data-class-id="${s.classes.classid}" data-room-id="${s.room.roomId}">
                                                         <div class="schedule-class-name">${s.classes.className}</div>
                                                         <div class="schedule-meta">
                                                             <i class='bx bx-book-open'></i> ${s.classes.course.courseName}
@@ -188,4 +188,6 @@
 </div>
 
 <script src="js/manageUser.js" type="text/javascript"></script>
+  <script src="js/manageSchedule.js" type="text/javascript"></script>
+
 

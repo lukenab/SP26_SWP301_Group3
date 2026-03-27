@@ -257,6 +257,47 @@ public class ScheduleDAO extends DBContext {
         return false;
     }
 
+    public boolean hasTeacherConflictForClassReassignment(int classId, int oldTeacherId, int newTeacherId) {
+        String sql = "SELECT TOP 1 1 "
+                + "FROM Schedule currentSchedule "
+                + "JOIN Schedule teacherSchedule "
+                + "    ON teacherSchedule.TeacherID = ? "
+                + "   AND teacherSchedule.LearningDate = currentSchedule.LearningDate "
+                + "   AND teacherSchedule.SlotID = currentSchedule.SlotID "
+                + "   AND teacherSchedule.ScheduleID <> currentSchedule.ScheduleID "
+                + "WHERE currentSchedule.ClassID = ? "
+                + "  AND currentSchedule.TeacherID = ? "
+                + "  AND currentSchedule.AttendanceStatus = 0";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, newTeacherId);
+            ps.setInt(2, classId);
+            ps.setInt(3, oldTeacherId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to validate teacher reassignment conflict: " + e.getMessage());
+        }
+        return true;
+    }
+
+    public int reassignTeacherForClassSchedules(int classId, int oldTeacherId, int newTeacherId) {
+        String sql = "UPDATE Schedule "
+                + "SET TeacherID = ? "
+                + "WHERE ClassID = ? AND TeacherID = ? AND AttendanceStatus = 0";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, newTeacherId);
+            ps.setInt(2, classId);
+            ps.setInt(3, oldTeacherId);
+            return ps.executeUpdate();
+        } catch (Exception e) {
+            System.out.println("Fail to reassign teacher for class schedules: " + e.getMessage());
+        }
+        return 0;
+    }
+
     // Delete schedule
     public boolean deleteSchedule(int scheduleId) {
         String sql = "DELETE FROM Schedule WHERE ScheduleID = ?";

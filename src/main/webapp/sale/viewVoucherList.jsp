@@ -45,7 +45,7 @@
                 <h3>${fn:length(voucherList)}</h3>
             </div>
             <div class="icon-wrapper blue">
-                <i class='bx bxs-coupon'></i>
+                <i class='bx bx-file'></i>
             </div>
         </div>
         <div class="stat-card">
@@ -63,7 +63,7 @@
                 <h3>${inactiveVoucher}</h3>
             </div>
             <div class="icon-wrapper cyan">
-                <i class='bx bxs-lock-alt'></i>
+                <i class='bx bx-lock'></i>
             </div>
         </div>
         <div class="stat-card">
@@ -145,8 +145,9 @@
                         <th style="width: 10%">Used</th>
                         <th style="width: 10%">Remaining</th>
                         <th style="width: 15%">Valid Until</th>
+                        <th style="width: 12%">Landing Popup</th>
                         <th style="width: 10%">Status</th>
-                        <th style="width: 15%">Actions</th>
+                        <th style="width: 18%">Actions</th>
                     </tr>
                 </thead>
 
@@ -169,6 +170,16 @@
                             <td>${v.usedCount}</td>
                             <td>${v.remainingCount}</td>
                             <td><fmt:formatDate value="${v.validUntil}" pattern="dd/MM/yyyy"/></td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${v.landingPopup}">
+                                        <span class="badge badge-popup">Showing</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="badge badge-popup-muted">Hidden</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
 
                             <td>
                                 <c:choose>
@@ -182,10 +193,12 @@
                             </td>
 
                             <td>
+                                <div class="actions-row">
                                 <c:choose>
                                     <c:when test="${!v.status}">
                                         <span class="action-btn action-disabled"><i class='bx bx-eye'></i></span>
                                         <span class="action-btn action-disabled"><i class='bx bx-edit'></i></span>
+                                        <span class="action-btn action-disabled"><i class='bx bx-window-open'></i></span>
                                         <a href="voucher?action=delete&id=${v.voucherId}" class="action-btn">
                                             <i class='bx bx-lock-open'></i>
                                         </a>
@@ -193,11 +206,21 @@
                                     <c:otherwise>
                                         <a href="voucher?action=detail&id=${v.voucherId}" class="action-btn"><i class='bx bx-eye'></i></a>
                                         <a href="voucher?action=edit&id=${v.voucherId}" class="action-btn"><i class='bx bx-edit'></i></a>
+                                        <form action="voucher" method="POST" class="d-inline">
+                                            <input type="hidden" name="action" value="setLandingPopup">
+                                            <input type="hidden" name="voucherId" value="${v.voucherId}">
+                                            <button type="submit"
+                                                    class="action-btn action-btn-button ${v.landingPopup ? 'action-btn-active' : ''}"
+                                                    title="${v.landingPopup ? 'Currently shown on landing page' : 'Show on landing page'}">
+                                                <i class='bx bx-ticket'></i>
+                                            </button>
+                                        </form>
                                         <a href="voucher?action=delete&id=${v.voucherId}" class="action-btn delete">
                                             <i class='bx bx-lock'></i>
                                         </a>
                                     </c:otherwise>
                                 </c:choose>
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>

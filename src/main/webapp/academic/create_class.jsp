@@ -12,6 +12,34 @@
                 <li class="breadcrumb-item active" aria-current="page">Create Class</li>
             </ol>
         </div>
+
+        <c:if test="${not empty sessionScope.message}">
+            <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+                <div class="toast-icon">
+                    <c:choose>
+                        <c:when test="${sessionScope.messageType == 'success'}">
+                            <i class='bx bx-check-circle'></i>
+                        </c:when>
+                        <c:otherwise>
+                            <i class='bx bx-cross-circle'></i>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+                <div class="toast-content">
+                    <span class="toast-title">
+                        ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                    </span>
+                    <span class="toast-message">${sessionScope.message}</span>
+                </div>
+                <button class="toast-close" onclick="closeToast()">
+                    <i class='bx bx-x'></i>
+                </button>
+            </div>
+
+            <c:remove var="message" scope="session" />
+            <c:remove var="messageType" scope="session" />
+        </c:if>
+
         <div class="content-header">
             <div>
                 <h2 class="page-title">Create New Class</h2>
@@ -25,9 +53,6 @@
 
     <div class="card user-table-card border-0 bg-white">
         <div class="card-body p-4">
-            <c:if test="${not empty errorMessage}">
-                <div class="alert alert-danger mb-3">${errorMessage}</div>
-            </c:if>
             <c:if test="${empty teacherOptions}">
                 <div class="alert alert-warning mb-3">
                     No teacher found. Please create at least one user with Teacher role first.
@@ -89,7 +114,14 @@
 
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Max Capacity</label>
-                        <input type="number" class="form-control" id="maxCapacity" name="maxCapacity" value="${param.maxCapacity}" min="1" placeholder="Enter max capacity" required>
+                        <input type="number" 
+                               class="form-control" 
+                               id="maxCapacity" 
+                               name="maxCapacity" 
+                               value="${not empty param.maxCapacity ? param.maxCapacity : defaultMaxCapacity}" 
+                               min="1" 
+                               placeholder="Enter max capacity" 
+                               required>
                     </div>
 
                     <div class="col-md-6">
@@ -120,19 +152,23 @@
         var courseSelect = document.getElementById('courseId');
         var maxCapacityInput = document.getElementById('maxCapacity');
 
-        if (!courseSelect || !maxCapacityInput) {
-            return;
-        }
+        var systemDefault = "${defaultMaxCapacity}";
 
         function updateCapacity() {
             var selectedOption = courseSelect.options[courseSelect.selectedIndex];
-            var maxCapacity = selectedOption ? selectedOption.getAttribute('data-max-capacity') : '';
-            if (!maxCapacityInput.value && maxCapacity) {
-                maxCapacityInput.value = maxCapacity;
+            var courseMax = selectedOption ? selectedOption.getAttribute('data-max-capacity') : '';
+
+            if (courseMax && courseMax !== '0') {
+                maxCapacityInput.value = courseMax;
+            } else {
+                maxCapacityInput.value = systemDefault;
             }
         }
 
         courseSelect.addEventListener('change', updateCapacity);
-        updateCapacity();
+
+        if (!maxCapacityInput.value) {
+            updateCapacity();
+        }
     })();
 </script>

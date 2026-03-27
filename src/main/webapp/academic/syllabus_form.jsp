@@ -10,7 +10,7 @@
         <div aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
                 <li class="breadcrumb-item"><a href="dashboard?action=academic">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="syllabus?action=manage">Manage Syllabus</a></li>
+                <li class="breadcrumb-item"><a href="${not empty param.returnUrl ? param.returnUrl : 'syllabus?action=manage'}">Manage Syllabus</a></li>
                 <li class="breadcrumb-item active" aria-current="page">${isEdit ? 'Update Syllabus' : 'Create Syllabus'}</li>
             </ol>
         </div>
@@ -19,7 +19,7 @@
                 <h2 class="page-title">${isEdit ? 'Update Syllabus / Learning Path' : 'Create Syllabus / Learning Path'}</h2>
                 <p class="text-muted small mb-0">${isEdit ? 'Adjust session order, topic name, and lesson details.' : 'Create a new learning path item for a course.'}</p>
             </div>
-            <a href="syllabus?action=manage" class="btn syllabus-btn-back">
+            <a href="${not empty param.returnUrl ? param.returnUrl : 'syllabus?action=manage'}" class="btn syllabus-btn-back">
                 <i class='bx bx-left-arrow-alt'></i> Back to Syllabus List
             </a>
         </div>
@@ -29,6 +29,7 @@
         <div class="card-body p-4">
             <form action="syllabus" method="post">
                 <input type="hidden" name="action" value="${isEdit ? 'update' : 'create'}"/>
+                <input type="hidden" name="returnUrl" value="${param.returnUrl}"/>
                 <c:if test="${isEdit}">
                     <input type="hidden" name="syllabusId" value="${syllabus.syllabusId}"/>
                 </c:if>
@@ -50,8 +51,7 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label class="form-label fw-semibold">${isEdit ? 'Syllabus ID' : 'Mode'}</label>
-                        <input type="text" class="form-control" value="${isEdit ? syllabus.syllabusId : 'Create New'}" readonly>
+                        <input type="hidden" class="form-control" value="${isEdit ? syllabus.syllabusId : 'Create New'}" >
                     </div>
 
                     <div class="col-md-12">

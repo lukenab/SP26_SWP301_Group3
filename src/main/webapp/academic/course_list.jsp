@@ -7,6 +7,19 @@
 <link href="css/course_list.css" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body">
+    <c:url var="courseListReturnUrl" value="course">
+        <c:param name="action" value="${empty paginationAction ? 'all' : paginationAction}"/>
+        <c:if test="${not empty searchQuery}">
+            <c:param name="searchQuery" value="${searchQuery}"/>
+        </c:if>
+        <c:if test="${not empty statusFilter}">
+            <c:param name="status" value="${statusFilter}"/>
+        </c:if>
+        <c:if test="${not empty categoryFilter}">
+            <c:param name="category" value="${categoryFilter}"/>
+        </c:if>
+        <c:param name="page" value="${currentPage}"/>
+    </c:url>
 
     <div class="mb-4">
         <div aria-label="breadcrumb">
@@ -237,6 +250,16 @@
 
                 <c:forEach items="${courseList}" var="c" varStatus="loop">
                     <tr>
+                        <c:url var="courseDetailUrl" value="course">
+                            <c:param name="action" value="details"/>
+                            <c:param name="courseId" value="${c.courseId}"/>
+                            <c:param name="returnUrl" value="${courseListReturnUrl}"/>
+                        </c:url>
+                        <c:url var="courseEditUrl" value="course">
+                            <c:param name="action" value="edit"/>
+                            <c:param name="courseId" value="${c.courseId}"/>
+                            <c:param name="returnUrl" value="${courseListReturnUrl}"/>
+                        </c:url>
                         <td>${startItem + loop.index}</td>
 
                         <td>
@@ -262,9 +285,9 @@
                     </td>
 
                     <td>
-                        <a href="course?action=details&courseId=${c.courseId}" class="action-btn" title="View Details"><i class='bx bx-eye'></i></a>
+                        <a href="${courseDetailUrl}" class="action-btn" title="View Details"><i class='bx bx-eye'></i></a>
                         <a href="course?action=assessment&courseId=${c.courseId}" class="action-btn" title="View Assessment"><i class='bx bx-article'></i></a>
-                        <a href="course?action=edit&courseId=${c.courseId}" class="action-btn" title="Edit"><i class='bx bx-edit'></i></a>
+                        <a href="${courseEditUrl}" class="action-btn" title="Edit"><i class='bx bx-edit'></i></a>
                         <a href="course?action=delete&courseId=${c.courseId}" class="action-btn delete" title="Inactivate"><i class='bx bx-lock'></i></a>
                     </td>
                     </tr>

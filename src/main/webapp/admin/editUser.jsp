@@ -23,7 +23,32 @@
     </div>
 </div>
 
+<c:if test="${not empty sessionScope.message}">
+        <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+            <div class="toast-icon">
+                <c:choose>
+                    <c:when test="${sessionScope.messageType == 'success'}">
+                        <i class='bx bx-check-circle'></i>
+                    </c:when>
+                    <c:otherwise>
+                        <i class='bx bx-cross-circle'></i>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">
+                    ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                </span>
+                <span class="toast-message">${sessionScope.message}</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
 
+        <c:remove var="message" scope="session" />
+        <c:remove var="messageType" scope="session" />
+    </c:if>
 
 <div class="profile-header-card">
     <div class="profile-avatar-section">
@@ -132,7 +157,7 @@
             <c:if test="${user.role.roleId == 2 || user.role.roleId == 3 || user.role.roleId ==4}">
                 <div class="form-group">
                     <label for="hireDate">Hire Date</label>
-                    <input type="date" id="hireDate" name="hireDate" value="${employee.hireDate}" required>
+                    <input type="date" id="hireDate" name="hireDate" value="${employee.hireDate}" readonly>
                 </div>
             </c:if>
 

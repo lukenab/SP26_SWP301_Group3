@@ -15,7 +15,7 @@ public class VoucherDAO extends DBContext {
 
     public List<Voucher> getAllVoucher() {
         List<Voucher> list = new ArrayList<>();
-        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, MaxUsage "
+        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, IsLandingPopup, MaxUsage "
                 + "FROM Voucher ORDER BY VoucherID DESC";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -31,7 +31,7 @@ public class VoucherDAO extends DBContext {
 
     public List<Voucher> searchAndFilterVouchers(String searchQuery, String status) {
         List<Voucher> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT v.VoucherID, v.Code, v.DiscountAmount, v.DiscountPercent, v.ValidUntil, v.Status, v.MaxUsage, "
+        StringBuilder sql = new StringBuilder("SELECT v.VoucherID, v.Code, v.DiscountAmount, v.DiscountPercent, v.ValidUntil, v.Status, v.IsLandingPopup, v.MaxUsage, "
                 + "ISNULL((SELECT COUNT(*) FROM Payment p WHERE p.VoucherID = v.VoucherID AND p.Status <> 'Rejected'), 0) AS UsedCount "
                 + "FROM Voucher v WHERE 1=1 ");
 
@@ -44,7 +44,7 @@ public class VoucherDAO extends DBContext {
         if (hasStatus) {
             sql.append("AND Status = ? ");
         }
-            sql.append("ORDER BY v.VoucherID DESC");
+        sql.append("ORDER BY v.VoucherID DESC");
 
         try {
             PreparedStatement ps = conn.prepareStatement(sql.toString());
@@ -68,7 +68,7 @@ public class VoucherDAO extends DBContext {
 
     public List<Voucher> getActiveVoucher() {
         List<Voucher> list = new ArrayList<>();
-        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, MaxUsage "
+        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, IsLandingPopup, MaxUsage "
                 + "FROM Voucher WHERE Status = 1 ORDER BY ValidUntil ASC";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -83,7 +83,7 @@ public class VoucherDAO extends DBContext {
     }
 
     public Voucher getVoucherByID(int id) {
-        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, MaxUsage "
+        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, IsLandingPopup, MaxUsage "
                 + "FROM Voucher WHERE VoucherID = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -99,7 +99,7 @@ public class VoucherDAO extends DBContext {
     }
 
     public Voucher getVoucherByCode(String code) {
-        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, MaxUsage "
+        String sql = "SELECT VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, IsLandingPopup, MaxUsage "
                 + "FROM Voucher WHERE Code = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -115,7 +115,7 @@ public class VoucherDAO extends DBContext {
     }
 
     public void insertVoucher(Voucher v) {
-        String sql = "INSERT INTO Voucher (Code, DiscountAmount, DiscountPercent, ValidUntil, Status, MaxUsage) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Voucher (Code, DiscountAmount, DiscountPercent, ValidUntil, Status, MaxUsage, IsLandingPopup) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, v.getCode());
@@ -132,6 +132,7 @@ public class VoucherDAO extends DBContext {
             } else {
                 ps.setInt(6, v.getMaxUsage());
             }
+            ps.setBoolean(7, v.isLandingPopup());
             ps.executeUpdate();
         } catch (Exception e) {
             System.out.println("Fail to insert voucher: " + e.getMessage());
@@ -222,6 +223,7 @@ public class VoucherDAO extends DBContext {
         voucher.setDiscountPercent(rs.getDouble("DiscountPercent"));
         voucher.setValidUntil(rs.getDate("ValidUntil"));
         voucher.setStatus(rs.getBoolean("Status"));
+        voucher.setLandingPopup(rs.getBoolean("IsLandingPopup"));
         int maxUsage = rs.getInt("MaxUsage");
         voucher.setMaxUsage(rs.wasNull() ? 0 : maxUsage);
         int usedCount = 0;
@@ -237,6 +239,60 @@ public class VoucherDAO extends DBContext {
         int remaining = Math.max((voucher.getMaxUsage() != null ? voucher.getMaxUsage() : 0) - usedCount, 0);
         voucher.setRemainingCount(remaining);
         return voucher;
+    }
+
+    public Voucher getLandingPopupVoucher() {
+        String sql = "SELECT TOP 1 VoucherID, Code, DiscountAmount, DiscountPercent, ValidUntil, Status, IsLandingPopup, MaxUsage "
+                + "FROM Voucher WHERE Status = 1 AND IsLandingPopup = 1 "
+                + "AND (ValidUntil IS NULL OR ValidUntil >= CAST(GETDATE() AS DATE)) "
+                + "ORDER BY ValidUntil ASC, VoucherID DESC";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return mapVoucher(rs);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get landing popup voucher: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean setLandingPopupVoucher(int voucherId) {
+        String clearSql = "UPDATE Voucher SET IsLandingPopup = 0 WHERE IsLandingPopup = 1";
+        String setSql = "UPDATE Voucher SET IsLandingPopup = 1 WHERE VoucherID = ? AND Status = 1";
+        try {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement clearPs = conn.prepareStatement(clearSql)) {
+                clearPs.executeUpdate();
+            }
+
+            int affectedRows;
+            try (PreparedStatement setPs = conn.prepareStatement(setSql)) {
+                setPs.setInt(1, voucherId);
+                affectedRows = setPs.executeUpdate();
+            }
+
+            if (affectedRows > 0) {
+                conn.commit();
+                return true;
+            }
+
+            conn.rollback();
+        } catch (Exception e) {
+            try {
+                conn.rollback();
+            } catch (SQLException ignored) {
+            }
+            System.out.println("Fail to set landing popup voucher: " + e.getMessage());
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException ignored) {
+            }
+        }
+        return false;
     }
 
     public boolean hasUserUsedVoucher(int studentId, int voucherId) {
@@ -604,5 +660,34 @@ public class VoucherDAO extends DBContext {
         }
 
         return rows;
+    }
+
+    public Voucher getVoucherByStudentAndClass(int studentId, int classId) {
+
+        String sql = "SELECT TOP 1 v.* "
+                + "FROM Enrollment e "
+                + "JOIN Payment p ON e.EnrollmentID = p.EnrollmentID "
+                + "JOIN Voucher v ON p.VoucherID = v.VoucherID "
+                + "WHERE e.StudentID = ? "
+                + "AND e.ClassID = ? "
+                + "AND p.Status = 'Approved' "
+                + "ORDER BY p.PaymentDate DESC";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, studentId);
+            ps.setInt(2, classId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return mapVoucher(rs);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Fail get voucher by student & class: " + e.getMessage());
+        }
+
+        return null;
     }
 }

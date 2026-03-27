@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Allura&family=Great+Vibes&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 *{
     font-family: 'Poppins', sans-serif;
@@ -23,6 +23,421 @@
 body{
     min-height: 100vh;
     background-color: var(--nav-color);
+}
+
+.promo-popup-backdrop{
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(9, 22, 34, 0.45);
+    backdrop-filter: blur(4px);
+    animation: promoBackdropFadeIn 0.35s ease-out;
+}
+
+.promo-popup-hidden{
+    display: none;
+}
+
+.promo-popup-card{
+    position: relative;
+    width: min(100%, 460px);
+    min-height: 680px;
+    padding: 20px 20px 24px;
+    border-radius: 40px;
+    color: #fff;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    background:
+        linear-gradient(180deg, rgba(10, 24, 68, 0.08) 0%, rgba(10, 24, 68, 0.24) 38%, rgba(8, 18, 56, 0.44) 100%),
+        url("../images/background_voucher.png") center/cover no-repeat;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.38);
+    animation: promoPopupEntrance 0.55s cubic-bezier(0.22, 1, 0.36, 1), promoPopupFloat 3.2s ease-in-out 0.55s infinite;
+}
+
+.promo-popup-card::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(18, 41, 117, 0.08) 0%, rgba(12, 25, 67, 0.12) 35%, rgba(5, 12, 38, 0.42) 100%);
+    pointer-events: none;
+}
+
+.promo-popup-card::after{
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -55px;
+    width: 320px;
+    height: 270px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, rgba(92, 224, 255, 0.82) 0%, rgba(41, 128, 255, 0.82) 100%);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    opacity: 0.62;
+    pointer-events: none;
+}
+
+.promo-popup-close{
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border: none;
+    border-radius: 50%;
+    color: #14357f;
+    background: rgba(255, 255, 255, 0.92);
+    font-size: 28px;
+    line-height: 1;
+    padding: 0;
+    z-index: 2;
+}
+
+.promo-floating{
+    position: absolute;
+    top: 148px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    font-size: 28px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 18px 30px rgba(8, 21, 59, 0.35);
+    z-index: 1;
+}
+
+.promo-floating-left{
+    left: 18px;
+}
+
+.promo-floating-right{
+    right: 18px;
+    top: 148px;
+    transform: rotate(12deg);
+}
+
+.promo-popup-topline{
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.promo-popup-topline i{
+    font-size: 16px;
+}
+
+.promo-popup-title{
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0;
+    line-height: 0.9;
+}
+
+.promo-script-light,
+.promo-script-gold{
+    display: block;
+    font-family: 'Great Vibes', 'Allura', cursive;
+    font-weight: 400;
+    letter-spacing: 0;
+}
+
+.promo-script-light{
+    max-width: 100%;
+    font-size: 56px;
+    color: #f7fbff;
+    text-shadow: 0 8px 24px rgba(6, 15, 41, 0.32);
+}
+
+.promo-script-gold{
+    margin-top: -26px;
+    max-width: 100%;
+    font-size: 66px;
+    color: #ffd26f;
+    text-shadow: 0 0 12px rgba(255, 195, 84, 0.45), 0 10px 30px rgba(255, 176, 44, 0.28);
+}
+
+.promo-popup-subtitle{
+    position: relative;
+    z-index: 1;
+    margin-top: 2px;
+    margin-bottom: 116px;
+    font-size: 18px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 6px 18px rgba(10, 16, 41, 0.28);
+}
+
+.promo-voucher-panel{
+    position: relative;
+    z-index: 1;
+    margin: auto auto 18px;
+    width: min(100%, 330px);
+    max-width: 330px;
+    padding: 24px 16px 16px;
+    border-radius: 24px;
+    border: 2px solid rgba(110, 233, 255, 0.55);
+    background: linear-gradient(180deg, rgba(25, 64, 164, 0.88) 0%, rgba(8, 30, 97, 0.94) 100%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(79, 203, 255, 0.25), 0 0 36px rgba(67, 190, 255, 0.48), 0 18px 40px rgba(7, 19, 66, 0.34);
+    animation: promoVoucherBounce 2.4s ease-in-out 0.8s infinite;
+}
+
+.promo-popup-badge{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    margin-bottom: 0;
+    padding: 8px 14px;
+    border-radius: 999px;
+    color: #fff8e1;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    background: linear-gradient(90deg, #ff477e 0%, #ff9348 46%, #ffd640 100%);
+    box-shadow: 0 12px 24px rgba(255, 132, 70, 0.3);
+    transform: translateX(-50%);
+    animation: promoBadgeWiggle 2.8s ease-in-out 1s infinite;
+}
+
+.promo-popup-badge::before{
+    content: "\f06b";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-right: 10px;
+}
+
+.promo-popup-code{
+    position: relative;
+    margin-bottom: 14px;
+    padding: 8px 6px 12px;
+    border-bottom: 2px dashed rgba(202, 233, 255, 0.72);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-align: center;
+    color: #fff3ca;
+    text-shadow: 0 0 22px rgba(255, 221, 144, 0.42);
+    overflow-wrap: anywhere;
+}
+
+.promo-popup-discount-line{
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.promo-popup-discount-line strong{
+    margin: 0;
+    font-size: 22px;
+    color: #ffd15f;
+    font-weight: 700;
+}
+
+.promo-popup-meta{
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.promo-popup-meta i{
+    font-size: 18px;
+}
+
+.promo-popup-meta strong{
+    color: #ffd15f;
+}
+
+.promo-popup-meta{
+    text-align: center;
+}
+
+.promo-popup-actions{
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 10px;
+}
+
+.promo-copy-btn,
+.promo-primary-btn,
+.promo-secondary-btn{
+    border: none;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.promo-primary-btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-width: 240px;
+    padding: 12px 18px;
+    border-radius: 999px;
+    font-size: 15px;
+    color: #ffffff;
+    background: linear-gradient(90deg, #1fc5ff 0%, #8f41ff 100%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 0 24px rgba(73, 194, 255, 0.36), 0 16px 30px rgba(51, 111, 255, 0.35);
+}
+
+.promo-primary-btn{
+    animation: promoButtonPulse 2s ease-in-out 1.2s infinite;
+}
+
+@keyframes promoBackdropFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes promoPopupEntrance {
+    0% {
+        opacity: 0;
+        transform: translateY(42px) scale(0.9) rotate(-2deg);
+    }
+    60% {
+        opacity: 1;
+        transform: translateY(-8px) scale(1.02) rotate(1deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotate(0deg);
+    }
+}
+
+@keyframes promoPopupFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes promoVoucherBounce {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-8px) scale(1.02);
+    }
+}
+
+@keyframes promoBadgeWiggle {
+    0%, 100% {
+        transform: translateX(-50%) rotate(0deg);
+    }
+    25% {
+        transform: translateX(-50%) rotate(-2deg);
+    }
+    75% {
+        transform: translateX(-50%) rotate(2deg);
+    }
+}
+
+@keyframes promoButtonPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 10px 24px rgba(255, 170, 62, 0.22);
+    }
+    50% {
+        transform: scale(1.04);
+        box-shadow: 0 16px 34px rgba(255, 170, 62, 0.34);
+    }
+}
+
+.promo-copy-btn{
+    min-width: 0;
+    padding: 0;
+    border-radius: 0;
+    font-size: 13px;
+    color: rgba(230, 240, 255, 0.86);
+    background: transparent;
+}
+
+.promo-secondary-btn{
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    background: transparent;
+}
+
+.promo-popup-links{
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.promo-popup-footnote{
+    position: relative;
+    z-index: 1;
+    font-family: 'Great Vibes', 'Allura', cursive;
+    font-size: 22px;
+    font-style: italic;
+    color: rgba(224, 239, 255, 0.85);
+}
+
+.promo-copy-btn:hover,
+.promo-primary-btn:hover,
+.promo-secondary-btn:hover,
+.promo-popup-close:hover{
+    transform: translateY(-1px);
 }
 
 .main-content {
@@ -455,4 +870,80 @@ nav{
 .social-icon{
     font-size: 20px;
     padding: 5px;
+}
+
+@media (max-width: 768px){
+    .promo-popup-card{
+        width: min(100%, 94vw);
+        min-height: auto;
+        padding: 26px 18px 22px;
+        border-radius: 28px;
+    }
+
+    .promo-floating{
+        display: none;
+    }
+
+    .promo-popup-topline{
+        font-size: 12px;
+        letter-spacing: 0.16em;
+    }
+
+    .promo-popup-title{
+        line-height: 0.9;
+    }
+
+    .promo-script-light{
+        font-size: 58px;
+    }
+
+    .promo-script-gold{
+        margin-top: -16px;
+        font-size: 68px;
+    }
+
+    .promo-popup-subtitle{
+        font-size: 22px;
+        margin-bottom: 110px;
+    }
+
+    .promo-voucher-panel{
+        width: min(100%, 100%);
+        padding: 28px 16px 18px;
+        border-radius: 24px;
+    }
+
+    .promo-popup-code{
+        font-size: 36px;
+        padding: 8px 10px 14px;
+    }
+
+    .promo-popup-discount-line{
+        gap: 8px;
+        font-size: 16px;
+    }
+
+    .promo-popup-discount-line strong{
+        font-size: 28px;
+    }
+
+    .promo-popup-meta{
+        display: flex;
+        font-size: 16px;
+    }
+
+    .promo-popup-actions{
+        width: 100%;
+    }
+
+    .promo-primary-btn{
+        width: 100%;
+        min-width: 0;
+        font-size: 18px;
+        padding: 16px 18px;
+    }
+
+    .promo-popup-footnote{
+        font-size: 28px;
+    }
 }

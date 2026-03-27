@@ -6,6 +6,7 @@ package controller;
 
 import dao.AssessmentDAO;
 import dao.ClassDAO;
+import dao.EnrollmentDAO;
 import dao.GradeDAO;
 import dao.StudentDAO;
 import java.io.IOException;
@@ -32,8 +33,8 @@ import model.Course;
  */
 @WebServlet(name = "GradeController", urlPatterns = {"/grade"})
 public class GradeController extends HttpServlet {
-    
-     private static final double MIN_SCORE = 0.0;
+
+    private static final double MIN_SCORE = 0.0;
     private static final double MAX_SCORE = 10.0;
 
     private Integer parseIntParam(HttpServletRequest request, String paramName) {
@@ -109,7 +110,7 @@ public class GradeController extends HttpServlet {
             }
         } else if (action.equals("student-courses") || action.equals("student-course-grades")) {
             if (!roleName.equalsIgnoreCase("Student")) {
-                response.sendRedirect("dashboard");
+                response.sendRedirect("dashboard.jsp");
                 return;
             }
         }
@@ -167,7 +168,7 @@ public class GradeController extends HttpServlet {
                 }
                 break;
 
-             case "edit":
+            case "edit":
                 try {
                     Integer studentIdEdit = parseIntParam(request, "studentId");
                     Integer classIdEdit = parseIntParam(request, "classId");
@@ -259,7 +260,7 @@ public class GradeController extends HttpServlet {
 
                 for (Course c : courseList) {
 
-                    Double avg = courseDAO.getAverageByStudentAndCourse(
+                    Double avg = courseDAO.getFinalGradeByStudentAndCourse(
                             c.getCourseId(), studentId);
 
                     averageMap.put(c.getCourseId(), avg);
@@ -287,6 +288,14 @@ public class GradeController extends HttpServlet {
             case "student-course-grades":
                 int courseId = Integer.parseInt(request.getParameter("courseId"));
                 int studentIdDetail = currentUser.getUserId();
+                EnrollmentDAO enrollmentDAO = new EnrollmentDAO();
+
+                if (!enrollmentDAO.hasAcademicAccessForCourse(studentIdDetail, courseId)) {
+                    session.setAttribute("message", "Grades are locked until your enrollment becomes Active.");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("class?action=myClasses");
+                    return;
+                }
 
                 List<Grade> gradeList = dao.getGradesByStudentId(studentIdDetail);
 
@@ -301,16 +310,27 @@ public class GradeController extends HttpServlet {
                         filteredList.add(g);
                     }
                 }
+                CourseDAO courseDAO1 = new CourseDAO();
+
+                Double finalGrade = courseDAO1.getFinalGradeByStudentAndCourse(
+                        courseId,
+                        studentIdDetail
+                );
+
+                if (finalGrade == null) {
+                    finalGrade = 0.0;
+                }
 
                 request.setAttribute("gradeList", filteredList);
+                request.setAttribute("finalGrade", finalGrade);
                 request.setAttribute("studentName", currentUser.getFullName());
                 request.setAttribute("home_view", "student/studentGrade.jsp");
 
-                request.getRequestDispatcher("dashboard")
+                request.getRequestDispatcher("dashboard.jsp")
                         .forward(request, response);
                 break;
 
-             case "report":
+            case "report":
                 try {
                     Integer classId = parseIntParam(request, "classId");
                     if (classId == null) {
@@ -363,7 +383,7 @@ public class GradeController extends HttpServlet {
         GradeDAO dao = new GradeDAO();
         AssessmentDAO assessmentDAO = new AssessmentDAO();
         HttpSession session = request.getSession();
-        
+
         User currentUser = (User) session.getAttribute("user");
 
         if (currentUser == null) {
@@ -377,10 +397,10 @@ public class GradeController extends HttpServlet {
         if (!canModify) {
             session.setAttribute("message", "Security Alert: Unauthorized attempts to change grades!");
             session.setAttribute("messageType", "error");
-            response.sendRedirect("dashboard");
+            response.sendRedirect("dashboard.jsp");
             return;
         }
-        
+
         switch (action) {
 
             case "save":

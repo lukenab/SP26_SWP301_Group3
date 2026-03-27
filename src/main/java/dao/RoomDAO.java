@@ -8,7 +8,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import model.Room;
 import utils.DBContext;
@@ -117,64 +116,6 @@ public class RoomDAO extends DBContext {
         return new ArrayList<>();
     }
 
-    // Filter rooms by capacity, type, and status
-    public List<Room> getRoomsByFilter(String capacityStr, String typeStr, String statusStr) {
-        try {
-            List<Room> filteredRooms = new ArrayList<>();
-            StringBuilder query = new StringBuilder("SELECT * FROM Room WHERE 1=1");
-
-            if (capacityStr != null && !capacityStr.isEmpty()) {
-                int capacity = Integer.parseInt(capacityStr);
-                if (capacity < 100) {
-                    query.append(" AND Capacity <= ?");
-                } else {
-                    query.append(" AND Capacity >= ?");
-                }
-            }
-
-            if (typeStr != null && !typeStr.isEmpty()) {
-                query.append(" AND [Type] = ?");
-            }
-
-            if (statusStr != null && !statusStr.isEmpty()) {
-                int status = statusStr.equalsIgnoreCase("active") ? 1 : 0;
-                query.append(" AND Status = ?");
-            }
-
-            query.append(" ORDER BY RoomName");
-
-            PreparedStatement p = conn.prepareStatement(query.toString());
-            int paramIndex = 1;
-
-            if (capacityStr != null && !capacityStr.isEmpty()) {
-                int capacity = Integer.parseInt(capacityStr);
-                p.setInt(paramIndex++, capacity);
-            }
-
-            if (typeStr != null && !typeStr.isEmpty()) {
-                p.setString(paramIndex++, typeStr);
-            }
-
-            if (statusStr != null && !statusStr.isEmpty()) {
-                int status = statusStr.equalsIgnoreCase("active") ? 1 : 0;
-                p.setInt(paramIndex++, status);
-            }
-
-            ResultSet rs = p.executeQuery();
-            while (rs.next()) {
-                int roomId = rs.getInt("RoomID");
-                String roomName = rs.getString("RoomName");
-                int capacity = rs.getInt("Capacity");
-                String type = rs.getString("Type");
-                boolean roomStatus = rs.getBoolean("Status");
-                filteredRooms.add(new Room(roomId, roomName, capacity, type, roomStatus));
-            }
-            return filteredRooms;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     //READ
     public Room getRoomByID(int id) {
@@ -372,20 +313,20 @@ public class RoomDAO extends DBContext {
         }
         return -1;
     }
-    public static void main(String[] args) {
-        RoomDAO dao = new RoomDAO();
-        Scanner sc = new Scanner(System.in);
-        String name = null;
-        int id  = sc.nextInt();
-        sc.nextLine();
-//        int capacity = 30;
-//        String type = "null name";
-//        int status = 1;
-//        System.out.println(dao.createRoom(name, capacity, type, 1));
-//        List<Room> all = dao.getAllRoom();
-//        System.out.println(all.get(all.size()-1).getType());
-//        System.out.println(dao.checkRoomNameExists(name));
-        System.out.println(dao.getRoomByID(id));
-
+    
+    public int getRoomCapacity(int roomId) {
+        String query = "SELECT Capacity FROM Room WHERE RoomID = ?";
+        try (PreparedStatement p = conn.prepareStatement(query)) {
+            p.setInt(1, roomId);
+            try (ResultSet rs = p.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("Capacity");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error getRoomCapacity: " + e.getMessage());
+        }
+        return 0; 
     }
+    // Removed test main() to clean up production DAO class
 }

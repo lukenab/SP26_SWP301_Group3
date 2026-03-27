@@ -25,13 +25,13 @@
         </div>
 
         <div class="card user-table-card border-0 bg-white mb-3 section-card">
-            <div class="card-body p-3 p-lg-4">
-                <form action="room" method="GET" class="row g-3 align-items-end">
-                    <input type="hidden" name="action" value="manage">
+                <div class="card-body p-3 p-lg-4">
+                <!-- Client-side filter form: will not submit to server -->
+                <form id="filterForm" onsubmit="return false;" class="row g-3 align-items-end">
 
                     <div class="col-md-3">
                         <label class="form-label filter-label">Filter By Capacity</label>
-                        <select name="capacity" class="form-select">
+                        <select id="filterCapacity" name="capacity" class="form-select">
                             <option value="">All Capacities</option>
                             <c:forEach items="${capacities}" var="cap">
                                 <option value="${cap}" ${capacity != null && capacity == cap ? 'selected' : ''}>${cap} people</option>
@@ -41,7 +41,7 @@
 
                     <div class="col-md-3">
                         <label class="form-label filter-label">Filter By Room Type</label>
-                        <select name="type" class="form-select">
+                        <select id="filterType" name="type" class="form-select">
                             <option value="">All Types</option>
                             <c:forEach items="${roomTypes}" var="rtype">
                                 <option value="${rtype}" ${type != null && type == rtype ? 'selected' : ''}>${rtype}</option>
@@ -51,19 +51,30 @@
 
                     <div class="col-md-3">
                         <label class="form-label filter-label">Filter By Status</label>
-                        <select name="status" class="form-select">
+                        <select id="filterStatus" name="status" class="form-select">
                             <option value="">All Status</option>
                             <option value="active" ${status != null && status == 'active' ? 'selected' : ''}>Active</option>
                             <option value="disabled" ${status != null && status == 'disabled' ? 'selected' : ''}>Disabled</option>
                         </select>
                     </div>
 
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-add-new w-100 justify-content-center">
-                            <i class='bx bx-filter-alt'></i> Filter
+                    <div class="col-md-3 d-flex gap-2">
+                        <!-- Filter button removed: filters apply automatically on change -->
+                        <button id="clearFilter" type="button" class="btn btn-outline-secondary w-100 justify-content-center border" style="border-width:1px">
+                            Clear
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client-side search bar (search on page, no server requests) -->
+    <div class="mb-3">
+        <div class="filter-container">
+            <div class="custom-search-bar w-50">
+                <i class='bx bx-search text-muted fs-5'></i>
+                <input type="text" id="roomSearchInput" placeholder="Search by room name..." class="form-control" />
             </div>
         </div>
     </div>
@@ -105,7 +116,7 @@
                     </div>
                 </c:when>
                 <c:otherwise>
-                    <table class="table mb-0 align-middle">
+                    <table id="roomsTable" class="table mb-0 align-middle">
                         <thead>
                             <tr>
                                 <th class="room-index-col">#</th>
@@ -116,10 +127,11 @@
                                 <th class="text-end">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="roomsTbody">
                             <c:forEach var="r" items="${allRooms}" varStatus="loop">
-                                <tr class="${!r.status ? 'room-row-disabled' : ''}">
-                                    <td>${loop.count}</td>
+                                <!-- expose capacity/type/status as data- attributes for client-side filtering -->
+                                <tr class="room-row ${!r.status ? 'room-row-disabled' : ''}" data-abs-index="${loop.count}" data-capacity="${r.capacity}" data-type="${fn:escapeXml(r.type)}" data-status="${r.status}">
+                                    <td class="room-index">${loop.count}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <i class='bx bx-door-open me-2 room-row-icon'></i>
@@ -148,10 +160,8 @@
                                             </a>
                                             <c:choose>
                                                 <c:when test="${roomUsageMap[r.roomId]}">
-                                                    <!-- Room has classes, show Disable button -->
-                                                    <a href="room?action=disable&id=${r.roomId}" class="action-btn room-action-disable" title="Disable Room">
-                                                        <i class='bx bx-lock'></i>
-                                                    </a>
+                                                    <!-- Room has classes: no disable action shown because it's not available -->
+                                                    <!-- Intentionally left blank to avoid showing an unusable control -->
                                                 </c:when>
                                                 <c:otherwise>
                                                     <!-- Room has no classes, show Delete button -->
@@ -172,9 +182,20 @@
                             </c:forEach>
                         </tbody>
                     </table>
+
+                    <!-- Pagination controls (client-side) - styled like other management pages -->
+                    <div id="paginationWrapper" class="mt-3">
+                        <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                            <div class="text-muted small" id="roomsSummary">Showing 0-0 of 0 rooms</div>
+                            <div>
+                                <ul id="roomsPagination" class="pagination pagination-sm mb-0"></ul>
+                            </div>
+                        </div>
+                    </div>
                 </c:otherwise>
             </c:choose>
         </div>
     </div>
 </div>
-<script src="/js/manageUser.js" type="text/javascript"></script>
+<script src="js/manageUser.js" type="text/javascript"></script>
+<script src="js/manageRoom.js" type="text/javascript"></script>

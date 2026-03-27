@@ -235,7 +235,9 @@ public class FeedbackController extends HttpServlet {
                     int enrollmentId = Integer.parseInt(enrollmentRaw);
 
                     if (ratingRaw == null || ratingRaw.isEmpty()) {
-                        session.setAttribute("error", "Please select a rating!");
+                        session.setAttribute("message", "Please select a rating!");
+                        session.setAttribute("messageType", "error");
+
                         response.sendRedirect("feedback?action=writeFeedback&enrollmentId=" + enrollmentId);
                         return;
                     }
@@ -245,7 +247,9 @@ public class FeedbackController extends HttpServlet {
                     FeedbackDAO feedbackDAO = new FeedbackDAO();
 
                     if (feedbackDAO.isFeedbackExist(enrollmentId)) {
-                        session.setAttribute("error", "You already sent feedback for this course!");
+                        session.setAttribute("message", "You already sent feedback for this course!");
+                        session.setAttribute("messageType", "error");
+
                         response.sendRedirect("feedback?action=writeFeedback&enrollmentId=" + enrollmentId);
                         return;
                     }
@@ -261,9 +265,11 @@ public class FeedbackController extends HttpServlet {
                     boolean result = feedbackDAO.studentFeedback(feedback);
 
                     if (result) {
-                        session.setAttribute("success", "Feedback sent successfully!");
+                        session.setAttribute("message", "Feedback sent successfully!");
+                        session.setAttribute("messageType", "success");
                     } else {
-                        session.setAttribute("error", "Send feedback failed!");
+                        session.setAttribute("message", "Send feedback failed!");
+                        session.setAttribute("messageType", "error");
                     }
 
                     response.sendRedirect("feedback?action=writeFeedback&enrollmentId=" + enrollmentId);
@@ -290,7 +296,9 @@ public class FeedbackController extends HttpServlet {
                     int enrollmentId1 = Integer.parseInt(enrollmentIdRaw);
 
                     if (ratingRawUpdate == null || ratingRawUpdate.isEmpty()) {
-                        session.setAttribute("error", "Please select a rating!");
+                        session.setAttribute("message", "Please select a rating!");
+                        session.setAttribute("messageType", "error");
+
                         response.sendRedirect("feedback?action=writeFeedback&enrollmentId=" + enrollmentId1);
                         return;
                     }
@@ -302,9 +310,11 @@ public class FeedbackController extends HttpServlet {
                     boolean updated = dao.updateFeedback(feedbackId, ratingUpdate, commentUpdate);
 
                     if (updated) {
-                        session.setAttribute("success", "Feedback updated successfully!");
+                        session.setAttribute("message", "Feedback updated successfully!");
+                        session.setAttribute("messageType", "success");
                     } else {
-                        session.setAttribute("error", "Update failed!");
+                        session.setAttribute("message", "Update failed!");
+                        session.setAttribute("messageType", "error");
                     }
 
                     response.sendRedirect("feedback?action=writeFeedback&enrollmentId=" + enrollmentId1);
