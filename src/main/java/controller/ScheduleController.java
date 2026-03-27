@@ -44,6 +44,7 @@ public class ScheduleController extends HttpServlet {
             throws ServletException, IOException {
 
        TeacherDAO teacherDAO = new TeacherDAO();
+        ScheduleDAO scheduleDAO = new ScheduleDAO();
         SlotDAO slotDAO = new SlotDAO();
         String action = request.getParameter("action");
         
@@ -63,11 +64,11 @@ public class ScheduleController extends HttpServlet {
             if (roleId == 5) {
                 action = "studentView";
             } else if (roleId == 4) {
-                action = "view";
+                action = "viewTeacherSchedule";
             } else if (isAcademic) {
                 action = "manage";
             } else {
-                action = "view";
+                action = "viewTeacherSchedule";
             }
         }
 
@@ -80,7 +81,7 @@ public class ScheduleController extends HttpServlet {
             }
         } 
         
-        else if (action.equals("view") || action.equals("viewByClass")) {
+        else if (action.equals("viewTeacherSchedule") || action.equals("viewScheduleByClassId")) {
             if (roleId == 5) {
                 session.setAttribute("message", "Access Denied: Students cannot view teacher schedules!");
                 session.setAttribute("messageType", "error");
@@ -104,7 +105,13 @@ public class ScheduleController extends HttpServlet {
             selectedDate = LocalDate.now().toString();
         }
 
-        LocalDate current = LocalDate.parse(selectedDate);
+        LocalDate current;
+        try {
+            current = LocalDate.parse(selectedDate);
+        } catch (Exception e) {
+            current = LocalDate.now();
+            selectedDate = current.toString();
+        }
         LocalDate mondayDate = current.with(DayOfWeek.MONDAY);
 
         String[] dateOfWeek = new String[7];
@@ -121,35 +128,23 @@ public class ScheduleController extends HttpServlet {
         request.setAttribute("slots", allSlots);
 
         switch (action) {
-            case "view":
-                String classIdParam = request.getParameter("classId");
-                List<Schedule> scheduleList;
-
-                if (classIdParam != null && !classIdParam.isEmpty()) {
-                    int classId = Integer.parseInt(classIdParam);
-                    scheduleList = teacherDAO.getScheduleByClassId(classId, user.getUserId(), selectedDate);
-
-                    List<Classes> allClass = teacherDAO.getAllClassOfTeacherID(user.getUserId());
-                    for (Classes c : allClass) {
-                        if (c.getClassid() == classId) {
-                            request.setAttribute("className", c.getClassName());
-                            break;
-                        }
-                    }
-                    request.setAttribute("classId", classId);
-                    request.setAttribute("home_view", "teacher/view_class_schedule.jsp");
-                } else {
-                    scheduleList = teacherDAO.getTeachingSchedule(user.getUserId(), selectedDate);
-                    request.setAttribute("home_view", "teacher/teacher_schedule.jsp");
+            case "viewTeacherSchedule":
+                try {
+                    List<Schedule> scheduleList = scheduleDAO.getTeachingSchedule(user.getUserId(), selectedDate);
+                    request.setAttribute("home_view", "teacher/teacherSchedule.jsp");
+                    request.setAttribute("scheduleList", scheduleList);
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    request.setAttribute("home_view", "teacher/teacherSchedule.jsp");
+                    request.setAttribute("scheduleList", new ArrayList<Schedule>());
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 }
-
-                request.setAttribute("scheduleList", scheduleList);
-                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 
             case "manage":
                 // For academic staff to manage all schedules
-                ScheduleDAO scheduleDAO = new ScheduleDAO();
+                ScheduleDAO manageScheduleDAO = new ScheduleDAO();
                 ClassDAO classDAO = new ClassDAO();
 
                 String filterClassId = request.getParameter("classId");
@@ -178,14 +173,14 @@ public class ScheduleController extends HttpServlet {
 
                 // Load schedules using selected filters (class/room/week)
                 // If both are null, will show FULL schedule for the week
-                managementScheduleList = scheduleDAO.getSchedulesForManagement(selectedDate, classFilterId, roomFilterId);
+                managementScheduleList = manageScheduleDAO.getSchedulesForManagement(selectedDate, classFilterId, roomFilterId);
 
                 // Save selected date to session
                 session.setAttribute("selectedDate", selectedDate);
 
                 List<Object[]> allClasses = classDAO.getClassManagementList();
-                List<Object[]> allRooms = scheduleDAO.getAllRooms();
-                List<Object[]> allTeachers = scheduleDAO.getAllTeachers();
+                List<Object[]> allRooms = manageScheduleDAO.getAllRooms();
+                List<Object[]> allTeachers = manageScheduleDAO.getAllTeachers();
 
                 request.setAttribute("selectedDate", selectedDate);
                 request.setAttribute("classId", classFilterId);
@@ -201,10 +196,10 @@ public class ScheduleController extends HttpServlet {
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 
-            case "viewByClass":
+            case "viewScheduleByClassId":
                 try {
                     int classId = Integer.parseInt(request.getParameter("classId"));
-                    List<Schedule> scheduleByClass = teacherDAO.getScheduleByClassId(classId, user.getUserId(), selectedDate);
+                    List<Schedule> scheduleByClass = scheduleDAO.getScheduleByClassId(classId, user.getUserId(), selectedDate);
 
                     List<Classes> classesOfTeacher = teacherDAO.getAllClassOfTeacherID(user.getUserId());
                     String currentClassName = "";
@@ -222,7 +217,7 @@ public class ScheduleController extends HttpServlet {
                     request.setAttribute("weekdays", weekdays);
                     request.setAttribute("slots", allSlots);
 
-                    request.setAttribute("home_view", "teacher/view_class_schedule.jsp");
+                    request.setAttribute("home_view", "teacher/viewClassSchedule.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
 
                 } catch (Exception e) {

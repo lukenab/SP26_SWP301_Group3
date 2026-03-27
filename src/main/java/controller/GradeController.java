@@ -157,7 +157,7 @@ public class GradeController extends HttpServlet {
                     request.setAttribute("classId", classIdEnter);
                     request.setAttribute("assessmentList", assessmentList);
 
-                    request.setAttribute("home_view", "teacher/enter_grade.jsp");
+                    request.setAttribute("home_view", "teacher/inputGrade.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -207,7 +207,7 @@ public class GradeController extends HttpServlet {
                     request.setAttribute("classId", classIdEdit);
                     request.setAttribute("scoreMap", scoreMap);
                     request.setAttribute("average", average);
-                    request.setAttribute("home_view", "teacher/enter_grade.jsp");
+                    request.setAttribute("home_view", "teacher/inputGrade.jsp");
 
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (Exception e) {

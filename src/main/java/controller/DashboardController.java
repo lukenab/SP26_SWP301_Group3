@@ -9,6 +9,7 @@ import dao.ClassDAO;
 import dao.EnrollmentDAO;
 import dao.LeadDAO;
 import dao.PaymentDAO;
+import dao.ScheduleDAO;
 import dao.SystemLogDAO;
 import dao.UserDAO;
 import dao.VoucherDAO;
@@ -262,10 +263,11 @@ public class DashboardController extends HttpServlet {
                 }
 
                 dao.TeacherDAO tDAO = new dao.TeacherDAO();
+                ScheduleDAO scheduleDaoForTeacher = new ScheduleDAO();
                 int tId = t.getUserId();
                 String today = java.time.LocalDate.now().toString();
 
-                List<model.Schedule> weekly = tDAO.getTeachingSchedule(tId, today);
+                List<model.Schedule> weekly = scheduleDaoForTeacher.getTeachingSchedule(tId, today);
                 List<model.Schedule> todaySlots = new java.util.ArrayList<>();
                 model.Schedule nextUnansweredSlot = null;
 
