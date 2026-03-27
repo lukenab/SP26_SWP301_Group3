@@ -455,4 +455,38 @@ public class CourseDAO extends DBContext {
 
         return null;
     }
+
+    public Double getFinalGradeByStudentAndCourse(int courseId, int studentId) {
+
+        String sql = "SELECT SUM(g.Score * a.Weight) / 100 AS FinalGrade "
+                + "FROM Class cl "
+                + "JOIN Enrollment e ON cl.ClassID = e.ClassID "
+                + "JOIN Grade g ON e.EnrollmentID = g.EnrollmentID "
+                + "JOIN Assessment a ON g.AssessmentID = a.AssessmentID "
+                + "WHERE cl.CourseID = ? "
+                + "AND e.StudentID = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, courseId);
+            ps.setInt(2, studentId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                double result = rs.getDouble("FinalGrade");
+
+                if (rs.wasNull()) {
+                    return 0.0;
+                }
+
+                return result;
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+
+        return 0.0;
+    }
 }
