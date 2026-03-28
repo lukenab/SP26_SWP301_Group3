@@ -86,7 +86,7 @@
 
                     <div class="form-options">
                         <div class="remember-wrapper">
-                            <input type="checkbox" ${cookieRem} id="remember">
+                            <input type="checkbox" name="remember" ${cookieRem} id="remember">
                             <label for="remember" class="checkbox-label">
                                 <span class="checkbox-custom"></span>Keep me signed in
                             </label>
