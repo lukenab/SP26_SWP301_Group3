@@ -84,6 +84,12 @@ public class PaymentController extends HttpServlet {
                         response.sendRedirect("class?action=availableClass");
                         return;
                     }
+                    if (enrollmentDAO.isClassFull(classId)) {
+                        session.setAttribute("message", "This class is already full. You cannot register for it.");
+                        session.setAttribute("messageType", "error");
+                        response.sendRedirect("class?action=availableClass");
+                        return;
+                    }
                     String className = request.getParameter("className");
                     String amountStr = request.getParameter("amount");
                     String voucherCode = request.getParameter("voucherCode");
@@ -256,8 +262,20 @@ public class PaymentController extends HttpServlet {
                         response.sendRedirect("class?action=availableClass");
                         return;
                     }
+                    if (enrollmentDAO.isClassFull(classId)) {
+                        sessionCheckout.setAttribute("message", "This class is already full. You cannot register for it.");
+                        sessionCheckout.setAttribute("messageType", "error");
+                        response.sendRedirect("class?action=availableClass");
+                        return;
+                    }
 
                     int enrollmentId = enrollmentDAO.getOrCreateEnrollment(currentU.getUserId(), classId);
+                    if (enrollmentId <= 0) {
+                        sessionCheckout.setAttribute("message", "This class is already full. You cannot register for it.");
+                        sessionCheckout.setAttribute("messageType", "error");
+                        response.sendRedirect("class?action=availableClass");
+                        return;
+                    }
 
                     double originalPrice = clsDAO.getClassPrice(classId);
                     double discountAmount = 0;

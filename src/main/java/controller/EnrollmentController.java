@@ -565,7 +565,7 @@ public class EnrollmentController extends HttpServlet {
                 if ("Active".equalsIgnoreCase(normalizedStatus)) {
                     int blockedCount = countActivationBlockedEnrollments(enrollmentDAO, classId);
                     if (blockedCount > 0) {
-                        request.getSession().setAttribute("message", "Cannot activate class while it still has " + blockedCount + " pending or unpaid student(s).");
+                        request.getSession().setAttribute("message", "Cannot activate class while it still has " + blockedCount + " unpaid student(s).");
                         request.getSession().setAttribute("messageType", "error");
                         response.sendRedirect("enrollment?action=classes");
                         return;
@@ -576,7 +576,7 @@ public class EnrollmentController extends HttpServlet {
                 if (updated) {
                     int promotedCount = 0;
                     if ("Active".equalsIgnoreCase(normalizedStatus)) {
-                        promotedCount = enrollmentDAO.promotePaidEnrollmentsToActive(classId);
+                        promotedCount = enrollmentDAO.promoteEligibleEnrollmentsToActive(classId);
                     }
 
                     SystemLogDAO logDAO = new SystemLogDAO();
@@ -586,12 +586,12 @@ public class EnrollmentController extends HttpServlet {
                     String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
                     String logDetail = "Changed status of Class ID: " + classId + " to " + normalizedStatus;
                     if ("Active".equalsIgnoreCase(normalizedStatus) && promotedCount > 0) {
-                        logDetail += ". Promoted " + promotedCount + " paid enrollment(s) to Active.";
+                        logDetail += ". Promoted " + promotedCount + " eligible enrollment(s) to Active.";
                     }
                     logDAO.insertLog(actorName, actorRole, "UPDATE_CLASS_STATUS", logDetail);
 
                     if ("Active".equalsIgnoreCase(normalizedStatus) && promotedCount > 0) {
-                        request.getSession().setAttribute("message", "Class status updated successfully. Promoted " + promotedCount + " paid student(s) to Active.");
+                        request.getSession().setAttribute("message", "Class status updated successfully. Activated " + promotedCount + " student enrollment(s).");
                     } else {
                         request.getSession().setAttribute("message", "Class status updated successfully.");
                     }
@@ -621,7 +621,7 @@ public class EnrollmentController extends HttpServlet {
                 if ("Active".equalsIgnoreCase(targetStatus)) {
                     int blockedCount = countActivationBlockedEnrollments(enrollmentDAO, classId);
                     if (blockedCount > 0) {
-                        request.getSession().setAttribute("message", "Cannot activate class while it still has " + blockedCount + " pending or unpaid student(s).");
+                        request.getSession().setAttribute("message", "Cannot activate class while it still has " + blockedCount + " unpaid student(s).");
                         request.getSession().setAttribute("messageType", "error");
                         response.sendRedirect("enrollment?action=classes");
                         return;
@@ -632,7 +632,7 @@ public class EnrollmentController extends HttpServlet {
                 if (updated) {
                     int promotedCount = 0;
                     if ("Active".equalsIgnoreCase(targetStatus)) {
-                        promotedCount = enrollmentDAO.promotePaidEnrollmentsToActive(classId);
+                        promotedCount = enrollmentDAO.promoteEligibleEnrollmentsToActive(classId);
                     }
 
                     SystemLogDAO logDAO = new SystemLogDAO();
@@ -643,12 +643,12 @@ public class EnrollmentController extends HttpServlet {
                     String logAction = "deactivateClass".equals(action) ? "DEACTIVATE_CLASS" : "ACTIVATE_CLASS";
                     String logDetail = ("deactivateClass".equals(action) ? "Deactivated" : "Activated") + " Class ID: " + classId;
                     if ("Active".equalsIgnoreCase(targetStatus) && promotedCount > 0) {
-                        logDetail += ". Promoted " + promotedCount + " paid enrollment(s) to Active.";
+                        logDetail += ". Promoted " + promotedCount + " eligible enrollment(s) to Active.";
                     }
                     logDAO.insertLog(actorName, actorRole, logAction, logDetail);
 
                     if ("Active".equalsIgnoreCase(targetStatus) && promotedCount > 0) {
-                        request.getSession().setAttribute("message", "Activate Class Success! Promoted " + promotedCount + " paid student(s) to Active.");
+                        request.getSession().setAttribute("message", "Activate Class Success! Activated " + promotedCount + " student enrollment(s).");
                     } else {
                         request.getSession().setAttribute("message",
                                 "deactivateClass".equals(action) ? "Inactivate Class Success!" : "Activate Class Success!");

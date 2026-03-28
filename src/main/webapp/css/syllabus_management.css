@@ -101,8 +101,135 @@
     line-height: 1.45;
 }
 
+.syllabus-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 1050;
+}
+
+.syllabus-modal-backdrop.show {
+    display: flex;
+}
+
+.syllabus-modal-card {
+    width: min(100%, 460px);
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+    text-align: center;
+    animation: syllabusModalFadeIn 0.2s ease;
+}
+
+.syllabus-modal-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 18px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ffe7e7, #fff4f4);
+    color: #dc2626;
+    font-size: 30px;
+}
+
+.syllabus-modal-title {
+    margin: 0 0 10px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.syllabus-modal-text {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #475569;
+}
+
+.syllabus-modal-topic {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.syllabus-modal-actions {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.syllabus-modal-btn {
+    min-width: 120px;
+    border: 0;
+    border-radius: 12px;
+    padding: 11px 18px;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.syllabus-modal-btn:hover {
+    transform: translateY(-1px);
+}
+
+.syllabus-modal-btn-secondary {
+    background: #eef2f7;
+    color: #1e293b;
+}
+
+.syllabus-modal-btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+.syllabus-modal-btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+    box-shadow: 0 14px 28px rgba(220, 38, 38, 0.24);
+}
+
+.syllabus-modal-btn-danger:hover {
+    box-shadow: 0 18px 32px rgba(220, 38, 38, 0.3);
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+@keyframes syllabusModalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 @media (max-width: 1200px) {
     .syllabus-page .learning-path-preview {
         max-width: 360px;
+    }
+}
+
+@media (max-width: 576px) {
+    .syllabus-modal-card {
+        padding: 22px;
+        border-radius: 20px;
+    }
+
+    .syllabus-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .syllabus-modal-btn {
+        width: 100%;
     }
 }
