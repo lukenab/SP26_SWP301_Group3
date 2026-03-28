@@ -311,13 +311,10 @@ public class DashboardController extends HttpServlet {
                 if (allF != null) {
                     request.setAttribute("latestFeedbacks", allF.size() > 5 ? allF.subList(0, 5) : allF);
                 }
-                request.setAttribute(
-                        "studentNameMap", fData.get("studentNameMap"));
+                request.setAttribute("studentNameMap", fData.get("studentNameMap"));
 
-                request.setAttribute(
-                        "home_view", "teacher/teacherDashboard.jsp");
-                request.getRequestDispatcher(
-                        "dashboard.jsp").forward(request, response);
+                request.setAttribute("home_view", "teacher/teacherDashboard.jsp");
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 break;
 
             case "student":
