@@ -316,10 +316,16 @@ public class ScheduleController extends HttpServlet {
 
                     System.out.println("Data loaded - Classes: " + allClasses3.size() + ", Rooms: " + allRooms3.size() + ", Slots: " + allSlots3.size());
 
+                    // Get similar schedules for series edit option
+                    List<Schedule> similarSchedules = scheduleDAO4.getSimilarSchedules(editScheduleId);
+                    int relatedCount = similarSchedules != null ? similarSchedules.size() : 0;
+
                     request.setAttribute("schedule", editSchedule);
                     request.setAttribute("allClasses", allClasses3);
                     request.setAttribute("allRooms", allRooms3);
                     request.setAttribute("slots", allSlots3);
+                    request.setAttribute("similarSchedules", similarSchedules);
+                    request.setAttribute("relatedCount", relatedCount);
                     request.setAttribute("home_view", "academic/editSchedule.jsp");
 
                     System.out.println("Forwarding to editSchedule.jsp...");
