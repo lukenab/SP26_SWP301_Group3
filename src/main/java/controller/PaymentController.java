@@ -306,6 +306,43 @@ public class PaymentController extends HttpServlet {
                         serverFinalAmount = 0;
                     }
 
+                    String normalizedPaymentMethod = paymentMethod == null ? "qr" : paymentMethod.trim().toLowerCase();
+
+                    if ("cash".equals(normalizedPaymentMethod)
+                            || "center".equals(normalizedPaymentMethod)
+                            || "offline".equals(normalizedPaymentMethod)) {
+                        boolean isSuccess = paymentDAO.createPendingPayment(
+                                enrollmentId,
+                                serverFinalAmount,
+                                voucherId,
+                                "Pay at Center"
+                        );
+
+                        if (isSuccess) {
+                            SystemLogDAO logDAO = new SystemLogDAO();
+                            User logUser = (User) request.getSession().getAttribute("user");
+
+                            String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                            String actorRole = (logUser != null && logUser.getRole() != null)
+                                    ? logUser.getRole().getRoleName() : "Student";
+
+                            String detail = "Student submitted a pay-at-center request (Amount: "
+                                    + serverFinalAmount + ") for Enrollment ID: " + enrollmentId;
+                            logDAO.insertLog(actorName, actorRole, "SUBMIT_PAYMENT", detail);
+
+                            sessionCheckout.setAttribute("message",
+                                    "Your pay-at-center request has been recorded. Please wait for staff approval to join the class.");
+                            sessionCheckout.setAttribute("messageType", "success");
+                        } else {
+                            sessionCheckout.setAttribute("message",
+                                    "Could not create the pay-at-center request. Please try again.");
+                            sessionCheckout.setAttribute("messageType", "error");
+                        }
+
+                        response.sendRedirect("class?action=availableClass");
+                        return;
+                    }
+
                     String rawAddInfo = "LMCS " + enrollmentId + " " + className;
                     long amountToPay = (long) serverFinalAmount;
 
