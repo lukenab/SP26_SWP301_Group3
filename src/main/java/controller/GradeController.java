@@ -23,6 +23,9 @@ import model.Grade;
 import model.Student;
 import model.User;
 import dao.CourseDAO;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import model.Assessment;
 import model.Course;
@@ -223,111 +226,138 @@ public class GradeController extends HttpServlet {
 
                 int studentId = currentUser.getUserId();
 
-                // ===== 2. GET FILTER PARAM =====
                 String keyword = request.getParameter("keyword");
-                String statusParam = request.getParameter("status");
+                String status = request.getParameter("status");
 
-                Boolean status = null;
-
-                if (statusParam != null && !statusParam.isEmpty()) {
-                    status = Boolean.parseBoolean(statusParam);
-                }
-
-                // ===== 3. PAGINATION =====
                 int page = 1;
                 int pageSize = 6;
 
-                if (request.getParameter("page") != null) {
-                    page = Integer.parseInt(request.getParameter("page"));
+                String pageRaw = request.getParameter("page");
+                if (pageRaw != null && !pageRaw.isBlank()) {
+                    try {
+                        page = Integer.parseInt(pageRaw);
+                    } catch (Exception e) {
+                        page = 1;
+                    }
                 }
 
-                // ===== 4. STUDENT INFO =====
-                Student studentInfo = studentDAO.getStudentById(studentId);
+                LocalDate today = LocalDate.now();
+                LocalDate startWeek = today.with(DayOfWeek.MONDAY);
+                LocalDate endWeek = today.with(DayOfWeek.SUNDAY);
 
-                // ===== 5. GET COURSE LIST (ADVANCED SEARCH) =====
-                CourseDAO courseDAO = new CourseDAO();
+                int totalRecords = classDAO.countStudentClassesAdvanced(
+                        studentId, startWeek, endWeek, keyword, status
+                );
 
-                List<Course> courseList = courseDAO.getCoursesByStudentAdvanced(
+                int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+                if (totalPages < 1) {
+                    totalPages = 1;
+                }
+
+                if (page < 1) {
+                    page = 1;
+                }
+                if (page > totalPages) {
+                    page = totalPages;
+                }
+
+                List<Object[]> classList = classDAO.getStudentClassesAdvanced(
                         studentId,
+                        startWeek,
+                        endWeek,
                         keyword,
                         status,
                         page,
                         pageSize
                 );
 
-                // ===== 6. CALCULATE AVERAGE SCORE =====
-                Map<Integer, Double> averageMap = new HashMap<>();
-
-                for (Course c : courseList) {
-
-                    Double avg = courseDAO.getFinalGradeByStudentAndCourse(
-                            c.getCourseId(), studentId);
-
-                    averageMap.put(c.getCourseId(), avg);
-                }
-
-                // ===== 7. SET ATTRIBUTE =====
-                request.setAttribute("courseList", courseList);
-                request.setAttribute("averageMap", averageMap);
-
-                request.setAttribute("studentName", currentUser.getFullName());
-                request.setAttribute("studentInfo", studentInfo);
-
-                // giữ filter khi reload page
+                request.setAttribute("classList", classList);
+                request.setAttribute("currentPage", page);
+                request.setAttribute("totalPages", totalPages);
                 request.setAttribute("keyword", keyword);
                 request.setAttribute("status", status);
-                request.setAttribute("currentPage", page);
+
+                request.setAttribute("studentName", currentUser.getFullName());
 
                 request.setAttribute("home_view", "student/studentCourseCard.jsp");
 
-                request.getRequestDispatcher("dashboard.jsp")
-                        .forward(request, response);
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
 
                 break;
 
             case "student-course-grades":
-                int courseId = Integer.parseInt(request.getParameter("courseId"));
+
                 int studentIdDetail = currentUser.getUserId();
+
+                // ===== 1. GET PARAM =====
+                String classIdRaw = request.getParameter("classId");
+
+                if (classIdRaw == null || classIdRaw.isBlank()) {
+                    response.sendRedirect("grade?action=student-courses");
+                    return;
+                }
+
+                int classId1;
+                try {
+                    classId1 = Integer.parseInt(classIdRaw);
+                } catch (Exception e) {
+                    response.sendRedirect("grade?action=student-courses");
+                    return;
+                }
+
                 EnrollmentDAO enrollmentDAO = new EnrollmentDAO();
 
-                if (!enrollmentDAO.hasAcademicAccessForCourse(studentIdDetail, courseId)) {
+                // ===== 2. CHECK ACCESS (IMPORTANT) =====
+                String status1 = enrollmentDAO.checkEnrollmentStatus(studentIdDetail, classId1);
+
+                if (status1 == null || !(status1.equals("Active") || status1.equals("Completed"))) {
                     session.setAttribute("message", "Grades are locked until your enrollment becomes Active.");
                     session.setAttribute("messageType", "error");
                     response.sendRedirect("class?action=myClasses");
                     return;
                 }
 
+                // ===== 3. GET GRADES =====
                 List<Grade> gradeList = dao.getGradesByStudentId(studentIdDetail);
 
-                List<Grade> filteredList = new java.util.ArrayList<>();
+                List<Grade> filteredList = new ArrayList<>();
 
                 for (Grade g : gradeList) {
-                    if (g.getEnrollment()
-                            .getClasses()
-                            .getCourse()
-                            .getCourseId() == courseId) {
-
+                    if (g.getEnrollment().getClasses().getClassid() == classId1) {
                         filteredList.add(g);
                     }
                 }
-                CourseDAO courseDAO1 = new CourseDAO();
 
-                Double finalGrade = courseDAO1.getFinalGradeByStudentAndCourse(
-                        courseId,
-                        studentIdDetail
-                );
+                // ===== 4. GET FINAL GRADE (FROM ENROLLMENT) =====
+                // ===== 4. CALCULATE FINAL GRADE =====
+                double total = 0;
+                double totalWeight = 0;
 
-                if (finalGrade == null) {
-                    finalGrade = 0.0;
+                for (Grade g : filteredList) {
+                    if (g.getAssessment() != null) {
+                        double weight = g.getAssessment().getWeight();
+                        total += g.getScore() * weight;
+                        totalWeight += weight;
+                    }
                 }
 
+                Double finalGrade = 0.0;
+
+                if (totalWeight > 0) {
+                    finalGrade = total / totalWeight;
+                }
+
+                // ===== 5. SET ATTRIBUTE =====
                 request.setAttribute("gradeList", filteredList);
                 request.setAttribute("finalGrade", finalGrade);
                 request.setAttribute("studentName", currentUser.getFullName());
+                request.setAttribute("classId", classId1);
+
                 request.setAttribute("home_view", "student/studentGrade.jsp");
 
-                request.getRequestDispatcher("dashboard.jsp")
-                        .forward(request, response);
+                // ===== 6. FORWARD =====
+                request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+
                 break;
 
             case "report":

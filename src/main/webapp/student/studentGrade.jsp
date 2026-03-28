@@ -6,8 +6,6 @@
 <link href="css/viewGrade.css" rel="stylesheet"/>
 
 <style>
-    /* ===== DARK MODE FOR VIEW GRADE ===== */
-
     body.dark .profile-content-card {
         background: #1e1e1e;
         box-shadow: 0 8px 25px rgba(0,0,0,0.6);
@@ -61,7 +59,6 @@
 <div class="container-fluid px-4">
 
     <!-- ===== HEADER ===== -->
-
     <div class="mb-4 mt-4">
 
         <div aria-label="breadcrumb">
@@ -72,36 +69,24 @@
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="grade?action=student-courses">My Courses</a>
+                    <a href="grade?action=student-courses">My Classes</a>
                 </li>
-                <li class="breadcrumb-item active" aria-current="page">
-                    Course Grades
+                <li class="breadcrumb-item active">
+                    Class Grades
                 </li>
             </ol>
         </div>
 
-        <div class="content-header d-flex justify-content-between align-items-center">
-
-            <div>
-                <h2 class="page-title">Grade Overview</h2>
-                <p class="text-muted small mb-0">
-                    View your academic performance and assessment results.
-                </p>
-            </div>
-
-            <!-- ===== BACK BUTTON ===== -->
-            <!--            <div>
-                            <a href="user" class="btn-secondary">
-                                <i class='bx bx-arrow-left'></i> Back to Users
-                            </a>
-                        </div>-->
-
+        <div class="content-header">
+            <h2 class="page-title">Grade Overview</h2>
+            <p class="text-muted small mb-0">
+                View your assessment results for this class.
+            </p>
         </div>
 
     </div>
 
-    <!-- ===== CONTENT CARD ===== -->
-
+    <!-- ===== CONTENT ===== -->
     <div class="profile-content-card">
 
         <div class="section-title">
@@ -113,19 +98,19 @@
 
             <c:when test="${not empty gradeList}">
 
-                <!-- ===== COURSE INFO ===== -->
-
-                <div class="course-info mb-3">
-                    <h5 class="mb-1">
-                        ${gradeList[0].enrollment.classes.course.courseName}
-                    </h5>
-                    <p class="text-muted small mb-3">
-                        Class: ${gradeList[0].enrollment.classes.className}
-                    </p>
-                </div>
+                <!-- ===== CLASS INFO ===== -->
+                <c:if test="${not empty gradeList}">
+                    <div class="course-info mb-3">
+                        <h5 class="mb-1">
+                            ${gradeList[0].enrollment.classes.course.courseName}
+                        </h5>
+                        <p class="text-muted small mb-3">
+                            Class: ${gradeList[0].enrollment.classes.className}
+                        </p>
+                    </div>
+                </c:if>
 
                 <!-- ===== TABLE ===== -->
-
                 <table class="custom-table">
 
                     <thead>
@@ -137,30 +122,25 @@
 
                     <tbody>
 
-                        <!-- ===== CALCULATE TOTAL ===== -->
-                        <c:set var="total" value="0" />
-                        <c:set var="count" value="0" />
-
                         <c:forEach items="${gradeList}" var="g">
-
-                            <c:set var="total" value="${total + g.score}" />
-                            <c:set var="count" value="${count + 1}" />
-
                             <tr>
                                 <td>${g.assessment.assessmentName}</td>
-                                <td class="score-cell">${g.score}</td>
+                                <td class="score-cell">
+                                    <fmt:formatNumber 
+                                        value="${g.score}" 
+                                        minFractionDigits="2" 
+                                        maxFractionDigits="2"/>
+                                </td>
                             </tr>
-
                         </c:forEach>
 
-                        <!-- ===== AVERAGE ROW ===== -->
+                        <!-- ===== FINAL GRADE ===== -->
                         <tr class="average-row">
                             <td><strong>Final Grade</strong></td>
-                            <td colspan="2" class="score-cell">
+                            <td class="score-cell">
                                 <strong>
                                     <fmt:formatNumber 
                                         value="${finalGrade}" 
-                                        type="number" 
                                         minFractionDigits="2" 
                                         maxFractionDigits="2"/>
                                 </strong>
@@ -175,9 +155,9 @@
 
             <c:otherwise>
 
-                <div class="empty-state">
+                <div class="empty-state text-center py-4">
                     <i class='bx bx-info-circle'></i>
-                    <p>No grades available at the moment.</p>
+                    <p>No grades available for this class.</p>
                 </div>
 
             </c:otherwise>
