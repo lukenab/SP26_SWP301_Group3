@@ -14,6 +14,7 @@ import dao.SystemLogDAO;
 import dao.UserDAO;
 import dao.VoucherDAO;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.Year;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -21,12 +22,18 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import model.Schedule;
+import model.Classes;
 import model.SystemLog;
 import model.User;
 import model.Voucher;
+import model.Feedback;
+import dao.TeacherDAO;
 
 /**
  *
@@ -53,6 +60,8 @@ public class DashboardController extends HttpServlet {
         VoucherDAO voucherDAO = new VoucherDAO();
         ClassDAO classDAO = new ClassDAO();
         EnrollmentDAO enrollDAO = new EnrollmentDAO();
+        TeacherDAO teacherDAO = new TeacherDAO();
+        ScheduleDAO scheduleDAO = new ScheduleDAO();
 
         User currentUser = (User) request.getSession().getAttribute("user");
         if (currentUser == null) {
@@ -262,49 +271,44 @@ public class DashboardController extends HttpServlet {
                     return;
                 }
 
-                dao.TeacherDAO tDAO = new dao.TeacherDAO();
-                ScheduleDAO scheduleDaoForTeacher = new ScheduleDAO();
                 int tId = t.getUserId();
-                String today = java.time.LocalDate.now().toString();
+                String today = LocalDate.now().toString();
 
-                List<model.Schedule> weekly = scheduleDaoForTeacher.getTeachingSchedule(tId, today);
-                List<model.Schedule> todaySlots = new java.util.ArrayList<>();
-                model.Schedule nextUnansweredSlot = null;
+                List<Schedule> weekly = scheduleDAO.getTeachingSchedule(tId, today);
+                List<Schedule> todaySlots = new ArrayList<>();
+                Schedule nextUnansweredSlot = null;
 
-                for (model.Schedule s : weekly) {
+                for (Schedule s : weekly) {
                     if (s.getLearningDate().toString().equals(today)) {
                         todaySlots.add(s);
-                 
                         if (nextUnansweredSlot == null && !s.isAttendanceStatus()) {
                             nextUnansweredSlot = s;
                         }
                     }
                 }
                 request.setAttribute("todaySlots", todaySlots);
-           
                 if (nextUnansweredSlot != null) {
                     request.setAttribute("nextUnansweredSlot", nextUnansweredSlot);
                 }
 
-                List<model.Classes> tClasses = tDAO.getAllClassOfTeacherID(tId);
-                java.util.Map<Integer, Integer> progressMap = new java.util.HashMap<>();
-
-                for (model.Classes c : tClasses) {
-                    progressMap.put(c.getClassid(), tDAO.getClassProgress(c.getClassid()));
+                List<Classes> tClasses = teacherDAO.getAllClassOfTeacherID(tId);
+                Map<Integer, Integer> progressMap = new HashMap<>();
+                for (Classes c : tClasses) {
+                    progressMap.put(c.getClassid(), teacherDAO.getClassProgress(c.getClassid()));
                 }
 
                 request.setAttribute(
-                        "totalSlotsTaught", tDAO.getTotalSlotsTaught(tId));
+                        "totalSlotsTaught", teacherDAO.getTotalSlotsTaught(tId));
                 request.setAttribute(
                         "teacherClasses", tClasses);
                 request.setAttribute(
                         "progressMap", progressMap);
                 request.setAttribute(
-                        "totalStudents", tDAO.getTotalStudentsByTeacher(tId));
+                        "totalStudents", teacherDAO.getTotalStudentsByTeacher(tId));
 
-                double avgRating = tDAO.getAverageRating(tId);
-                java.util.Map<String, Object> fData = tDAO.getTeacherFeedbackData(tId);
-                List<model.Feedback> allF = (List<model.Feedback>) fData.get("feedbackList");
+                double avgRating = teacherDAO.getAverageRating(tId);
+                Map<String, Object> fData = teacherDAO.getTeacherFeedbackData(tId);
+                List<Feedback> allF = (List<Feedback>) fData.get("feedbackList");
 
                 request.setAttribute(
                         "avgRating", String.format("%.1f", avgRating));
@@ -330,7 +334,7 @@ public class DashboardController extends HttpServlet {
 
                 int studentId = sUser.getUserId();
 
-                dao.ScheduleDAO scheduleDAO = new dao.ScheduleDAO();
+//                dao.ScheduleDAO scheduleDAO = new dao.ScheduleDAO();
                 AttendanceDAO attendanceDAO = new AttendanceDAO();
 
 //                List<Object[]> studentClasses = classDAO.getStudentClasses(studentId);
