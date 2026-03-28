@@ -93,6 +93,7 @@
                 <option value="all">All Status</option>
                 <option value="Active">Active</option>
                 <option value="Pending">Pending</option>
+                <option value="Inactive">Inactive</option>
             </select>
         </div>
     </div>

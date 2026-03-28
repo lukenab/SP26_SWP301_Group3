@@ -15,11 +15,6 @@
             <h2 class="page-title">System Analysis & Reports</h2>
             <p class="text-muted small mb-0">Monitor system activities, usage demographics, and growth statistics</p>
         </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-secondary btn-sm" onclick="window.print()">
-                <i class='bx bx-printer'></i> Print Report
-            </button>
-        </div>
     </div>
 </div>
 

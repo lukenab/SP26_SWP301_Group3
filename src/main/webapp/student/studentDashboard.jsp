@@ -231,10 +231,10 @@
                                                     </c:choose>
                                                 </span>
                                             </div>
-                                            <div class="d-flex align-items-center">
+<!--                                            <div class="d-flex align-items-center">
                                                 <i class='bx bx-time text-muted me-2' style="width: 20px;"></i>
                                                 <span>${c[3]}</span>
-                                            </div>
+                                            </div>-->
                                         </div>
 
                                         <a href="class?action=detail&classId=${c[0].classes.classid}&source=studentDashboard"

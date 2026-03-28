@@ -922,7 +922,8 @@ public class ClassDAO extends DBContext {
                 + "   GROUP BY ClassID "
                 + ") rm ON rm.ClassID = c.ClassID "
                 + "WHERE e.StudentID = ? "
-                + "AND e.Status IN ('UnPaid','Unpaid','Paid','Active','Completed')";
+                + "AND e.Status IN ('UnPaid','Unpaid','Paid','Active','Completed')"
+                + "ORDER BY e.EnrollmentID DESC";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
