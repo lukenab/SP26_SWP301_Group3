@@ -296,15 +296,11 @@ public class DashboardController extends HttpServlet {
                 for (Classes c : tClasses) {
                     progressMap.put(c.getClassid(), teacherDAO.getClassProgress(c.getClassid()));
                 }
-
-                request.setAttribute(
-                        "totalSlotsTaught", teacherDAO.getTotalSlotsTaught(tId));
-                request.setAttribute(
-                        "teacherClasses", tClasses);
-                request.setAttribute(
-                        "progressMap", progressMap);
-                request.setAttribute(
-                        "totalStudents", teacherDAO.getTotalStudentsByTeacher(tId));
+                 
+                request.setAttribute("totalSlotsTaught", teacherDAO.getTotalSlotsTaught(tId));
+                request.setAttribute("teacherClasses", tClasses);
+                request.setAttribute("progressMap", progressMap);
+                request.setAttribute("totalStudents", teacherDAO.getTotalStudentsByTeacher(tId));
 
                 double avgRating = teacherDAO.getAverageRating(tId);
                 Map<String, Object> fData = teacherDAO.getTeacherFeedbackData(tId);
