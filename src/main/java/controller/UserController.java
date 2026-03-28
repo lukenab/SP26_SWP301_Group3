@@ -114,6 +114,10 @@ public class UserController extends HttpServlet {
 
                 List<User> fullList = userDAO.searchAndFilterUsers(seachQuery, searchRoleId, searchStatus);
 
+                long activeCount = fullList.stream().filter(u -> u.getStatus()).count();
+                long inactiveCount = fullList.size() - activeCount;
+                long adminCount = fullList.stream().filter(u -> u.getRole().getRoleId() == 1).count();
+
                 StringBuilder paginationQuery = new StringBuilder();
                 if (seachQuery != null && !seachQuery.isEmpty()) {
                     paginationQuery.append("&searchQuery=").append(seachQuery);
@@ -129,6 +133,9 @@ public class UserController extends HttpServlet {
                 List<User> pagedList = paginateUserList(fullList, parsePage(request), DEFAULT_PAGE_SIZE, request);
 
                 request.setAttribute("totalUsers", fullList.size());
+                request.setAttribute("activeUsersCount", activeCount);
+                request.setAttribute("inactiveUsersCount", inactiveCount);
+                request.setAttribute("adminsCount", adminCount);
                 request.setAttribute("userList", pagedList);
                 request.setAttribute("home_view", "/admin/manageUser.jsp");
                 request.getRequestDispatcher("dashboard.jsp").forward(request, response);
@@ -215,72 +222,75 @@ public class UserController extends HttpServlet {
                 Boolean gender = getBoolParam(request, "gender");
                 Date dob = getDateParam(request, "dob");
                 Boolean status = getBoolParam(request, "status");
-                int roleId = getIntParam(request, "roleId", 5);
+                int roleId = getIntParam(request, "roleId", 0);
 
-                HttpSession aSession = request.getSession();
+                boolean hasError = false;
+
+                if (roleId == 0) {
+                    request.setAttribute("roleError", "Please select a valid role.");
+                    hasError = true;
+                }
 
                 if (userDAO.isFieldExists("email", email)) {
-                    aSession.setAttribute("message", "Email '" + email + "' is already registered!");
-                    aSession.setAttribute("messageType", "error");
-                    response.sendRedirect("user?action=add");
-                    return;
+                    request.setAttribute("emailError", "Email '" + email + "' is already registered!");
+                    hasError = true;
                 }
 
                 String phoneRegex = "^0\\d{9}$";
                 if (!phone.matches(phoneRegex)) {
-                    aSession.setAttribute("message", "Phone number must start with 0 and have exactly 10 digits!");
-                    aSession.setAttribute("messageType", "error");
-                    response.sendRedirect("user?action=add");
-                    return;
-                }
-
-                if (userDAO.isFieldExists("phone", phone)) {
-                    aSession.setAttribute("message", "Phone number '" + phone + "' is already used by another account!");
-                    aSession.setAttribute("messageType", "error");
-                    response.sendRedirect("user?action=add");
-                    return;
+                    request.setAttribute("phoneError", "Phone must start with 0 and have exactly 10 digits!");
+                    hasError = true;
+                } else if (userDAO.isFieldExists("phone", phone)) {
+                    request.setAttribute("phoneError", "This phone number is already in use!");
+                    hasError = true;
                 }
 
                 if (dob != null) {
-                    long currentTime = System.currentTimeMillis();
-                    Date today = new Date(currentTime);
+                    Date today = new Date(System.currentTimeMillis());
                     if (dob.after(today)) {
-                        aSession.setAttribute("message", "Date of Birth cannot be in the future!");
-                        aSession.setAttribute("messageType", "error");
-                        response.sendRedirect("user?action=add");
-                        return;
-                    }
-
-                    java.util.Calendar calDob = java.util.Calendar.getInstance();
-                    calDob.setTime(dob);
-                    java.util.Calendar calToday = java.util.Calendar.getInstance();
-                    int age = calToday.get(java.util.Calendar.YEAR) - calDob.get(java.util.Calendar.YEAR);
-                    if (calToday.get(java.util.Calendar.DAY_OF_YEAR) < calDob.get(java.util.Calendar.DAY_OF_YEAR)) {
-                        age--;
-                    }
-
-                    if (roleId >= 1 && roleId <= 4) {
-                        if (age < 18) {
-                            aSession.setAttribute("message", "Admins and Staff must be at least 18 years old!");
-                            aSession.setAttribute("messageType", "error");
-                            response.sendRedirect("user?action=add");
-                            return;
+                        request.setAttribute("dobError", "Date of Birth cannot be in the future!");
+                        hasError = true;
+                    } else {
+                        java.util.Calendar calDob = java.util.Calendar.getInstance();
+                        calDob.setTime(dob);
+                        java.util.Calendar calToday = java.util.Calendar.getInstance();
+                        int age = calToday.get(java.util.Calendar.YEAR) - calDob.get(java.util.Calendar.YEAR);
+                        if (calToday.get(java.util.Calendar.DAY_OF_YEAR) < calDob.get(java.util.Calendar.DAY_OF_YEAR)) {
+                            age--;
                         }
-                    } else if (roleId == 5 && age < 5) {
-                        aSession.setAttribute("message", "Students must be at least 5 years old!");
-                        aSession.setAttribute("messageType", "error");
-                        response.sendRedirect("user?action=add");
-                        return;
+
+                        if (roleId >= 1 && roleId <= 4 && age < 18) {
+                            request.setAttribute("dobError", "Admins and Staff must be at least 18 years old!");
+                            hasError = true;
+                        } else if (roleId == 5 && age < 5) {
+                            request.setAttribute("dobError", "Students must be at least 5 years old!");
+                            hasError = true;
+                        }
                     }
+                } else {
+                    request.setAttribute("dobError", "Please enter Date of Birth.");
+                    hasError = true;
+                }
+
+                if (hasError) {
+                    RoleDAO roleDAO = new RoleDAO();
+                    request.setAttribute("roleList", roleDAO.getAllRole());
+
+                    request.setAttribute("message", "Please fix the highlighted errors.");
+                    request.setAttribute("messageType", "error");
+
+                    request.setAttribute("home_view", "/admin/createUser.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+                    return;
                 }
 
                 String defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
                 String avatarPath = uploadAvatar(request, defaultAvatar);
 
-                Date hireDate = null;
-                String education = null;
-                String experience = null;
-                Date enrollmentDate = null;
+                Date hireDate = getDateParam(request, "hireDate");
+                Date enrollmentDate = getDateParam(request, "enrollmentDate");
+                String education = getStringParam(request, "education", "");
+                String experience = getStringParam(request, "experience", "");
 
                 if (roleId >= 2 && roleId <= 4) {
                     hireDate = getDateParam(request, "hireDate");
@@ -298,18 +308,22 @@ public class UserController extends HttpServlet {
 
                 if (isAdded) {
                     SystemLogDAO logDAO = new SystemLogDAO();
-                    User logUser = (User) aSession.getAttribute("user");
+                    User logUser = (User) session.getAttribute("user");
                     String actorName = (logUser != null) ? logUser.getFullName() : "System";
                     String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Admin";
                     logDAO.insertLog(actorName, actorRole, "CREATE_USER", "Admin created user: " + fullName + " (" + email + ")");
 
-                    aSession.setAttribute("message", "User created successfully!");
-                    aSession.setAttribute("messageType", "success");
+                    session.setAttribute("message", "User created successfully!");
+                    session.setAttribute("messageType", "success");
                     response.sendRedirect("user");
                 } else {
-                    aSession.setAttribute("message", "Fail to add new user due to database error.");
-                    aSession.setAttribute("messageType", "error");
-                    response.sendRedirect("user?action=add");
+                    request.setAttribute("message", "Failed to add user due to database error.");
+                    request.setAttribute("messageType", "error");
+
+                    RoleDAO roleDAO = new RoleDAO();
+                    request.setAttribute("roleList", roleDAO.getAllRole());
+                    request.setAttribute("home_view", "/admin/createUser.jsp");
+                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 }
                 break;
 

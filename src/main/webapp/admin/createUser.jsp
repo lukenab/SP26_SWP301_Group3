@@ -20,29 +20,28 @@
     </div>
 </div>
 
-<c:if test="${not empty sessionScope.message}">
-    <div class="custom-toast toast-${sessionScope.messageType}" id="toastMessage">
+<c:if test="${not empty sessionScope.message or not empty requestScope.message}">
+    <div class="custom-toast toast-${not empty sessionScope.messageType ? sessionScope.messageType : requestScope.messageType}" id="toastMessage">
         <div class="toast-icon">
             <c:choose>
-                <c:when test="${sessionScope.messageType == 'success'}">
+                <c:when test="${sessionScope.messageType == 'success' or requestScope.messageType == 'success'}">
                     <i class='bx bx-check-circle'></i>
                 </c:when>
                 <c:otherwise>
-                    <i class='bx bx-cross-circle'></i>
+                    <i class='bx bx-error-circle'></i>
                 </c:otherwise>
             </c:choose>
         </div>
         <div class="toast-content">
             <span class="toast-title">
-                ${sessionScope.messageType == 'success' ? 'Success!' : 'Error!'}
+                ${(sessionScope.messageType == 'success' or requestScope.messageType == 'success') ? 'Success!' : 'Error!'}
             </span>
-            <span class="toast-message">${sessionScope.message}</span>
+            <span class="toast-message">${not empty sessionScope.message ? sessionScope.message : requestScope.message}</span>
         </div>
         <button class="toast-close" onclick="closeToast()">
             <i class='bx bx-x'></i>
         </button>
     </div>
-
     <c:remove var="message" scope="session" />
     <c:remove var="messageType" scope="session" />
 </c:if>
@@ -79,38 +78,41 @@
         <div class="form-row">
             <div class="form-group">
                 <label for="roleId">Role <span class="text-danger">*</span></label>
-                <select class="form-select" name="roleId" id="roleId" onchange="toggleExtraFields()" required>
-                    <option value="" disabled selected>Select Role</option>
+                <select class="form-select ${not empty roleError ? 'is-invalid' : ''}" name="roleId" id="roleId" onchange="toggleExtraFields()" required>
+                    <option value="" disabled ${empty param.roleId ? 'selected' : ''}>Select Role</option>
                     <c:forEach var="r" items="${roleList}">
-                        <option value="${r.roleId}">${r.roleName}</option>
+                        <option value="${r.roleId}" ${param.roleId == r.roleId ? 'selected' : ''}>${r.roleName}</option>
                     </c:forEach>
                 </select>
+                <span class="text-danger small">${roleError}</span>
             </div>
             <div class="form-group">
                 <label for="fullName">Full Name <span class="text-danger">*</span></label>
-                <input type="text" name="fullName" id="fullName" required>
+                <input type="text" name="fullName" id="fullName" value="${param.fullName}" required>
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
                 <label for="email">Email <span class="text-danger">*</span></label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" value="${param.email}" class="${not empty emailError ? 'is-invalid' : ''}" required>
+                <span class="text-danger small">${emailError}</span>
             </div>
             <div class="form-group">
                 <label for="password">Password <span class="text-danger">*</span></label>
-                <input type="password" id="password" name="password" required> 
+                <input type="password" id="password" name="password" value="${param.password}" required> 
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
                 <label for="phone">Phone <span class="text-danger">*</span></label>
-                <input type="text" id="phone" name="phone" required>
+                <input type="text" id="phone" name="phone" value="${param.phone}" class="${not empty phoneError ? 'is-invalid' : ''}" required>
+                <span class="text-danger small">${phoneError}</span>
             </div>
             <div class="form-group">
                 <label for="address">Address</label>
-                <input type="text" id="address" name="address">
+                <input type="text" id="address" name="address" value="${param.address}">
             </div>
         </div>
 
@@ -118,13 +120,14 @@
             <div class="form-group">
                 <label for="gender">Gender</label>
                 <select class="form-select" name="gender" required>
-                    <option value="true">Male</option>
-                    <option value="false">Female</option>
+                    <option value="true" ${param.gender == 'true' ? 'selected' : ''}>Male</option>
+                    <option value="false" ${param.gender == 'false' ? 'selected' : ''}>Female</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="dob">Date of Birth</label>
-                <input type="date" id="dobInput" name="dob" required>
+                <label for="dob">Date of Birth <span class="text-danger">*</span></label>
+                <input type="date" id="dobInput" name="dob" value="${param.dob}" class="${not empty dobError ? 'is-invalid' : ''}" required>
+                <span class="text-danger small">${dobError}</span>
             </div>
         </div>
 
@@ -132,38 +135,27 @@
             <div class="form-group">
                 <label for="status">Status</label>
                 <select class="form-select" name="status" required>
-                    <option value="true">Active</option>
-                    <option value="false">Inactive</option>
+                    <option value="true" ${param.status == 'true' ? 'selected' : ''}>Active</option>
+                    <option value="false" ${param.status == 'false' ? 'selected' : ''}>Inactive</option>
                 </select>
             </div>
-            <div class="form-group"></div> </div>
 
-        <div id="employeeFields" style="display: none;">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Hire Date</label>
-                    <input type="date" name="hireDate">
-                </div>
-                <div class="form-group">
-                    <label>Education</label>
-                    <input type="text" name="education" placeholder="E.g. IELTS 8.0, Master Degree">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Experience</label>
-                    <textarea name="experience" rows="2" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" placeholder="E.g. 3 years teaching English"></textarea>
+            <div class="form-group">
+                <div id="dynamicDateContainer" style="display: none;">
+                    <label id="dateLabel">Join Date</label>
+                    <input type="date" id="dynamicDateInput" class="form-control" value="${param.hireDate}${param.enrollmentDate}">
                 </div>
             </div>
         </div>
 
-        <div id="studentFields" style="display: none;">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Enrollment Date</label>
-                    <input type="date" name="enrollmentDate">
-                </div>
-                <div class="form-group"></div>
+        <div id="employeeExtraRow" class="form-row" style="display: none;">
+            <div class="form-group">
+                <label>Education</label>
+                <input type="text" name="education" value="${param.education}" placeholder="E.g. IELTS 8.0, Master Degree">
+            </div>
+            <div class="form-group">
+                <label>Experience</label>
+                <input type="text" name="experience" value="${param.experience}" placeholder="E.g. 3 years teaching">
             </div>
         </div>
 

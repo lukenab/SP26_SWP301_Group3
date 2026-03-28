@@ -32,16 +32,16 @@ public class SystemLogDAO extends DBContext {
 
     public List<SystemLog> getRecentLogs(String filterAction) {
         List<SystemLog> list = new ArrayList<>();
-        String sql = "SELECT TOP 100 LogID, ActorName, ActorRole, ActionType, Description, LogDate FROM SystemLog ";
+        String sql = "SELECT TOP 200 LogID, ActorName, ActorRole, ActionType, Description, LogDate FROM SystemLog ";
 
         if (filterAction != null && !filterAction.isEmpty() && !filterAction.equals("ALL")) {
-            sql += "WHERE ActionType = ? ";
+            sql += "WHERE ActionType LIKE ? ";
         }
         sql += "ORDER BY LogDate DESC";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             if (filterAction != null && !filterAction.isEmpty() && !filterAction.equals("ALL")) {
-                ps.setString(1, filterAction);
+                ps.setString(1, "%" + filterAction + "%");
             }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
