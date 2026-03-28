@@ -655,25 +655,44 @@ public class ScheduleController extends HttpServlet {
                             teacherId = classDAO.getTeacherIdByClassId(classId);
                         }
 
-                        // STEP 1: Check duplicate (exclude current schedule)
-                        // STEP 2: Check class conflict in slot (exclude current schedule)
-                        boolean success = scheduleDAO.editSchedule(scheduleId, classId, roomId, slotId,
-                                learningDate, teacherId, attendanceStatus);
+                        // Read edit scope (single or series)
+                        String editScope = request.getParameter("editScope"); // expected values: "single" or "series"
 
-                        if (success) {
+                        if ("series".equals(editScope)) {
+                            // Update similar schedules in series (only non-attended ones)
+                            int updatedCount = scheduleDAO.updateSimilarSchedules(scheduleId, classId, roomId, slotId, teacherId);
+                            if (updatedCount > 0) {
+                                SystemLogDAO logDAO = new SystemLogDAO();
+                                User logUser = (User) request.getSession().getAttribute("user");
+                                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                                logDAO.insertLog(actorName, actorRole, "UPDATE_SCHEDULE_BATCH", "Updated " + updatedCount + " schedules in series starting from Schedule ID: " + scheduleId);
 
-                            SystemLogDAO logDAO = new SystemLogDAO();
-                            User logUser = (User) request.getSession().getAttribute("user");
-
-                            String actorName = (logUser != null) ? logUser.getFullName() : "System";
-                            String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
-                            logDAO.insertLog(actorName, actorRole, "UPDATE_SCHEDULE", "Updated schedule ID: " + scheduleId + " (Class ID: " + classId + ")");
-
-                            session.setAttribute("message", "Schedule updated successfully!");
-                            session.setAttribute("messageType", "success");
+                                session.setAttribute("message", "Successfully updated " + updatedCount + " schedule(s) in the series!");
+                                session.setAttribute("messageType", "success");
+                            } else {
+                                session.setAttribute("message", "No schedules were updated. They may have attendance already taken or conflicts prevented updates.");
+                                session.setAttribute("messageType", "error");
+                            }
                         } else {
-                            session.setAttribute("message", "Failed to update schedule! (Possible duplicate or class conflict)");
-                            session.setAttribute("messageType", "error");
+                            // Single schedule update
+                            boolean success = scheduleDAO.editSchedule(scheduleId, classId, roomId, slotId,
+                                    learningDate, teacherId, attendanceStatus);
+
+                            if (success) {
+                                SystemLogDAO logDAO = new SystemLogDAO();
+                                User logUser = (User) request.getSession().getAttribute("user");
+
+                                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                                logDAO.insertLog(actorName, actorRole, "UPDATE_SCHEDULE", "Updated schedule ID: " + scheduleId + " (Class ID: " + classId + ")");
+
+                                session.setAttribute("message", "Schedule updated successfully!");
+                                session.setAttribute("messageType", "success");
+                            } else {
+                                session.setAttribute("message", "Failed to update schedule! (Possible duplicate or class conflict)");
+                                session.setAttribute("messageType", "error");
+                            }
                         }
 
                     } catch (Exception e) {

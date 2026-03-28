@@ -1170,6 +1170,34 @@ public class ScheduleDAO extends DBContext {
         return deletedCount;
     }
 
+    /**
+     * Update similar schedules (only non-attended ones) based on Class, Slot and Room
+     * Returns number of schedules successfully updated
+     */
+    public int updateSimilarSchedules(int referenceScheduleId, int newClassId, int newRoomId, int newSlotId, int newTeacherId) {
+        List<Schedule> similarSchedules = getSimilarSchedules(referenceScheduleId);
+        int updatedCount = 0;
+
+        for (Schedule schedule : similarSchedules) {
+            // skip schedules with attendance taken
+            if (schedule.isAttendanceStatus()) continue;
+
+            java.util.Date utilDate = schedule.getLearningDate();
+            if (utilDate == null) continue;
+            java.sql.Date learningDate = new java.sql.Date(utilDate.getTime());
+            try {
+                boolean success = editSchedule(schedule.getScheduleId(), newClassId, newRoomId, newSlotId, learningDate, newTeacherId, false);
+                if (success) updatedCount++;
+            } catch (Exception e) {
+                // log and continue with next
+                System.out.println("Fail to update schedule ID " + schedule.getScheduleId() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        return updatedCount;
+    }
+
     public List<Schedule> getTodayScheduleByStudent(int studentId, String today) {
 
         List<model.Schedule> list = new ArrayList<>();
