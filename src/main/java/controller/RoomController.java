@@ -149,6 +149,8 @@ public class RoomController extends HttpServlet {
                     String idUpdateString = request.getParameter("id");
                     int idUpdate = Integer.parseInt(idUpdateString);
                     Room roomUpdate = rdao.getRoomByID(idUpdate);
+                    boolean inUseForUpdate = rdao.isRoomInUse(idUpdate);
+                    request.setAttribute("roomInUse", inUseForUpdate);
                     request.setAttribute("roomUpdate", roomUpdate);
                     request.setAttribute("home_view", "/academic/updateRoom.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
@@ -298,6 +300,14 @@ public class RoomController extends HttpServlet {
                     int idUpdate = Integer.parseInt(idUpdateString);
                     int capacityUpdate = Integer.parseInt(capacityUpdateString);
                     int statusUpdate = Integer.parseInt(statusUpdateString);
+
+                    // If admin attempts to disable room but it is in use, block it
+                    if (statusUpdate == 0 && rdao.isRoomInUse(idUpdate)) {
+                        request.getSession().setAttribute("message", "Cannot disable room because it is assigned to a class or schedule.");
+                        request.getSession().setAttribute("messageType", "error");
+                        response.sendRedirect("room?action=update&id=" + idUpdate);
+                        break;
+                    }
 
                     int updated = rdao.updateRoom(idUpdate, nameUpdateString, capacityUpdate, typeUpdateString, statusUpdate);
                     if (updated > 0) {

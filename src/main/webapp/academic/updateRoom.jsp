@@ -87,10 +87,24 @@
 
                     <div class="form-group">
                         <label for="status">Status</label>
-                        <select id="status" name="status" required>
-                            <option value="1" ${roomUpdate.status ? 'selected' : ''}>Active</option>
-                            <option value="0" ${!roomUpdate.status ? 'selected' : ''}>Disabled</option>
-                        </select>
+                        <c:choose>
+                            <c:when test="${roomInUse}">
+                                <!-- Room is in use: do not allow changing to Disabled. Keep status locked to current value. -->
+                                <select id="status" name="status" disabled>
+                                    <option value="1" ${roomUpdate.status ? 'selected' : ''}>Active</option>
+                                    <option value="0" ${!roomUpdate.status ? 'selected' : ''}>Disabled</option>
+                                </select>
+                                <!-- preserve status value for POST while preventing user change -->
+                                <input type="hidden" name="status" value="${roomUpdate.status ? 1 : 0}" />
+                                <div class="mt-2 small text-warning">This room is currently assigned to classes or schedules — disabling is not allowed.</div>
+                            </c:when>
+                            <c:otherwise>
+                                <select id="status" name="status" required>
+                                    <option value="1" ${roomUpdate.status ? 'selected' : ''}>Active</option>
+                                    <option value="0" ${!roomUpdate.status ? 'selected' : ''}>Disabled</option>
+                                </select>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
 

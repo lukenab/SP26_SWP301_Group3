@@ -299,6 +299,11 @@ public class RoomDAO extends DBContext {
     //Update
     public int updateRoom(int id, String name, int capacity, String type, int status) {
         try {
+            // Prevent disabling a room that is currently in use by any schedule or class
+            if (status == 0 && isRoomInUse(id)) {
+                System.out.println("Attempt to disable room " + id + " blocked because room is in use.");
+                return -1;
+            }
             String query = "UPDATE Room SET RoomName = ?, Capacity = ?, [Type] = ?, Status = ? WHERE RoomID = ?";
             PreparedStatement p = conn.prepareStatement(query);
             p.setString(1, name);
