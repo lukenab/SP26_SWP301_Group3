@@ -38,7 +38,28 @@
                             <option value="0">All Classes</option>
                             <c:forEach items="${allClasses}" var="cls">
                                 <option value="${cls[0]}" ${classId != null && classId == cls[0] ? 'selected' : ''}>
-                                    ${cls[1]} - ${cls[2]}
+                                    ${cls[1]} - ${cls[2]} - ${cls[3]}
+                                    <c:if test="${not empty cls[4] || not empty cls[5]}">
+                                        (
+                                        <c:choose>
+                                            <c:when test="${not empty cls[4]}">
+                                                <fmt:formatDate value="${cls[4]}" pattern="yyyy-MM-dd" />
+                                            </c:when>
+                                            <c:otherwise> - </c:otherwise>
+                                        </c:choose>
+                                        &nbsp;to&nbsp;
+                                        <c:choose>
+                                            <c:when test="${not empty cls[5]}">
+                                                <fmt:formatDate value="${cls[5]}" pattern="yyyy-MM-dd" />
+                                            </c:when>
+                                            <c:otherwise> - </c:otherwise>
+                                        </c:choose>
+                                        )
+                                    </c:if>
+                                    <!-- class status removed per request -->
+                                    <c:if test="${not empty cls[7] || not empty cls[8]}">
+                                        &nbsp;(<c:out value="${cls[7] != null ? cls[7] : 0}" />/<c:out value="${cls[8] != null ? cls[8] : '-'}" />)
+                                    </c:if>
                                 </option>
                             </c:forEach>
                         </select>
