@@ -154,6 +154,20 @@
                                             <i class='bx bx-group'></i>
                                         </a>
                                     </c:when>
+                                    <c:when test="${c.status == 'Inactive'}">
+                                        <a href="student?action=viewByClass&classId=${c.classid}" class="action-btn" title="Student List">
+                                            <i class='bx bx-group'></i>
+                                        </a>
+                                        <a href="attendance?action=report&classId=${c.classid}" class="action-btn" title="Attendance Report">
+                                            <i class='bx bx-receipt'></i>
+                                        </a>
+                                        <a href="grade?action=report&classId=${c.classid}" class="action-btn" title="Grade Report">
+                                            <i class='bx bx-bar-chart-square'></i>
+                                        </a>
+                                        <a href="feedback?action=viewAll&classId=${c.className}&from=myClasses" class="action-btn btn-feedback" title="View Feedbacks">
+                                            <i class='bx bx-star'></i>
+                                        </a>
+                                    </c:when>
                                     <c:otherwise>
                                         <a href="schedule?action=viewScheduleByClassId&classId=${c.classid}" class="action-btn" title="View Schedule">
                                             <i class='bx bx-calendar'></i>
