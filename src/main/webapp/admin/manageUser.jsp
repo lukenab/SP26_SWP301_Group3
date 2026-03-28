@@ -24,21 +24,6 @@
         </div>
     </div>
 
-    <c:set var="activeUsers" value="0"/>
-    <c:set var="inactiveUsers" value="0"/>
-    <c:set var="totalAdmins" value="0"/>
-    <c:forEach var="u" items="${userList}">
-        <c:if test="${u.status == true}">
-            <c:set var="activeUsers" value="${activeUsers + 1}"/>
-        </c:if>
-        <c:if test="${u.status == false}">
-            <c:set var="inactiveUsers" value="${inactiveUsers + 1}"/>
-        </c:if>
-        <c:if test="${u.role.roleId == 1}">
-            <c:set var="totalAdmins" value="${totalAdmins + 1}"/>
-        </c:if>
-    </c:forEach>
-
     <div class="stat-card-grid">
         <div class="stat-card">
             <div class="stat-info">              
@@ -52,7 +37,7 @@
         <div class="stat-card">
             <div class="stat-info">
                 <p>Active Users</p>
-                <h3>${activeUsers}</h3> 
+                <h3>${activeUsersCount}</h3> 
             </div>
             <div class="icon-wrapper green">
                 <i class='bx bxs-check-shield'></i>
@@ -61,7 +46,7 @@
         <div class="stat-card">
             <div class="stat-info">
                 <p>Inactive Users</p>
-                <h3>${inactiveUsers}</h3>
+                <h3>${inactiveUsersCount}</h3>
             </div>
             <div class="icon-wrapper cyan">
                 <i class='bx bxs-info-shield'></i>
@@ -70,7 +55,7 @@
         <div class="stat-card">         
             <div class="stat-info">
                 <p>Admins</p>
-                <h3>${totalAdmins}</h3>
+                <h3>${adminsCount}</h3>
             </div>
             <div class="icon-wrapper cyan">
                 <i class='bx bxs-crown'></i>

@@ -1,32 +1,43 @@
 function toggleExtraFields() {
     const roleId = document.getElementById('roleId').value;
-    const employeeFields = document.getElementById('employeeFields');
-    const studentFields = document.getElementById('studentFields');
+    const dateContainer = document.getElementById('dynamicDateContainer');
+    const dateLabel = document.getElementById('dateLabel');
+    const dateInput = document.getElementById('dynamicDateInput');
+    const employeeRow = document.getElementById('employeeExtraRow');
 
-    employeeFields.style.display = 'none';
-    studentFields.style.display = 'none';
+    if (!roleId)
+        return;
+
+    dateContainer.style.display = 'none';
+    employeeRow.style.display = 'none';
 
     if (roleId === '2' || roleId === '3' || roleId === '4') {
-        employeeFields.style.display = 'block';
+        dateContainer.style.display = 'block';
+        employeeRow.style.display = 'grid';
+        dateLabel.innerText = "Hire Date";
+        dateInput.name = "hireDate";
     } else if (roleId === '5') {
-        studentFields.style.display = 'block';
+        dateContainer.style.display = 'block';
+        dateLabel.innerText = "Enrollment Date";
+        dateInput.name = "enrollmentDate";
     }
 }
-
 function toggleAvatarInput() {
-    var inputDiv = document.getElementById("avatarInputContainer");
-    var visualInput = document.getElementById("avatarVisualInput");
-    inputDiv.classList.toggle("active");
+    const inputDiv = document.getElementById("avatarInputContainer");
+    const visualInput = document.getElementById("avatarVisualInput");
 
-    if (inputDiv.classList.contains("active")) {
-        visualInput.focus();
+    if (inputDiv) {
+        inputDiv.classList.toggle("active");
+        if (inputDiv.classList.contains("active") && visualInput) {
+            visualInput.focus();
+        }
     }
 }
 
 function updateAvatar(inputElement) {
-    var imgPreview = document.getElementById("mainAvatarPreview");
-    if (inputElement.files && inputElement.files[0]) {
-        var reader = new FileReader();
+    const imgPreview = document.getElementById("mainAvatarPreview");
+    if (inputElement.files && inputElement.files[0] && imgPreview) {
+        const reader = new FileReader();
         reader.onload = function (e) {
             imgPreview.src = e.target.result;
         };
@@ -34,8 +45,11 @@ function updateAvatar(inputElement) {
     }
 }
 
-const dobInput = document.getElementById('dobInput');
-if (dobInput) {
-    const today = new Date().toISOString().split('T')[0];
-    dobInput.setAttribute('max', today);
-}
+document.addEventListener('DOMContentLoaded', function () {
+    toggleExtraFields();
+    const dobInput = document.getElementById('dobInput');
+    if (dobInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dobInput.setAttribute('max', today);
+    }
+});

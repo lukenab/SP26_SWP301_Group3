@@ -297,7 +297,7 @@ nav.active .navbar-left{
     pointer-events: auto;
 }
 
-.sidebar{
+.sidebar {
     position: fixed;
     top: 0;
     left: 0;
@@ -307,20 +307,46 @@ nav.active .navbar-left{
     background-color: var(--nav-color);
     transition: all 0.3s ease;
     box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    display: flex; 
+    flex-direction: column; 
+    z-index: 1060 !important;
 }
 
-.sidebar.close{
-    width: 78px;
-}
-
-.sidebar.close .text{
-    opacity: 0;
-}
-
-.sidebar header{
+.sidebar header {
+    flex-shrink: 0; 
     position: relative;
     padding: 10px 14px;
     border-bottom: 1px solid var(--divider);
+}
+
+.menu-bar {
+    flex-grow: 1; 
+    overflow-y: auto;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Tùy chỉnh thanh cuộn cho đẹp và mảnh hơn */
+.menu-bar::-webkit-scrollbar {
+    width: 4px; /* Thanh cuộn siêu mỏng */
+}
+
+.menu-bar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.menu-bar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1); 
+    border-radius: 10px;
+}
+
+body.dark .menu-bar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.menu-bar::-webkit-scrollbar-thumb:hover {
+    background: var(--blue); 
 }
 
 .sidebar-header{

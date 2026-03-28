@@ -58,6 +58,7 @@ public class DashboardController extends HttpServlet {
         LeadDAO leadDAO = new LeadDAO();
         PaymentDAO paymentDAO = new PaymentDAO();
         VoucherDAO voucherDAO = new VoucherDAO();
+        SystemLogDAO logDAO = new SystemLogDAO();
         ClassDAO classDAO = new ClassDAO();
         EnrollmentDAO enrollDAO = new EnrollmentDAO();
         TeacherDAO teacherDAO = new TeacherDAO();
@@ -218,10 +219,11 @@ public class DashboardController extends HttpServlet {
 
                 User freshUser = userDAO.getUserById(loggedInUser.getUserId());
 
-                session.setAttribute(
-                        "user", freshUser);
-                request.setAttribute(
-                        "user", freshUser);
+                session.setAttribute("user", freshUser);
+                request.setAttribute("user", freshUser);
+
+                List<SystemLog> recentLogs = logDAO.getLogsByActor(freshUser.getFullName(), 5);
+                request.setAttribute("recentLogs", recentLogs);
 
                 roleId = freshUser.getRole().getRoleId();
 
@@ -281,12 +283,14 @@ public class DashboardController extends HttpServlet {
                 for (Schedule s : weekly) {
                     if (s.getLearningDate().toString().equals(today)) {
                         todaySlots.add(s);
+
                         if (nextUnansweredSlot == null && !s.isAttendanceStatus()) {
                             nextUnansweredSlot = s;
                         }
                     }
                 }
                 request.setAttribute("todaySlots", todaySlots);
+
                 if (nextUnansweredSlot != null) {
                     request.setAttribute("nextUnansweredSlot", nextUnansweredSlot);
                 }
@@ -297,14 +301,10 @@ public class DashboardController extends HttpServlet {
                     progressMap.put(c.getClassid(), teacherDAO.getClassProgress(c.getClassid()));
                 }
 
-                request.setAttribute(
-                        "totalSlotsTaught", teacherDAO.getTotalSlotsTaught(tId));
-                request.setAttribute(
-                        "teacherClasses", tClasses);
-                request.setAttribute(
-                        "progressMap", progressMap);
-                request.setAttribute(
-                        "totalStudents", teacherDAO.getTotalStudentsByTeacher(tId));
+                request.setAttribute("totalSlotsTaught", tDAO.getTotalSlotsTaught(tId));
+                request.setAttribute("teacherClasses", tClasses);
+                request.setAttribute("progressMap", progressMap);
+                request.setAttribute("totalStudents", tDAO.getTotalStudentsByTeacher(tId));
 
                 double avgRating = teacherDAO.getAverageRating(tId);
                 Map<String, Object> fData = teacherDAO.getTeacherFeedbackData(tId);
@@ -381,7 +381,6 @@ public class DashboardController extends HttpServlet {
                 break;
 
             case "report":
-                SystemLogDAO logDAO = new SystemLogDAO();
                 String filterAction = request.getParameter("filterAction");
                 if (filterAction == null) {
                     filterAction = "ALL";

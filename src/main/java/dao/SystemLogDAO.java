@@ -32,23 +32,23 @@ public class SystemLogDAO extends DBContext {
 
     public List<SystemLog> getRecentLogs(String filterAction) {
         List<SystemLog> list = new ArrayList<>();
-        String sql = "SELECT TOP 100 LogID, ActorName, ActorRole, ActionType, Description, LogDate FROM SystemLog ";
+        String sql = "SELECT TOP 200 LogID, ActorName, ActorRole, ActionType, Description, LogDate FROM SystemLog ";
 
         if (filterAction != null && !filterAction.isEmpty() && !filterAction.equals("ALL")) {
-            sql += "WHERE ActionType = ? ";
+            sql += "WHERE ActionType LIKE ? ";
         }
         sql += "ORDER BY LogDate DESC";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             if (filterAction != null && !filterAction.isEmpty() && !filterAction.equals("ALL")) {
-                ps.setString(1, filterAction);
+                ps.setString(1, "%" + filterAction + "%");
             }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 SystemLog log = new SystemLog();
                 log.setLogId(rs.getInt("LogID"));
                 log.setActorName(rs.getString("ActorName"));
-                log.setActorRole(rs.getString("ActorRole")); 
+                log.setActorRole(rs.getString("ActorRole"));
                 log.setActionType(rs.getString("ActionType"));
                 log.setDescription(rs.getString("Description"));
                 log.setLogDate(rs.getTimestamp("LogDate"));
@@ -56,6 +56,29 @@ public class SystemLogDAO extends DBContext {
             }
         } catch (Exception e) {
             System.out.println("Fail to get System Log: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public List<SystemLog> getLogsByActor(String actorName, int row) {
+        List<SystemLog> list = new ArrayList<>();
+        String sql = "SELECT TOP (?) * FROM SystemLog WHERE ActorName = ? ORDER BY LogDate DESC";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, row);
+            ps.setString(2, actorName);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                SystemLog log = new SystemLog();
+                log.setLogId(rs.getInt("LogID"));
+                log.setActorName(rs.getString("ActorName"));
+                log.setActorRole(rs.getString("ActorRole"));
+                log.setActionType(rs.getString("ActionType"));
+                log.setDescription(rs.getString("Description"));
+                log.setLogDate(rs.getTimestamp("LogDate"));
+                list.add(log);
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get Personal Logs: " + e.getMessage());
         }
         return list;
     }
