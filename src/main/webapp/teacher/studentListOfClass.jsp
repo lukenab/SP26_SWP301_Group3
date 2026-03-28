@@ -142,14 +142,13 @@
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center align-items-center gap-1">
                                         <c:choose>
-                                            <c:when test="${classStatus == 'Pending'}">
-                                                <!-- Hide grade actions if class is Pending -->
-                                                <!-- Only show sync or other allowed actions if needed -->
+                                            <c:when test="${classStatus == 'Pending' || classStatus == 'Inactive'}">
+                                                <!-- Hide grade actions if class is Pending or Inactive -->
                                                 <a href="#" class="btn-icon-minimal" title="Sync"><i class='bx bx-refresh'></i></a>
                                             </c:when>
                                             <c:otherwise>
                                                 <c:choose>
-                                                    <c:when test="${avg == null}">
+                                                    <c:when test="${avg == null || avg == ''}">
                                                         <a href="grade?action=enter&studentId=${s.userId}&classId=${classId}"
                                                            class="btn-icon-minimal" title="Enter Grade"><i class='bx bx-plus-circle'></i></a>
                                                     </c:when>
