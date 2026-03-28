@@ -272,7 +272,8 @@ public class ScheduleController extends HttpServlet {
                 ClassDAO classDAO2 = new ClassDAO();
                 SlotDAO slotDAO2 = new SlotDAO();
 
-                List<Object[]> allClasses2 = classDAO2.getClassManagementList();
+                // Only load classes with status = Active for the create form
+                List<Object[]> allClasses2 = classDAO2.getClassManagementList(null, "Active", null);
                 List<Object[]> allRooms2 = scheduleDAO3.getAllRooms();
                 List<Slot> allSlots2 = slotDAO2.getAllSlots();
 

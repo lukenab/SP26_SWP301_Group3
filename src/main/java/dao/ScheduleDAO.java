@@ -193,6 +193,20 @@ public class ScheduleDAO extends DBContext {
             System.out.println("Error: Teacher already has a schedule for this slot on this date!");
             return false;
         }
+
+        // STEP 5: Check that the class is Active. Do not create schedules for non-active classes.
+        try {
+            ClassDAO classDAO = new ClassDAO();
+            Classes cls = classDAO.getClassByID(classId);
+            String classStatus = (cls != null) ? cls.getStatus() : null;
+            boolean isActiveClass = classStatus != null && ("Active".equalsIgnoreCase(classStatus) || "1".equals(classStatus));
+            if (!isActiveClass) {
+                System.out.println("Error: Cannot create schedule for class with status '" + classStatus + "'. Only Active classes are allowed.");
+                return false;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to validate class status before creating schedule: " + e.getMessage());
+        }
         
         String sql = "INSERT INTO Schedule (ClassID, RoomID, SlotID, LearningDate, TeacherID, AttendanceStatus) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
