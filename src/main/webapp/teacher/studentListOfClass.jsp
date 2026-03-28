@@ -148,7 +148,7 @@
                                             </c:when>
                                             <c:otherwise>
                                                 <c:choose>
-                                                    <c:when test="${avg == null}">
+                                                    <c:when test="${avg == null || avg == ''}">
                                                         <a href="grade?action=enter&studentId=${s.userId}&classId=${classId}"
                                                            class="btn-icon-minimal" title="Enter Grade"><i class='bx bx-plus-circle'></i></a>
                                                     </c:when>
