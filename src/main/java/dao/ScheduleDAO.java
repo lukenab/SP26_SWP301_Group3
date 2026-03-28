@@ -23,6 +23,17 @@ import utils.DBContext;
  * @author Legion
  */
 public class ScheduleDAO extends DBContext {
+    
+    // Store the last error/reason for a failing operation to help controllers show meaningful messages
+    private String lastError;
+
+    public String getLastError() {
+        return lastError;
+    }
+
+    private void setLastError(String msg) {
+        this.lastError = msg;
+    }
 
     public List<Schedule> getTeachingSchedule(int teacherId, String selectedDate) {
         List<Schedule> list = new ArrayList<>();
@@ -161,36 +172,46 @@ public class ScheduleDAO extends DBContext {
     // Create new schedule
     public boolean createSchedule(int classId, int roomId, int slotId, Date learningDate, int teacherId, boolean attendanceStatus) {
         // STEP 0: Check if learning date is within class start and end dates
-        // If not, silently skip (don't create the schedule)
+        // If not, set error and skip (don't create the schedule)
         if (!isLearningDateWithinClassRange(classId, learningDate)) {
-            System.out.println("Info: Learning date " + learningDate + " is outside class date range, skipping...");
+            String msg = "Learning date " + learningDate + " is outside class date range.";
+            System.out.println("Info: " + msg + " Skipping...");
+            setLastError(msg);
             return false;
         }
         
         // STEP 1: Check if exact duplicate exists (all fields except ScheduleID)
         if (isDuplicateSchedule(classId, roomId, slotId, learningDate, teacherId, -1)) {
-            System.out.println("Error: Duplicate schedule already exists!");
+            String msg = "Duplicate schedule already exists for the selected class/room/slot/date.";
+            System.out.println("Error: " + msg);
+            setLastError(msg);
             return false;
         }
         
         // STEP 2: Check if class already has schedule in same slot on same date
         // This prevents 1 class from having multiple schedules in same slot on same day
         if (hasClassConflictInSlot(classId, slotId, learningDate, -1)) {
-            System.out.println("Error: Class already has a schedule for this slot on this date!");
+            String msg = "The class already has a schedule for this slot on the selected date.";
+            System.out.println("Error: " + msg);
+            setLastError(msg);
             return false;
         }
         
         // STEP 3: Check if room already has schedule in same slot on same date
         // This prevents 1 room from having multiple schedules in same slot on same day
         if (hasRoomConflictInSlot(roomId, slotId, learningDate, -1)) {
-            System.out.println("Error: Room already has a schedule for this slot on this date!");
+            String msg = "The room already has a schedule for this slot on the selected date.";
+            System.out.println("Error: " + msg);
+            setLastError(msg);
             return false;
         }
         
         // STEP 4: Check if teacher already has schedule in same slot on same date
         // This prevents 1 teacher from teaching multiple classes in same slot on same day
         if (hasTeacherConflictInSlot(teacherId, slotId, learningDate, -1)) {
-            System.out.println("Error: Teacher already has a schedule for this slot on this date!");
+            String msg = "The teacher already has a schedule for this slot on the selected date.";
+            System.out.println("Error: " + msg);
+            setLastError(msg);
             return false;
         }
 
@@ -201,11 +222,15 @@ public class ScheduleDAO extends DBContext {
             String classStatus = (cls != null) ? cls.getStatus() : null;
             boolean isActiveClass = classStatus != null && ("Active".equalsIgnoreCase(classStatus) || "1".equals(classStatus));
             if (!isActiveClass) {
-                System.out.println("Error: Cannot create schedule for class with status '" + classStatus + "'. Only Active classes are allowed.");
+                String msg = "Cannot create schedule for class with status '" + classStatus + "'. Only Active classes are allowed.";
+                System.out.println("Error: " + msg);
+                setLastError(msg);
                 return false;
             }
         } catch (Exception e) {
-            System.out.println("Fail to validate class status before creating schedule: " + e.getMessage());
+            String msg = "Fail to validate class status before creating schedule: " + e.getMessage();
+            System.out.println(msg);
+            setLastError(msg);
         }
         
         String sql = "INSERT INTO Schedule (ClassID, RoomID, SlotID, LearningDate, TeacherID, AttendanceStatus) "
@@ -219,9 +244,17 @@ public class ScheduleDAO extends DBContext {
             ps.setInt(5, teacherId);
             ps.setBoolean(6, attendanceStatus);
 
-            return ps.executeUpdate() > 0;
+            boolean ok = ps.executeUpdate() > 0;
+            if (ok) {
+                setLastError(null);
+            } else {
+                setLastError("Database insert returned no rows affected.");
+            }
+            return ok;
         } catch (Exception e) {
-            System.out.println("Fail to create schedule: " + e.getMessage());
+            String msg = "Fail to create schedule: " + e.getMessage();
+            System.out.println(msg);
+            setLastError(msg);
         }
         return false;
     }
@@ -334,7 +367,9 @@ public class ScheduleDAO extends DBContext {
                     endCondition, endDate, occurrences);
 
             if (scheduleDates.isEmpty()) {
-                System.out.println("No dates generated for recurring schedule");
+                String msg = "No dates generated for recurring schedule with given parameters.";
+                System.out.println(msg);
+                setLastError(msg);
                 return 0;
             }
 
@@ -375,7 +410,22 @@ public class ScheduleDAO extends DBContext {
                         System.out.println("Warning: Teacher already has schedule for slot " + slotId + " on " + date + ", skipping...");
                         continue; // Skip this date
                     }
-                    
+
+                    // STEP 5: Check that the class is Active for batch creation as well
+                    try {
+                        ClassDAO classDAO = new ClassDAO();
+                        Classes cls = classDAO.getClassByID(classId);
+                        String classStatus = (cls != null) ? cls.getStatus() : null;
+                        boolean isActiveClass = classStatus != null && ("Active".equalsIgnoreCase(classStatus) || "1".equals(classStatus));
+                        if (!isActiveClass) {
+                            System.out.println("Warning: Class status is '" + classStatus + "' - skipping date " + date);
+                            continue;
+                        }
+                    } catch (Exception ex) {
+                        System.out.println("Warning: Failed to validate class status for batch create: " + ex.getMessage());
+                        // continue and rely on other checks
+                    }
+
                     ps.setInt(1, classId);
                     ps.setInt(2, roomId);
                     ps.setInt(3, slotId);
@@ -393,6 +443,12 @@ public class ScheduleDAO extends DBContext {
                     if (result > 0) {
                         createdCount++;
                     }
+                }
+
+                if (createdCount > 0) {
+                    setLastError(null);
+                } else {
+                    setLastError("No schedules were inserted during batch operation.");
                 }
 
                 return createdCount;
