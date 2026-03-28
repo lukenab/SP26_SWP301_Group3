@@ -9,6 +9,7 @@ import dao.ClassDAO;
 import dao.EnrollmentDAO;
 import dao.LeadDAO;
 import dao.PaymentDAO;
+import dao.ScheduleDAO;
 import dao.SystemLogDAO;
 import dao.UserDAO;
 import dao.VoucherDAO;
@@ -50,6 +51,7 @@ public class DashboardController extends HttpServlet {
         LeadDAO leadDAO = new LeadDAO();
         PaymentDAO paymentDAO = new PaymentDAO();
         VoucherDAO voucherDAO = new VoucherDAO();
+        SystemLogDAO logDAO = new SystemLogDAO();
         ClassDAO classDAO = new ClassDAO();
         EnrollmentDAO enrollDAO = new EnrollmentDAO();
 
@@ -208,10 +210,11 @@ public class DashboardController extends HttpServlet {
 
                 User freshUser = userDAO.getUserById(loggedInUser.getUserId());
 
-                session.setAttribute(
-                        "user", freshUser);
-                request.setAttribute(
-                        "user", freshUser);
+                session.setAttribute("user", freshUser);
+                request.setAttribute("user", freshUser);
+
+                List<SystemLog> recentLogs = logDAO.getLogsByActor(freshUser.getFullName(), 5);
+                request.setAttribute("recentLogs", recentLogs);
 
                 roleId = freshUser.getRole().getRoleId();
 
@@ -262,24 +265,25 @@ public class DashboardController extends HttpServlet {
                 }
 
                 dao.TeacherDAO tDAO = new dao.TeacherDAO();
+                ScheduleDAO scheduleDaoForTeacher = new ScheduleDAO();
                 int tId = t.getUserId();
                 String today = java.time.LocalDate.now().toString();
 
-                List<model.Schedule> weekly = tDAO.getTeachingSchedule(tId, today);
+                List<model.Schedule> weekly = scheduleDaoForTeacher.getTeachingSchedule(tId, today);
                 List<model.Schedule> todaySlots = new java.util.ArrayList<>();
                 model.Schedule nextUnansweredSlot = null;
 
                 for (model.Schedule s : weekly) {
                     if (s.getLearningDate().toString().equals(today)) {
                         todaySlots.add(s);
-                 
+
                         if (nextUnansweredSlot == null && !s.isAttendanceStatus()) {
                             nextUnansweredSlot = s;
                         }
                     }
                 }
                 request.setAttribute("todaySlots", todaySlots);
-           
+
                 if (nextUnansweredSlot != null) {
                     request.setAttribute("nextUnansweredSlot", nextUnansweredSlot);
                 }
@@ -291,14 +295,10 @@ public class DashboardController extends HttpServlet {
                     progressMap.put(c.getClassid(), tDAO.getClassProgress(c.getClassid()));
                 }
 
-                request.setAttribute(
-                        "totalSlotsTaught", tDAO.getTotalSlotsTaught(tId));
-                request.setAttribute(
-                        "teacherClasses", tClasses);
-                request.setAttribute(
-                        "progressMap", progressMap);
-                request.setAttribute(
-                        "totalStudents", tDAO.getTotalStudentsByTeacher(tId));
+                request.setAttribute("totalSlotsTaught", tDAO.getTotalSlotsTaught(tId));
+                request.setAttribute("teacherClasses", tClasses);
+                request.setAttribute("progressMap", progressMap);
+                request.setAttribute("totalStudents", tDAO.getTotalStudentsByTeacher(tId));
 
                 double avgRating = tDAO.getAverageRating(tId);
                 java.util.Map<String, Object> fData = tDAO.getTeacherFeedbackData(tId);
@@ -375,7 +375,6 @@ public class DashboardController extends HttpServlet {
                 break;
 
             case "report":
-                SystemLogDAO logDAO = new SystemLogDAO();
                 String filterAction = request.getParameter("filterAction");
                 if (filterAction == null) {
                     filterAction = "ALL";

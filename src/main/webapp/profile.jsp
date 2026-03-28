@@ -63,7 +63,7 @@
                 <label>Upload New Avatar:</label>
                 <div class="avatar-input-content">
                     <input type="file" name="avatarFile" id="avatarVisualInput" class="form-control form-control-sm" accept="image/*" 
-                            onchange="updateAvatar(this)" form="updateUserForm">
+                           onchange="updateAvatar(this)" form="updateUserForm">
 
                     <button type="button" class="btn-secondary avatar-input-btn" onclick="toggleAvatarInput()">
                         <i class='bx bx-x'></i>
@@ -176,30 +176,31 @@
             <div class="profile-shortcut-section">
                 <div class="shortcut-form">
                     <div class="activity">
-                        <h6 class="form-title">Recent Activity</h6>
-                    </div>
-                </div>
-                <div class="shortcut-form">
-                    <div class="quick-actions">
-                        <h5 class="form-title">Quick Actions</h5>
-                        <div class="shortcut-btn mt-4">
-                            <div class="shortcut-edit">
-                                <a href="#"><i class="bx bx-edit"></i>
-                                    <span>Edit Profile</span></a> 
-                            </div>
-
-                            <div class="shortcut-edit">
-                                <a href="#"><i class="bx bx-bell"></i>
-                                    <span>Notification</span></a> 
-                            </div>
-
-                            <div class="shortcut-edit">
-                                <a href="#"><i class="bx bx-arrow-from-bottom"></i>
-                                    <span>Upload avatar</span></a> 
-                            </div>
+                        <h6 class="form-title mb-3">Recent Activity</h6>
+                        <div class="activity-list">
+                            <c:choose>
+                                <c:when test="${not empty recentLogs}">
+                                    <c:forEach var="log" items="${recentLogs}">
+                                        <div class="activity-item">
+                                            <div class="activity-dot"></div>
+                                            <div class="activity-content">
+                                                <p class="activity-text">
+                                                    <strong>${log.actionType}:</strong> ${log.description}
+                                                </p>
+                                                <small class="activity-time">
+                                                    <fmt:formatDate value="${log.logDate}" pattern="dd/MM/yyyy HH:mm"/>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </c:when>
+                                <c:otherwise>
+                                    <p class="text-muted small p-3">No recent activity recorded.</p>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </div>
-                </div>
+                </div>  
             </div>
         </div>
     </div>
@@ -214,21 +215,30 @@
                     <div class="form-row full-width-row">
                         <div class="form-group">
                             <label for="currentPassword">Current Password</label>
-                            <input type="text" name="currentPassword" id="currentPassword" placeholder="Confirm current password" required>
+                            <div class="password-field-wrapper">
+                                <input type="password" name="currentPassword" id="currentPassword" placeholder="Confirm current password" required>
+                                <i class='bx bx-eye toggle-password' onclick="togglePasswordVisibility('currentPassword', this)"></i>
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-row full-width-row">
                         <div class="form-group">
                             <label for="newPassword">New Password</label>
-                            <input type="text" name="newPassword" id="newPassword" placeholder="Enter new password" required>
+                            <div class="password-field-wrapper">
+                                <input type="password" name="newPassword" id="newPassword" placeholder="Enter new password" required>
+                                <i class='bx bx-eye toggle-password' onclick="togglePasswordVisibility('newPassword', this)"></i>
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-row full-width-row">
                         <div class="form-group">
                             <label for="confirmPassword">Confirm New Password</label>
-                            <input type="text" name="confirmPassword" id="confirmPassword" placeholder="Confirm new password" required>
+                            <div class="password-field-wrapper">
+                                <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm new password" required>
+                                <i class='bx bx-eye toggle-password' onclick="togglePasswordVisibility('confirmPassword', this)"></i>
+                            </div>
                         </div>
                     </div>
 
@@ -244,33 +254,35 @@
             <div class="profile-shortcut-section">
                 <div class="shortcut-form">
                     <div class="activity">
-                        <h6 class="form-title">Recent Activity</h6>
-                    </div>
-                </div>
-                <div class="shortcut-form">
-                    <div class="quick-actions">
-                        <h5 class="form-title">Quick Actions</h5>
-                        <div class="shortcut-btn mt-4">
-                            <div class="shortcut-edit">
-                                <a href="#"><i class="bx bx-edit"></i>
-                                    <span>Edit Profile</span></a> 
-                            </div>
-
-                            <div class="shortcut-edit">
-                                <a href="#"><i class="bx bx-bell"></i>
-                                    <span>Notification</span></a> 
-                            </div>
-
-                            <div class="shortcut-edit">
-                                <a href="#"><i class="bx bx-arrow-from-bottom"></i>
-                                    <span>Upload avatar</span></a> 
-                            </div>
+                        <h6 class="form-title mb-3">Recent Activity</h6>
+                        <div class="activity-list">
+                            <c:choose>
+                                <c:when test="${not empty recentLogs}">
+                                    <c:forEach var="log" items="${recentLogs}">
+                                        <div class="activity-item">
+                                            <div class="activity-dot"></div>
+                                            <div class="activity-content">
+                                                <p class="activity-text">
+                                                    <strong>${log.actionType}:</strong> ${log.description}
+                                                </p>
+                                                <small class="activity-time">
+                                                    <fmt:formatDate value="${log.logDate}" pattern="dd/MM/yyyy HH:mm"/>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </c:when>
+                                <c:otherwise>
+                                    <p class="text-muted small p-3">No recent activity recorded.</p>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <script src="js/editUser.js" type="text/javascript"></script>

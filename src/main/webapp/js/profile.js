@@ -14,3 +14,15 @@ function switchTab(tabId, clickedElement) {
     clickedElement.classList.add('active');
     
 }
+
+function togglePasswordVisibility(inputId, iconElement) {
+    const passwordInput = document.getElementById(inputId);
+    
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        iconElement.classList.replace('bx-hide', 'bx-show');
+    } else {
+        passwordInput.type = "password";
+        iconElement.classList.replace('bx-show', 'bx-hide');
+    }
+}

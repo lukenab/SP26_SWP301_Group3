@@ -100,4 +100,4 @@
 </div>
 
 <script src="js/manageUser.js" type="text/javascript"></script>
-<script src="js/enter_grade.js" type="text/javascript"></script>
+<script src="js/enterGrade.js" type="text/javascript"></script>

@@ -118,7 +118,7 @@ public class ClassController extends HttpServlet {
                     int teacherID = user.getUserId();
                     List<Classes> list = dao.getAllClassOfTeacherID(teacherID);
                     request.setAttribute("ClassList", list);
-                    request.setAttribute("home_view", "teacher/teacher_classlist.jsp");
+                    request.setAttribute("home_view", "teacher/teacherClassList.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } else {
                     response.sendRedirect("login.jsp");

@@ -23,12 +23,12 @@
             </div>
 
             <div class="bg-white p-2 border rounded shadow-sm d-flex align-items-center gap-2">
-                <a href="schedule?action=view&classId=${classId}&date=${prevWeek}" class="btn btn-outline-primary btn-sm">
+                <a href="schedule?action=viewScheduleByClassId&classId=${classId}&date=${prevWeek}" class="btn btn-outline-primary btn-sm">
                     <i class='bx bx-chevron-left'></i> Prev
                 </a>
 
                 <form action="schedule" method="GET" class="row g-2 align-items-center mb-0 mx-1">
-                    <input type="hidden" name="action" value="view">
+                    <input type="hidden" name="action" value="viewScheduleByClassId">
                     <input type="hidden" name="classId" value="${classId}">
                     <div class="col-auto">
                         <input type="date" name="date" class="form-control form-control-sm" 
@@ -36,7 +36,7 @@
                     </div>
                 </form>
 
-                <a href="schedule?action=view&classId=${classId}&date=${nextWeek}" class="btn btn-outline-primary btn-sm">
+                <a href="schedule?action=viewScheduleByClassId&classId=${classId}&date=${nextWeek}" class="btn btn-outline-primary btn-sm">
                     Next <i class='bx bx-chevron-right'></i>
                 </a>
             </div>

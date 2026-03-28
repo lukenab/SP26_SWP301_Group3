@@ -103,14 +103,14 @@ public class AttendanceController extends HttpServlet {
                     request.setAttribute("scheduleId", scheduleId);
                     request.setAttribute("classId", classId);
                     request.setAttribute("home_view",
-                            "teacher/take_attendance.jsp");
+                            "teacher/takeAttendance.jsp");
 
                     request.getRequestDispatcher("dashboard.jsp")
                             .forward(request, response);
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    response.sendRedirect("schedule?action=view");
+                    response.sendRedirect("schedule?action=viewTeacherSchedule");
                 }
                 break;
 
@@ -145,6 +145,8 @@ public class AttendanceController extends HttpServlet {
 
                 } catch (Exception e) {
                     e.printStackTrace();
+                    session.setAttribute("message", "Error loading attendance report.");
+                    session.setAttribute("messageType", "error");
                     response.sendRedirect("dashboard?action=teacher");
                 }
                 break;
@@ -314,12 +316,12 @@ public class AttendanceController extends HttpServlet {
                     session.setAttribute("message", "Attendance records have been saved successfully!");
                     session.setAttribute("messageType", "success");
 
-                    response.sendRedirect("schedule?action=view&classId=" + classId);
+                    response.sendRedirect("schedule?action=viewScheduleByClassId&classId=" + classId);
                 } catch (Exception e) {
                     e.printStackTrace();
                     session.setAttribute("message", "An error occurred while saving attendance.");
                     session.setAttribute("messageType", "error");
-                    response.sendRedirect("schedule?action=view");
+                    response.sendRedirect("schedule?action=viewTeacherSchedule");
                 }
                 break;
         }

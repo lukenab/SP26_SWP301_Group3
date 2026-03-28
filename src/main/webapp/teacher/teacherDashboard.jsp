@@ -272,7 +272,7 @@
                     <c:forEach var="f" items="${latestFeedbacks}">
                         <div class="p-3 border-bottom feedback-item transition">
                             <div class="d-flex justify-content-between mb-2">
-                                <span class="fw-bold small text-dark">Student #${(f.feedbackId * 73 + 19) % 9000 + 1000}</span>
+<!--                                <span class="fw-bold small text-dark">Student #${(f.feedbackId * 73 + 19) % 9000 + 1000}</span>-->
                                 <div class="text-warning small" style="font-size: 0.65rem;">
                                     <c:forEach begin="1" end="${f.rating}"><i class='bx bxs-star'></i></c:forEach>
                                     </div>

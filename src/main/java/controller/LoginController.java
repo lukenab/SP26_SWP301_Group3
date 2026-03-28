@@ -9,6 +9,7 @@ import dao.UserDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,6 +26,20 @@ public class LoginController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if (c.getName().equals("cEmail")) {
+                    request.setAttribute("cookieEmail", c.getValue());
+                }
+                if (c.getName().equals("cPassword")) {
+                    request.setAttribute("cookiePass", c.getValue());
+                }
+                if (c.getName().equals("cRemember")) {
+                    request.setAttribute("cookieRem", "checked");
+                }
+            }
+        }
         request.getRequestDispatcher("login.jsp").forward(request, response);
     }
 
@@ -36,6 +51,7 @@ public class LoginController extends HttpServlet {
 
         String email = request.getParameter("email");
         String password = request.getParameter("password");
+        String remember = request.getParameter("remember");
 
         HttpSession loginSession = request.getSession();
 
@@ -87,6 +103,22 @@ public class LoginController extends HttpServlet {
             loginSession.setAttribute("user", userByEmail);
 
             loginSession.setMaxInactiveInterval(timeoutMinutes * 60);
+            Cookie cEmail = new Cookie("cEmail", email);
+            Cookie cPassword = new Cookie("cPassword", password);
+            Cookie cRemember = new Cookie("cRemember", "checked");
+
+            if (remember != null && remember.equals("on")) {
+                cEmail.setMaxAge(24 * 60 * 60);
+                cPassword.setMaxAge(24 * 60 * 60);
+                cRemember.setMaxAge(24 * 60 * 60);
+            } else {
+                cEmail.setMaxAge(0);
+                cPassword.setMaxAge(0);
+                cRemember.setMaxAge(0);
+            }
+            response.addCookie(cEmail);
+            response.addCookie(cPassword);
+            response.addCookie(cRemember);
 
             int roleId = userByEmail.getRole().getRoleId();
             String redirectUrl;

@@ -284,7 +284,7 @@
                             </a>
                         </li>
                         <li class="nav-links">
-                            <a href="schedule?action=view" class="${pageContext.request.servletPath == '/schedule' ? 'active' : ''}">
+                            <a href="schedule?action=viewTeacherSchedule" class="${pageContext.request.servletPath == '/schedule' ? 'active' : ''}">
                                 <i class="bxr bx-calendar-event"></i>
                                 <span class="text nav-text">My Schedule</span>
                             </a>

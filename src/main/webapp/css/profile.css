@@ -41,8 +41,8 @@
 }
 
 .shortcut-form{
-    height: 230px;
-    padding: 25px;
+    height: 250px;
+    padding: 30px;
     border-radius: 10px;
     background-color: #fff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
@@ -149,6 +149,7 @@
 
 .form-group input[type="text"],
 .form-group input[type="tel"],
+.form-group input[type="password"],
 .form-group input[type="date"],
 .form-group input[type="email"],
 .form-group input[type="number"],
@@ -553,5 +554,112 @@
     font-weight: 600;
     color: #2563eb; 
     margin-bottom: 8px;
+    display: block;
+}
+
+.password-field-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.password-field-wrapper input {
+    padding-right: 45px !important; 
+    width: 100%;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 20px;
+    color: #6c757d;
+    z-index: 10;
+    transition: color 0.3s ease;
+}
+
+.toggle-password:hover {
+    color: #0d6efd; 
+}
+
+.shortcut-form:first-child {
+    height: 400px; 
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; 
+}
+
+.shortcut-form .activity .form-title {
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 10px;
+    flex-shrink: 0; 
+}
+
+.activity-list {
+    flex-grow: 1;
+    overflow-y: auto; 
+    padding-right: 8px; 
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.activity-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.activity-list::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+.activity-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.activity-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.activity-item {
+    display: flex;
+    gap: 12px;
+    position: relative;
+    padding-bottom: 12px;
+}
+
+.activity-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--blue);
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0; 
+    box-shadow: 0 0 0 3px var(--light-blue);
+}
+
+.activity-content {
+    flex: 1;
+    min-width: 0; 
+}
+
+.activity-text {
+    font-size: 13px;
+    color: #334155;
+    margin: 0 0 4px 0;
+    line-height: 1.5;
+    font-weight: 500;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal; 
+}
+
+.activity-time {
+    font-size: 11px;
+    color: #94a3b8;
     display: block;
 }

@@ -33,8 +33,8 @@ import model.Course;
  */
 @WebServlet(name = "GradeController", urlPatterns = {"/grade"})
 public class GradeController extends HttpServlet {
-    
-     private static final double MIN_SCORE = 0.0;
+
+    private static final double MIN_SCORE = 0.0;
     private static final double MAX_SCORE = 10.0;
 
     private Integer parseIntParam(HttpServletRequest request, String paramName) {
@@ -158,7 +158,7 @@ public class GradeController extends HttpServlet {
                     request.setAttribute("classId", classIdEnter);
                     request.setAttribute("assessmentList", assessmentList);
 
-                    request.setAttribute("home_view", "teacher/enter_grade.jsp");
+                    request.setAttribute("home_view", "teacher/inputGrade.jsp");
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -168,7 +168,7 @@ public class GradeController extends HttpServlet {
                 }
                 break;
 
-             case "edit":
+            case "edit":
                 try {
                     Integer studentIdEdit = parseIntParam(request, "studentId");
                     Integer classIdEdit = parseIntParam(request, "classId");
@@ -208,7 +208,7 @@ public class GradeController extends HttpServlet {
                     request.setAttribute("classId", classIdEdit);
                     request.setAttribute("scoreMap", scoreMap);
                     request.setAttribute("average", average);
-                    request.setAttribute("home_view", "teacher/enter_grade.jsp");
+                    request.setAttribute("home_view", "teacher/inputGrade.jsp");
 
                     request.getRequestDispatcher("dashboard.jsp").forward(request, response);
                 } catch (Exception e) {
@@ -260,7 +260,7 @@ public class GradeController extends HttpServlet {
 
                 for (Course c : courseList) {
 
-                    Double avg = courseDAO.getAverageByStudentAndCourse(
+                    Double avg = courseDAO.getFinalGradeByStudentAndCourse(
                             c.getCourseId(), studentId);
 
                     averageMap.put(c.getCourseId(), avg);
@@ -310,8 +310,19 @@ public class GradeController extends HttpServlet {
                         filteredList.add(g);
                     }
                 }
+                CourseDAO courseDAO1 = new CourseDAO();
+
+                Double finalGrade = courseDAO1.getFinalGradeByStudentAndCourse(
+                        courseId,
+                        studentIdDetail
+                );
+
+                if (finalGrade == null) {
+                    finalGrade = 0.0;
+                }
 
                 request.setAttribute("gradeList", filteredList);
+                request.setAttribute("finalGrade", finalGrade);
                 request.setAttribute("studentName", currentUser.getFullName());
                 request.setAttribute("home_view", "student/studentGrade.jsp");
 
@@ -319,7 +330,7 @@ public class GradeController extends HttpServlet {
                         .forward(request, response);
                 break;
 
-             case "report":
+            case "report":
                 try {
                     Integer classId = parseIntParam(request, "classId");
                     if (classId == null) {
@@ -372,7 +383,7 @@ public class GradeController extends HttpServlet {
         GradeDAO dao = new GradeDAO();
         AssessmentDAO assessmentDAO = new AssessmentDAO();
         HttpSession session = request.getSession();
-        
+
         User currentUser = (User) session.getAttribute("user");
 
         if (currentUser == null) {
@@ -389,7 +400,7 @@ public class GradeController extends HttpServlet {
             response.sendRedirect("dashboard.jsp");
             return;
         }
-        
+
         switch (action) {
 
             case "save":
