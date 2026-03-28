@@ -48,9 +48,11 @@
 
     <c:set var="activeCount" value="0"/>
     <c:set var="pendingCount" value="0"/>
+    <c:set var="inactiveCount" value="0"/>
     <c:forEach var="c" items="${ClassList}">
         <c:if test="${c.status == 'Active'}"><c:set var="activeCount" value="${activeCount + 1}"/></c:if>
         <c:if test="${c.status == 'Pending'}"><c:set var="pendingCount" value="${pendingCount + 1}"/></c:if>
+        <c:if test="${c.status == 'Inactive'}"><c:set var="inactiveCount" value="${inactiveCount + 1}"/></c:if>
     </c:forEach>
 
     <div class="stat-card-grid">
@@ -80,7 +82,16 @@
             <div class="icon-wrapper cyan">
                 <i class='bx bx-clock-dashed-half'></i>
             </div>
-        </div>  
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <p>Inactive Classes</p>
+                <h3>${inactiveCount}</h3>
+            </div>
+            <div class="icon-wrapper gray">
+                <i class='bx bx-lock'></i>
+            </div>
+        </div>
     </div>
 
     <div class="filter-container flex-wrap mt-4">
