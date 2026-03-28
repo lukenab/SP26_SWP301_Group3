@@ -60,7 +60,7 @@
                 <form class="login-form" action="login" method="post">
                     <div class="form-group">
                         <div class="input-wrapper">
-                            <input type="email" id="email" name="email" required placeholder=" " />
+                            <input type="email" value="${cookieEmail}" id="email" name="email" required placeholder=" " />
                             <label for="email">Email</label>
                             <span class="input-border"></span>
                         </div>
@@ -69,7 +69,7 @@
 
                     <div class="form-group">
                         <div class="input-wrapper password-wrapper">
-                            <input type="password" id="password" name="password" required placeholder=" "/>
+                            <input type="password" value="${cookiePass}" id="password" name="password" required placeholder=" "/>
                             <label for="password">Password</label>
                             <span class="input-border"></span>
                             <button type="button" class="password-toggle" id="passwordToggle">
@@ -86,7 +86,7 @@
 
                     <div class="form-options">
                         <div class="remember-wrapper">
-                            <input type="checkbox" id="remember">
+                            <input type="checkbox" ${cookieRem} id="remember">
                             <label for="remember" class="checkbox-label">
                                 <span class="checkbox-custom"></span>Keep me signed in
                             </label>
@@ -109,5 +109,11 @@
         </div>
         <script src="js/manageUser.js" type="text/javascript"></script>
     </body>
+    <div class="back-to-home">
+        <a href="landingPage" class="btn-back">
+            <i class='bx bx-chevron-left'></i>
+            <span>Back to Home</span>
+        </a>
+    </div>
 </html>
 
