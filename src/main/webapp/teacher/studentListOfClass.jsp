@@ -141,25 +141,31 @@
 
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center align-items-center gap-1">
-
-
                                         <c:choose>
-                                            <c:when test="${avg == null}">
-                                                <a href="grade?action=enter&studentId=${s.userId}&classId=${classId}" 
-                                                   class="btn-icon-minimal" title="Enter Grade"><i class='bx bx-plus-circle'></i></a>
-                                                </c:when>
-                                                <c:otherwise>
-                                                <a href="grade?action=edit&studentId=${s.userId}&classId=${classId}" 
-                                                   class="btn-icon-minimal" title="Edit Grade"><i class='bx bx-edit-alt'></i></a>
-
-                                                <form action="grade" method="post" class="d-inline">
-                                                    <input type="hidden" name="action" value="delete"/>
-                                                    <input type="hidden" name="studentId" value="${s.userId}"/>
-                                                    <input type="hidden" name="classId" value="${classId}"/>
-                                                </form>
+                                            <c:when test="${classStatus == 'Pending'}">
+                                                <!-- Hide grade actions if class is Pending -->
+                                                <!-- Only show sync or other allowed actions if needed -->
+                                                <a href="#" class="btn-icon-minimal" title="Sync"><i class='bx bx-refresh'></i></a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <c:choose>
+                                                    <c:when test="${avg == null}">
+                                                        <a href="grade?action=enter&studentId=${s.userId}&classId=${classId}"
+                                                           class="btn-icon-minimal" title="Enter Grade"><i class='bx bx-plus-circle'></i></a>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <a href="grade?action=edit&studentId=${s.userId}&classId=${classId}"
+                                                           class="btn-icon-minimal" title="Edit Grade"><i class='bx bx-edit-alt'></i></a>
+                                                        <form action="grade" method="post" class="d-inline">
+                                                            <input type="hidden" name="action" value="delete"/>
+                                                            <input type="hidden" name="studentId" value="${s.userId}"/>
+                                                            <input type="hidden" name="classId" value="${classId}"/>
+                                                        </form>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                                <a href="#" class="btn-icon-minimal" title="Sync"><i class='bx bx-refresh'></i></a>
                                             </c:otherwise>
                                         </c:choose>
-                                        <a href="#" class="btn-icon-minimal" title="Sync"><i class='bx bx-refresh'></i></a>
                                     </div>
                                 </td>
                             </tr>
