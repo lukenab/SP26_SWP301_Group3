@@ -193,6 +193,20 @@ public class ScheduleDAO extends DBContext {
             System.out.println("Error: Teacher already has a schedule for this slot on this date!");
             return false;
         }
+
+        // STEP 5: Check that the class is Active. Do not create schedules for non-active classes.
+        try {
+            ClassDAO classDAO = new ClassDAO();
+            Classes cls = classDAO.getClassByID(classId);
+            String classStatus = (cls != null) ? cls.getStatus() : null;
+            boolean isActiveClass = classStatus != null && ("Active".equalsIgnoreCase(classStatus) || "1".equals(classStatus));
+            if (!isActiveClass) {
+                System.out.println("Error: Cannot create schedule for class with status '" + classStatus + "'. Only Active classes are allowed.");
+                return false;
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to validate class status before creating schedule: " + e.getMessage());
+        }
         
         String sql = "INSERT INTO Schedule (ClassID, RoomID, SlotID, LearningDate, TeacherID, AttendanceStatus) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
@@ -1221,6 +1235,34 @@ public class ScheduleDAO extends DBContext {
         }
 
         return deletedCount;
+    }
+
+    /**
+     * Update similar schedules (only non-attended ones) based on Class, Slot and Room
+     * Returns number of schedules successfully updated
+     */
+    public int updateSimilarSchedules(int referenceScheduleId, int newClassId, int newRoomId, int newSlotId, int newTeacherId) {
+        List<Schedule> similarSchedules = getSimilarSchedules(referenceScheduleId);
+        int updatedCount = 0;
+
+        for (Schedule schedule : similarSchedules) {
+            // skip schedules with attendance taken
+            if (schedule.isAttendanceStatus()) continue;
+
+            java.util.Date utilDate = schedule.getLearningDate();
+            if (utilDate == null) continue;
+            java.sql.Date learningDate = new java.sql.Date(utilDate.getTime());
+            try {
+                boolean success = editSchedule(schedule.getScheduleId(), newClassId, newRoomId, newSlotId, learningDate, newTeacherId, false);
+                if (success) updatedCount++;
+            } catch (Exception e) {
+                // log and continue with next
+                System.out.println("Fail to update schedule ID " + schedule.getScheduleId() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        return updatedCount;
     }
 
     public List<Schedule> getTodayScheduleByStudent(int studentId, String today) {
