@@ -111,31 +111,9 @@
                     </tr>
                 </thead>
                 <tbody id="classTableBody">
-                    <c:choose>
-                        <c:when test="${not empty ClassList}">
-                            <c:forEach items="${ClassList}" var="c" varStatus="loop">
-                                <tr class="class-row">
-                                </tr>
-                            </c:forEach>
-                        </c:when>
-                        <c:otherwise>
-                            <tr>
-                                <td colspan="6" class="text-center py-5">
-                                    <div class="d-flex flex-column align-items-center">
-                                        <i class='bx bx-folder-open text-muted' style="font-size: 4rem;"></i>
-                                        <h4 class="text-muted mt-3">No Classes Assigned</h4>
-                                        <p class="text-muted">You are currently not assigned to any classes in the system.</p>
-                                        <a href="dashboard?action=teacher" class="btn btn-primary mt-2">Return to Dashboard</a>
-                                    </div>
-                                </td>
-                            </tr>
-                        </c:otherwise>
-                    </c:choose>
-
                     <tr id="noResultRow" style="display: none;">
                         <td colspan="6" class="text-center py-4 text-muted">No classes match your search.</td>
                     </tr>
-                    
                     <c:forEach items="${ClassList}" var="c" varStatus="loop">
                         <tr class="class-row">
                             <td>${loop.count}</td>
@@ -158,30 +136,33 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="schedule?action=viewScheduleByClassId&classId=${c.classid}" class="action-btn" title="View Schedule">
-                                    <i class='bx bx-calendar'></i>
-                                </a>
-                                <a href="student?action=viewByClass&classId=${c.classid}" class="action-btn" title="Student List">
-                                    <i class='bx bx-group'></i>
-                                </a>
-
-                                <a href="attendance?action=report&classId=${c.classid}" class="action-btn" title="Attendance Report">
-                                    <i class='bx bx-receipt'></i>
-                                </a>
-
-                                <a href="grade?action=report&classId=${c.classid}" class="action-btn" title="Grade Report">
-                                    <i class='bx bx-bar-chart-square'></i>
-                                </a>
-
-                                <a href="feedback?action=viewAll&classId=${c.className}&from=myClasses" class="action-btn btn-feedback" title="View Feedbacks">
-                                    <i class='bx bx-star'></i>
-                                </a>
+                                <c:choose>
+                                    <c:when test="${c.status == 'Pending'}">
+                                        <a href="student?action=viewByClass&classId=${c.classid}" class="action-btn" title="Student List">
+                                            <i class='bx bx-group'></i>
+                                        </a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a href="schedule?action=viewScheduleByClassId&classId=${c.classid}" class="action-btn" title="View Schedule">
+                                            <i class='bx bx-calendar'></i>
+                                        </a>
+                                        <a href="student?action=viewByClass&classId=${c.classid}" class="action-btn" title="Student List">
+                                            <i class='bx bx-group'></i>
+                                        </a>
+                                        <a href="attendance?action=report&classId=${c.classid}" class="action-btn" title="Attendance Report">
+                                            <i class='bx bx-receipt'></i>
+                                        </a>
+                                        <a href="grade?action=report&classId=${c.classid}" class="action-btn" title="Grade Report">
+                                            <i class='bx bx-bar-chart-square'></i>
+                                        </a>
+                                        <a href="feedback?action=viewAll&classId=${c.className}&from=myClasses" class="action-btn btn-feedback" title="View Feedbacks">
+                                            <i class='bx bx-star'></i>
+                                        </a>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
                         </tr>
                     </c:forEach>
-                    <tr id="noResultRow" style="display: none;">
-                        <td colspan="6" class="text-center py-4 text-muted">No classes match your search.</td>
-                    </tr>
                 </tbody>
             </table>
         </div>
