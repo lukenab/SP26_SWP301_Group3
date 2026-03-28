@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<link href="css/class_management.css" rel="stylesheet" type="text/css"/>
+<link href="css/class_management.css?v=20260328-modal" rel="stylesheet" type="text/css"/>
 <c:set var="classInactive" value="${classInfo[6] == 'Inactive'}"/>
 
 <div class="container-fluid px-4 content-body class-management-page">
@@ -198,6 +198,19 @@
             </div>
         </div>
     </div>
+
+    <div class="class-modal-backdrop" id="classAlertModal" aria-hidden="true" style="display: none;">
+        <div class="class-modal-card" role="alertdialog" aria-modal="true" aria-labelledby="classAlertModalTitle">
+            <div class="class-modal-icon">
+                <i class='bx bx-error-circle'></i>
+            </div>
+            <h3 class="class-modal-title" id="classAlertModalTitle">Cannot add students</h3>
+            <p class="class-modal-text" id="classAlertModalMessage"></p>
+            <div class="class-modal-actions">
+                <button type="button" class="class-modal-btn primary" id="closeClassAlertModal">OK</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -207,6 +220,34 @@
         const selectAllAvailable = document.getElementById('selectAllAvailable');
         const availableCheckboxes = document.querySelectorAll('.student-checkbox');
         const addForm = document.querySelector('form[action="enrollment"] input[name="action"][value="addStudents"]')?.closest('form');
+        const classAlertModal = document.getElementById('classAlertModal');
+        const classAlertModalMessage = document.getElementById('classAlertModalMessage');
+        const closeClassAlertModal = document.getElementById('closeClassAlertModal');
+
+        function showValidationModal(message) {
+            if (!classAlertModal || !classAlertModalMessage) {
+                alert(message);
+                return;
+            }
+
+            classAlertModalMessage.textContent = message;
+            classAlertModal.style.display = 'flex';
+            classAlertModal.classList.add('show');
+            classAlertModal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+            closeClassAlertModal?.focus();
+        }
+
+        function hideValidationModal() {
+            if (!classAlertModal) {
+                return;
+            }
+
+            classAlertModal.classList.remove('show');
+            classAlertModal.setAttribute('aria-hidden', 'true');
+            classAlertModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
 
         function syncAvailableSelection() {
             const checkedCount = Array.from(availableCheckboxes).filter(cb => cb.checked).length;
@@ -245,7 +286,7 @@
             addForm.addEventListener('submit', function (event) {
                 if (classInactive) {
                     event.preventDefault();
-                    alert('Inactive classes cannot add students.');
+                    showValidationModal('Inactive classes cannot add students.');
                     return;
                 }
 
@@ -253,17 +294,29 @@
                 const paidStudentSelected = Array.from(availableCheckboxes).some(cb => cb.checked && cb.dataset.paymentStatus === 'Paid');
                 if (unpaidSelected && paidStudentSelected) {
                     event.preventDefault();
-                    alert('Students with paid history cannot be added as UnPaid.');
+                    showValidationModal('Students with paid history cannot be added as UnPaid.');
                     return;
                 }
 
                 const checkedCount = Array.from(availableCheckboxes).filter(cb => cb.checked).length;
                 if (checkedCount > remainingSlots) {
                     event.preventDefault();
-                    alert('You can only add up to ' + remainingSlots + ' student(s) to this class.');
+                    showValidationModal('You can only add up to ' + remainingSlots + ' student(s) to this class.');
                 }
             });
         }
+
+        closeClassAlertModal?.addEventListener('click', hideValidationModal);
+        classAlertModal?.addEventListener('click', function (event) {
+            if (event.target === classAlertModal) {
+                hideValidationModal();
+            }
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && classAlertModal?.classList.contains('show')) {
+                hideValidationModal();
+            }
+        });
 
         const selectAllInClass = document.getElementById('selectAllInClass');
         const inClassCheckboxes = document.querySelectorAll('.inclass-checkbox');

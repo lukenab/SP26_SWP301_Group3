@@ -21,6 +21,50 @@ import utils.DBContext;
  */
 public class EnrollmentDAO extends DBContext {
 
+    private static Boolean cachedHasClassMaxCapacityColumn;
+
+    private boolean hasClassMaxCapacityColumn() {
+        if (cachedHasClassMaxCapacityColumn != null) {
+            return cachedHasClassMaxCapacityColumn;
+        }
+        String sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS "
+                + "WHERE TABLE_NAME = 'Class' AND COLUMN_NAME = 'MaxCapacity'";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            cachedHasClassMaxCapacityColumn = rs.next();
+            return cachedHasClassMaxCapacityColumn;
+        } catch (Exception e) {
+            System.out.println("Fail to detect Class.MaxCapacity column: " + e.getMessage());
+        }
+        return false;
+    }
+
+    private int getRemainingSlots(int classId, boolean lockRows) {
+        String maxCapacityField = hasClassMaxCapacityColumn() ? "c.MaxCapacity" : "co.TotalSlots";
+        String classHint = lockRows ? " WITH (UPDLOCK, HOLDLOCK)" : "";
+        String enrollmentHint = lockRows ? " WITH (UPDLOCK, HOLDLOCK)" : "";
+        String sql = "SELECT " + maxCapacityField + " AS MaxCapacity, COUNT(e.EnrollmentID) AS StudentCount "
+                + "FROM Class c" + classHint + " "
+                + "JOIN Course co ON c.CourseID = co.CourseID "
+                + "LEFT JOIN Enrollment e" + enrollmentHint + " ON c.ClassID = e.ClassID "
+                + "WHERE c.ClassID = ? "
+                + "GROUP BY " + maxCapacityField;
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, classId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Math.max(0, rs.getInt("MaxCapacity") - rs.getInt("StudentCount"));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Fail to get remaining slots: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public boolean isClassFull(int classId) {
+        return getRemainingSlots(classId, false) <= 0;
+    }
+
     public List<Enrollment> getAllEnrollment() {
         List<Enrollment> list = new ArrayList<>();
         String sql = "SELECT * FROM Enrollment";
@@ -327,6 +371,10 @@ public class EnrollmentDAO extends DBContext {
             }
 
             // 2. Nếu chưa thì Insert tạo mới (Bổ sung FinalGrade = 0 để SQL không báo lỗi)
+            if (getRemainingSlots(classId, true) <= 0) {
+                return -1;
+            }
+
             String insertQuery = "INSERT INTO Enrollment (StudentID, ClassID, EnrollDate, Status, FinalGrade) VALUES (?, ?, GETDATE(), 'Unpaid', 0)";
             PreparedStatement psInsert = conn.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
             psInsert.setInt(1, studentId);
@@ -408,7 +456,7 @@ public class EnrollmentDAO extends DBContext {
         String sql = "SELECT COUNT(*) AS Total "
                 + "FROM Enrollment "
                 + "WHERE ClassID = ? "
-                + "  AND UPPER(LTRIM(RTRIM(Status))) IN ('UNPAID', 'PENDING')";
+                + "  AND UPPER(LTRIM(RTRIM(Status))) = 'UNPAID'";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, classId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -422,15 +470,16 @@ public class EnrollmentDAO extends DBContext {
         return 0;
     }
 
-    public int promotePaidEnrollmentsToActive(int classId) {
+    public int promoteEligibleEnrollmentsToActive(int classId) {
         String sql = "UPDATE Enrollment "
                 + "SET Status = 'Active' "
-                + "WHERE ClassID = ? AND UPPER(LTRIM(RTRIM(Status))) = 'PAID'";
+                + "WHERE ClassID = ? "
+                + "AND UPPER(LTRIM(RTRIM(Status))) IN ('PAID', 'PENDING')";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, classId);
             return ps.executeUpdate();
         } catch (Exception e) {
-            System.out.println("Fail to promote paid enrollments to active: " + e.getMessage());
+            System.out.println("Fail to promote eligible enrollments to active: " + e.getMessage());
         }
         return 0;
     }

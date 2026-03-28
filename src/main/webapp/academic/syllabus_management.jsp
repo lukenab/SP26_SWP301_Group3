@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <link href="css/course_list.css" rel="stylesheet" type="text/css"/>
-<link href="css/syllabus_management.css" rel="stylesheet" type="text/css"/>
+<link href="css/syllabus_management.css?v=20260328-modal" rel="stylesheet" type="text/css"/>
 
 <div class="container-fluid px-4 content-body syllabus-page">
     <c:url var="syllabusManageReturnUrl" value="syllabus">
@@ -97,7 +97,7 @@
                                     <a href="${editSyllabusUrl}" class="action-btn" title="Update Syllabus">
                                         <i class='bx bx-edit'></i>
                                     </a>
-                                    <form action="syllabus" method="post" class="d-inline" onsubmit="return confirm('Delete this syllabus item?');">
+                                    <form action="syllabus" method="post" class="d-inline js-delete-syllabus-form" data-topic-name="${s.topicName}">
                                         <input type="hidden" name="action" value="delete"/>
                                         <input type="hidden" name="syllabusId" value="${s.syllabusId}"/>
                                         <input type="hidden" name="returnUrl" value="${syllabusManageReturnUrl}"/>
@@ -137,4 +137,78 @@
     </div>
 </div>
 
+<div class="syllabus-modal-backdrop" id="deleteSyllabusModal" aria-hidden="true" style="display: none;">
+    <div class="syllabus-modal-card" role="dialog" aria-modal="true" aria-labelledby="deleteSyllabusTitle">
+        <div class="syllabus-modal-icon">
+            <i class='bx bx-trash'></i>
+        </div>
+        <h3 class="syllabus-modal-title" id="deleteSyllabusTitle">Delete syllabus item?</h3>
+        <p class="syllabus-modal-text">
+            You are about to delete
+            <span id="deleteSyllabusTopic" class="syllabus-modal-topic">this syllabus item</span>.
+            This action cannot be undone.
+        </p>
+        <div class="syllabus-modal-actions">
+            <button type="button" class="syllabus-modal-btn syllabus-modal-btn-secondary" id="cancelDeleteSyllabus">Cancel</button>
+            <button type="button" class="syllabus-modal-btn syllabus-modal-btn-danger" id="confirmDeleteSyllabus">Delete</button>
+        </div>
+    </div>
+</div>
+
 <script src="js/manageUser.js" type="text/javascript"></script>
+<script>
+    (function () {
+        const modal = document.getElementById('deleteSyllabusModal');
+        const topicLabel = document.getElementById('deleteSyllabusTopic');
+        const confirmButton = document.getElementById('confirmDeleteSyllabus');
+        const cancelButton = document.getElementById('cancelDeleteSyllabus');
+        const deleteForms = document.querySelectorAll('.js-delete-syllabus-form');
+        let activeForm = null;
+
+        function openModal(form) {
+            activeForm = form;
+            const topicName = form.getAttribute('data-topic-name') || 'this syllabus item';
+            topicLabel.textContent = topicName;
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+            confirmButton.focus();
+            document.body.classList.add('modal-open');
+        }
+
+        function closeModal() {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+            modal.style.display = 'none';
+            activeForm = null;
+            document.body.classList.remove('modal-open');
+        }
+
+        deleteForms.forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                openModal(form);
+            });
+        });
+
+        confirmButton.addEventListener('click', function () {
+            if (activeForm) {
+                activeForm.submit();
+            }
+        });
+
+        cancelButton.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && modal.classList.contains('show')) {
+                closeModal();
+            }
+        });
+    })();
+</script>

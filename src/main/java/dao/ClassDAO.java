@@ -1179,6 +1179,7 @@ public class ClassDAO extends DBContext {
             int pageSize) {
 
         List<Object[]> list = new ArrayList<>();
+        String maxCapacityField = hasClassMaxCapacityColumn() ? "c.MaxCapacity" : "co.TotalSlots";
 
         String sql = "SELECT c.ClassID, c.ClassName, co.CourseName, "
                 + "u.FullName AS TeacherName, "
@@ -1188,7 +1189,7 @@ public class ClassDAO extends DBContext {
                 + "FROM Class c "
                 + "LEFT JOIN Course co ON c.CourseID = co.CourseID "
                 + "LEFT JOIN [User] u ON c.TeacherID = u.UserID "
-                + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID AND e.Status='Active' "
+                + "LEFT JOIN Enrollment e ON c.ClassID = e.ClassID "
                 + "WHERE 1=1 ";
 
         if (keyword != null && !keyword.isBlank()) {
@@ -1212,7 +1213,10 @@ public class ClassDAO extends DBContext {
         }
 
         sql += " GROUP BY c.ClassID, c.ClassName, co.CourseName, "
-                + "u.FullName, c.StartDate, c.EndDate, co.TuitionFee ";
+                + "u.FullName, c.StartDate, c.EndDate, co.TuitionFee, "
+                + maxCapacityField + " ";
+
+        sql += " HAVING COUNT(e.EnrollmentID) < " + maxCapacityField + " ";
 
         sql += " ORDER BY c.StartDate ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
