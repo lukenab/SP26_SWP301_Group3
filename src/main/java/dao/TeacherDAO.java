@@ -165,7 +165,7 @@ public class TeacherDAO extends DBContext {
 
     public int getClassProgress(int classId) {
         String sql = "SELECT "
-                + "(SELECT COUNT(*) FROM Schedule WHERE ClassID = ? AND AttendanceStatus = 1) * 100 / "
+                + "(SELECT COUNT(*) FROM Schedule WHERE ClassID = ? AND (AttendanceStatus = 1 OR learningDate < CAST(GETDATE() AS DATE))) * 100 / "
                 + "NULLIF((SELECT COUNT(*) FROM Schedule WHERE ClassID = ?), 0)";
         try (PreparedStatement st = conn.prepareStatement(sql)) {
             st.setInt(1, classId);
