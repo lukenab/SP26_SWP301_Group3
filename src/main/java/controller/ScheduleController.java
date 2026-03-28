@@ -272,7 +272,8 @@ public class ScheduleController extends HttpServlet {
                 ClassDAO classDAO2 = new ClassDAO();
                 SlotDAO slotDAO2 = new SlotDAO();
 
-                List<Object[]> allClasses2 = classDAO2.getClassManagementList();
+                // Only load classes with status = Active for the create form
+                List<Object[]> allClasses2 = classDAO2.getClassManagementList(null, "Active", null);
                 List<Object[]> allRooms2 = scheduleDAO3.getAllRooms();
                 List<Slot> allSlots2 = slotDAO2.getAllSlots();
 
@@ -311,10 +312,16 @@ public class ScheduleController extends HttpServlet {
 
                     System.out.println("Data loaded - Classes: " + allClasses3.size() + ", Rooms: " + allRooms3.size() + ", Slots: " + allSlots3.size());
 
+                    // Get similar schedules for series edit option
+                    List<Schedule> similarSchedules = scheduleDAO4.getSimilarSchedules(editScheduleId);
+                    int relatedCount = similarSchedules != null ? similarSchedules.size() : 0;
+
                     request.setAttribute("schedule", editSchedule);
                     request.setAttribute("allClasses", allClasses3);
                     request.setAttribute("allRooms", allRooms3);
                     request.setAttribute("slots", allSlots3);
+                    request.setAttribute("similarSchedules", similarSchedules);
+                    request.setAttribute("relatedCount", relatedCount);
                     request.setAttribute("home_view", "academic/editSchedule.jsp");
 
                     System.out.println("Forwarding to editSchedule.jsp...");
@@ -650,25 +657,44 @@ public class ScheduleController extends HttpServlet {
                             teacherId = classDAO.getTeacherIdByClassId(classId);
                         }
 
-                        // STEP 1: Check duplicate (exclude current schedule)
-                        // STEP 2: Check class conflict in slot (exclude current schedule)
-                        boolean success = scheduleDAO.editSchedule(scheduleId, classId, roomId, slotId,
-                                learningDate, teacherId, attendanceStatus);
+                        // Read edit scope (single or series)
+                        String editScope = request.getParameter("editScope"); // expected values: "single" or "series"
 
-                        if (success) {
+                        if ("series".equals(editScope)) {
+                            // Update similar schedules in series (only non-attended ones)
+                            int updatedCount = scheduleDAO.updateSimilarSchedules(scheduleId, classId, roomId, slotId, teacherId);
+                            if (updatedCount > 0) {
+                                SystemLogDAO logDAO = new SystemLogDAO();
+                                User logUser = (User) request.getSession().getAttribute("user");
+                                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                                logDAO.insertLog(actorName, actorRole, "UPDATE_SCHEDULE_BATCH", "Updated " + updatedCount + " schedules in series starting from Schedule ID: " + scheduleId);
 
-                            SystemLogDAO logDAO = new SystemLogDAO();
-                            User logUser = (User) request.getSession().getAttribute("user");
-
-                            String actorName = (logUser != null) ? logUser.getFullName() : "System";
-                            String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
-                            logDAO.insertLog(actorName, actorRole, "UPDATE_SCHEDULE", "Updated schedule ID: " + scheduleId + " (Class ID: " + classId + ")");
-
-                            session.setAttribute("message", "Schedule updated successfully!");
-                            session.setAttribute("messageType", "success");
+                                session.setAttribute("message", "Successfully updated " + updatedCount + " schedule(s) in the series!");
+                                session.setAttribute("messageType", "success");
+                            } else {
+                                session.setAttribute("message", "No schedules were updated. They may have attendance already taken or conflicts prevented updates.");
+                                session.setAttribute("messageType", "error");
+                            }
                         } else {
-                            session.setAttribute("message", "Failed to update schedule! (Possible duplicate or class conflict)");
-                            session.setAttribute("messageType", "error");
+                            // Single schedule update
+                            boolean success = scheduleDAO.editSchedule(scheduleId, classId, roomId, slotId,
+                                    learningDate, teacherId, attendanceStatus);
+
+                            if (success) {
+                                SystemLogDAO logDAO = new SystemLogDAO();
+                                User logUser = (User) request.getSession().getAttribute("user");
+
+                                String actorName = (logUser != null) ? logUser.getFullName() : "System";
+                                String actorRole = (logUser != null && logUser.getRole() != null) ? logUser.getRole().getRoleName() : "Academic Staff";
+                                logDAO.insertLog(actorName, actorRole, "UPDATE_SCHEDULE", "Updated schedule ID: " + scheduleId + " (Class ID: " + classId + ")");
+
+                                session.setAttribute("message", "Schedule updated successfully!");
+                                session.setAttribute("messageType", "success");
+                            } else {
+                                session.setAttribute("message", "Failed to update schedule! (Possible duplicate or class conflict)");
+                                session.setAttribute("messageType", "error");
+                            }
                         }
 
                     } catch (Exception e) {
