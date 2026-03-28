@@ -575,7 +575,9 @@ public class ScheduleController extends HttpServlet {
                                 session.setAttribute("message", "Successfully created " + createdCount + " schedule(s)!");
                                 session.setAttribute("messageType", "success");
                             } else {
-                                session.setAttribute("message", "Failed to create schedules or no dates were generated!");
+                                String daoErr = scheduleDAO.getLastError();
+                                if (daoErr == null || daoErr.isEmpty()) daoErr = "Failed to create schedules or no dates were generated!";
+                                session.setAttribute("message", daoErr);
                                 session.setAttribute("messageType", "error");
                             }
                         } else {
@@ -594,7 +596,9 @@ public class ScheduleController extends HttpServlet {
                                 session.setAttribute("message", "Schedule created successfully!");
                                 session.setAttribute("messageType", "success");
                             } else {
-                                session.setAttribute("message", "Failed to create schedule! (Possible duplicate, class conflict, or missing teacher)");
+                                String daoErr = scheduleDAO.getLastError();
+                                if (daoErr == null || daoErr.isEmpty()) daoErr = "Failed to create schedule! (Possible duplicate, class conflict, or missing teacher)";
+                                session.setAttribute("message", daoErr);
                                 session.setAttribute("messageType", "error");
                             }
                         }
